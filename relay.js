@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-
+import process from "process";
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
@@ -13,7 +13,7 @@ import { mdns } from '@libp2p/mdns'
 let libp2p = await createLibp2p({
   addresses: {
     listen: [
-        '/dns4/0.0.0.0/tcp/0/ws'
+        `/dns4/0.0.0.0/tcp/${process.env.PORT ?process.env.PORT: "7549"}/ws`
     ]
   },
   transports: [
