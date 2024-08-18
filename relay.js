@@ -12,7 +12,9 @@ import { mdns } from '@libp2p/mdns'
 
 let libp2p = await createLibp2p({
   addresses: {
-    listen: ['/ip4/0.0.0.0/tcp/0/ws']
+    listen: [
+        '/dns4/0.0.0.0/tcp/0/ws'
+    ]
   },
   transports: [
     webSockets({
