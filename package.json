@@ -13,9 +13,9 @@
   },
   "type": "module",
   "scripts": {
-    "start": "vite",
+    "client": "vite",
     "build": "vite build",
-    "relay": "node relay.js",
+    "start": "node relay.js",
     "test:firefox": "npm run build && playwright test --browser=firefox test",
     "test:chrome": "npm run build && playwright test test",
     "test": "npm run build && test-browser-example test"
