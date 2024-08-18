@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import process from "process";
+
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
@@ -9,14 +9,16 @@ import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { createLibp2p } from 'libp2p'
 import { mdns } from '@libp2p/mdns'
+import { webTransport } from '@libp2p/webtransport'
 
 let libp2p = await createLibp2p({
   addresses: {
     listen: [
-        `/dns4/0.0.0.0/tcp/${process.env.PORT ?process.env.PORT: "7549"}/ws`
+        '/ip4/0.0.0.0/tcp/0/ws'
     ]
   },
   transports: [
+    webTransport(),
     webSockets({
       filter: filters.all
     })
