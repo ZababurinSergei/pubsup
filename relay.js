@@ -8,23 +8,15 @@ import { mplex } from '@libp2p/mplex'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { createLibp2p } from 'libp2p'
-import { mdns } from '@libp2p/mdns'
-import { webTransport } from '@libp2p/webtransport'
 
-let libp2p = await createLibp2p({
+const server = await createLibp2p({
   addresses: {
-    listen: [
-        '/ip4/0.0.0.0/tcp/0/ws'
-    ]
+    listen: ['/ip4/127.0.0.1/tcp/0/ws']
   },
   transports: [
-    webTransport(),
     webSockets({
       filter: filters.all
     })
-  ],
-  peerDiscovery: [
-    mdns()
   ],
   connectionEncryption: [noise()],
   streamMuxers: [yamux(), mplex()],
@@ -41,4 +33,4 @@ let libp2p = await createLibp2p({
   }
 })
 
-console.log('Relay listening on multiaddr(s): ', libp2p.getMultiaddrs().map((ma) => ma.toString()))
+console.log('Relay listening on multiaddr(s): ', server.getMultiaddrs().map((ma) => ma.toString()))

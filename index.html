@@ -23,6 +23,22 @@
     </style>
   </head>
   <body>
+    <h1>libp2p Browser PubSub example</h1>
+    <p>This example demonstrates the pubsub API running in a browser</p>
+    <ol>
+      <li>Start a relay using the command line: <pre>$ node ./relay.js
+Relay listening on multiaddr(s):  [
+  '${multiaddr}'
+]
+      </pre></li>
+      <li>Copy the relay's multiaddr and use the "Dial Multaddr" section to dial the relay</li>
+      <li>Wait for a WebRTC address to appear in the "Listening Addresses" area</li>
+      <li>Open the same page in another browser window</li>
+      <li>Use the "Dial Multiaddr" section in the second window to dial the WebRTC address from the first</li>
+      <li>Subscribe both windows to the same topic using the "PubSub" section</li>
+      <li>Send messages between the windows using the "PubSub" section</li>
+    </ol>
+    <hr />
     <div>
       <h2>Node</h2>
       <label for="relay">Dial MultiAddr</label>
