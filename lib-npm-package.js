@@ -55031,7 +55031,7 @@ var GossipSub = class extends TypedEventEmitter {
       });
     }));
     const registrar = this.components.registrar;
-    await Promise.all(this.multicodecs.map(async (multicodec) => registrar.handle(multicodec, this.onIncomingStream.bind(this), {
+    await Promise.all(this.multicodecs.map(async (multicodec2) => registrar.handle(multicodec2, this.onIncomingStream.bind(this), {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
       runOnTransientConnection: this.runOnTransientConnection
@@ -55041,7 +55041,7 @@ var GossipSub = class extends TypedEventEmitter {
       onDisconnect: this.onPeerDisconnected.bind(this),
       notifyOnTransient: this.runOnTransientConnection
     };
-    const registrarTopologyIds = await Promise.all(this.multicodecs.map(async (multicodec) => registrar.register(multicodec, topology)));
+    const registrarTopologyIds = await Promise.all(this.multicodecs.map(async (multicodec2) => registrar.register(multicodec2, topology)));
     const heartbeatTimeout = setTimeout(this.runHeartbeat, GossipsubHeartbeatInitialDelay);
     this.status = {
       code: GossipStatusCode.started,
@@ -55078,7 +55078,7 @@ var GossipSub = class extends TypedEventEmitter {
       this.removeEventListener("gossipsub:prune", this.untagMeshPeer);
     }
     const registrar = this.components.registrar;
-    await Promise.all(this.multicodecs.map(async (multicodec) => registrar.unhandle(multicodec)));
+    await Promise.all(this.multicodecs.map(async (multicodec2) => registrar.unhandle(multicodec2)));
     registrarTopologyIds.forEach((id) => {
       registrar.unregister(id);
     });
@@ -55893,8 +55893,8 @@ var GossipSub = class extends TypedEventEmitter {
     this.log("Initiating connection with %s", id);
     const peerId2 = peerIdFromString(id);
     const connection = await this.components.connectionManager.openConnection(peerId2);
-    for (const multicodec of this.multicodecs) {
-      for (const topology of this.components.registrar.getTopologies(multicodec)) {
+    for (const multicodec2 of this.multicodecs) {
+      for (const topology of this.components.registrar.getTopologies(multicodec2)) {
         topology.onConnect?.(peerId2, connection);
       }
     }
@@ -56800,6 +56800,370 @@ function gossipsub(init = {}) {
   return (components) => new GossipSub(components, init);
 }
 __name(gossipsub, "gossipsub");
+
+// node_modules/@libp2p/dcutr/dist/src/pb/message.js
+var HolePunch;
+(function(HolePunch2) {
+  let Type;
+  (function(Type2) {
+    Type2["UNUSED"] = "UNUSED";
+    Type2["CONNECT"] = "CONNECT";
+    Type2["SYNC"] = "SYNC";
+  })(Type = HolePunch2.Type || (HolePunch2.Type = {}));
+  let __TypeValues;
+  (function(__TypeValues2) {
+    __TypeValues2[__TypeValues2["UNUSED"] = 0] = "UNUSED";
+    __TypeValues2[__TypeValues2["CONNECT"] = 100] = "CONNECT";
+    __TypeValues2[__TypeValues2["SYNC"] = 300] = "SYNC";
+  })(__TypeValues || (__TypeValues = {}));
+  (function(Type2) {
+    Type2.codec = () => {
+      return enumeration(__TypeValues);
+    };
+  })(Type = HolePunch2.Type || (HolePunch2.Type = {}));
+  let _codec;
+  HolePunch2.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w2, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w2.fork();
+        }
+        if (obj.type != null) {
+          w2.uint32(8);
+          HolePunch2.Type.codec().encode(obj.type, w2);
+        }
+        if (obj.observedAddresses != null) {
+          for (const value of obj.observedAddresses) {
+            w2.uint32(18);
+            w2.bytes(value);
+          }
+        }
+        if (opts.lengthDelimited !== false) {
+          w2.ldelim();
+        }
+      }, (reader, length5) => {
+        const obj = {
+          observedAddresses: []
+        };
+        const end = length5 == null ? reader.len : reader.pos + length5;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1:
+              obj.type = HolePunch2.Type.codec().decode(reader);
+              break;
+            case 2:
+              obj.observedAddresses.push(reader.bytes());
+              break;
+            default:
+              reader.skipType(tag & 7);
+              break;
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  HolePunch2.encode = (obj) => {
+    return encodeMessage(obj, HolePunch2.codec());
+  };
+  HolePunch2.decode = (buf) => {
+    return decodeMessage(buf, HolePunch2.codec());
+  };
+})(HolePunch || (HolePunch = {}));
+
+// node_modules/@libp2p/dcutr/dist/src/utils.js
+function isPublicAndDialable(ma, transportManager) {
+  if (Circuit.matches(ma)) {
+    return false;
+  }
+  const transport = transportManager.dialTransportForMultiaddr(ma);
+  if (transport == null) {
+    return false;
+  }
+  if (DNS.matches(ma)) {
+    return true;
+  }
+  if (!IP.matches(ma)) {
+    return false;
+  }
+  return isPrivateIp(ma.toOptions().host) === false;
+}
+__name(isPublicAndDialable, "isPublicAndDialable");
+
+// node_modules/@libp2p/dcutr/dist/src/dcutr.js
+var MAX_DCUTR_MESSAGE_SIZE = 1024 * 4;
+var DCUTR_DIAL_PRIORITY = 100;
+var defaultValues2 = {
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
+  timeout: 5e3,
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
+  retries: 3,
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1
+};
+var DefaultDCUtRService = class {
+  static {
+    __name(this, "DefaultDCUtRService");
+  }
+  started;
+  timeout;
+  retries;
+  maxInboundStreams;
+  maxOutboundStreams;
+  peerStore;
+  registrar;
+  connectionManager;
+  addressManager;
+  transportManager;
+  topologyId;
+  log;
+  constructor(components, init) {
+    this.log = components.logger.forComponent("libp2p:dcutr");
+    this.started = false;
+    this.peerStore = components.peerStore;
+    this.registrar = components.registrar;
+    this.addressManager = components.addressManager;
+    this.connectionManager = components.connectionManager;
+    this.transportManager = components.transportManager;
+    this.timeout = init.timeout ?? defaultValues2.timeout;
+    this.retries = init.retries ?? defaultValues2.retries;
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues2.maxInboundStreams;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues2.maxOutboundStreams;
+  }
+  [Symbol.toStringTag] = "@libp2p/dcutr";
+  [serviceDependencies] = [
+    "@libp2p/identify"
+  ];
+  isStarted() {
+    return this.started;
+  }
+  async start() {
+    if (this.started) {
+      return;
+    }
+    this.topologyId = await this.registrar.register(multicodec, {
+      notifyOnTransient: true,
+      onConnect: /* @__PURE__ */ __name((peerId2, connection) => {
+        if (!connection.transient) {
+          return;
+        }
+        if (connection.direction !== "inbound") {
+          return;
+        }
+        this.upgradeInbound(connection).catch((err) => {
+          this.log.error("error during outgoing DCUtR attempt", err);
+        });
+      }, "onConnect")
+    });
+    await this.registrar.handle(multicodec, (data) => {
+      void this.handleIncomingUpgrade(data.stream, data.connection).catch((err) => {
+        this.log.error("error during incoming DCUtR attempt", err);
+        data.stream.abort(err);
+      });
+    }, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnTransientConnection: true
+    });
+    this.started = true;
+  }
+  async stop() {
+    await this.registrar.unhandle(multicodec);
+    if (this.topologyId != null) {
+      this.registrar.unregister(this.topologyId);
+    }
+    this.started = false;
+  }
+  /**
+   * Perform the inbound connection upgrade as B
+   *
+   * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
+   */
+  async upgradeInbound(relayedConnection) {
+    if (await this.attemptUnilateralConnectionUpgrade(relayedConnection)) {
+      return;
+    }
+    let stream;
+    for (let i = 0; i < this.retries; i++) {
+      const options = {
+        signal: AbortSignal.timeout(this.timeout)
+      };
+      try {
+        stream = await relayedConnection.newStream([multicodec], {
+          signal: options.signal,
+          runOnTransientConnection: true
+        });
+        const pb = pbStream(stream, {
+          maxDataLength: MAX_DCUTR_MESSAGE_SIZE
+        }).pb(HolePunch);
+        this.log("B sending connect to %p", relayedConnection.remotePeer);
+        const connectTimer = Date.now();
+        await pb.write({
+          type: HolePunch.Type.CONNECT,
+          observedAddresses: this.addressManager.getAddresses().map((ma) => ma.bytes)
+        }, options);
+        this.log("B receiving connect from %p", relayedConnection.remotePeer);
+        const connect = await pb.read(options);
+        if (connect.type !== HolePunch.Type.CONNECT) {
+          this.log("A sent wrong message type");
+          throw new CodeError("DCUtR message type was incorrect", ERR_INVALID_MESSAGE);
+        }
+        const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses);
+        if (multiaddrs.length === 0) {
+          this.log("A did not have any dialable multiaddrs");
+          throw new CodeError("DCUtR connect message had no multiaddrs", ERR_INVALID_MESSAGE);
+        }
+        const rtt = Date.now() - connectTimer;
+        this.log("A sending sync, rtt %dms", rtt);
+        await pb.write({
+          type: HolePunch.Type.SYNC,
+          observedAddresses: []
+        }, options);
+        this.log("A waiting for half RTT");
+        await delay_default(rtt / 2);
+        this.log("B dialing", multiaddrs);
+        const conn = await this.connectionManager.openConnection(multiaddrs, {
+          signal: options.signal,
+          priority: DCUTR_DIAL_PRIORITY
+        });
+        this.log("DCUtR to %p succeeded to address %a, closing relayed connection", relayedConnection.remotePeer, conn.remoteAddr);
+        await relayedConnection.close(options);
+        break;
+      } catch (err) {
+        this.log.error("error while attempting DCUtR on attempt %d of %d", i + 1, this.retries, err);
+        stream?.abort(err);
+        if (i === this.retries) {
+          throw err;
+        }
+      } finally {
+        if (stream != null) {
+          await stream.close(options);
+        }
+      }
+    }
+  }
+  /**
+   * This is performed when A has dialed B via a relay but A also has a public
+   * address that B can dial directly
+   */
+  async attemptUnilateralConnectionUpgrade(relayedConnection) {
+    const peerInfo = await this.peerStore.get(relayedConnection.remotePeer);
+    const publicAddresses = peerInfo.addresses.map((address) => {
+      const ma = address.multiaddr;
+      if (ma.getPeerId() == null) {
+        return ma.encapsulate(`/p2p/${relayedConnection.remotePeer}`);
+      }
+      return ma;
+    }).filter((ma) => {
+      return isPublicAndDialable(ma, this.transportManager);
+    });
+    if (publicAddresses.length > 0) {
+      const signal = AbortSignal.timeout(this.timeout);
+      try {
+        this.log("attempting unilateral connection upgrade to %a", publicAddresses);
+        const connection = await this.connectionManager.openConnection(publicAddresses, {
+          signal,
+          force: true
+        });
+        if (connection.transient) {
+          throw new Error("Could not open a new, non-transient, connection");
+        }
+        this.log("unilateral connection upgrade to %p succeeded via %a, closing relayed connection", relayedConnection.remotePeer, connection.remoteAddr);
+        await relayedConnection.close({
+          signal
+        });
+        return true;
+      } catch (err) {
+        this.log.error("unilateral connection upgrade to %p on addresses %a failed", relayedConnection.remotePeer, publicAddresses, err);
+      }
+    } else {
+      this.log("peer %p has no public addresses, not attempting unilateral connection upgrade", relayedConnection.remotePeer);
+    }
+    return false;
+  }
+  /**
+   * Perform the connection upgrade as A
+   *
+   * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
+   */
+  async handleIncomingUpgrade(stream, relayedConnection) {
+    const options = {
+      signal: AbortSignal.timeout(this.timeout)
+    };
+    try {
+      const pb = pbStream(stream, {
+        maxDataLength: MAX_DCUTR_MESSAGE_SIZE
+      }).pb(HolePunch);
+      this.log("A receiving connect");
+      const connect = await pb.read(options);
+      if (connect.type !== HolePunch.Type.CONNECT) {
+        this.log("B sent wrong message type");
+        throw new CodeError("DCUtR message type was incorrect", ERR_INVALID_MESSAGE);
+      }
+      if (connect.observedAddresses.length === 0) {
+        this.log("B sent no multiaddrs");
+        throw new CodeError("DCUtR connect message had no multiaddrs", ERR_INVALID_MESSAGE);
+      }
+      const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses);
+      if (multiaddrs.length === 0) {
+        this.log("B had no dialable multiaddrs");
+        throw new CodeError("DCUtR connect message had no dialable multiaddrs", ERR_INVALID_MESSAGE);
+      }
+      this.log("A sending connect");
+      await pb.write({
+        type: HolePunch.Type.CONNECT,
+        observedAddresses: this.addressManager.getAddresses().map((ma) => ma.bytes)
+      });
+      this.log("A receiving sync");
+      const sync = await pb.read(options);
+      if (sync.type !== HolePunch.Type.SYNC) {
+        throw new CodeError("DCUtR message type was incorrect", ERR_INVALID_MESSAGE);
+      }
+      this.log("A dialing", multiaddrs);
+      const connection = await this.connectionManager.openConnection(multiaddrs, {
+        signal: options.signal,
+        priority: DCUTR_DIAL_PRIORITY,
+        force: true
+      });
+      this.log("DCUtR to %p succeeded via %a, closing relayed connection", relayedConnection.remotePeer, connection.remoteAddr);
+      await relayedConnection.close(options);
+    } catch (err) {
+      this.log.error("incoming DCUtR from %p failed", relayedConnection.remotePeer, err);
+      stream.abort(err);
+    } finally {
+      await stream.close(options);
+    }
+  }
+  /**
+   * Takes the `addr` and converts it to a Multiaddr if possible
+   */
+  getDialableMultiaddrs(addrs) {
+    const output3 = [];
+    for (const addr of addrs) {
+      if (addr == null || addr.length === 0) {
+        continue;
+      }
+      try {
+        const ma = multiaddr(addr);
+        if (!isPublicAndDialable(ma, this.transportManager)) {
+          continue;
+        }
+        output3.push(ma);
+      } catch {
+      }
+    }
+    return output3;
+  }
+};
+
+// node_modules/@libp2p/dcutr/dist/src/index.js
+var multicodec = "/libp2p/dcutr";
+function dcutr(init = {}) {
+  return (components) => new DefaultDCUtRService(components, init);
+}
+__name(dcutr, "dcutr");
 export {
   Circuit,
   DNS,
@@ -56814,6 +57178,7 @@ export {
   createEd25519PeerId,
   createFromProtobuf,
   createLibp2p,
+  dcutr,
   delay_exports as delay,
   echo,
   exportToProtobuf,
