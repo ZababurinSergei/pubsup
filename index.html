@@ -1,26 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>js-libp2p browser pubsub</title>
-    <style>
-      label,
-      button {
-        display: block;
-        font-weight: bold;
-        margin: 5px 0;
-      }
-      div {
-        margin-bottom: 20px;
-      }
-      #send-section {
-        display: none;
-      }
-      input[type="text"] {
-        width: 800px;
-      }
-    </style>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>js-libp2p browser pubsub</title>
+        <style>
+            label,
+            button {
+                display: block;
+                font-weight: bold;
+                margin: 5px 0;
+            }
+
+            div {
+                margin-bottom: 20px;
+            }
+
+            #send-section {
+               display: none;
+            }
+
+            input[type="text"] {
+                width: 800px;
+            }
+        </style>
+        <script type="importmap">
+            {
+                "imports": {
+                    "helia": "./lib-helia.mjs",
+                    "@helia/unixfs": "./lib-helia-unixfs.js",
+                    "@libp2p/bootstrap": "./lib-bootstrap.js",
+                    "libp2p/circuit-relay": "./lib-circuit.js",
+                    "@libp2p/webrtc": "./lib-webrtc.js",
+                    "@libp2p/webtransport": "./lib-webtransport.js",
+                    "@libp2p/websockets": "./lib-websockets.js",
+                    "@libp2p/websockets/filters": "./lib-ws-filters.js",
+                    "@libp2p/webrtc-star": "./lib-webrtc-star.js",
+                    "@libp2p/identify": "./lib-identify.js",
+                    "multiformats/cid": "./lib-multiformats.js",
+                    "@multiformats/multiaddr": "./lib-multiaddr.js",
+                    "@libp2p/peer-id-factory":"./lib-peerId-factory.js",
+                    "@chainsafe/libp2p-noise":"./lib-npm-package.js",
+                    "@chainsafe/libp2p-yamux":"./lib-npm-package.js",
+                    "@libp2p/mplex":"./lib-npm-package.js",
+                    "@libp2p/interface-transport": "./lib-npm-package.js",
+                    "it-length-prefixed-stream": "./lib-npm-package.js",
+                    "uint8-varint": "./lib-uint8-varint.js",
+                    "it-length-prefixed-stream": "./lib-it-length-prefixed.js",
+                    "it-byte-stream": "./lib-npm-package.js",
+                    "uint8arraylist": "./lib-npm-package.js",
+                    "uint8arrays": "./lib-npm-package.js",
+                    "libp2p": "./lib-libp2p.js",
+                    "@chainsafe/libp2p-gossipsub": "./lib-npm-package.js",
+                    "it-pipe": "./lib-npm-package.js",
+                    "@libp2p/echo": "./lib-npm-package.js",
+                    "@libp2p/circuit-relay-v2": "./lib-npm-package.js",
+                    "@multiformats/multiaddr-matcher": "./lib-npm-package.js",
+                    "delay": "./lib-npm-package.js"
+                }
+            }
+        </script>
   </head>
   <body>
     <h1>libp2p Browser PubSub example</h1>
