@@ -14,11 +14,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build": "vite build",
-    "relay": "node relay.js",
     "test:firefox": "npm run build && playwright test --browser=firefox test",
-    "test:chrome": "npm run build && playwright test test",
-    "test": "npm run build && test-browser-example test"
+    "test:chrome": "npm run build && playwright test test"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^13.0.0",
