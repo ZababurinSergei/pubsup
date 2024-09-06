@@ -16,7 +16,7 @@ const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
-  // dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
+  dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
 
   subscribeTopicInput: () => document.getElementById('subscribe-topic-input'),
   subscribeTopicButton: () => document.getElementById('subscribe-topic-button'),
@@ -137,12 +137,12 @@ libp2p.addEventListener('self:peer:update', () => {
 })
 
 // dial remote peer
-// DOM.dialMultiaddrButton().onclick = async () => {
-//   const ma = multiaddr(DOM.dialMultiaddrInput().value)
-//   appendOutput(`Dialing '${ma}'`)
-//   await libp2p.dial(ma)
-//   appendOutput(`Connected to '${ma}'`)
-// }
+DOM.dialMultiaddrButton().onclick = async () => {
+  const ma = multiaddr(DOM.dialMultiaddrInput().value)
+  appendOutput(`Dialing '${ma}'`)
+  await libp2p.dial(ma)
+  appendOutput(`Connected to '${ma}'`)
+}
 
 // subscribe to pubsub topic
 DOM.subscribeTopicButton().onclick = async () => {
