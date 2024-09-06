@@ -37054,7 +37054,111 @@ async function createLibp2p(options = {}) {
   return node;
 }
 __name(createLibp2p, "createLibp2p");
+
+// node_modules/@libp2p/bootstrap/dist/src/index.js
+var DEFAULT_BOOTSTRAP_TAG_NAME = "bootstrap";
+var DEFAULT_BOOTSTRAP_TAG_VALUE = 50;
+var DEFAULT_BOOTSTRAP_TAG_TTL = 12e4;
+var DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT = 1e3;
+var Bootstrap = class extends TypedEventEmitter {
+  static {
+    __name(this, "Bootstrap");
+  }
+  static tag = "bootstrap";
+  log;
+  timer;
+  list;
+  timeout;
+  components;
+  _init;
+  constructor(components, options = { list: [] }) {
+    if (options.list == null || options.list.length === 0) {
+      throw new Error("Bootstrap requires a list of peer addresses");
+    }
+    super();
+    this.components = components;
+    this.log = components.logger.forComponent("libp2p:bootstrap");
+    this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT;
+    this.list = [];
+    for (const candidate of options.list) {
+      if (!P2P.matches(candidate)) {
+        this.log.error("Invalid multiaddr");
+        continue;
+      }
+      const ma = multiaddr(candidate);
+      const peerIdStr = ma.getPeerId();
+      if (peerIdStr == null) {
+        this.log.error("Invalid bootstrap multiaddr without peer id");
+        continue;
+      }
+      const peerData = {
+        id: peerIdFromString(peerIdStr),
+        multiaddrs: [ma]
+      };
+      this.list.push(peerData);
+    }
+    this._init = options;
+  }
+  [peerDiscoverySymbol] = this;
+  [Symbol.toStringTag] = "@libp2p/bootstrap";
+  [serviceCapabilities] = [
+    "@libp2p/peer-discovery"
+  ];
+  isStarted() {
+    return Boolean(this.timer);
+  }
+  /**
+   * Start emitting events
+   */
+  start() {
+    if (this.isStarted()) {
+      return;
+    }
+    this.log("Starting bootstrap node discovery, discovering peers after %s ms", this.timeout);
+    this.timer = setTimeout(() => {
+      void this._discoverBootstrapPeers().catch((err) => {
+        this.log.error(err);
+      });
+    }, this.timeout);
+  }
+  /**
+   * Emit each address in the list as a PeerInfo
+   */
+  async _discoverBootstrapPeers() {
+    if (this.timer == null) {
+      return;
+    }
+    for (const peerData of this.list) {
+      await this.components.peerStore.merge(peerData.id, {
+        tags: {
+          [this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME]: {
+            value: this._init.tagValue ?? DEFAULT_BOOTSTRAP_TAG_VALUE,
+            ttl: this._init.tagTTL ?? DEFAULT_BOOTSTRAP_TAG_TTL
+          }
+        }
+      });
+      if (this.timer == null) {
+        return;
+      }
+      this.safeDispatchEvent("peer", { detail: peerData });
+    }
+  }
+  /**
+   * Stop emitting events
+   */
+  stop() {
+    if (this.timer != null) {
+      clearTimeout(this.timer);
+    }
+    this.timer = void 0;
+  }
+};
+function bootstrap(init) {
+  return (components) => new Bootstrap(components, init);
+}
+__name(bootstrap, "bootstrap");
 export {
+  bootstrap,
   circuitRelayTransport,
   createLibp2p,
   dcutr,

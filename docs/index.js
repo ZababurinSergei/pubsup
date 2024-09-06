@@ -10,12 +10,13 @@ import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
+import { bootstrap } from '@libp2p/bootstrap'
 
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
-  dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
+  // dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
 
   subscribeTopicInput: () => document.getElementById('subscribe-topic-input'),
   subscribeTopicButton: () => document.getElementById('subscribe-topic-button'),
@@ -38,7 +39,7 @@ const clean = (line) => line.replaceAll('\n', '')
 const libp2p = await createLibp2p({
   addresses: {
     listen: [
-      // create listeners for incoming WebRTC connection attempts on on all
+      // create listeners for incoming WebRTC connection attempts on all
       // available Circuit Relay connections
       '/webrtc'
     ]
@@ -55,7 +56,12 @@ const libp2p = await createLibp2p({
     circuitRelayTransport({
       // make a reservation on any discovered relays - this will let other
       // peers use the relay to contact us
-      discoverRelays: 1
+      discoverRelays: 2
+    })
+  ],
+  peerDiscovery: [
+    bootstrap({
+      list: ["/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"]
     })
   ],
   // a connection encrypter is necessary to dial the relay
@@ -77,7 +83,7 @@ const libp2p = await createLibp2p({
     dcutr: dcutr()
   },
   connectionManager: {
-    minConnections: 0
+    minConnections: 1
   }
 })
 
@@ -106,10 +112,15 @@ function updatePeerList () {
   DOM.peerConnectionsList().replaceChildren(...peerList)
 }
 
+libp2p.addEventListener('peer:discovery', (evt) => {
+  console.log(`Connected to the relay ${evt.detail.id.toString()}`)
+})
+
 // update peer connections
 libp2p.addEventListener('connection:open', () => {
   updatePeerList()
 })
+
 libp2p.addEventListener('connection:close', () => {
   updatePeerList()
 })
@@ -126,12 +137,12 @@ libp2p.addEventListener('self:peer:update', () => {
 })
 
 // dial remote peer
-DOM.dialMultiaddrButton().onclick = async () => {
-  const ma = multiaddr(DOM.dialMultiaddrInput().value)
-  appendOutput(`Dialing '${ma}'`)
-  await libp2p.dial(ma)
-  appendOutput(`Connected to '${ma}'`)
-}
+// DOM.dialMultiaddrButton().onclick = async () => {
+//   const ma = multiaddr(DOM.dialMultiaddrInput().value)
+//   appendOutput(`Dialing '${ma}'`)
+//   await libp2p.dial(ma)
+//   appendOutput(`Connected to '${ma}'`)
+// }
 
 // subscribe to pubsub topic
 DOM.subscribeTopicButton().onclick = async () => {
