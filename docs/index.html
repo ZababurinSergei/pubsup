@@ -36,6 +36,7 @@
                   "@libp2p/webrtc": "./lib-pubsub.js",
                   "@libp2p/websockets": "./lib-pubsub.js",
                   "@libp2p/websockets/filters": "./lib-pubsub.js",
+                  "@libp2p/kad-dht": "./lib-pubsub.js",
                   "@multiformats/multiaddr": "./lib-pubsub.js",
                   "uint8arrays": "./lib-pubsub.js",
                   "@libp2p/bootstrap": "./lib-pubsub.js",
@@ -46,7 +47,7 @@
   </head>
   <body>
     <div>
-      <label for="relay">Dial MultiAddr</label>
+      <label for="dial-multiaddr-input">Dial MultiAddr</label>
       <input type="text" id="dial-multiaddr-input" placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/123Foo" />
       <button id="dial-multiaddr-button">Connect</button>
 
@@ -66,7 +67,7 @@
     <hr />
     <div>
       <h2>PubSub</h2>
-      <label for="topic">Subscribe to topic</label>
+      <label for="subscribe-topic-input">Subscribe to topic</label>
       <input type="text" id="subscribe-topic-input" placeholder="my-topic" />
       <button id="subscribe-topic-button">Subscribe</button>
 
@@ -75,7 +76,7 @@
         <li>None</li>
       </ul>
 
-      <label for="topic">Send Message to Topic</label>
+      <label for="send-topic-message-input">Send Message to Topic</label>
       <input type="text" id="send-topic-message-input" placeholder="hello world" disabled="disabled" />
       <button id="send-topic-message-button" disabled="disabled">Send</button>
     </div>

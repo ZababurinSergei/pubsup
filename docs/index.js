@@ -3,7 +3,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
-import { identify } from '@libp2p/identify'
+import {identify} from '@libp2p/identify'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -11,7 +11,18 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
 import { bootstrap } from '@libp2p/bootstrap'
+import { kadDHT } from '@libp2p/kad-dht'
+// import {autoNAT} from "@libp2p/autonat";
+// import {createDelegatedRoutingV1HttpApiClient} from "@helia/delegated-routing-v1-http-api-client";
+// import {ipnsValidator} from "ipns/validator";
+// import {ipnsSelector} from "ipns/selector";
+// import {keychain} from "@libp2p/keychain";
+// import {ping} from "@libp2p/ping";
+// import {uPnPNAT} from "@libp2p/upnp-nat";
 
+const isLocalhost = window.location.hostname === 'localhost'
+
+console.log('isLocalhost', isLocalhost)
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
@@ -31,6 +42,29 @@ const DOM = {
   topicPeerList: () => document.getElementById('topic-peers')
 }
 
+// const services =  services: {
+//   autoNAT: autoNAT(),
+//       dcutr: dcutr(),
+//       delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
+//       dht: kadDHT({
+//     validators: {
+//       ipns: ipnsValidator
+//     },
+//     selectors: {
+//       ipns: ipnsSelector
+//     }
+//   }),
+//       identify: identify({
+//     agentVersion
+//   }),
+//       identifyPush: identifyPush({
+//     agentVersion
+//   }),
+//       keychain: keychain(options.keychain),
+//       ping: ping(),
+//       relay: circuitRelayServer(),
+//       upnp: uPnPNAT()
+// }
 const appendOutput = (line) => {
   DOM.output().innerText += `${line}\n`
 }
@@ -61,7 +95,11 @@ const libp2p = await createLibp2p({
   ],
   peerDiscovery: [
     bootstrap({
-      list: ["/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"]
+      list: [
+          isLocalhost
+          ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+          : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+      ]
     })
   ],
   // a connection encrypter is necessary to dial the relay
@@ -69,18 +107,64 @@ const libp2p = await createLibp2p({
   // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
   connectionGater: {
-    denyDialMultiaddr: () => {
-      // by default we refuse to dial local addresses from browsers since they
-      // are usually sent by remote peers broadcasting undialable multiaddrs and
-      // cause errors to appear in the console but in this example we are
-      // explicitly connecting to a local node so allow all addresses
+    denyDialPeer: (currentPeerId) => {
+      // console.log('00000000000000 denyDialPeer 00000000000000',type, currentPeerId.toString())
       return false
+    },
+    denyDialMultiaddr: async (currentPeerId) => {
+      // console.log('111111111111 denyDialMultiaddr 111111111111',type, currentPeerId.toString())
+      return false
+    },
+    denyOutboundConnection: (currentPeerId, maConn) => {
+      // console.log('####### 1 ####### denyOutboundConnection ##############',type, currentPeerId.toString())
+      return false
+    },
+    denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
+      // console.log('####### 2 ####### denyOutboundEncryptedConnection ##############',type, currentPeerId.toString())
+      return false
+    },
+    denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
+      // console.log('####### 3 ####### denyOutboundUpgradedConnection ##############', type, currentPeerId.toString())
+      return false
+    },
+    denyInboundConnection: (maConn) => {
+      // console.log('------- 1 ------- denyInboundConnection --------------', type, maConn.remoteAddr.toString())
+      return false
+    },
+    denyInboundEncryptedConnection: (currentPeerId, maConn) => {
+      // console.log('------- 2 ------- denyInboundEncryptedConnection --------------', type, currentPeerId.toString())
+      return false
+    },
+    denyInboundUpgradedConnection: (currentPeerId, maConn) => {
+      // console.log('------- 3 ------- denyInboundUpgradedConnection --------------', type, currentPeerId.toString())
+      return false
+    },
+    filterMultiaddrForPeer: async (currentPeerId, multiaddr) => {
+        return true
     }
   },
   services: {
     identify: identify(),
     pubsub: gossipsub(),
-    dcutr: dcutr()
+    dcutr: dcutr(),
+    dht: kadDHT({
+      kBucketSize: 20,
+      kBucketSplitThreshold: `kBucketSize`,
+      prefixLength: 32,
+      clientMode: false,
+      querySelfInterval: 5000,
+      initialQuerySelfInterval: 1000,
+      allowQueryWithZeroPeers: false,
+      protocol: "/ipfs/kad/1.0.0",
+      logPrefix: "libp2p:kad-dht",
+      pingTimeout: 10000,
+      pingConcurrency: 10,
+      maxInboundStreams: 32,
+      maxOutboundStreams: 64,
+      peerInfoMapper: (peer) => {
+        console.log('!!!!!!!!!!! peerInfoMapper !!!!!!!!!!', peer)
+      }
+    })
   },
   connectionManager: {
     minConnections: 1

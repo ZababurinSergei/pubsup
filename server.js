@@ -8,30 +8,23 @@ import express from 'express';
 import http from 'http'
 
 /* eslint-disable no-console */
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
-import { identify } from '@libp2p/identify'
-import { webSockets } from '@libp2p/websockets'
-import { createLibp2p } from 'libp2p'
-import * as  peerIdLib  from '@libp2p/peer-id'
+import {noise} from '@chainsafe/libp2p-noise'
+import {yamux} from '@chainsafe/libp2p-yamux'
+import {circuitRelayServer} from '@libp2p/circuit-relay-v2'
+import {identify} from '@libp2p/identify'
+import {webSockets} from '@libp2p/websockets'
+import {createLibp2p} from 'libp2p'
+import * as  peerIdLib from '@libp2p/peer-id'
 import * as createEd25519PeerId from '@libp2p/peer-id-factory'
-import { webTransport } from '@libp2p/webtransport'
+import {webTransport} from '@libp2p/webtransport'
 import fs from "node:fs";
-import httpProxy from 'http-proxy' 
+import { kadDHT } from '@libp2p/kad-dht'
 
 let __dirname = process.cwd();
 const buffer = fs.readFileSync(__dirname + '/peerId.proto')
-const peerId =  await createEd25519PeerId.createFromProtobuf(buffer)
-// console.log(peerId222)
-// const peerId_1 = await createEd25519PeerId.createEd25519PeerId()
-// const peerId =  await createEd25519PeerId.createFromProtobuf(createEd25519PeerId.exportToProtobuf(peerId_1))
-// fs.writeFileSync(__dirname + '/peerId.proto', createEd25519PeerId.exportToProtobuf(peerId_1))
-// console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', createEd25519PeerId.exportToProtobuf(peerId_1))
-// console.log('-------------------------------',peerId)
-// console.log('=========== peerId ===============', peerId_1.toJSON())
-dotenv.config();
+const peerId = await createEd25519PeerId.createFromProtobuf(buffer)
 
+dotenv.config();
 
 const port = process.env.PORT
     ? process.env.PORT
@@ -42,44 +35,44 @@ let whitelist = []
 let app = express();
 const server = http.createServer(app);
 
-async function main () {
+async function main() {
 
-  app.use(compression());
-  app.use(express.json());
+    app.use(compression());
+    app.use(express.json());
 
-  const queue = new Enqueue({
-    concurrentWorkers: 4,
-    maxSize: 200,
-    timeout: 30000
-  });
+    const queue = new Enqueue({
+        concurrentWorkers: 4,
+        maxSize: 200,
+        timeout: 30000
+    });
 
-  app.use(await cors({credentials: true}));
-  app.use(queue.getMiddleware());
+    app.use(await cors({credentials: true}));
+    app.use(queue.getMiddleware());
 
-  let corsOptions = {
-    origin: function (origin, callback) {
-      console.log('origin', origin);
-      if (whitelist.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    }
-  };
+    let corsOptions = {
+        origin: function (origin, callback) {
+            console.log('origin', origin);
+            if (whitelist.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        }
+    };
 
-  app.use('/pubsub',express.static(path.join(__dirname, '/docs')));
-  // app.use(express.static('docs'))
+    app.use('/pubsub', express.static(path.join(__dirname, '/docs')));
+    app.use(express.static('public'))
 
-  app.get(`/env.json`, async (req, res) => {
-    res.status(200).sendFile(path.join(__dirname, 'env.json'))
-  })
+    app.get(`/env.json`, async (req, res) => {
+        res.status(200).sendFile(path.join(__dirname, 'env.json'))
+    })
 
-  app.get(`/env.mjs`, async (req, res) => {
-    res.status(200).sendFile(path.join(__dirname, 'env.mjs'))
-  })
+    app.get(`/env.mjs`, async (req, res) => {
+        res.status(200).sendFile(path.join(__dirname, 'env.mjs'))
+    })
 
-  app.get(`/*`, async (req, res) => {
-    const html = `<!DOCTYPE html>
+    app.get(`/*`, async (req, res) => {
+        const html = `<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -137,90 +130,92 @@ async function main () {
   <body>
   <div class="body">
     <br>
-    <img src="./newkind-icon-512-maskable.png" alt="org Logo" width="128">
+    <img src="/logo.png" alt="org Logo" width="128">
     <h2>This is a relay</h2>
     <div id="addr">You can add this bootstrap list with the address <p>${pathNode}</p></div>
   </div>
   </body>
 </html>
 `;
-    res.status(200).send(html);
-    // res.status(200).sendFile(path.join(__dirname, '/index.html'));
-  });
+        res.status(200).send(html);
+        // res.status(200).sendFile(path.join(__dirname, '/index.html'));
+    });
 
-  app.post(`/*`, async (req, res) => {
-    console.log('==== POST ====', req.path);
-  });
+    app.post(`/*`, async (req, res) => {
+        console.log('==== POST ====', req.path);
+    });
 
-  app.use(queue.getErrorMiddleware());
+    app.use(queue.getErrorMiddleware());
 
-  // app.listen(port, () => {
-  //   console.log('pid: ', process.pid);
-  //   console.log('listening on http://localhost:' + port);
-  // });
+    let addresses = process.env.PORT
+        ? {
+            listen: [
+                `/ip4/0.0.0.0/tcp/${port}/ws`,
+                `/ip6/::/tcp/${port}/ws`,
+                `/ip4/0.0.0.0/tcp/${port}/wss`,
+                `/ip6/::/tcp/${port}/wss`
+            ],
+            announce: [
+                `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}/tcp/${port}/wss/p2p/${peerId.toString()}`
+            ]
+        }
+        : {
+            listen: [
+                `/ip4/0.0.0.0/tcp/${port}/ws`,
+                `/ip6/::/tcp/${port}/ws`,
+                `/ip4/0.0.0.0/tcp/${port}/wss`,
+                `/ip6/::/tcp/${port}/wss`
+            ],
+            announce: [`/dns4/localhost/tcp/${port}/ws/p2p/${peerId.toString()}`]
+        }
 
-  // const webSocketServer = webSockets()
-  // console.log(webSocketServer)
+    const node = await createLibp2p({
+        peerId,
+        addresses: addresses,
+        transports: [
+            webTransport(),
+            webSockets({server})
+        ],
+        connectionEncryption: [
+            noise()
+        ],
+        streamMuxers: [
+            yamux()
+        ],
+        services: {
+            identify: identify(),
+            relay: circuitRelayServer(),
+            dht: kadDHT({
+                kBucketSize: 20,
+                kBucketSplitThreshold: `kBucketSize`,
+                prefixLength: 32,
+                clientMode: false,
+                querySelfInterval: 5000,
+                initialQuerySelfInterval: 1000,
+                allowQueryWithZeroPeers: false,
+                protocol: "/ipfs/kad/1.0.0",
+                logPrefix: "libp2p:kad-dht",
+                pingTimeout: 10000,
+                pingConcurrency: 10,
+                maxInboundStreams: 32,
+                maxOutboundStreams: 64,
+                peerInfoMapper: (peer) => {
+                    console.log('!!!!!!!!!!! peerInfoMapper !!!!!!!!!!', peer)
+                }
+            })
+        }
+    })
 
-    let adresses = process.env.PORT
-    ? {
-      listen: [
-        `/ip4/0.0.0.0/tcp/${port}/ws`,
-        `/ip6/::/tcp/${port}/ws`,
-        `/ip4/0.0.0.0/tcp/${port}/wss`,
-        `/ip6/::/tcp/${port}/wss`
-      ],
-      announce: [
-        `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}/tcp/${port}/wss/p2p/${peerId.toString()}`
-      ]
-    }
-    : {
-      listen: [`/ip4/0.0.0.0/tcp/${port}/ws`],
-      announce: [`/dns4/localhost/tcp/${port}/ws/p2p/${peerId.toString()}`]
-    }
+    console.log(`Node started with id ${node.peerId.toString()}`)
+    let pathNode = ''
 
-  const node = await createLibp2p({
-    peerId,
-    addresses: adresses,
-    transports: [
-      webTransport(),
-      webSockets({ server })
-    ],
-    connectionEncryption: [
-      noise()
-    ],
-    streamMuxers: [
-      yamux()
-    ],
-    services: {
-      identify: identify(),
-      relay: circuitRelayServer()
-    }
-  })
+    node.getMultiaddrs().forEach((ma, index) => {
+        pathNode = ma.toString()
+        console.log(`${index}::Listening on:`, pathNode)
+    })
 
-  console.log(`Node started with id ${node.peerId.toString()}`)
-  let pathNode = ''
-
-  node.getMultiaddrs().forEach((ma, index) => {
-    pathNode = ma.toString()
-    console.log(`${index}::Listening on:`, pathNode)
-  })
     console.log('pid: ', process.pid);
     console.log('listening on http://localhost:' + port);
-  // httpProxy.createServer({
-  //   target: proxtBalancer,
-  //   ws: true
-  // }).listen(port);
-
-  // app.listen(port, () => {
-  //   console.log('pid: ', process.pid);
-  //   console.log('listening on http://localhost:' + port);
-  // });
-
-  // server.listen(port, () => {
-  //   console.log('pid: ', process.pid);
-  //   console.log('listening on http://localhost:' + port);
-  // })
 }
 
 main()
