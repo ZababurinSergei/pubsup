@@ -3,7 +3,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
-import {identify} from '@libp2p/identify'
+import { identify } from '@libp2p/identify'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -11,9 +11,6 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
 
-const isLocalhost = window.location.hostname === 'localhost'
-
-console.log('isLocalhost', isLocalhost)
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
@@ -33,34 +30,10 @@ const DOM = {
   topicPeerList: () => document.getElementById('topic-peers')
 }
 
-// const services =  services: {
-//   autoNAT: autoNAT(),
-//       dcutr: dcutr(),
-//       delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
-//       dht: kadDHT({
-//     validators: {
-//       ipns: ipnsValidator
-//     },
-//     selectors: {
-//       ipns: ipnsSelector
-//     }
-//   }),
-//       identify: identify({
-//     agentVersion
-//   }),
-//       identifyPush: identifyPush({
-//     agentVersion
-//   }),
-//       keychain: keychain(options.keychain),
-//       ping: ping(),
-//       relay: circuitRelayServer(),
-//       upnp: uPnPNAT()
-// }
 const appendOutput = (line) => {
   DOM.output().innerText += `${line}\n`
 }
 const clean = (line) => line.replaceAll('\n', '')
-
 
 const libp2p = await createLibp2p({
   addresses: {
@@ -82,7 +55,7 @@ const libp2p = await createLibp2p({
     circuitRelayTransport({
       // make a reservation on any discovered relays - this will let other
       // peers use the relay to contact us
-      discoverRelays: 5
+      discoverRelays: 1
     })
   ],
   // a connection encrypter is necessary to dial the relay
@@ -133,15 +106,10 @@ function updatePeerList () {
   DOM.peerConnectionsList().replaceChildren(...peerList)
 }
 
-libp2p.addEventListener('peer:discovery', (evt) => {
-  console.log(`Connected to the relay ${evt.detail.id.toString()}`)
-})
-
 // update peer connections
 libp2p.addEventListener('connection:open', () => {
   updatePeerList()
 })
-
 libp2p.addEventListener('connection:close', () => {
   updatePeerList()
 })
@@ -159,9 +127,8 @@ libp2p.addEventListener('self:peer:update', () => {
 
 // dial remote peer
 DOM.dialMultiaddrButton().onclick = async () => {
-  const ma = multiaddr(DOM.dialMultiaddrInput().value.trim())
+  const ma = multiaddr(DOM.dialMultiaddrInput().value)
   appendOutput(`Dialing '${ma}'`)
-  debugger
   await libp2p.dial(ma)
   appendOutput(`Connected to '${ma}'`)
 }

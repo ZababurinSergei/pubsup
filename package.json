@@ -14,6 +14,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server.js",
+    "build": "vite build",
     "test:firefox": "npm run build && playwright test --browser=firefox test",
     "test:chrome": "npm run build && playwright test test"
   },
