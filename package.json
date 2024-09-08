@@ -13,7 +13,7 @@
   },
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "test:firefox": "npm run build && playwright test --browser=firefox test",
     "test:chrome": "npm run build && playwright test test"
   },

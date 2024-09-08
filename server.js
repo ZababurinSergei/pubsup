@@ -8,23 +8,30 @@ import express from 'express';
 import http from 'http'
 
 /* eslint-disable no-console */
-import {noise} from '@chainsafe/libp2p-noise'
-import {yamux} from '@chainsafe/libp2p-yamux'
-import {circuitRelayServer} from '@libp2p/circuit-relay-v2'
-import {identify} from '@libp2p/identify'
-import {webSockets} from '@libp2p/websockets'
-import {createLibp2p} from 'libp2p'
-import * as  peerIdLib from '@libp2p/peer-id'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
+import { identify } from '@libp2p/identify'
+import { webSockets } from '@libp2p/websockets'
+import { createLibp2p } from 'libp2p'
+import * as  peerIdLib  from '@libp2p/peer-id'
 import * as createEd25519PeerId from '@libp2p/peer-id-factory'
-import {webTransport} from '@libp2p/webtransport'
+import { webTransport } from '@libp2p/webtransport'
 import fs from "node:fs";
 import { kadDHT } from '@libp2p/kad-dht'
 
 let __dirname = process.cwd();
 const buffer = fs.readFileSync(__dirname + '/peerId.proto')
-const peerId = await createEd25519PeerId.createFromProtobuf(buffer)
-
+const peerId =  await createEd25519PeerId.createFromProtobuf(buffer)
+// console.log(peerId222)
+// const peerId_1 = await createEd25519PeerId.createEd25519PeerId()
+// const peerId =  await createEd25519PeerId.createFromProtobuf(createEd25519PeerId.exportToProtobuf(peerId_1))
+// fs.writeFileSync(__dirname + '/peerId.proto', createEd25519PeerId.exportToProtobuf(peerId_1))
+// console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', createEd25519PeerId.exportToProtobuf(peerId_1))
+// console.log('-------------------------------',peerId)
+// console.log('=========== peerId ===============', peerId_1.toJSON())
 dotenv.config();
+
 
 const port = process.env.PORT
     ? process.env.PORT
@@ -35,7 +42,7 @@ let whitelist = []
 let app = express();
 const server = http.createServer(app);
 
-async function main() {
+async function main () {
 
     app.use(compression());
     app.use(express.json());
@@ -61,7 +68,7 @@ async function main() {
     };
 
     app.use('/pubsub', express.static(path.join(__dirname, '/docs')));
-    app.use(express.static('public'))
+    app.use('/assets', express.static(path.join(__dirname, '/public')));
 
     app.get(`/env.json`, async (req, res) => {
         res.status(200).sendFile(path.join(__dirname, 'env.json'))
@@ -130,9 +137,21 @@ async function main() {
   <body>
   <div class="body">
     <br>
-    <img src="/logo.png" alt="org Logo" width="128">
+    <img src="./assets/logo.png" alt="org Logo" width="128">
     <h2>This is a relay</h2>
-    <div id="addr">You can add this bootstrap list with the address <p>${pathNode}</p></div>
+    <div id="addr">You can add this bootstrap list with the address <p
+    onclick="(function(self) {      
+        if ('clipboard' in navigator) {
+            navigator.clipboard.writeText(self.textContent)
+            .then(() => {
+              console.log('Text copied');
+            })
+            .catch((err) => console.error(err.name, err.message));
+        } else {
+         
+        }
+    })(this)"
+    >${pathNode}</p></div>
   </div>
   </body>
 </html>
@@ -147,7 +166,15 @@ async function main() {
 
     app.use(queue.getErrorMiddleware());
 
-    let addresses = process.env.PORT
+    // app.listen(port, () => {
+    //   console.log('pid: ', process.pid);
+    //   console.log('listening on http://localhost:' + port);
+    // });
+
+    // const webSocketServer = webSockets()
+    // console.log(webSocketServer)
+
+    let adresses = process.env.PORT
         ? {
             listen: [
                 `/ip4/0.0.0.0/tcp/${port}/ws`,
@@ -161,20 +188,17 @@ async function main() {
         }
         : {
             listen: [
-                `/ip4/0.0.0.0/tcp/${port}/ws`,
-                `/ip6/::/tcp/${port}/ws`,
-                `/ip4/0.0.0.0/tcp/${port}/wss`,
-                `/ip6/::/tcp/${port}/wss`
+                `/ip4/0.0.0.0/tcp/${port}/ws`
             ],
             announce: [`/dns4/localhost/tcp/${port}/ws/p2p/${peerId.toString()}`]
         }
 
     const node = await createLibp2p({
         peerId,
-        addresses: addresses,
+        addresses: adresses,
         transports: [
             webTransport(),
-            webSockets({server})
+            webSockets({ server })
         ],
         connectionEncryption: [
             noise()
@@ -216,6 +240,20 @@ async function main() {
 
     console.log('pid: ', process.pid);
     console.log('listening on http://localhost:' + port);
+    // httpProxy.createServer({
+    //   target: proxtBalancer,
+    //   ws: true
+    // }).listen(port);
+
+    // app.listen(port, () => {
+    //   console.log('pid: ', process.pid);
+    //   console.log('listening on http://localhost:' + port);
+    // });
+
+    // server.listen(port, () => {
+    //   console.log('pid: ', process.pid);
+    //   console.log('listening on http://localhost:' + port);
+    // })
 }
 
 main()
