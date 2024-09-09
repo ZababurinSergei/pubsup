@@ -67,8 +67,8 @@ async function main () {
         }
     };
 
-    app.use('/pubsub', express.static(path.join(__dirname, '/dist')));
-    app.use('/assets', express.static(path.join(__dirname, '/dist/assets')));
+    app.use('/pubsub', express.static(path.join(__dirname, '/docs')));
+    // app.use('/assets', express.static(path.join(__dirname, '/dist/assets')));
     app.use('/assets', express.static(path.join(__dirname, '/public')));
 
     app.get(`/env.json`, async (req, res) => {
