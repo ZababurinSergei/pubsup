@@ -4,7 +4,7 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { identify, identifyPush } from '@libp2p/identify'
-import { webRTC } from '@libp2p/webrtc'
+import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -113,12 +113,12 @@ const libp2p = await createLibp2p({
   PersistentPeerStore,
   addresses: {
     listen: [
-      // create listeners for incoming WebRTC connection attempts on all
-      // available Circuit Relay connections
+      '/webrtc-direct',
       '/webrtc'
     ]
   },
   transports: [
+    webRTCDirect(),
     // the WebSocket transport lets us dial a local relay
     webSockets({
       // this allows non-secure WebSocket connections for purposes of the demo
@@ -187,7 +187,7 @@ const libp2p = await createLibp2p({
       clientMode: false,
       querySelfInterval: 5000,
       initialQuerySelfInterval: 1000,
-      allowQueryWithZeroPeers: true,
+      allowQueryWithZeroPeers: false,
       // protocol: '/ipfs/lan/kad/1.0.0',
       protocol: "/universe/kad/1.0.0",
       logPrefix: "libp2p:kad-dht",
@@ -224,7 +224,7 @@ function updatePeerList () {
             : connection[0]
 
         // console.log('------- Connections ------------', conn.multiplexer, conn.remoteAddr.toString().split(conn.multiplexer))
-        addr.textContent = connection
+        addr.textContent = conn.remoteAddr.toString()
 
         addrList.appendChild(addr)
       }
@@ -242,12 +242,12 @@ libp2p.addEventListener('peer:discovery', (evt) => {
 
 // update peer connections
 libp2p.addEventListener('connection:open', (event) => {
-  console.log('connection:open', event.detail)
+  console.log('connection:open', event.detail.remoteAddr.toString())
   updatePeerList()
 })
 
 libp2p.addEventListener('connection:close', (event) => {
-  console.log('connection:close', event.detail)
+  console.log('connection:close', event.detail.remoteAddr.toString())
   updatePeerList()
 })
 

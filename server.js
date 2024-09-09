@@ -41,7 +41,6 @@ let app = express();
 const server = http.createServer(app);
 
 async function main () {
-
     app.use(compression());
     app.use(express.json());
 
@@ -77,7 +76,7 @@ async function main () {
         res.status(200).sendFile(path.join(__dirname, 'env.mjs'))
     })
 
-    app.get(`/*`, async (req, res) => {
+    app.get(`/`, async (req, res) => {
         const html = `<!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -137,21 +136,74 @@ async function main () {
   <div class="body">
     <br>
     <img src="./assets/logo.png" alt="org Logo" width="128">
-    <h2>This is a relay</h2>
-    <div id="addr">You can add this bootstrap list with the address <p
-    onclick="(function(self) {
-        if ('clipboard' in navigator) {
-            navigator.clipboard.writeText(self.textContent)
-            .then(() => {
-              console.log('Text copied');
-            })
-            .catch((err) => console.error(err.name, err.message));
-        } else {
-         
-        }
-    })(this)"
-    >${pathNode}</p></div>
+    <h2>Relay</h2>
+    <div id="addr">
+        You can add this bootstrap list with the address 
+        <p
+            onclick="(function(self) {
+                if ('clipboard' in navigator) {
+                    navigator.clipboard.writeText(self.textContent)
+                    .then(() => {
+                      console.log('Text copied');
+                    })
+                    .catch((err) => console.error(err.name, err.message));
+                } else {
+                 
+                }
+            })(this)"
+        >
+            ${pathNode}
+        </p>
+    </div>
+    <div class="container">
+        <div class="peers">
+            <button class="get-peers"> get peers</button>
+            <ul>
+            
+            </ul>
+        </div>
+    </div>
   </div>
+    <script type="module">
+     let mount = true;
+        let events;
+        let timer;
+        let createEvents = () => {
+            // Закрываем соединение если открыто
+            if(events){
+                events.close();
+            }
+            // Устанавливаем SSE соединение
+            events = new EventSource('/events');
+            events.onmessage = (event) => {
+                console.log('event: ', JSON.parse(event.data))
+                // Если компонент смонтирован, устанавливаем
+                // полученными данными состояние списка
+                // if(mount){
+                //     let parsedData = JSON.parse(event.data);
+                //     setTasks(parsedData);
+                // }
+            };
+            
+            // clearTimeout(timer)
+            // Если возникает ошибка - ждём секунду и
+            // снова вызываем функцию подключения
+            events.onerror = (err) => {
+                console.log('error', err)
+                // timer = setTimeout(() => {
+                //     createEvents();
+                // }, 1000);
+            };
+        };
+        
+        createEvents();
+        const peers = document.querySelector('.get-peers')
+        peers.addEventListener('click', async () => {
+           let data =  await fetch('/peers')
+           data = await data.json()
+           console.log('peers: ', data)
+        })
+    </script>
   </body>
 </html>
 `;
@@ -213,7 +265,7 @@ async function main () {
                 clientMode: false,
                 querySelfInterval: 5000,
                 initialQuerySelfInterval: 1000,
-                allowQueryWithZeroPeers: true,
+                allowQueryWithZeroPeers: false,
                 protocol: "/universe/kad/1.0.0",
                 logPrefix: "libp2p:kad-dht",
                 pingTimeout: 10000,
@@ -224,7 +276,8 @@ async function main () {
             })
         }
     })
-
+    // node.services.dht.setMode('server')
+    // console.log('-------------------', node.services.dht.setMode() )
     console.log(`Node started with id ${node.peerId.toString()}`)
     let pathNode = ''
 
@@ -235,6 +288,111 @@ async function main () {
 
     console.log('pid: ', process.pid);
     console.log('listening on http://localhost:' + port);
+
+
+
+
+    let clients = [];
+    let todoState = [];
+
+    app.get('/state', (req, res) => {
+        res.json(todoState);
+    });
+
+    app.get('/events', (req, res) => {
+        const headers = {
+            'Content-Type': 'text/event-stream',
+            'Access-Control-Allow-Origin': '*',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache'
+        };
+
+        res.writeHead(200, headers);
+
+        const sendData = `data: ${JSON.stringify({
+            peerId: peerId.toString()
+        })}\n\n`;
+
+        res.write(sendData);
+        res.flush();
+
+        const clientId = genUniqId();
+
+        const newClient = {
+            id: clientId,
+            res,
+        };
+
+        clients.push(newClient);
+
+        console.log(`${clientId} - Connection opened`);
+
+        req.on('close', () => {
+            console.log(`${clientId} - Connection closed`);
+            clients = clients.filter(client => client.id !== clientId);
+        });
+    });
+
+    function genUniqId(){
+        return Date.now() + '-' + Math.floor(Math.random() * 1000000000);
+    }
+
+    function sendToAllUsers() {
+        for(let i=0; i<clients.length; i++){
+            clients[i].res.write(`data: ${JSON.stringify(todoState)}\n\n`);
+            clients[i].res.flush();
+        }
+    }
+
+    app.get('/clients', (req, res) => {
+        res.json(clients.map((client) => client.id));
+    });
+
+    app.get('/peers', (req, res) => {
+        let peers = []
+        for(let item of node.getPeers()) {
+            peers.push(item.toString())
+        }
+
+        res.json({status: true, peers: peers});
+    });
+
+    app.post('/add-task', (req, res) => {
+        const addedText = req.body.text;
+        todoState = [
+            { id: genUniqId(), text: addedText, checked: false },
+            ...todoState
+        ];
+        res.json(null);
+        sendToAllUsers();
+    });
+
+    app.post('/check-task', (req, res) => {
+        const id = req.body.id;
+        const checked = req.body.checked;
+
+        todoState = todoState.map((item) => {
+            if(item.id === id){
+                return { ...item, checked };
+            }
+            else{
+                return item;
+            }
+        });
+        res.json(null);
+        sendToAllUsers();
+    });
+
+    app.post('/del-task', (req, res) => {
+        const id = req.body.id;
+        todoState = todoState.filter((item) => {
+            return item.id !== id;
+        });
+
+        res.json(null);
+        sendToAllUsers();
+    });
+
 }
 
 main()

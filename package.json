@@ -13,7 +13,7 @@
   },
   "type": "module",
   "scripts": {
-    "start": "node server.js",
+    "start": "nodemon server.js",
     "build:pubsub": "esbuild ./src/dep-pubsub.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-pubsub.js",
     "build:libp2p": "esbuild ./src/dep-libp2p.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-libp2p.js",
     "build:filter": "esbuild ./src/dep-filters.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-filters.js",

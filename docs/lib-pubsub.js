@@ -2700,6 +2700,15 @@ __export(identity_exports2, {
   identity: () => identity2
 });
 
+// node_modules/multiformats/dist/src/hashes/digest.js
+var digest_exports = {};
+__export(digest_exports, {
+  Digest: () => Digest,
+  create: () => create,
+  decode: () => decode5,
+  equals: () => equals2
+});
+
 // node_modules/multiformats/dist/src/vendor/varint.js
 var encode_1 = encode3;
 var MSB = 128;
@@ -22898,6 +22907,15 @@ var DNS_CODES = [
   getProtocol("dns6").code,
   getProtocol("dnsaddr").code
 ];
+var NoAvailableResolverError = class extends Error {
+  static {
+    __name(this, "NoAvailableResolverError");
+  }
+  constructor(message2 = "No available resolver") {
+    super(message2);
+    this.name = "NoAvailableResolverError";
+  }
+};
 var Multiaddr = class _Multiaddr {
   static {
     __name(this, "Multiaddr");
@@ -23054,7 +23072,7 @@ var Multiaddr = class _Multiaddr {
     }
     const resolver = resolvers.get(resolvableProto.name);
     if (resolver == null) {
-      throw new CodeError(`no available resolver for ${resolvableProto.name}`, "ERR_NO_AVAILABLE_RESOLVER");
+      throw new NoAvailableResolverError(`no available resolver for ${resolvableProto.name}`);
     }
     const result = await resolver(this, options);
     return result.map((str) => multiaddr(str));
@@ -27268,6 +27286,93 @@ var codes3;
   codes6["ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS"] = "ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS";
   codes6["ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS"] = "ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS";
 })(codes3 || (codes3 = {}));
+var WebRTCTransportError = class extends CodeError {
+  static {
+    __name(this, "WebRTCTransportError");
+  }
+  constructor(msg, code2) {
+    super(`WebRTC transport error: ${msg}`, code2 ?? "");
+    this.name = "WebRTCTransportError";
+  }
+};
+var DataChannelError = class extends WebRTCTransportError {
+  static {
+    __name(this, "DataChannelError");
+  }
+  constructor(streamLabel, msg) {
+    super(`[stream: ${streamLabel}] data channel error: ${msg}`, codes3.ERR_DATA_CHANNEL);
+    this.name = "WebRTC/DataChannelError";
+  }
+};
+function dataChannelError(streamLabel, msg) {
+  return new DataChannelError(streamLabel, msg);
+}
+__name(dataChannelError, "dataChannelError");
+var InappropriateMultiaddrError = class extends WebRTCTransportError {
+  static {
+    __name(this, "InappropriateMultiaddrError");
+  }
+  constructor(msg) {
+    super(`There was a problem with the Multiaddr which was passed in: ${msg}`, codes3.ERR_INVALID_MULTIADDR);
+    this.name = "WebRTC/InappropriateMultiaddrError";
+  }
+};
+function inappropriateMultiaddr(msg) {
+  return new InappropriateMultiaddrError(msg);
+}
+__name(inappropriateMultiaddr, "inappropriateMultiaddr");
+var InvalidArgumentError = class extends WebRTCTransportError {
+  static {
+    __name(this, "InvalidArgumentError");
+  }
+  constructor(msg) {
+    super(`There was a problem with a provided argument: ${msg}`, codes3.ERR_INVALID_PARAMETERS);
+    this.name = "WebRTC/InvalidArgumentError";
+  }
+};
+function invalidArgument(msg) {
+  return new InvalidArgumentError(msg);
+}
+__name(invalidArgument, "invalidArgument");
+var InvalidFingerprintError = class extends WebRTCTransportError {
+  static {
+    __name(this, "InvalidFingerprintError");
+  }
+  constructor(fingerprint, source) {
+    super(`Invalid fingerprint "${fingerprint}" within ${source}`, codes3.ERR_INVALID_FINGERPRINT);
+    this.name = "WebRTC/InvalidFingerprintError";
+  }
+};
+function invalidFingerprint(fingerprint, source) {
+  return new InvalidFingerprintError(fingerprint, source);
+}
+__name(invalidFingerprint, "invalidFingerprint");
+var UnimplementedError = class extends WebRTCTransportError {
+  static {
+    __name(this, "UnimplementedError");
+  }
+  constructor(methodName) {
+    super(`A method (${methodName}) was called though it has been intentionally left unimplemented.`, codes3.ERR_NOT_IMPLEMENTED);
+    this.name = "WebRTC/UnimplementedError";
+  }
+};
+function unimplemented(methodName) {
+  return new UnimplementedError(methodName);
+}
+__name(unimplemented, "unimplemented");
+var UnsupportedHashAlgorithmError = class extends WebRTCTransportError {
+  static {
+    __name(this, "UnsupportedHashAlgorithmError");
+  }
+  constructor(algo) {
+    super(`unsupported hash algorithm code: ${algo} please see the codes at https://github.com/multiformats/multicodec/blob/master/table.csv `, codes3.ERR_HASH_NOT_SUPPORTED);
+    this.name = "WebRTC/UnsupportedHashAlgorithmError";
+  }
+};
+function unsupportedHashAlgorithmCode(code2) {
+  return new UnsupportedHashAlgorithmError(code2);
+}
+__name(unsupportedHashAlgorithmCode, "unsupportedHashAlgorithmCode");
 
 // node_modules/detect-browser/es/index.js
 var __spreadArray = function(to, from3, pack) {
@@ -28815,7 +28920,314 @@ function splitAddr(ma) {
 }
 __name(splitAddr, "splitAddr");
 
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/sdp.js
+var mbdecoder = Object.values(bases).map((b) => b.decoder).reduce((d2, b) => d2.or(b));
+function getLocalFingerprint(pc, options) {
+  const localCert = pc.getConfiguration().certificates?.at(0);
+  if (localCert?.getFingerprints == null) {
+    options.log.trace("fetching fingerprint from local SDP");
+    const localDescription = pc.localDescription;
+    if (localDescription == null) {
+      return void 0;
+    }
+    return getFingerprintFromSdp(localDescription.sdp);
+  }
+  options.log.trace("fetching fingerprint from local certificate");
+  if (localCert.getFingerprints().length === 0) {
+    return void 0;
+  }
+  const fingerprint = localCert.getFingerprints()[0].value;
+  if (fingerprint == null) {
+    throw invalidFingerprint("", "no fingerprint on local certificate");
+  }
+  return fingerprint;
+}
+__name(getLocalFingerprint, "getLocalFingerprint");
+var fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m;
+function getFingerprintFromSdp(sdp) {
+  const searchResult = sdp.match(fingerprintRegex);
+  return searchResult?.groups?.fingerprint;
+}
+__name(getFingerprintFromSdp, "getFingerprintFromSdp");
+function ipv(ma) {
+  for (const proto of ma.protoNames()) {
+    if (proto.startsWith("ip")) {
+      return proto.toUpperCase();
+    }
+  }
+  return "IP6";
+}
+__name(ipv, "ipv");
+function certhash2(ma) {
+  const tups = ma.stringTuples();
+  const certhash3 = tups.filter((tup) => tup[0] === CERTHASH_CODE).map((tup) => tup[1])[0];
+  if (certhash3 === void 0 || certhash3 === "") {
+    throw inappropriateMultiaddr(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`);
+  }
+  return certhash3;
+}
+__name(certhash2, "certhash");
+function decodeCerthash(certhash3) {
+  return digest_exports.decode(mbdecoder.decode(certhash3));
+}
+__name(decodeCerthash, "decodeCerthash");
+function ma2Fingerprint(ma) {
+  const mhdecoded = decodeCerthash(certhash2(ma));
+  const prefix = toSupportedHashFunction(mhdecoded.code);
+  const fingerprint = mhdecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+  const sdp = fingerprint.match(/.{1,2}/g);
+  if (sdp == null) {
+    throw invalidFingerprint(fingerprint, ma.toString());
+  }
+  return [`${prefix} ${sdp.join(":").toUpperCase()}`, fingerprint];
+}
+__name(ma2Fingerprint, "ma2Fingerprint");
+function toSupportedHashFunction(code2) {
+  switch (code2) {
+    case 17:
+      return "SHA-1";
+    case 18:
+      return "SHA-256";
+    case 19:
+      return "SHA-512";
+    default:
+      throw unsupportedHashAlgorithmCode(code2);
+  }
+}
+__name(toSupportedHashFunction, "toSupportedHashFunction");
+function ma2sdp(ma, ufrag) {
+  const { host, port } = ma.toOptions();
+  const ipVersion = ipv(ma);
+  const [CERTFP] = ma2Fingerprint(ma);
+  return `v=0
+o=- 0 0 IN ${ipVersion} ${host}
+s=-
+c=IN ${ipVersion} ${host}
+t=0 0
+a=ice-lite
+m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
+a=mid:0
+a=setup:passive
+a=ice-ufrag:${ufrag}
+a=ice-pwd:${ufrag}
+a=fingerprint:${CERTFP}
+a=sctp-port:5000
+a=max-message-size:${MAX_MESSAGE_SIZE}
+a=candidate:1467250027 1 UDP 1467250027 ${host} ${port} typ host\r
+`;
+}
+__name(ma2sdp, "ma2sdp");
+function fromMultiAddr(ma, ufrag) {
+  return {
+    type: "answer",
+    sdp: ma2sdp(ma, ufrag)
+  };
+}
+__name(fromMultiAddr, "fromMultiAddr");
+function munge(desc, ufrag) {
+  if (desc.sdp === void 0) {
+    throw invalidArgument("Can't munge a missing SDP");
+  }
+  desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, "\na=ice-ufrag:" + ufrag + "\n").replace(/\na=ice-pwd:[^\n]*\n/, "\na=ice-pwd:" + ufrag + "\n");
+  return desc;
+}
+__name(munge, "munge");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/util.js
+var charset = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+var genUfrag = /* @__PURE__ */ __name((len) => [...Array(len)].map(() => charset.at(Math.floor(Math.random() * charset.length))).join(""), "genUfrag");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/transport.js
+var HANDSHAKE_TIMEOUT_MS = 1e4;
+var WEBRTC_CODE = getProtocol("webrtc-direct").code;
+var CERTHASH_CODE = getProtocol("certhash").code;
+var WebRTCDirectTransport = class {
+  static {
+    __name(this, "WebRTCDirectTransport");
+  }
+  log;
+  metrics;
+  components;
+  init;
+  constructor(components, init = {}) {
+    this.log = components.logger.forComponent("libp2p:webrtc-direct");
+    this.components = components;
+    this.init = init;
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup("libp2p_webrtc-direct_dialer_events_total", {
+          label: "event",
+          help: "Total count of WebRTC-direct dial events by type"
+        })
+      };
+    }
+  }
+  [transportSymbol] = true;
+  [Symbol.toStringTag] = "@libp2p/webrtc-direct";
+  [serviceCapabilities] = [
+    "@libp2p/transport"
+  ];
+  /**
+   * Dial a given multiaddr
+   */
+  async dial(ma, options) {
+    const rawConn = await this._connect(ma, options);
+    this.log("dialing address: %a", ma);
+    return rawConn;
+  }
+  /**
+   * Create transport listeners no supported by browsers
+   */
+  createListener(options) {
+    throw unimplemented("WebRTCTransport.createListener");
+  }
+  /**
+   * Filter check for all Multiaddrs that this transport can listen on
+   */
+  listenFilter(multiaddrs) {
+    return multiaddrs.filter(WebRTCDirect2.exactMatch);
+  }
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter(multiaddrs) {
+    return this.listenFilter(multiaddrs);
+  }
+  /**
+   * Connect to a peer using a multiaddr
+   */
+  async _connect(ma, options) {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const remotePeerString = ma.getPeerId();
+    if (remotePeerString === null) {
+      throw inappropriateMultiaddr("we need to have the remote's PeerId");
+    }
+    const theirPeerId = peerIdFromString(remotePeerString);
+    const remoteCerthash = decodeCerthash(certhash2(ma));
+    const certificate = await RTCPeerConnection.generateCertificate({
+      name: "ECDSA",
+      namedCurve: "P-256",
+      hash: toSupportedHashFunction(remoteCerthash.code)
+    });
+    const peerConnection = new RTCPeerConnection({
+      ...await getRtcConfiguration(this.init.rtcConfiguration),
+      certificates: [certificate]
+    });
+    try {
+      const dataChannelOpenPromise = new Promise((resolve, reject) => {
+        const handshakeDataChannel2 = peerConnection.createDataChannel("", { negotiated: true, id: 0 });
+        const handshakeTimeout = setTimeout(() => {
+          const error = `Data channel was never opened: state: ${handshakeDataChannel2.readyState}`;
+          this.log.error(error);
+          this.metrics?.dialerEvents.increment({ open_error: true });
+          reject(dataChannelError("data", error));
+        }, HANDSHAKE_TIMEOUT_MS);
+        handshakeDataChannel2.onopen = (_) => {
+          clearTimeout(handshakeTimeout);
+          resolve(handshakeDataChannel2);
+        };
+        handshakeDataChannel2.onerror = (event) => {
+          clearTimeout(handshakeTimeout);
+          const errorTarget = event.target?.toString() ?? "not specified";
+          const error = `Error opening a data channel for handshaking: ${errorTarget}`;
+          this.log.error(error);
+          this.metrics?.dialerEvents.increment({ unknown_error: true });
+          reject(dataChannelError("data", error));
+        };
+      });
+      const ufrag = "libp2p+webrtc+v1/" + genUfrag(32);
+      const offerSdp = await peerConnection.createOffer();
+      const mungedOfferSdp = munge(offerSdp, ufrag);
+      await peerConnection.setLocalDescription(mungedOfferSdp);
+      const answerSdp = fromMultiAddr(ma, ufrag);
+      await peerConnection.setRemoteDescription(answerSdp);
+      const handshakeDataChannel = await dataChannelOpenPromise;
+      const myPeerId = this.components.peerId;
+      const fingerprintsPrologue = this.generateNoisePrologue(peerConnection, remoteCerthash.code, ma);
+      const connectionEncrypter = noise({ prologueBytes: fingerprintsPrologue })(this.components);
+      const wrappedChannel = createStream({
+        channel: handshakeDataChannel,
+        direction: "inbound",
+        logger: this.components.logger,
+        ...this.init.dataChannel ?? {}
+      });
+      const wrappedDuplex = {
+        ...wrappedChannel,
+        sink: wrappedChannel.sink.bind(wrappedChannel),
+        source: async function* () {
+          for await (const list of wrappedChannel.source) {
+            for (const buf of list) {
+              yield buf;
+            }
+          }
+        }()
+      };
+      const maConn = new WebRTCMultiaddrConnection(this.components, {
+        peerConnection,
+        remoteAddr: ma,
+        timeline: {
+          open: Date.now()
+        },
+        metrics: this.metrics?.dialerEvents
+      });
+      const eventListeningName = isFirefox ? "iceconnectionstatechange" : "connectionstatechange";
+      peerConnection.addEventListener(eventListeningName, () => {
+        switch (peerConnection.connectionState) {
+          case "failed":
+          case "disconnected":
+          case "closed":
+            maConn.close().catch((err) => {
+              this.log.error("error closing connection", err);
+            }).finally(() => {
+              controller.abort();
+            });
+            break;
+          default:
+            break;
+        }
+      }, { signal });
+      this.metrics?.dialerEvents.increment({ peer_connection: true });
+      const muxerFactory = new DataChannelMuxerFactory(this.components, {
+        peerConnection,
+        metrics: this.metrics?.dialerEvents,
+        dataChannelOptions: this.init.dataChannel
+      });
+      await connectionEncrypter.secureInbound(myPeerId, wrappedDuplex, theirPeerId);
+      return await options.upgrader.upgradeOutbound(maConn, { skipProtection: true, skipEncryption: true, muxerFactory });
+    } catch (err) {
+      peerConnection.close();
+      throw err;
+    }
+  }
+  /**
+   * Generate a noise prologue from the peer connection's certificate.
+   * noise prologue = bytes('libp2p-webrtc-noise:') + noise-responder fingerprint + noise-initiator fingerprint
+   */
+  generateNoisePrologue(pc, hashCode, ma) {
+    if (pc.getConfiguration().certificates?.length === 0) {
+      throw invalidArgument("no local certificate");
+    }
+    const localFingerprint = getLocalFingerprint(pc, {
+      log: this.log
+    });
+    if (localFingerprint == null) {
+      throw invalidArgument("no local fingerprint found");
+    }
+    const localFpString = localFingerprint.trim().toLowerCase().replaceAll(":", "");
+    const localFpArray = fromString2(localFpString, "hex");
+    const local = create(hashCode, localFpArray);
+    const remote = mbdecoder.decode(certhash2(ma));
+    const prefix = fromString2("libp2p-webrtc-noise:");
+    return concat([prefix, local.bytes, remote]);
+  }
+};
+
 // node_modules/@libp2p/webrtc/dist/src/index.js
+function webRTCDirect(init) {
+  return (components) => new WebRTCDirectTransport(components, init);
+}
+__name(webRTCDirect, "webRTCDirect");
 function webRTC(init) {
   return (components) => new WebRTCTransport(components, init);
 }
@@ -32705,10 +33117,19 @@ __name(dns, "dns");
 // node_modules/@multiformats/multiaddr/dist/src/resolvers/dnsaddr.js
 var MAX_RECURSIVE_DEPTH = 32;
 var { code: dnsaddrCode } = getProtocol("dnsaddr");
+var RecursionLimitError = class extends Error {
+  static {
+    __name(this, "RecursionLimitError");
+  }
+  constructor(message2 = "Max recursive depth reached") {
+    super(message2);
+    this.name = "RecursionLimitError";
+  }
+};
 var dnsaddrResolver = /* @__PURE__ */ __name(async function dnsaddrResolver2(ma, options = {}) {
   const recursionLimit = options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH;
   if (recursionLimit === 0) {
-    throw new CodeError("Max recursive depth reached", "ERR_MAX_RECURSIVE_DEPTH_REACHED");
+    throw new RecursionLimitError("Max recursive depth reached");
   }
   const [, hostname] = ma.stringTuples().find(([proto]) => proto === dnsaddrCode) ?? [];
   const resolver = options?.dns ?? dns();
@@ -57114,6 +57535,7 @@ export {
   removePublicAddressesMapper,
   toString2 as toString,
   webRTC,
+  webRTCDirect,
   webSockets,
   yamux
 };
