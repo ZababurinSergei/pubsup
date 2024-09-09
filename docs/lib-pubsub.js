@@ -20914,7 +20914,7 @@ __name(getSignaturePayload, "getSignaturePayload");
 
 // node_modules/@chainsafe/libp2p-noise/dist/src/performHandshake.js
 async function performHandshakeInitiator(init, options) {
-  const { log: log3, connection, crypto: crypto3, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log4, connection, crypto: crypto3, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto3,
@@ -20923,24 +20923,24 @@ async function performHandshakeInitiator(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log3);
-  log3.trace("Stage 0 - Initiator starting to send first message.");
+  logLocalStaticKeys(xx.s, log4);
+  log4.trace("Stage 0 - Initiator starting to send first message.");
   await connection.write(xx.writeMessageA(ZEROLEN), options);
-  log3.trace("Stage 0 - Initiator finished sending first message.");
-  logLocalEphemeralKeys(xx.e, log3);
-  log3.trace("Stage 1 - Initiator waiting to receive first message from responder...");
+  log4.trace("Stage 0 - Initiator finished sending first message.");
+  logLocalEphemeralKeys(xx.e, log4);
+  log4.trace("Stage 1 - Initiator waiting to receive first message from responder...");
   const plaintext = xx.readMessageB(await connection.read(options));
-  log3.trace("Stage 1 - Initiator received the message.");
-  logRemoteEphemeralKey(xx.re, log3);
-  logRemoteStaticKey(xx.rs, log3);
-  log3.trace("Initiator going to check remote's signature...");
+  log4.trace("Stage 1 - Initiator received the message.");
+  logRemoteEphemeralKey(xx.re, log4);
+  logRemoteStaticKey(xx.rs, log4);
+  log4.trace("Initiator going to check remote's signature...");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
-  log3.trace("All good with the signature!");
-  log3.trace("Stage 2 - Initiator sending third handshake message.");
+  log4.trace("All good with the signature!");
+  log4.trace("Stage 2 - Initiator sending third handshake message.");
   await connection.write(xx.writeMessageC(payload), options);
-  log3.trace("Stage 2 - Initiator sent message with signed payload.");
+  log4.trace("Stage 2 - Initiator sent message with signed payload.");
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log3);
+  logCipherState(cs1, cs2, log4);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs1.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -20949,7 +20949,7 @@ async function performHandshakeInitiator(init, options) {
 }
 __name(performHandshakeInitiator, "performHandshakeInitiator");
 async function performHandshakeResponder(init, options) {
-  const { log: log3, connection, crypto: crypto3, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log4, connection, crypto: crypto3, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto3,
@@ -20958,21 +20958,21 @@ async function performHandshakeResponder(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log3);
-  log3.trace("Stage 0 - Responder waiting to receive first message.");
+  logLocalStaticKeys(xx.s, log4);
+  log4.trace("Stage 0 - Responder waiting to receive first message.");
   xx.readMessageA(await connection.read(options));
-  log3.trace("Stage 0 - Responder received first message.");
-  logRemoteEphemeralKey(xx.re, log3);
-  log3.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
+  log4.trace("Stage 0 - Responder received first message.");
+  logRemoteEphemeralKey(xx.re, log4);
+  log4.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
   await connection.write(xx.writeMessageB(payload), options);
-  log3.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
-  logLocalEphemeralKeys(xx.e, log3);
-  log3.trace("Stage 2 - Responder waiting for third handshake message...");
+  log4.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
+  logLocalEphemeralKeys(xx.e, log4);
+  log4.trace("Stage 2 - Responder waiting for third handshake message...");
   const plaintext = xx.readMessageC(await connection.read(options));
-  log3.trace("Stage 2 - Responder received the message, finished handshake.");
+  log4.trace("Stage 2 - Responder received the message, finished handshake.");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log3);
+  logCipherState(cs1, cs2, log4);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs2.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -21441,11 +21441,11 @@ function isPromise2(thing) {
 __name(isPromise2, "isPromise");
 
 // node_modules/@libp2p/utils/dist/src/close-source.js
-function closeSource(source, log3) {
+function closeSource(source, log4) {
   const res = getIterator(source).return?.();
   if (isPromise2(res)) {
     res.catch((err) => {
-      log3.error("could not cause iterator to return", err);
+      log4.error("could not cause iterator to return", err);
     });
   }
 }
@@ -24529,7 +24529,7 @@ __name(peerFilter, "peerFilter");
 // node_modules/@libp2p/utils/dist/src/stream-to-ma-conn.js
 function streamToMaConnection(props) {
   const { stream, remoteAddr, logger: logger2 } = props;
-  const log3 = logger2.forComponent("libp2p:stream:converter");
+  const log4 = logger2.forComponent("libp2p:stream:converter");
   let closedRead = false;
   let closedWrite = false;
   const streamClose = stream.close.bind(stream);
@@ -24548,7 +24548,7 @@ function streamToMaConnection(props) {
       await streamSink(source);
     } catch (err) {
       if (err.type !== "aborted") {
-        log3.error("%s error in sink", remoteAddr, err);
+        log4.error("%s error in sink", remoteAddr, err);
       }
     } finally {
       closedWrite = true;
@@ -24556,7 +24556,7 @@ function streamToMaConnection(props) {
     }
   };
   const maConn = {
-    log: log3,
+    log: log4,
     sink: stream.sink,
     source: async function* () {
       try {
@@ -26701,7 +26701,9 @@ __name(parallel, "parallel");
 // node_modules/@libp2p/identify/dist/src/consts.js
 var IDENTIFY_PROTOCOL_VERSION = "0.1.0";
 var MULTICODEC_IDENTIFY_PROTOCOL_NAME = "id";
+var MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME = "id/push";
 var MULTICODEC_IDENTIFY_PROTOCOL_VERSION = "1.0.0";
+var MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION = "1.0.0";
 var MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8;
 var MAX_PUSH_CONCURRENCY = 32;
 
@@ -26845,8 +26847,8 @@ function getAgentVersion(nodeInfo, agentVersion) {
   return agentVersion;
 }
 __name(getAgentVersion, "getAgentVersion");
-async function consumeIdentifyMessage(peerStore, events2, log3, connection, message2) {
-  log3("received identify from %p", connection.remotePeer);
+async function consumeIdentifyMessage(peerStore, events2, log4, connection, message2) {
+  log4("received identify from %p", connection.remotePeer);
   if (message2 == null) {
     throw new CodeError("message was null or undefined", "ERR_INVALID_MESSAGE");
   }
@@ -26869,7 +26871,7 @@ async function consumeIdentifyMessage(peerStore, events2, log3, connection, mess
   }
   let output3;
   if (message2.signedPeerRecord != null) {
-    log3("received signedPeerRecord from %p", connection.remotePeer);
+    log4("received signedPeerRecord from %p", connection.remotePeer);
     let peerRecordEnvelope = message2.signedPeerRecord;
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord2.DOMAIN);
     let peerRecord = PeerRecord2.createFromProtobuf(envelope.payload);
@@ -26893,7 +26895,7 @@ async function consumeIdentifyMessage(peerStore, events2, log3, connection, mess
         const storedEnvelope = await RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope);
         const storedRecord = PeerRecord2.createFromProtobuf(storedEnvelope.payload);
         if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-          log3("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
+          log4("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
           peerRecord = storedRecord;
           peerRecordEnvelope = existingPeer.peerRecordEnvelope;
         }
@@ -26909,9 +26911,9 @@ async function consumeIdentifyMessage(peerStore, events2, log3, connection, mess
       addresses: peerRecord.multiaddrs
     };
   } else {
-    log3("%p did not send a signed peer record", connection.remotePeer);
+    log4("%p did not send a signed peer record", connection.remotePeer);
   }
-  log3("patching %p with", connection.remotePeer, peer);
+  log4("patching %p with", connection.remotePeer, peer);
   await peerStore.patch(connection.remotePeer, peer);
   if (message2.agentVersion != null || message2.protocolVersion != null) {
     const metadata = {};
@@ -26921,7 +26923,7 @@ async function consumeIdentifyMessage(peerStore, events2, log3, connection, mess
     if (message2.protocolVersion != null) {
       metadata.ProtocolVersion = fromString2(message2.protocolVersion);
     }
-    log3("merging %p metadata", connection.remotePeer, metadata);
+    log4("merging %p metadata", connection.remotePeer, metadata);
     await peerStore.merge(connection.remotePeer, {
       metadata
     });
@@ -27007,6 +27009,119 @@ var AbstractIdentify = class {
   async stop() {
     await this.registrar.unhandle(this.protocol);
     this.started = false;
+  }
+};
+
+// node_modules/@libp2p/identify/dist/src/identify-push.js
+var IdentifyPush = class extends AbstractIdentify {
+  static {
+    __name(this, "IdentifyPush");
+  }
+  connectionManager;
+  concurrency;
+  constructor(components, init = {}) {
+    super(components, {
+      ...init,
+      protocol: `/${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
+      log: components.logger.forComponent("libp2p:identify-push")
+    });
+    this.connectionManager = components.connectionManager;
+    this.concurrency = init.concurrency ?? defaultValues2.concurrency;
+    if (init.runOnSelfUpdate ?? defaultValues2.runOnSelfUpdate) {
+      components.events.addEventListener("self:peer:update", (evt) => {
+        void this.push().catch((err) => {
+          this.log.error(err);
+        });
+      });
+    }
+  }
+  [serviceCapabilities] = [
+    "@libp2p/identify-push"
+  ];
+  /**
+   * Calls `push` on all peer connections
+   */
+  async push() {
+    if (!this.isStarted()) {
+      return;
+    }
+    const listenAddresses = this.addressManager.getAddresses().map((ma) => ma.decapsulateCode(getProtocol("p2p").code));
+    const peerRecord = new PeerRecord2({
+      peerId: this.peerId,
+      multiaddrs: listenAddresses
+    });
+    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.peerId);
+    const supportedProtocols = this.registrar.getProtocols();
+    const peer = await this.peerStore.get(this.peerId);
+    const agentVersion = toString2(peer.metadata.get("AgentVersion") ?? fromString2(this.host.agentVersion));
+    const protocolVersion = toString2(peer.metadata.get("ProtocolVersion") ?? fromString2(this.host.protocolVersion));
+    const self2 = this;
+    async function* pushToConnections() {
+      for (const connection of self2.connectionManager.getConnections()) {
+        const peer2 = await self2.peerStore.get(connection.remotePeer);
+        if (!peer2.protocols.includes(self2.protocol)) {
+          continue;
+        }
+        yield async () => {
+          let stream;
+          const signal = AbortSignal.timeout(self2.timeout);
+          setMaxListeners2(Infinity, signal);
+          try {
+            stream = await connection.newStream(self2.protocol, {
+              signal,
+              runOnTransientConnection: self2.runOnTransientConnection
+            });
+            const pb = pbStream(stream, {
+              maxDataLength: self2.maxMessageSize
+            }).pb(Identify);
+            await pb.write({
+              listenAddrs: listenAddresses.map((ma) => ma.bytes),
+              signedPeerRecord: signedPeerRecord.marshal(),
+              protocols: supportedProtocols,
+              agentVersion,
+              protocolVersion
+            }, {
+              signal
+            });
+            await stream.close({
+              signal
+            });
+          } catch (err) {
+            self2.log.error("could not push identify update to peer", err);
+            stream?.abort(err);
+          }
+        };
+      }
+    }
+    __name(pushToConnections, "pushToConnections");
+    await src_default4(parallel(pushToConnections(), {
+      concurrency: this.concurrency
+    }));
+  }
+  /**
+   * Reads the Identify Push message from the given `connection`
+   */
+  async handleProtocol(data) {
+    const { connection, stream } = data;
+    try {
+      if (this.peerId.equals(connection.remotePeer)) {
+        throw new Error("received push from ourselves?");
+      }
+      const options = {
+        signal: AbortSignal.timeout(this.timeout)
+      };
+      const pb = pbStream(stream, {
+        maxDataLength: this.maxMessageSize
+      }).pb(Identify);
+      const message2 = await pb.read(options);
+      await stream.close(options);
+      await consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message2);
+    } catch (err) {
+      this.log.error("received invalid message", err);
+      stream.abort(err);
+      return;
+    }
+    this.log("handled push from %p", connection.remotePeer);
   }
 };
 
@@ -27134,6 +27249,10 @@ function identify(init = {}) {
   return (components) => new Identify2(components, init);
 }
 __name(identify, "identify");
+function identifyPush(init = {}) {
+  return (components) => new IdentifyPush(components, init);
+}
+__name(identifyPush, "identifyPush");
 
 // node_modules/@libp2p/webrtc/dist/src/error.js
 var codes3;
@@ -28293,10 +28412,10 @@ function resolveOnConnected(pc, promise) {
 __name(resolveOnConnected, "resolveOnConnected");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/initiate-connection.js
-async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log3, logger: logger2, onProgress }) {
+async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log4, logger: logger2, onProgress }) {
   const { baseAddr } = splitAddr(ma);
   metrics?.dialerEvents.increment({ open: true });
-  log3.trace("dialing base address: %a", baseAddr);
+  log4.trace("dialing base address: %a", baseAddr);
   const relayPeer = baseAddr.getPeerId();
   if (relayPeer == null) {
     throw new CodeError("Relay peer was missing", "ERR_INVALID_ADDRESS");
@@ -28333,30 +28452,30 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
       const channel = peerConnection.createDataChannel("init");
       peerConnection.onicecandidate = ({ candidate }) => {
         const data = JSON.stringify(candidate?.toJSON() ?? null);
-        log3.trace("initiator sending ICE candidate %o", candidate);
+        log4.trace("initiator sending ICE candidate %o", candidate);
         void messageStream.write({
           type: Message2.Type.ICE_CANDIDATE,
           data
         }, {
           signal
         }).catch((err) => {
-          log3.error("error sending ICE candidate", err);
+          log4.error("error sending ICE candidate", err);
         });
       };
       peerConnection.onicecandidateerror = (event) => {
-        log3.error("initiator ICE candidate error", event);
+        log4.error("initiator ICE candidate error", event);
       };
       const offerSdp = await peerConnection.createOffer().catch((err) => {
-        log3.error("could not execute createOffer", err);
+        log4.error("could not execute createOffer", err);
         throw new CodeError("Failed to set createOffer", "ERR_SDP_HANDSHAKE_FAILED");
       });
-      log3.trace("initiator send SDP offer %s", offerSdp.sdp);
+      log4.trace("initiator send SDP offer %s", offerSdp.sdp);
       onProgress?.(new CustomProgressEvent("webrtc:send-sdp-offer"));
       await messageStream.write({ type: Message2.Type.SDP_OFFER, data: offerSdp.sdp }, {
         signal
       });
       await peerConnection.setLocalDescription(offerSdp).catch((err) => {
-        log3.error("could not execute setLocalDescription", err);
+        log4.error("could not execute setLocalDescription", err);
         throw new CodeError("Failed to set localDescription", "ERR_SDP_HANDSHAKE_FAILED");
       });
       onProgress?.(new CustomProgressEvent("webrtc:read-sdp-answer"));
@@ -28366,35 +28485,35 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
       if (answerMessage.type !== Message2.Type.SDP_ANSWER) {
         throw new CodeError("Remote should send an SDP answer", "ERR_SDP_HANDSHAKE_FAILED");
       }
-      log3.trace("initiator receive SDP answer %s", answerMessage.data);
+      log4.trace("initiator receive SDP answer %s", answerMessage.data);
       const answerSdp = new RTCSessionDescription({ type: "answer", sdp: answerMessage.data });
       await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
-        log3.error("could not execute setRemoteDescription", err);
+        log4.error("could not execute setRemoteDescription", err);
         throw new CodeError("Failed to set remoteDescription", "ERR_SDP_HANDSHAKE_FAILED");
       });
-      log3.trace("initiator read candidates until connected");
+      log4.trace("initiator read candidates until connected");
       onProgress?.(new CustomProgressEvent("webrtc:read-ice-candidates"));
       await readCandidatesUntilConnected(peerConnection, messageStream, {
         direction: "initiator",
         signal,
-        log: log3,
+        log: log4,
         onProgress
       });
-      log3.trace("initiator connected, closing init channel");
+      log4.trace("initiator connected, closing init channel");
       channel.close();
       onProgress?.(new CustomProgressEvent("webrtc:close-signaling-stream"));
-      log3.trace("closing signaling channel");
+      log4.trace("closing signaling channel");
       await stream.close({
         signal
       });
-      log3.trace("initiator connected to remote address %s", ma);
+      log4.trace("initiator connected to remote address %s", ma);
       return {
         remoteAddress: ma,
         peerConnection,
         muxerFactory
       };
     } catch (err) {
-      log3.error("outgoing signaling error", err);
+      log4.error("outgoing signaling error", err);
       peerConnection.close();
       stream.abort(err);
       throw err;
@@ -28445,20 +28564,20 @@ var WebRTCPeerListener = class extends TypedEventEmitter {
 };
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler.js
-async function handleIncomingStream({ peerConnection, stream, signal, connection, log: log3 }) {
-  log3.trace("new inbound signaling stream");
+async function handleIncomingStream({ peerConnection, stream, signal, connection, log: log4 }) {
+  log4.trace("new inbound signaling stream");
   const messageStream = pbStream(stream).pb(Message2);
   try {
     peerConnection.onicecandidate = ({ candidate }) => {
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log3.trace("recipient sending ICE candidate %s", data);
+      log4.trace("recipient sending ICE candidate %s", data);
       messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log3.error("error sending ICE candidate", err);
+        log4.error("error sending ICE candidate", err);
       });
     };
     const pbOffer = await messageStream.read({
@@ -28467,44 +28586,44 @@ async function handleIncomingStream({ peerConnection, stream, signal, connection
     if (pbOffer.type !== Message2.Type.SDP_OFFER) {
       throw new CodeError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? "undefined"} `, "ERR_SDP_HANDSHAKE_FAILED");
     }
-    log3.trace("recipient receive SDP offer %s", pbOffer.data);
+    log4.trace("recipient receive SDP offer %s", pbOffer.data);
     const offer = new RTCSessionDescription({
       type: "offer",
       sdp: pbOffer.data
     });
     await peerConnection.setRemoteDescription(offer).catch((err) => {
-      log3.error("could not execute setRemoteDescription", err);
+      log4.error("could not execute setRemoteDescription", err);
       throw new CodeError("Failed to set remoteDescription", "ERR_SDP_HANDSHAKE_FAILED");
     });
     const answer = await peerConnection.createAnswer().catch((err) => {
-      log3.error("could not execute createAnswer", err);
+      log4.error("could not execute createAnswer", err);
       throw new CodeError("Failed to create answer", "ERR_SDP_HANDSHAKE_FAILED");
     });
-    log3.trace("recipient send SDP answer %s", answer.sdp);
+    log4.trace("recipient send SDP answer %s", answer.sdp);
     await messageStream.write({ type: Message2.Type.SDP_ANSWER, data: answer.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(answer).catch((err) => {
-      log3.error("could not execute setLocalDescription", err);
+      log4.error("could not execute setLocalDescription", err);
       throw new CodeError("Failed to set localDescription", "ERR_SDP_HANDSHAKE_FAILED");
     });
-    log3.trace("recipient read candidates until connected");
+    log4.trace("recipient read candidates until connected");
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "recipient",
       signal,
-      log: log3
+      log: log4
     });
   } catch (err) {
     if (peerConnection.connectionState !== "connected") {
-      log3.error("error while handling signaling stream from peer %a", connection.remoteAddr, err);
+      log4.error("error while handling signaling stream from peer %a", connection.remoteAddr, err);
       peerConnection.close();
       throw err;
     } else {
-      log3("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
+      log4("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
     }
   }
   const remoteAddress = multiaddr(`/webrtc/p2p/${connection.remoteAddr.getPeerId()}`);
-  log3.trace("recipient connected to remote address %s", remoteAddress);
+  log4.trace("recipient connected to remote address %s", remoteAddress);
   return { remoteAddress };
 }
 __name(handleIncomingStream, "handleIncomingStream");
@@ -29213,11 +29332,11 @@ __name(createListener2, "createListener");
 
 // node_modules/@libp2p/websockets/dist/src/socket-to-conn.js
 function socketToMaConn(stream, remoteAddr, options) {
-  const log3 = options.logger.forComponent("libp2p:websockets:maconn");
+  const log4 = options.logger.forComponent("libp2p:websockets:maconn");
   const metrics = options.metrics;
   const metricPrefix = options.metricPrefix ?? "";
   const maConn = {
-    log: log3,
+    log: log4,
     async sink(source) {
       try {
         await stream.sink(async function* () {
@@ -29231,7 +29350,7 @@ function socketToMaConn(stream, remoteAddr, options) {
         }());
       } catch (err) {
         if (err.type !== "aborted") {
-          log3.error(err);
+          log4.error(err);
         }
       }
     },
@@ -29249,14 +29368,14 @@ function socketToMaConn(stream, remoteAddr, options) {
       }
       const listener = /* @__PURE__ */ __name(() => {
         const { host, port } = maConn.remoteAddr.toOptions();
-        log3("timeout closing stream to %s:%s after %dms, destroying it manually", host, port, Date.now() - start2);
+        log4("timeout closing stream to %s:%s after %dms, destroying it manually", host, port, Date.now() - start2);
         this.abort(new CodeError("Socket close timeout", "ERR_SOCKET_CLOSE_TIMEOUT"));
       }, "listener");
       options2.signal?.addEventListener("abort", listener);
       try {
         await stream.close();
       } catch (err) {
-        log3.error("error closing WebSocket gracefully", err);
+        log4.error("error closing WebSocket gracefully", err);
         this.abort(err);
       } finally {
         options2.signal?.removeEventListener("abort", listener);
@@ -29265,7 +29384,7 @@ function socketToMaConn(stream, remoteAddr, options) {
     },
     abort(err) {
       const { host, port } = maConn.remoteAddr.toOptions();
-      log3("timeout closing stream to %s:%s due to error", host, port, err);
+      log4("timeout closing stream to %s:%s due to error", host, port, err);
       stream.destroy();
       maConn.timeline.close = Date.now();
       metrics?.increment({ [`${metricPrefix}error`]: true });
@@ -31835,7 +31954,7 @@ function take(source, limit) {
 __name(take, "take");
 var src_default10 = take;
 
-// node_modules/datastore-core/dist/src/base.js
+// node_modules/libp2p/node_modules/datastore-core/dist/src/base.js
 var BaseDatastore = class {
   static {
     __name(this, "BaseDatastore");
@@ -31950,7 +32069,7 @@ var BaseDatastore = class {
   }
 };
 
-// node_modules/datastore-core/dist/src/errors.js
+// node_modules/libp2p/node_modules/datastore-core/dist/src/errors.js
 var import_err_code = __toESM(require_err_code(), 1);
 function notFoundError(err) {
   err = err ?? new Error("Not Found");
@@ -31958,7 +32077,7 @@ function notFoundError(err) {
 }
 __name(notFoundError, "notFoundError");
 
-// node_modules/datastore-core/dist/src/memory.js
+// node_modules/libp2p/node_modules/datastore-core/dist/src/memory.js
 var MemoryDatastore = class extends BaseDatastore {
   static {
     __name(this, "MemoryDatastore");
@@ -38097,7 +38216,7 @@ __name(readTime, "readTime");
 
 // node_modules/@libp2p/kad-dht/dist/src/query/query-path.js
 async function* queryPath(options) {
-  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, queryFuncTimeout, log: log3, peersSeen, connectionManager } = options;
+  const { key, startingPeer, ourPeerId, signal, query, alpha, pathIndex, numPaths, queryFuncTimeout, log: log4, peersSeen, connectionManager } = options;
   const queue = new Queue({
     concurrency: alpha,
     sort: /* @__PURE__ */ __name((a, b) => xorCompare(a.options.distance, b.options.distance), "sort")
@@ -38130,24 +38249,24 @@ async function* queryPath(options) {
           if (event.name === "PEER_RESPONSE") {
             for (const closerPeer of event.closer) {
               if (peersSeen.has(closerPeer.id)) {
-                log3("already seen %p in query", closerPeer.id);
+                log4("already seen %p in query", closerPeer.id);
                 continue;
               }
               if (ourPeerId.equals(closerPeer.id)) {
-                log3("not querying ourselves");
+                log4("not querying ourselves");
                 continue;
               }
               if (!await connectionManager.isDialable(closerPeer.multiaddrs)) {
-                log3("not querying undialable peer");
+                log4("not querying undialable peer");
                 continue;
               }
               const closerPeerKadId = await convertPeerId(closerPeer.id);
               const closerPeerXor = xor(closerPeerKadId, kadId);
               if (xorCompare(closerPeerXor, peerXor) !== -1) {
-                log3("skipping %p as they are not closer to %b than %p", closerPeer.id, key, peer);
+                log4("skipping %p as they are not closer to %b than %p", closerPeer.id, key, peer);
                 continue;
               }
-              log3("querying closer peer %p", closerPeer.id);
+              log4("querying closer peer %p", closerPeer.id);
               queryPeer(closerPeer.id, closerPeerKadId);
             }
           }
@@ -38168,7 +38287,7 @@ async function* queryPath(options) {
     }, {
       distance: peerXor
     }).catch((err) => {
-      log3.error(err);
+      log4.error(err);
     });
   }
   __name(queryPeer, "queryPeer");
@@ -38264,23 +38383,23 @@ var QueryManager = class {
       options.signal
     ]);
     setMaxListeners2(Infinity, signal, queryEarlyExitController.signal);
-    const log3 = this.logger.forComponent(`${this.logPrefix}:query:` + toString2(key, "base58btc"));
+    const log4 = this.logger.forComponent(`${this.logPrefix}:query:` + toString2(key, "base58btc"));
     const startTime = Date.now();
     let queryFinished = false;
     try {
       if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
-        log3("waiting for initial query-self query before continuing");
+        log4("waiting for initial query-self query before continuing");
         await raceSignal(this.initialQuerySelfHasRun.promise, signal);
         this.initialQuerySelfHasRun = void 0;
       }
-      log3("query:start");
+      log4("query:start");
       this.queries++;
       this.metrics?.runningQueries.update(this.queries);
       const id = await convertBuffer(key);
       const peers = this.routingTable.closestPeers(id);
       const peersToQuery = peers.slice(0, Math.min(this.disjointPaths, peers.length));
       if (peers.length === 0) {
-        log3.error("Running query with no peers");
+        log4.error("Running query with no peers");
         return;
       }
       const peersSeen = new PeerSet();
@@ -38295,7 +38414,7 @@ var QueryManager = class {
           numPaths: peersToQuery.length,
           alpha: this.alpha,
           queryFuncTimeout: options.queryFuncTimeout,
-          log: log3,
+          log: log4,
           peersSeen,
           onProgress: options.onProgress,
           connectionManager: this.connectionManager
@@ -38303,7 +38422,7 @@ var QueryManager = class {
       });
       for await (const event of src_default(...paths)) {
         if (event.name === "QUERY_ERROR") {
-          log3.error("query error", event.error);
+          log4.error("query error", event.error);
         }
         if (event.name === "PEER_RESPONSE") {
           for (const peer of [...event.closer, ...event.providers]) {
@@ -38323,7 +38442,7 @@ var QueryManager = class {
       }
     } finally {
       if (!queryFinished) {
-        log3("query exited early");
+        log4("query exited early");
         queryEarlyExitController.abort();
       }
       signal.clear();
@@ -38332,7 +38451,7 @@ var QueryManager = class {
       if (stopQueryTimer != null) {
         stopQueryTimer();
       }
-      log3("query:done in %dms", Date.now() - startTime);
+      log4("query:done in %dms", Date.now() - startTime);
     }
   }
 };
@@ -38623,16 +38742,16 @@ var KBucket = class extends TypedEventEmitter {
    * @returns {Iterable} All of the contacts in the tree, as an iterable
    */
   *toIterable() {
-    function* iterate(bucket) {
+    function* iterate2(bucket) {
       if (isLeafBucket(bucket)) {
         yield* bucket.peers;
         return;
       }
-      yield* iterate(bucket.left);
-      yield* iterate(bucket.right);
+      yield* iterate2(bucket.left);
+      yield* iterate2(bucket.right);
     }
-    __name(iterate, "iterate");
-    yield* iterate(this.root);
+    __name(iterate2, "iterate");
+    yield* iterate2(this.root);
   }
   /**
    * Default distance function. Finds the XOR distance between firstId and
@@ -56334,7 +56453,651 @@ function kadDHT(init = {}) {
   return (components) => new KadDHT(components, init);
 }
 __name(kadDHT, "kadDHT");
+
+// node_modules/datastore-core/dist/src/shard.js
+var SHARDING_FN = "SHARDING";
+
+// node_modules/datastore-core/dist/src/base.js
+var BaseDatastore2 = class {
+  static {
+    __name(this, "BaseDatastore");
+  }
+  put(key, val, options) {
+    return Promise.reject(new Error(".put is not implemented"));
+  }
+  get(key, options) {
+    return Promise.reject(new Error(".get is not implemented"));
+  }
+  has(key, options) {
+    return Promise.reject(new Error(".has is not implemented"));
+  }
+  delete(key, options) {
+    return Promise.reject(new Error(".delete is not implemented"));
+  }
+  async *putMany(source, options = {}) {
+    for await (const { key, value } of source) {
+      await this.put(key, value, options);
+      yield key;
+    }
+  }
+  async *getMany(source, options = {}) {
+    for await (const key of source) {
+      yield {
+        key,
+        value: await this.get(key, options)
+      };
+    }
+  }
+  async *deleteMany(source, options = {}) {
+    for await (const key of source) {
+      await this.delete(key, options);
+      yield key;
+    }
+  }
+  batch() {
+    let puts = [];
+    let dels = [];
+    return {
+      put(key, value) {
+        puts.push({ key, value });
+      },
+      delete(key) {
+        dels.push(key);
+      },
+      commit: /* @__PURE__ */ __name(async (options) => {
+        await src_default4(this.putMany(puts, options));
+        puts = [];
+        await src_default4(this.deleteMany(dels, options));
+        dels = [];
+      }, "commit")
+    };
+  }
+  /**
+   * Extending classes should override `query` or implement this method
+   */
+  // eslint-disable-next-line require-yield
+  async *_all(q, options) {
+    throw new Error("._all is not implemented");
+  }
+  /**
+   * Extending classes should override `queryKeys` or implement this method
+   */
+  // eslint-disable-next-line require-yield
+  async *_allKeys(q, options) {
+    throw new Error("._allKeys is not implemented");
+  }
+  query(q, options) {
+    let it = this._all(q, options);
+    if (q.prefix != null) {
+      const prefix = q.prefix;
+      it = src_default8(it, (e) => e.key.toString().startsWith(prefix));
+    }
+    if (Array.isArray(q.filters)) {
+      it = q.filters.reduce((it2, f) => src_default8(it2, f), it);
+    }
+    if (Array.isArray(q.orders)) {
+      it = q.orders.reduce((it2, f) => src_default9(it2, f), it);
+    }
+    if (q.offset != null) {
+      let i = 0;
+      const offset = q.offset;
+      it = src_default8(it, () => i++ >= offset);
+    }
+    if (q.limit != null) {
+      it = src_default10(it, q.limit);
+    }
+    return it;
+  }
+  queryKeys(q, options) {
+    let it = this._allKeys(q, options);
+    if (q.prefix != null) {
+      const prefix = q.prefix;
+      it = src_default8(it, (key) => key.toString().startsWith(prefix));
+    }
+    if (Array.isArray(q.filters)) {
+      it = q.filters.reduce((it2, f) => src_default8(it2, f), it);
+    }
+    if (Array.isArray(q.orders)) {
+      it = q.orders.reduce((it2, f) => src_default9(it2, f), it);
+    }
+    if (q.offset != null) {
+      const offset = q.offset;
+      let i = 0;
+      it = src_default8(it, () => i++ >= offset);
+    }
+    if (q.limit != null) {
+      it = src_default10(it, q.limit);
+    }
+    return it;
+  }
+};
+
+// node_modules/interface-store/dist/src/errors.js
+var OpenFailedError = class extends Error {
+  static {
+    __name(this, "OpenFailedError");
+  }
+  constructor(message2 = "Open failed") {
+    super(message2);
+    this.name = "OpenFailedError";
+  }
+};
+var PutFailedError = class extends Error {
+  static {
+    __name(this, "PutFailedError");
+  }
+  constructor(message2 = "Put failed") {
+    super(message2);
+    this.name = "PutFailedError";
+  }
+};
+var GetFailedError = class extends Error {
+  static {
+    __name(this, "GetFailedError");
+  }
+  constructor(message2 = "Get failed") {
+    super(message2);
+    this.name = "GetFailedError";
+  }
+};
+var DeleteFailedError = class extends Error {
+  static {
+    __name(this, "DeleteFailedError");
+  }
+  constructor(message2 = "Delete failed") {
+    super(message2);
+    this.name = "DeleteFailedError";
+  }
+};
+var NotFoundError = class extends Error {
+  static {
+    __name(this, "NotFoundError");
+  }
+  constructor(message2 = "Not Found") {
+    super(message2);
+    this.name = "NotFoundError";
+  }
+};
+
+// node_modules/datastore-core/dist/src/memory.js
+var MemoryDatastore2 = class extends BaseDatastore2 {
+  static {
+    __name(this, "MemoryDatastore");
+  }
+  data;
+  constructor() {
+    super();
+    this.data = /* @__PURE__ */ new Map();
+  }
+  put(key, val) {
+    this.data.set(key.toString(), val);
+    return key;
+  }
+  get(key) {
+    const result = this.data.get(key.toString());
+    if (result == null) {
+      throw new NotFoundError();
+    }
+    return result;
+  }
+  has(key) {
+    return this.data.has(key.toString());
+  }
+  delete(key) {
+    this.data.delete(key.toString());
+  }
+  *_all() {
+    for (const [key, value] of this.data.entries()) {
+      yield { key: new Key(key), value };
+    }
+  }
+  *_allKeys() {
+    for (const key of this.data.keys()) {
+      yield new Key(key);
+    }
+  }
+};
+
+// node_modules/datastore-core/dist/src/sharding.js
+var shardKey = new Key(SHARDING_FN);
+
+// node_modules/datastore-core/dist/src/tiered.js
+var log3 = logger("datastore:core:tiered");
+
+// node_modules/idb/build/index.js
+var instanceOfAny = /* @__PURE__ */ __name((object, constructors) => constructors.some((c) => object instanceof c), "instanceOfAny");
+var idbProxyableTypes;
+var cursorAdvanceMethods;
+function getIdbProxyableTypes() {
+  return idbProxyableTypes || (idbProxyableTypes = [
+    IDBDatabase,
+    IDBObjectStore,
+    IDBIndex,
+    IDBCursor,
+    IDBTransaction
+  ]);
+}
+__name(getIdbProxyableTypes, "getIdbProxyableTypes");
+function getCursorAdvanceMethods() {
+  return cursorAdvanceMethods || (cursorAdvanceMethods = [
+    IDBCursor.prototype.advance,
+    IDBCursor.prototype.continue,
+    IDBCursor.prototype.continuePrimaryKey
+  ]);
+}
+__name(getCursorAdvanceMethods, "getCursorAdvanceMethods");
+var transactionDoneMap = /* @__PURE__ */ new WeakMap();
+var transformCache = /* @__PURE__ */ new WeakMap();
+var reverseTransformCache = /* @__PURE__ */ new WeakMap();
+function promisifyRequest(request) {
+  const promise = new Promise((resolve, reject) => {
+    const unlisten = /* @__PURE__ */ __name(() => {
+      request.removeEventListener("success", success);
+      request.removeEventListener("error", error);
+    }, "unlisten");
+    const success = /* @__PURE__ */ __name(() => {
+      resolve(wrap(request.result));
+      unlisten();
+    }, "success");
+    const error = /* @__PURE__ */ __name(() => {
+      reject(request.error);
+      unlisten();
+    }, "error");
+    request.addEventListener("success", success);
+    request.addEventListener("error", error);
+  });
+  reverseTransformCache.set(promise, request);
+  return promise;
+}
+__name(promisifyRequest, "promisifyRequest");
+function cacheDonePromiseForTransaction(tx) {
+  if (transactionDoneMap.has(tx))
+    return;
+  const done = new Promise((resolve, reject) => {
+    const unlisten = /* @__PURE__ */ __name(() => {
+      tx.removeEventListener("complete", complete);
+      tx.removeEventListener("error", error);
+      tx.removeEventListener("abort", error);
+    }, "unlisten");
+    const complete = /* @__PURE__ */ __name(() => {
+      resolve();
+      unlisten();
+    }, "complete");
+    const error = /* @__PURE__ */ __name(() => {
+      reject(tx.error || new DOMException("AbortError", "AbortError"));
+      unlisten();
+    }, "error");
+    tx.addEventListener("complete", complete);
+    tx.addEventListener("error", error);
+    tx.addEventListener("abort", error);
+  });
+  transactionDoneMap.set(tx, done);
+}
+__name(cacheDonePromiseForTransaction, "cacheDonePromiseForTransaction");
+var idbProxyTraps = {
+  get(target, prop, receiver) {
+    if (target instanceof IDBTransaction) {
+      if (prop === "done")
+        return transactionDoneMap.get(target);
+      if (prop === "store") {
+        return receiver.objectStoreNames[1] ? void 0 : receiver.objectStore(receiver.objectStoreNames[0]);
+      }
+    }
+    return wrap(target[prop]);
+  },
+  set(target, prop, value) {
+    target[prop] = value;
+    return true;
+  },
+  has(target, prop) {
+    if (target instanceof IDBTransaction && (prop === "done" || prop === "store")) {
+      return true;
+    }
+    return prop in target;
+  }
+};
+function replaceTraps(callback) {
+  idbProxyTraps = callback(idbProxyTraps);
+}
+__name(replaceTraps, "replaceTraps");
+function wrapFunction(func2) {
+  if (getCursorAdvanceMethods().includes(func2)) {
+    return function(...args) {
+      func2.apply(unwrap(this), args);
+      return wrap(this.request);
+    };
+  }
+  return function(...args) {
+    return wrap(func2.apply(unwrap(this), args));
+  };
+}
+__name(wrapFunction, "wrapFunction");
+function transformCachableValue(value) {
+  if (typeof value === "function")
+    return wrapFunction(value);
+  if (value instanceof IDBTransaction)
+    cacheDonePromiseForTransaction(value);
+  if (instanceOfAny(value, getIdbProxyableTypes()))
+    return new Proxy(value, idbProxyTraps);
+  return value;
+}
+__name(transformCachableValue, "transformCachableValue");
+function wrap(value) {
+  if (value instanceof IDBRequest)
+    return promisifyRequest(value);
+  if (transformCache.has(value))
+    return transformCache.get(value);
+  const newValue = transformCachableValue(value);
+  if (newValue !== value) {
+    transformCache.set(value, newValue);
+    reverseTransformCache.set(newValue, value);
+  }
+  return newValue;
+}
+__name(wrap, "wrap");
+var unwrap = /* @__PURE__ */ __name((value) => reverseTransformCache.get(value), "unwrap");
+function openDB(name3, version2, { blocked, upgrade, blocking, terminated } = {}) {
+  const request = indexedDB.open(name3, version2);
+  const openPromise = wrap(request);
+  if (upgrade) {
+    request.addEventListener("upgradeneeded", (event) => {
+      upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction), event);
+    });
+  }
+  if (blocked) {
+    request.addEventListener("blocked", (event) => blocked(
+      // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+      event.oldVersion,
+      event.newVersion,
+      event
+    ));
+  }
+  openPromise.then((db) => {
+    if (terminated)
+      db.addEventListener("close", () => terminated());
+    if (blocking) {
+      db.addEventListener("versionchange", (event) => blocking(event.oldVersion, event.newVersion, event));
+    }
+  }).catch(() => {
+  });
+  return openPromise;
+}
+__name(openDB, "openDB");
+function deleteDB(name3, { blocked } = {}) {
+  const request = indexedDB.deleteDatabase(name3);
+  if (blocked) {
+    request.addEventListener("blocked", (event) => blocked(
+      // Casting due to https://github.com/microsoft/TypeScript-DOM-lib-generator/pull/1405
+      event.oldVersion,
+      event
+    ));
+  }
+  return wrap(request).then(() => void 0);
+}
+__name(deleteDB, "deleteDB");
+var readMethods = ["get", "getKey", "getAll", "getAllKeys", "count"];
+var writeMethods = ["put", "add", "delete", "clear"];
+var cachedMethods = /* @__PURE__ */ new Map();
+function getMethod(target, prop) {
+  if (!(target instanceof IDBDatabase && !(prop in target) && typeof prop === "string")) {
+    return;
+  }
+  if (cachedMethods.get(prop))
+    return cachedMethods.get(prop);
+  const targetFuncName = prop.replace(/FromIndex$/, "");
+  const useIndex = prop !== targetFuncName;
+  const isWrite = writeMethods.includes(targetFuncName);
+  if (
+    // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+    !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) || !(isWrite || readMethods.includes(targetFuncName))
+  ) {
+    return;
+  }
+  const method = /* @__PURE__ */ __name(async function(storeName, ...args) {
+    const tx = this.transaction(storeName, isWrite ? "readwrite" : "readonly");
+    let target2 = tx.store;
+    if (useIndex)
+      target2 = target2.index(args.shift());
+    return (await Promise.all([
+      target2[targetFuncName](...args),
+      isWrite && tx.done
+    ]))[0];
+  }, "method");
+  cachedMethods.set(prop, method);
+  return method;
+}
+__name(getMethod, "getMethod");
+replaceTraps((oldTraps) => ({
+  ...oldTraps,
+  get: /* @__PURE__ */ __name((target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver), "get"),
+  has: /* @__PURE__ */ __name((target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop), "has")
+}));
+var advanceMethodProps = ["continue", "continuePrimaryKey", "advance"];
+var methodMap = {};
+var advanceResults = /* @__PURE__ */ new WeakMap();
+var ittrProxiedCursorToOriginalProxy = /* @__PURE__ */ new WeakMap();
+var cursorIteratorTraps = {
+  get(target, prop) {
+    if (!advanceMethodProps.includes(prop))
+      return target[prop];
+    let cachedFunc = methodMap[prop];
+    if (!cachedFunc) {
+      cachedFunc = methodMap[prop] = function(...args) {
+        advanceResults.set(this, ittrProxiedCursorToOriginalProxy.get(this)[prop](...args));
+      };
+    }
+    return cachedFunc;
+  }
+};
+async function* iterate(...args) {
+  let cursor = this;
+  if (!(cursor instanceof IDBCursor)) {
+    cursor = await cursor.openCursor(...args);
+  }
+  if (!cursor)
+    return;
+  cursor = cursor;
+  const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
+  ittrProxiedCursorToOriginalProxy.set(proxiedCursor, cursor);
+  reverseTransformCache.set(proxiedCursor, unwrap(cursor));
+  while (cursor) {
+    yield proxiedCursor;
+    cursor = await (advanceResults.get(proxiedCursor) || cursor.continue());
+    advanceResults.delete(proxiedCursor);
+  }
+}
+__name(iterate, "iterate");
+function isIteratorProp(target, prop) {
+  return prop === Symbol.asyncIterator && instanceOfAny(target, [IDBIndex, IDBObjectStore, IDBCursor]) || prop === "iterate" && instanceOfAny(target, [IDBIndex, IDBObjectStore]);
+}
+__name(isIteratorProp, "isIteratorProp");
+replaceTraps((oldTraps) => ({
+  ...oldTraps,
+  get(target, prop, receiver) {
+    if (isIteratorProp(target, prop))
+      return iterate;
+    return oldTraps.get(target, prop, receiver);
+  },
+  has(target, prop) {
+    return isIteratorProp(target, prop) || oldTraps.has(target, prop);
+  }
+}));
+
+// node_modules/datastore-idb/dist/src/index.js
+var IDBDatastore = class extends BaseDatastore2 {
+  static {
+    __name(this, "IDBDatastore");
+  }
+  location;
+  version;
+  db;
+  constructor(location, init = {}) {
+    super();
+    this.location = `${init.prefix ?? ""}${location}`;
+    this.version = init.version ?? 1;
+  }
+  async open() {
+    try {
+      const location = this.location;
+      this.db = await openDB(location, this.version, {
+        upgrade(db) {
+          db.createObjectStore(location);
+        }
+      });
+    } catch (err) {
+      throw new OpenFailedError(String(err));
+    }
+  }
+  async close() {
+    this.db?.close();
+  }
+  async put(key, val) {
+    if (this.db == null) {
+      throw new Error("Datastore needs to be opened.");
+    }
+    try {
+      await this.db.put(this.location, val, key.toString());
+      return key;
+    } catch (err) {
+      throw new PutFailedError(String(err));
+    }
+  }
+  async get(key) {
+    if (this.db == null) {
+      throw new Error("Datastore needs to be opened.");
+    }
+    let val;
+    try {
+      val = await this.db.get(this.location, key.toString());
+    } catch (err) {
+      throw new GetFailedError(String(err));
+    }
+    if (val === void 0) {
+      throw new NotFoundError();
+    }
+    return val;
+  }
+  async has(key) {
+    if (this.db == null) {
+      throw new Error("Datastore needs to be opened.");
+    }
+    try {
+      return Boolean(await this.db.getKey(this.location, key.toString()));
+    } catch (err) {
+      throw new GetFailedError(String(err));
+    }
+  }
+  async delete(key) {
+    if (this.db == null) {
+      throw new Error("Datastore needs to be opened.");
+    }
+    try {
+      await this.db.delete(this.location, key.toString());
+    } catch (err) {
+      throw new DeleteFailedError(String(err));
+    }
+  }
+  batch() {
+    const puts = [];
+    const dels = [];
+    return {
+      put(key, value) {
+        puts.push({ key, value });
+      },
+      delete(key) {
+        dels.push(key);
+      },
+      commit: /* @__PURE__ */ __name(async () => {
+        if (this.db == null) {
+          throw new Error("Datastore needs to be opened.");
+        }
+        const tx = this.db.transaction(this.location, "readwrite");
+        try {
+          const ops = puts.filter(({ key }) => {
+            return dels.find((delKey) => delKey.toString() === key.toString()) == null;
+          }).map((put) => {
+            return async () => {
+              await tx.store.put(put.value, put.key.toString());
+            };
+          }).concat(dels.map((key) => {
+            return async () => {
+              await tx.store.delete(key.toString());
+            };
+          })).concat(async () => {
+            await tx.done;
+          });
+          await Promise.all(ops.map(async (op) => {
+            await op();
+          }));
+        } catch {
+          tx.abort();
+        }
+      }, "commit")
+    };
+  }
+  async *query(q) {
+    let it = this.#queryIt(q, (key, value) => {
+      return { key, value };
+    });
+    if (Array.isArray(q.filters)) {
+      it = q.filters.reduce((it2, f) => src_default8(it2, f), it);
+    }
+    if (Array.isArray(q.orders)) {
+      it = q.orders.reduce((it2, f) => src_default9(it2, f), it);
+    }
+    yield* it;
+  }
+  async *queryKeys(q) {
+    let it = this.#queryIt(q, (key) => key);
+    if (Array.isArray(q.filters)) {
+      it = q.filters.reduce((it2, f) => src_default8(it2, f), it);
+    }
+    if (Array.isArray(q.orders)) {
+      it = q.orders.reduce((it2, f) => src_default9(it2, f), it);
+    }
+    yield* it;
+  }
+  async *#queryIt(q, transform) {
+    if (this.db == null) {
+      throw new Error("Datastore needs to be opened.");
+    }
+    let yielded = 0;
+    let index = -1;
+    for (const key of await this.db.getAllKeys(this.location)) {
+      if (q.prefix != null && !key.toString().startsWith(q.prefix)) {
+        continue;
+      }
+      if (q.limit != null && yielded === q.limit) {
+        return;
+      }
+      index++;
+      if (q.offset != null && index < q.offset) {
+        continue;
+      }
+      const k = new Key(key.toString());
+      let value;
+      try {
+        value = await this.get(k);
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          throw err;
+        }
+        continue;
+      }
+      if (value == null) {
+        continue;
+      }
+      yield transform(k, value);
+      yielded++;
+    }
+  }
+  async destroy() {
+    await deleteDB(this.location);
+  }
+};
 export {
+  IDBDatastore,
+  MemoryDatastore2 as MemoryDatastore,
   bootstrap,
   circuitRelayTransport,
   createLibp2p,
@@ -56343,6 +57106,7 @@ export {
   fromString2 as fromString,
   gossipsub,
   identify,
+  identifyPush,
   kadDHT,
   multiaddr,
   noise,

@@ -9,8 +9,8 @@ var __commonJS = (cb, mod2) => function __require() {
   return mod2 || (0, cb[__getOwnPropNames(cb)[0]])((mod2 = { exports: {} }).exports, mod2), mod2.exports;
 };
 var __export = (target, all2) => {
-  for (var name3 in all2)
-    __defProp(target, name3, { get: all2[name3], enumerable: true });
+  for (var name2 in all2)
+    __defProp(target, name2, { get: all2[name2], enumerable: true });
 };
 var __copyProps = (to, from3, except, desc) => {
   if (from3 && typeof from3 === "object" || typeof from3 === "function") {
@@ -126,10 +126,10 @@ var require_build = __commonJS({
         __name(this, "Utf8Converter");
       }
       static fromString(text) {
-        const s2 = unescape(encodeURIComponent(text));
-        const uintArray = new Uint8Array(s2.length);
-        for (let i = 0; i < s2.length; i++) {
-          uintArray[i] = s2.charCodeAt(i);
+        const s = unescape(encodeURIComponent(text));
+        const uintArray = new Uint8Array(s.length);
+        for (let i = 0; i < s.length; i++) {
+          uintArray[i] = s.charCodeAt(i);
         }
         return uintArray.buffer;
       }
@@ -408,404 +408,6 @@ var require_build = __commonJS({
   }
 });
 
-// node_modules/murmurhash3js-revisited/lib/murmurHash3js.js
-var require_murmurHash3js = __commonJS({
-  "node_modules/murmurhash3js-revisited/lib/murmurHash3js.js"(exports, module) {
-    (function(root, undefined2) {
-      "use strict";
-      var library = {
-        "version": "3.0.0",
-        "x86": {},
-        "x64": {},
-        "inputValidation": true
-      };
-      function _validBytes(bytes2) {
-        if (!Array.isArray(bytes2) && !ArrayBuffer.isView(bytes2)) {
-          return false;
-        }
-        for (var i = 0; i < bytes2.length; i++) {
-          if (!Number.isInteger(bytes2[i]) || bytes2[i] < 0 || bytes2[i] > 255) {
-            return false;
-          }
-        }
-        return true;
-      }
-      __name(_validBytes, "_validBytes");
-      function _x86Multiply(m2, n) {
-        return (m2 & 65535) * n + (((m2 >>> 16) * n & 65535) << 16);
-      }
-      __name(_x86Multiply, "_x86Multiply");
-      function _x86Rotl(m2, n) {
-        return m2 << n | m2 >>> 32 - n;
-      }
-      __name(_x86Rotl, "_x86Rotl");
-      function _x86Fmix(h2) {
-        h2 ^= h2 >>> 16;
-        h2 = _x86Multiply(h2, 2246822507);
-        h2 ^= h2 >>> 13;
-        h2 = _x86Multiply(h2, 3266489909);
-        h2 ^= h2 >>> 16;
-        return h2;
-      }
-      __name(_x86Fmix, "_x86Fmix");
-      function _x64Add(m2, n) {
-        m2 = [m2[0] >>> 16, m2[0] & 65535, m2[1] >>> 16, m2[1] & 65535];
-        n = [n[0] >>> 16, n[0] & 65535, n[1] >>> 16, n[1] & 65535];
-        var o = [0, 0, 0, 0];
-        o[3] += m2[3] + n[3];
-        o[2] += o[3] >>> 16;
-        o[3] &= 65535;
-        o[2] += m2[2] + n[2];
-        o[1] += o[2] >>> 16;
-        o[2] &= 65535;
-        o[1] += m2[1] + n[1];
-        o[0] += o[1] >>> 16;
-        o[1] &= 65535;
-        o[0] += m2[0] + n[0];
-        o[0] &= 65535;
-        return [o[0] << 16 | o[1], o[2] << 16 | o[3]];
-      }
-      __name(_x64Add, "_x64Add");
-      function _x64Multiply(m2, n) {
-        m2 = [m2[0] >>> 16, m2[0] & 65535, m2[1] >>> 16, m2[1] & 65535];
-        n = [n[0] >>> 16, n[0] & 65535, n[1] >>> 16, n[1] & 65535];
-        var o = [0, 0, 0, 0];
-        o[3] += m2[3] * n[3];
-        o[2] += o[3] >>> 16;
-        o[3] &= 65535;
-        o[2] += m2[2] * n[3];
-        o[1] += o[2] >>> 16;
-        o[2] &= 65535;
-        o[2] += m2[3] * n[2];
-        o[1] += o[2] >>> 16;
-        o[2] &= 65535;
-        o[1] += m2[1] * n[3];
-        o[0] += o[1] >>> 16;
-        o[1] &= 65535;
-        o[1] += m2[2] * n[2];
-        o[0] += o[1] >>> 16;
-        o[1] &= 65535;
-        o[1] += m2[3] * n[1];
-        o[0] += o[1] >>> 16;
-        o[1] &= 65535;
-        o[0] += m2[0] * n[3] + m2[1] * n[2] + m2[2] * n[1] + m2[3] * n[0];
-        o[0] &= 65535;
-        return [o[0] << 16 | o[1], o[2] << 16 | o[3]];
-      }
-      __name(_x64Multiply, "_x64Multiply");
-      function _x64Rotl(m2, n) {
-        n %= 64;
-        if (n === 32) {
-          return [m2[1], m2[0]];
-        } else if (n < 32) {
-          return [m2[0] << n | m2[1] >>> 32 - n, m2[1] << n | m2[0] >>> 32 - n];
-        } else {
-          n -= 32;
-          return [m2[1] << n | m2[0] >>> 32 - n, m2[0] << n | m2[1] >>> 32 - n];
-        }
-      }
-      __name(_x64Rotl, "_x64Rotl");
-      function _x64LeftShift(m2, n) {
-        n %= 64;
-        if (n === 0) {
-          return m2;
-        } else if (n < 32) {
-          return [m2[0] << n | m2[1] >>> 32 - n, m2[1] << n];
-        } else {
-          return [m2[1] << n - 32, 0];
-        }
-      }
-      __name(_x64LeftShift, "_x64LeftShift");
-      function _x64Xor(m2, n) {
-        return [m2[0] ^ n[0], m2[1] ^ n[1]];
-      }
-      __name(_x64Xor, "_x64Xor");
-      function _x64Fmix(h2) {
-        h2 = _x64Xor(h2, [0, h2[0] >>> 1]);
-        h2 = _x64Multiply(h2, [4283543511, 3981806797]);
-        h2 = _x64Xor(h2, [0, h2[0] >>> 1]);
-        h2 = _x64Multiply(h2, [3301882366, 444984403]);
-        h2 = _x64Xor(h2, [0, h2[0] >>> 1]);
-        return h2;
-      }
-      __name(_x64Fmix, "_x64Fmix");
-      library.x86.hash32 = function(bytes2, seed) {
-        if (library.inputValidation && !_validBytes(bytes2)) {
-          return undefined2;
-        }
-        seed = seed || 0;
-        var remainder = bytes2.length % 4;
-        var blocks = bytes2.length - remainder;
-        var h1 = seed;
-        var k1 = 0;
-        var c1 = 3432918353;
-        var c2 = 461845907;
-        for (var i = 0; i < blocks; i = i + 4) {
-          k1 = bytes2[i] | bytes2[i + 1] << 8 | bytes2[i + 2] << 16 | bytes2[i + 3] << 24;
-          k1 = _x86Multiply(k1, c1);
-          k1 = _x86Rotl(k1, 15);
-          k1 = _x86Multiply(k1, c2);
-          h1 ^= k1;
-          h1 = _x86Rotl(h1, 13);
-          h1 = _x86Multiply(h1, 5) + 3864292196;
-        }
-        k1 = 0;
-        switch (remainder) {
-          case 3:
-            k1 ^= bytes2[i + 2] << 16;
-          case 2:
-            k1 ^= bytes2[i + 1] << 8;
-          case 1:
-            k1 ^= bytes2[i];
-            k1 = _x86Multiply(k1, c1);
-            k1 = _x86Rotl(k1, 15);
-            k1 = _x86Multiply(k1, c2);
-            h1 ^= k1;
-        }
-        h1 ^= bytes2.length;
-        h1 = _x86Fmix(h1);
-        return h1 >>> 0;
-      };
-      library.x86.hash128 = function(bytes2, seed) {
-        if (library.inputValidation && !_validBytes(bytes2)) {
-          return undefined2;
-        }
-        seed = seed || 0;
-        var remainder = bytes2.length % 16;
-        var blocks = bytes2.length - remainder;
-        var h1 = seed;
-        var h2 = seed;
-        var h3 = seed;
-        var h4 = seed;
-        var k1 = 0;
-        var k2 = 0;
-        var k3 = 0;
-        var k4 = 0;
-        var c1 = 597399067;
-        var c2 = 2869860233;
-        var c3 = 951274213;
-        var c4 = 2716044179;
-        for (var i = 0; i < blocks; i = i + 16) {
-          k1 = bytes2[i] | bytes2[i + 1] << 8 | bytes2[i + 2] << 16 | bytes2[i + 3] << 24;
-          k2 = bytes2[i + 4] | bytes2[i + 5] << 8 | bytes2[i + 6] << 16 | bytes2[i + 7] << 24;
-          k3 = bytes2[i + 8] | bytes2[i + 9] << 8 | bytes2[i + 10] << 16 | bytes2[i + 11] << 24;
-          k4 = bytes2[i + 12] | bytes2[i + 13] << 8 | bytes2[i + 14] << 16 | bytes2[i + 15] << 24;
-          k1 = _x86Multiply(k1, c1);
-          k1 = _x86Rotl(k1, 15);
-          k1 = _x86Multiply(k1, c2);
-          h1 ^= k1;
-          h1 = _x86Rotl(h1, 19);
-          h1 += h2;
-          h1 = _x86Multiply(h1, 5) + 1444728091;
-          k2 = _x86Multiply(k2, c2);
-          k2 = _x86Rotl(k2, 16);
-          k2 = _x86Multiply(k2, c3);
-          h2 ^= k2;
-          h2 = _x86Rotl(h2, 17);
-          h2 += h3;
-          h2 = _x86Multiply(h2, 5) + 197830471;
-          k3 = _x86Multiply(k3, c3);
-          k3 = _x86Rotl(k3, 17);
-          k3 = _x86Multiply(k3, c4);
-          h3 ^= k3;
-          h3 = _x86Rotl(h3, 15);
-          h3 += h4;
-          h3 = _x86Multiply(h3, 5) + 2530024501;
-          k4 = _x86Multiply(k4, c4);
-          k4 = _x86Rotl(k4, 18);
-          k4 = _x86Multiply(k4, c1);
-          h4 ^= k4;
-          h4 = _x86Rotl(h4, 13);
-          h4 += h1;
-          h4 = _x86Multiply(h4, 5) + 850148119;
-        }
-        k1 = 0;
-        k2 = 0;
-        k3 = 0;
-        k4 = 0;
-        switch (remainder) {
-          case 15:
-            k4 ^= bytes2[i + 14] << 16;
-          case 14:
-            k4 ^= bytes2[i + 13] << 8;
-          case 13:
-            k4 ^= bytes2[i + 12];
-            k4 = _x86Multiply(k4, c4);
-            k4 = _x86Rotl(k4, 18);
-            k4 = _x86Multiply(k4, c1);
-            h4 ^= k4;
-          case 12:
-            k3 ^= bytes2[i + 11] << 24;
-          case 11:
-            k3 ^= bytes2[i + 10] << 16;
-          case 10:
-            k3 ^= bytes2[i + 9] << 8;
-          case 9:
-            k3 ^= bytes2[i + 8];
-            k3 = _x86Multiply(k3, c3);
-            k3 = _x86Rotl(k3, 17);
-            k3 = _x86Multiply(k3, c4);
-            h3 ^= k3;
-          case 8:
-            k2 ^= bytes2[i + 7] << 24;
-          case 7:
-            k2 ^= bytes2[i + 6] << 16;
-          case 6:
-            k2 ^= bytes2[i + 5] << 8;
-          case 5:
-            k2 ^= bytes2[i + 4];
-            k2 = _x86Multiply(k2, c2);
-            k2 = _x86Rotl(k2, 16);
-            k2 = _x86Multiply(k2, c3);
-            h2 ^= k2;
-          case 4:
-            k1 ^= bytes2[i + 3] << 24;
-          case 3:
-            k1 ^= bytes2[i + 2] << 16;
-          case 2:
-            k1 ^= bytes2[i + 1] << 8;
-          case 1:
-            k1 ^= bytes2[i];
-            k1 = _x86Multiply(k1, c1);
-            k1 = _x86Rotl(k1, 15);
-            k1 = _x86Multiply(k1, c2);
-            h1 ^= k1;
-        }
-        h1 ^= bytes2.length;
-        h2 ^= bytes2.length;
-        h3 ^= bytes2.length;
-        h4 ^= bytes2.length;
-        h1 += h2;
-        h1 += h3;
-        h1 += h4;
-        h2 += h1;
-        h3 += h1;
-        h4 += h1;
-        h1 = _x86Fmix(h1);
-        h2 = _x86Fmix(h2);
-        h3 = _x86Fmix(h3);
-        h4 = _x86Fmix(h4);
-        h1 += h2;
-        h1 += h3;
-        h1 += h4;
-        h2 += h1;
-        h3 += h1;
-        h4 += h1;
-        return ("00000000" + (h1 >>> 0).toString(16)).slice(-8) + ("00000000" + (h2 >>> 0).toString(16)).slice(-8) + ("00000000" + (h3 >>> 0).toString(16)).slice(-8) + ("00000000" + (h4 >>> 0).toString(16)).slice(-8);
-      };
-      library.x64.hash128 = function(bytes2, seed) {
-        if (library.inputValidation && !_validBytes(bytes2)) {
-          return undefined2;
-        }
-        seed = seed || 0;
-        var remainder = bytes2.length % 16;
-        var blocks = bytes2.length - remainder;
-        var h1 = [0, seed];
-        var h2 = [0, seed];
-        var k1 = [0, 0];
-        var k2 = [0, 0];
-        var c1 = [2277735313, 289559509];
-        var c2 = [1291169091, 658871167];
-        for (var i = 0; i < blocks; i = i + 16) {
-          k1 = [bytes2[i + 4] | bytes2[i + 5] << 8 | bytes2[i + 6] << 16 | bytes2[i + 7] << 24, bytes2[i] | bytes2[i + 1] << 8 | bytes2[i + 2] << 16 | bytes2[i + 3] << 24];
-          k2 = [bytes2[i + 12] | bytes2[i + 13] << 8 | bytes2[i + 14] << 16 | bytes2[i + 15] << 24, bytes2[i + 8] | bytes2[i + 9] << 8 | bytes2[i + 10] << 16 | bytes2[i + 11] << 24];
-          k1 = _x64Multiply(k1, c1);
-          k1 = _x64Rotl(k1, 31);
-          k1 = _x64Multiply(k1, c2);
-          h1 = _x64Xor(h1, k1);
-          h1 = _x64Rotl(h1, 27);
-          h1 = _x64Add(h1, h2);
-          h1 = _x64Add(_x64Multiply(h1, [0, 5]), [0, 1390208809]);
-          k2 = _x64Multiply(k2, c2);
-          k2 = _x64Rotl(k2, 33);
-          k2 = _x64Multiply(k2, c1);
-          h2 = _x64Xor(h2, k2);
-          h2 = _x64Rotl(h2, 31);
-          h2 = _x64Add(h2, h1);
-          h2 = _x64Add(_x64Multiply(h2, [0, 5]), [0, 944331445]);
-        }
-        k1 = [0, 0];
-        k2 = [0, 0];
-        switch (remainder) {
-          case 15:
-            k2 = _x64Xor(k2, _x64LeftShift([0, bytes2[i + 14]], 48));
-          case 14:
-            k2 = _x64Xor(k2, _x64LeftShift([0, bytes2[i + 13]], 40));
-          case 13:
-            k2 = _x64Xor(k2, _x64LeftShift([0, bytes2[i + 12]], 32));
-          case 12:
-            k2 = _x64Xor(k2, _x64LeftShift([0, bytes2[i + 11]], 24));
-          case 11:
-            k2 = _x64Xor(k2, _x64LeftShift([0, bytes2[i + 10]], 16));
-          case 10:
-            k2 = _x64Xor(k2, _x64LeftShift([0, bytes2[i + 9]], 8));
-          case 9:
-            k2 = _x64Xor(k2, [0, bytes2[i + 8]]);
-            k2 = _x64Multiply(k2, c2);
-            k2 = _x64Rotl(k2, 33);
-            k2 = _x64Multiply(k2, c1);
-            h2 = _x64Xor(h2, k2);
-          case 8:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 7]], 56));
-          case 7:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 6]], 48));
-          case 6:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 5]], 40));
-          case 5:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 4]], 32));
-          case 4:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 3]], 24));
-          case 3:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 2]], 16));
-          case 2:
-            k1 = _x64Xor(k1, _x64LeftShift([0, bytes2[i + 1]], 8));
-          case 1:
-            k1 = _x64Xor(k1, [0, bytes2[i]]);
-            k1 = _x64Multiply(k1, c1);
-            k1 = _x64Rotl(k1, 31);
-            k1 = _x64Multiply(k1, c2);
-            h1 = _x64Xor(h1, k1);
-        }
-        h1 = _x64Xor(h1, [0, bytes2.length]);
-        h2 = _x64Xor(h2, [0, bytes2.length]);
-        h1 = _x64Add(h1, h2);
-        h2 = _x64Add(h2, h1);
-        h1 = _x64Fmix(h1);
-        h2 = _x64Fmix(h2);
-        h1 = _x64Add(h1, h2);
-        h2 = _x64Add(h2, h1);
-        return ("00000000" + (h1[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h1[1] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[0] >>> 0).toString(16)).slice(-8) + ("00000000" + (h2[1] >>> 0).toString(16)).slice(-8);
-      };
-      if (typeof exports !== "undefined") {
-        if (typeof module !== "undefined" && module.exports) {
-          exports = module.exports = library;
-        }
-        exports.murmurHash3 = library;
-      } else if (typeof define === "function" && define.amd) {
-        define([], function() {
-          return library;
-        });
-      } else {
-        library._murmurHash3 = root.murmurHash3;
-        library.noConflict = function() {
-          root.murmurHash3 = library._murmurHash3;
-          library._murmurHash3 = undefined2;
-          library.noConflict = undefined2;
-          return library;
-        };
-        root.murmurHash3 = library;
-      }
-    })(exports);
-  }
-});
-
-// node_modules/murmurhash3js-revisited/index.js
-var require_murmurhash3js_revisited = __commonJS({
-  "node_modules/murmurhash3js-revisited/index.js"(exports, module) {
-    module.exports = require_murmurHash3js();
-  }
-});
-
 // node_modules/p-queue/node_modules/eventemitter3/index.js
 var require_eventemitter3 = __commonJS({
   "node_modules/p-queue/node_modules/eventemitter3/index.js"(exports, module) {
@@ -847,10 +449,10 @@ var require_eventemitter3 = __commonJS({
     }
     __name(EventEmitter2, "EventEmitter");
     EventEmitter2.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
-      var names2 = [], events2, name3;
+      var names2 = [], events2, name2;
       if (this._eventsCount === 0) return names2;
-      for (name3 in events2 = this._events) {
-        if (has.call(events2, name3)) names2.push(prefix ? name3.slice(1) : name3);
+      for (name2 in events2 = this._events) {
+        if (has.call(events2, name2)) names2.push(prefix ? name2.slice(1) : name2);
       }
       if (Object.getOwnPropertySymbols) {
         return names2.concat(Object.getOwnPropertySymbols(events2));
@@ -973,439 +575,6 @@ var require_eventemitter3 = __commonJS({
   }
 });
 
-// node_modules/err-code/index.js
-var require_err_code = __commonJS({
-  "node_modules/err-code/index.js"(exports, module) {
-    "use strict";
-    function assign(obj, props) {
-      for (const key in props) {
-        Object.defineProperty(obj, key, {
-          value: props[key],
-          enumerable: true,
-          configurable: true
-        });
-      }
-      return obj;
-    }
-    __name(assign, "assign");
-    function createError(err, code2, props) {
-      if (!err || typeof err === "string") {
-        throw new TypeError("Please pass an Error to err-code");
-      }
-      if (!props) {
-        props = {};
-      }
-      if (typeof code2 === "object") {
-        props = code2;
-        code2 = "";
-      }
-      if (code2) {
-        props.code = code2;
-      }
-      try {
-        return assign(err, props);
-      } catch (_) {
-        props.message = err.message;
-        props.stack = err.stack;
-        const ErrClass = /* @__PURE__ */ __name(function() {
-        }, "ErrClass");
-        ErrClass.prototype = Object.create(Object.getPrototypeOf(err));
-        const output2 = assign(new ErrClass(), props);
-        return output2;
-      }
-    }
-    __name(createError, "createError");
-    module.exports = createError;
-  }
-});
-
-// node_modules/netmask/lib/netmask.js
-var require_netmask = __commonJS({
-  "node_modules/netmask/lib/netmask.js"(exports) {
-    (function() {
-      var Netmask2, atob2, chr, chr0, chrA, chra, ip2long, long2ip;
-      long2ip = /* @__PURE__ */ __name(function(long) {
-        var a, b, c, d2;
-        a = (long & 255 << 24) >>> 24;
-        b = (long & 255 << 16) >>> 16;
-        c = (long & 255 << 8) >>> 8;
-        d2 = long & 255;
-        return [a, b, c, d2].join(".");
-      }, "long2ip");
-      ip2long = /* @__PURE__ */ __name(function(ip) {
-        var b, c, i, j, n, ref;
-        b = [];
-        for (i = j = 0; j <= 3; i = ++j) {
-          if (ip.length === 0) {
-            break;
-          }
-          if (i > 0) {
-            if (ip[0] !== ".") {
-              throw new Error("Invalid IP");
-            }
-            ip = ip.substring(1);
-          }
-          ref = atob2(ip), n = ref[0], c = ref[1];
-          ip = ip.substring(c);
-          b.push(n);
-        }
-        if (ip.length !== 0) {
-          throw new Error("Invalid IP");
-        }
-        switch (b.length) {
-          case 1:
-            if (b[0] > 4294967295) {
-              throw new Error("Invalid IP");
-            }
-            return b[0] >>> 0;
-          case 2:
-            if (b[0] > 255 || b[1] > 16777215) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1]) >>> 0;
-          case 3:
-            if (b[0] > 255 || b[1] > 255 || b[2] > 65535) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1] << 16 | b[2]) >>> 0;
-          case 4:
-            if (b[0] > 255 || b[1] > 255 || b[2] > 255 || b[3] > 255) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]) >>> 0;
-          default:
-            throw new Error("Invalid IP");
-        }
-      }, "ip2long");
-      chr = /* @__PURE__ */ __name(function(b) {
-        return b.charCodeAt(0);
-      }, "chr");
-      chr0 = chr("0");
-      chra = chr("a");
-      chrA = chr("A");
-      atob2 = /* @__PURE__ */ __name(function(s2) {
-        var base3, dmax, i, n, start;
-        n = 0;
-        base3 = 10;
-        dmax = "9";
-        i = 0;
-        if (s2.length > 1 && s2[i] === "0") {
-          if (s2[i + 1] === "x" || s2[i + 1] === "X") {
-            i += 2;
-            base3 = 16;
-          } else if ("0" <= s2[i + 1] && s2[i + 1] <= "9") {
-            i++;
-            base3 = 8;
-            dmax = "7";
-          }
-        }
-        start = i;
-        while (i < s2.length) {
-          if ("0" <= s2[i] && s2[i] <= dmax) {
-            n = n * base3 + (chr(s2[i]) - chr0) >>> 0;
-          } else if (base3 === 16) {
-            if ("a" <= s2[i] && s2[i] <= "f") {
-              n = n * base3 + (10 + chr(s2[i]) - chra) >>> 0;
-            } else if ("A" <= s2[i] && s2[i] <= "F") {
-              n = n * base3 + (10 + chr(s2[i]) - chrA) >>> 0;
-            } else {
-              break;
-            }
-          } else {
-            break;
-          }
-          if (n > 4294967295) {
-            throw new Error("too large");
-          }
-          i++;
-        }
-        if (i === start) {
-          throw new Error("empty octet");
-        }
-        return [n, i];
-      }, "atob");
-      Netmask2 = function() {
-        function Netmask3(net, mask) {
-          var error, i, j, ref;
-          if (typeof net !== "string") {
-            throw new Error("Missing `net' parameter");
-          }
-          if (!mask) {
-            ref = net.split("/", 2), net = ref[0], mask = ref[1];
-          }
-          if (!mask) {
-            mask = 32;
-          }
-          if (typeof mask === "string" && mask.indexOf(".") > -1) {
-            try {
-              this.maskLong = ip2long(mask);
-            } catch (error1) {
-              error = error1;
-              throw new Error("Invalid mask: " + mask);
-            }
-            for (i = j = 32; j >= 0; i = --j) {
-              if (this.maskLong === 4294967295 << 32 - i >>> 0) {
-                this.bitmask = i;
-                break;
-              }
-            }
-          } else if (mask || mask === 0) {
-            this.bitmask = parseInt(mask, 10);
-            this.maskLong = 0;
-            if (this.bitmask > 0) {
-              this.maskLong = 4294967295 << 32 - this.bitmask >>> 0;
-            }
-          } else {
-            throw new Error("Invalid mask: empty");
-          }
-          try {
-            this.netLong = (ip2long(net) & this.maskLong) >>> 0;
-          } catch (error1) {
-            error = error1;
-            throw new Error("Invalid net address: " + net);
-          }
-          if (!(this.bitmask <= 32)) {
-            throw new Error("Invalid mask for ip4: " + mask);
-          }
-          this.size = Math.pow(2, 32 - this.bitmask);
-          this.base = long2ip(this.netLong);
-          this.mask = long2ip(this.maskLong);
-          this.hostmask = long2ip(~this.maskLong);
-          this.first = this.bitmask <= 30 ? long2ip(this.netLong + 1) : this.base;
-          this.last = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 2) : long2ip(this.netLong + this.size - 1);
-          this.broadcast = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 1) : void 0;
-        }
-        __name(Netmask3, "Netmask");
-        Netmask3.prototype.contains = function(ip) {
-          if (typeof ip === "string" && (ip.indexOf("/") > 0 || ip.split(".").length !== 4)) {
-            ip = new Netmask3(ip);
-          }
-          if (ip instanceof Netmask3) {
-            return this.contains(ip.base) && this.contains(ip.broadcast || ip.last);
-          } else {
-            return (ip2long(ip) & this.maskLong) >>> 0 === (this.netLong & this.maskLong) >>> 0;
-          }
-        };
-        Netmask3.prototype.next = function(count) {
-          if (count == null) {
-            count = 1;
-          }
-          return new Netmask3(long2ip(this.netLong + this.size * count), this.mask);
-        };
-        Netmask3.prototype.forEach = function(fn) {
-          var index, lastLong, long;
-          long = ip2long(this.first);
-          lastLong = ip2long(this.last);
-          index = 0;
-          while (long <= lastLong) {
-            fn(long2ip(long), long, index);
-            index++;
-            long++;
-          }
-        };
-        Netmask3.prototype.toString = function() {
-          return this.base + "/" + this.bitmask;
-        };
-        return Netmask3;
-      }();
-      exports.ip2long = ip2long;
-      exports.long2ip = long2ip;
-      exports.Netmask = Netmask2;
-    }).call(exports);
-  }
-});
-
-// node_modules/hashlru/index.js
-var require_hashlru = __commonJS({
-  "node_modules/hashlru/index.js"(exports, module) {
-    module.exports = function(max) {
-      if (!max) throw Error("hashlru must have a max value, of type number, greater than 0");
-      var size = 0, cache3 = /* @__PURE__ */ Object.create(null), _cache = /* @__PURE__ */ Object.create(null);
-      function update(key, value) {
-        cache3[key] = value;
-        size++;
-        if (size >= max) {
-          size = 0;
-          _cache = cache3;
-          cache3 = /* @__PURE__ */ Object.create(null);
-        }
-      }
-      __name(update, "update");
-      return {
-        has: /* @__PURE__ */ __name(function(key) {
-          return cache3[key] !== void 0 || _cache[key] !== void 0;
-        }, "has"),
-        remove: /* @__PURE__ */ __name(function(key) {
-          if (cache3[key] !== void 0)
-            cache3[key] = void 0;
-          if (_cache[key] !== void 0)
-            _cache[key] = void 0;
-        }, "remove"),
-        get: /* @__PURE__ */ __name(function(key) {
-          var v = cache3[key];
-          if (v !== void 0) return v;
-          if ((v = _cache[key]) !== void 0) {
-            update(key, v);
-            return v;
-          }
-        }, "get"),
-        set: /* @__PURE__ */ __name(function(key, value) {
-          if (cache3[key] !== void 0) cache3[key] = value;
-          else update(key, value);
-        }, "set"),
-        clear: /* @__PURE__ */ __name(function() {
-          cache3 = /* @__PURE__ */ Object.create(null);
-          _cache = /* @__PURE__ */ Object.create(null);
-        }, "clear")
-      };
-    };
-  }
-});
-
-// node_modules/is-plain-obj/index.js
-var require_is_plain_obj = __commonJS({
-  "node_modules/is-plain-obj/index.js"(exports, module) {
-    "use strict";
-    module.exports = (value) => {
-      if (Object.prototype.toString.call(value) !== "[object Object]") {
-        return false;
-      }
-      const prototype = Object.getPrototypeOf(value);
-      return prototype === null || prototype === Object.prototype;
-    };
-  }
-});
-
-// node_modules/merge-options/index.js
-var require_merge_options = __commonJS({
-  "node_modules/merge-options/index.js"(exports, module) {
-    "use strict";
-    var isOptionObject = require_is_plain_obj();
-    var { hasOwnProperty } = Object.prototype;
-    var { propertyIsEnumerable } = Object;
-    var defineProperty = /* @__PURE__ */ __name((object, name3, value) => Object.defineProperty(object, name3, {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true
-    }), "defineProperty");
-    var globalThis2 = exports;
-    var defaultMergeOptions = {
-      concatArrays: false,
-      ignoreUndefined: false
-    };
-    var getEnumerableOwnPropertyKeys = /* @__PURE__ */ __name((value) => {
-      const keys = [];
-      for (const key in value) {
-        if (hasOwnProperty.call(value, key)) {
-          keys.push(key);
-        }
-      }
-      if (Object.getOwnPropertySymbols) {
-        const symbols = Object.getOwnPropertySymbols(value);
-        for (const symbol3 of symbols) {
-          if (propertyIsEnumerable.call(value, symbol3)) {
-            keys.push(symbol3);
-          }
-        }
-      }
-      return keys;
-    }, "getEnumerableOwnPropertyKeys");
-    function clone(value) {
-      if (Array.isArray(value)) {
-        return cloneArray(value);
-      }
-      if (isOptionObject(value)) {
-        return cloneOptionObject(value);
-      }
-      return value;
-    }
-    __name(clone, "clone");
-    function cloneArray(array) {
-      const result = array.slice(0, 0);
-      getEnumerableOwnPropertyKeys(array).forEach((key) => {
-        defineProperty(result, key, clone(array[key]));
-      });
-      return result;
-    }
-    __name(cloneArray, "cloneArray");
-    function cloneOptionObject(object) {
-      const result = Object.getPrototypeOf(object) === null ? /* @__PURE__ */ Object.create(null) : {};
-      getEnumerableOwnPropertyKeys(object).forEach((key) => {
-        defineProperty(result, key, clone(object[key]));
-      });
-      return result;
-    }
-    __name(cloneOptionObject, "cloneOptionObject");
-    var mergeKeys = /* @__PURE__ */ __name((merged, source, keys, config) => {
-      keys.forEach((key) => {
-        if (typeof source[key] === "undefined" && config.ignoreUndefined) {
-          return;
-        }
-        if (key in merged && merged[key] !== Object.getPrototypeOf(merged)) {
-          defineProperty(merged, key, merge2(merged[key], source[key], config));
-        } else {
-          defineProperty(merged, key, clone(source[key]));
-        }
-      });
-      return merged;
-    }, "mergeKeys");
-    var concatArrays = /* @__PURE__ */ __name((merged, source, config) => {
-      let result = merged.slice(0, 0);
-      let resultIndex = 0;
-      [merged, source].forEach((array) => {
-        const indices = [];
-        for (let k = 0; k < array.length; k++) {
-          if (!hasOwnProperty.call(array, k)) {
-            continue;
-          }
-          indices.push(String(k));
-          if (array === merged) {
-            defineProperty(result, resultIndex++, array[k]);
-          } else {
-            defineProperty(result, resultIndex++, clone(array[k]));
-          }
-        }
-        result = mergeKeys(result, array, getEnumerableOwnPropertyKeys(array).filter((key) => !indices.includes(key)), config);
-      });
-      return result;
-    }, "concatArrays");
-    function merge2(merged, source, config) {
-      if (config.concatArrays && Array.isArray(merged) && Array.isArray(source)) {
-        return concatArrays(merged, source, config);
-      }
-      if (!isOptionObject(source) || !isOptionObject(merged)) {
-        return clone(source);
-      }
-      return mergeKeys(merged, source, getEnumerableOwnPropertyKeys(source), config);
-    }
-    __name(merge2, "merge");
-    module.exports = function(...options) {
-      const config = merge2(clone(defaultMergeOptions), this !== globalThis2 && this || {}, defaultMergeOptions);
-      let merged = { _: {} };
-      for (const option of options) {
-        if (option === void 0) {
-          continue;
-        }
-        if (!isOptionObject(option)) {
-          throw new TypeError("`" + option + "` is not an Option Object");
-        }
-        merged = merge2(merged, { _: option }, config);
-      }
-      return merged._;
-    };
-  }
-});
-
-// node_modules/@libp2p/interface/dist/src/connection/index.js
-var connectionSymbol = Symbol.for("@libp2p/connection");
-
-// node_modules/@libp2p/interface/dist/src/content-routing/index.js
-var contentRoutingSymbol = Symbol.for("@libp2p/content-routing");
-
-// node_modules/@libp2p/interface/dist/src/peer-discovery/index.js
-var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
-
 // node_modules/@libp2p/interface/dist/src/peer-id/index.js
 var peerIdSymbol = Symbol.for("@libp2p/peer-id");
 function isPeerId(other) {
@@ -1413,36 +582,7 @@ function isPeerId(other) {
 }
 __name(isPeerId, "isPeerId");
 
-// node_modules/@libp2p/interface/dist/src/peer-routing/index.js
-var peerRoutingSymbol = Symbol.for("@libp2p/peer-routing");
-
-// node_modules/@libp2p/interface/dist/src/peer-store/tags.js
-var KEEP_ALIVE = "keep-alive";
-
-// node_modules/@libp2p/interface/dist/src/transport/index.js
-var transportSymbol = Symbol.for("@libp2p/transport");
-var FaultTolerance;
-(function(FaultTolerance2) {
-  FaultTolerance2[FaultTolerance2["FATAL_ALL"] = 0] = "FATAL_ALL";
-  FaultTolerance2[FaultTolerance2["NO_FATAL"] = 1] = "NO_FATAL";
-})(FaultTolerance || (FaultTolerance = {}));
-
 // node_modules/@libp2p/interface/dist/src/errors.js
-var AbortError = class _AbortError extends Error {
-  static {
-    __name(this, "AbortError");
-  }
-  code;
-  type;
-  constructor(message2 = "The operation was aborted") {
-    super(message2);
-    this.name = "AbortError";
-    this.code = _AbortError.code;
-    this.type = _AbortError.type;
-  }
-  static code = "ABORT_ERR";
-  static type = "aborted";
-};
 var CodeError = class extends Error {
   static {
     __name(this, "CodeError");
@@ -1456,97 +596,6 @@ var CodeError = class extends Error {
     this.props = props ?? {};
   }
 };
-var AggregateCodeError = class extends AggregateError {
-  static {
-    __name(this, "AggregateCodeError");
-  }
-  code;
-  props;
-  constructor(errors, message2, code2, props) {
-    super(errors, message2);
-    this.code = code2;
-    this.name = props?.name ?? "AggregateCodeError";
-    this.props = props ?? {};
-  }
-};
-var ERR_TIMEOUT = "ERR_TIMEOUT";
-
-// node_modules/@libp2p/interface/dist/src/events.browser.js
-function setMaxListeners() {
-}
-__name(setMaxListeners, "setMaxListeners");
-
-// node_modules/@libp2p/interface/dist/src/events.js
-var setMaxListeners2 = /* @__PURE__ */ __name((n, ...eventTargets) => {
-  try {
-    setMaxListeners(n, ...eventTargets);
-  } catch {
-  }
-}, "setMaxListeners");
-
-// node_modules/@libp2p/interface/dist/src/event-target.js
-var TypedEventEmitter = class extends EventTarget {
-  static {
-    __name(this, "TypedEventEmitter");
-  }
-  #listeners = /* @__PURE__ */ new Map();
-  constructor() {
-    super();
-    setMaxListeners2(Infinity, this);
-  }
-  listenerCount(type) {
-    const listeners = this.#listeners.get(type);
-    if (listeners == null) {
-      return 0;
-    }
-    return listeners.length;
-  }
-  addEventListener(type, listener, options) {
-    super.addEventListener(type, listener, options);
-    let list = this.#listeners.get(type);
-    if (list == null) {
-      list = [];
-      this.#listeners.set(type, list);
-    }
-    list.push({
-      callback: listener,
-      once: (options !== true && options !== false && options?.once) ?? false
-    });
-  }
-  removeEventListener(type, listener, options) {
-    super.removeEventListener(type.toString(), listener ?? null, options);
-    let list = this.#listeners.get(type);
-    if (list == null) {
-      return;
-    }
-    list = list.filter(({ callback }) => callback !== listener);
-    this.#listeners.set(type, list);
-  }
-  dispatchEvent(event) {
-    const result = super.dispatchEvent(event);
-    let list = this.#listeners.get(event.type);
-    if (list == null) {
-      return result;
-    }
-    list = list.filter(({ once }) => !once);
-    this.#listeners.set(event.type, list);
-    return result;
-  }
-  safeDispatchEvent(type, detail = {}) {
-    return this.dispatchEvent(new CustomEvent(type, detail));
-  }
-};
-var CustomEvent = globalThis.CustomEvent;
-
-// node_modules/@libp2p/interface/dist/src/startable.js
-function isStartable(obj) {
-  return obj != null && typeof obj.start === "function" && typeof obj.stop === "function";
-}
-__name(isStartable, "isStartable");
-
-// node_modules/@libp2p/interface/dist/src/index.js
-var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
-var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
 
 // node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
 var ed25519_class_exports = {};
@@ -1603,7 +652,7 @@ function toString(b) {
 __name(toString, "toString");
 
 // node_modules/multiformats/dist/src/vendor/base-x.js
-function base(ALPHABET, name3) {
+function base(ALPHABET, name2) {
   if (ALPHABET.length >= 255) {
     throw new TypeError("Alphabet too long");
   }
@@ -1623,7 +672,7 @@ function base(ALPHABET, name3) {
   var LEADER = ALPHABET.charAt(0);
   var FACTOR = Math.log(BASE) / Math.log(256);
   var iFACTOR = Math.log(256) / Math.log(BASE);
-  function encode7(source) {
+  function encode6(source) {
     if (source instanceof Uint8Array)
       ;
     else if (ArrayBuffer.isView(source)) {
@@ -1671,7 +720,7 @@ function base(ALPHABET, name3) {
     }
     return str;
   }
-  __name(encode7, "encode");
+  __name(encode6, "encode");
   function decodeUnsafe(source) {
     if (typeof source !== "string") {
       throw new TypeError("Expected String");
@@ -1723,18 +772,18 @@ function base(ALPHABET, name3) {
     return vch;
   }
   __name(decodeUnsafe, "decodeUnsafe");
-  function decode8(string3) {
-    var buffer = decodeUnsafe(string3);
+  function decode7(string2) {
+    var buffer = decodeUnsafe(string2);
     if (buffer) {
       return buffer;
     }
-    throw new Error(`Non-${name3} character`);
+    throw new Error(`Non-${name2} character`);
   }
-  __name(decode8, "decode");
+  __name(decode7, "decode");
   return {
-    encode: encode7,
+    encode: encode6,
     decodeUnsafe,
-    decode: decode8
+    decode: decode7
   };
 }
 __name(base, "base");
@@ -1750,8 +799,8 @@ var Encoder = class {
   name;
   prefix;
   baseEncode;
-  constructor(name3, prefix, baseEncode) {
-    this.name = name3;
+  constructor(name2, prefix, baseEncode) {
+    this.name = name2;
     this.prefix = prefix;
     this.baseEncode = baseEncode;
   }
@@ -1771,8 +820,8 @@ var Decoder = class {
   prefix;
   baseDecode;
   prefixCodePoint;
-  constructor(name3, prefix, baseDecode) {
-    this.name = name3;
+  constructor(name2, prefix, baseDecode) {
+    this.name = name2;
     this.prefix = prefix;
     if (prefix.codePointAt(0) === void 0) {
       throw new Error("Invalid prefix character");
@@ -1832,13 +881,13 @@ var Codec = class {
   baseDecode;
   encoder;
   decoder;
-  constructor(name3, prefix, baseEncode, baseDecode) {
-    this.name = name3;
+  constructor(name2, prefix, baseEncode, baseDecode) {
+    this.name = name2;
     this.prefix = prefix;
     this.baseEncode = baseEncode;
     this.baseDecode = baseDecode;
-    this.encoder = new Encoder(name3, prefix, baseEncode);
-    this.decoder = new Decoder(name3, prefix, baseDecode);
+    this.encoder = new Encoder(name2, prefix, baseEncode);
+    this.decoder = new Decoder(name2, prefix, baseDecode);
   }
   encode(input) {
     return this.encoder.encode(input);
@@ -1847,27 +896,27 @@ var Codec = class {
     return this.decoder.decode(input);
   }
 };
-function from({ name: name3, prefix, encode: encode7, decode: decode8 }) {
-  return new Codec(name3, prefix, encode7, decode8);
+function from({ name: name2, prefix, encode: encode6, decode: decode7 }) {
+  return new Codec(name2, prefix, encode6, decode7);
 }
 __name(from, "from");
-function baseX({ name: name3, prefix, alphabet: alphabet2 }) {
-  const { encode: encode7, decode: decode8 } = base_x_default(alphabet2, name3);
+function baseX({ name: name2, prefix, alphabet: alphabet2 }) {
+  const { encode: encode6, decode: decode7 } = base_x_default(alphabet2, name2);
   return from({
     prefix,
-    name: name3,
-    encode: encode7,
-    decode: /* @__PURE__ */ __name((text) => coerce(decode8(text)), "decode")
+    name: name2,
+    encode: encode6,
+    decode: /* @__PURE__ */ __name((text) => coerce(decode7(text)), "decode")
   });
 }
 __name(baseX, "baseX");
-function decode(string3, alphabet2, bitsPerChar, name3) {
-  const codes5 = {};
+function decode(string2, alphabet2, bitsPerChar, name2) {
+  const codes4 = {};
   for (let i = 0; i < alphabet2.length; ++i) {
-    codes5[alphabet2[i]] = i;
+    codes4[alphabet2[i]] = i;
   }
-  let end = string3.length;
-  while (string3[end - 1] === "=") {
+  let end = string2.length;
+  while (string2[end - 1] === "=") {
     --end;
   }
   const out = new Uint8Array(end * bitsPerChar / 8 | 0);
@@ -1875,9 +924,9 @@ function decode(string3, alphabet2, bitsPerChar, name3) {
   let buffer = 0;
   let written = 0;
   for (let i = 0; i < end; ++i) {
-    const value = codes5[string3[i]];
+    const value = codes4[string2[i]];
     if (value === void 0) {
-      throw new SyntaxError(`Non-${name3} character`);
+      throw new SyntaxError(`Non-${name2} character`);
     }
     buffer = buffer << bitsPerChar | value;
     bits += bitsPerChar;
@@ -1917,15 +966,15 @@ function encode(data, alphabet2, bitsPerChar) {
   return out;
 }
 __name(encode, "encode");
-function rfc4648({ name: name3, prefix, bitsPerChar, alphabet: alphabet2 }) {
+function rfc4648({ name: name2, prefix, bitsPerChar, alphabet: alphabet2 }) {
   return from({
     prefix,
-    name: name3,
+    name: name2,
     encode(input) {
       return encode(input, alphabet2, bitsPerChar);
     },
     decode(input) {
-      return decode(input, alphabet2, bitsPerChar, name3);
+      return decode(input, alphabet2, bitsPerChar, name2);
     }
   });
 }
@@ -2095,8 +1144,8 @@ __export(sha2_browser_exports, {
 });
 
 // node_modules/multiformats/dist/src/hashes/hasher.js
-function from2({ name: name3, code: code2, encode: encode7 }) {
-  return new Hasher(name3, code2, encode7);
+function from2({ name: name2, code: code2, encode: encode6 }) {
+  return new Hasher(name2, code2, encode6);
 }
 __name(from2, "from");
 var Hasher = class {
@@ -2106,10 +1155,10 @@ var Hasher = class {
   name;
   code;
   encode;
-  constructor(name3, code2, encode7) {
-    this.name = name3;
+  constructor(name2, code2, encode6) {
+    this.name = name2;
     this.code = code2;
-    this.encode = encode7;
+    this.encode = encode6;
   }
   digest(input) {
     if (input instanceof Uint8Array) {
@@ -2122,8 +1171,8 @@ var Hasher = class {
 };
 
 // node_modules/multiformats/dist/src/hashes/sha2-browser.js
-function sha(name3) {
-  return async (data) => new Uint8Array(await crypto.subtle.digest(name3, data));
+function sha(name2) {
+  return async (data) => new Uint8Array(await crypto.subtle.digest(name2, data));
 }
 __name(sha, "sha");
 var sha256 = from2({
@@ -2415,8 +1464,8 @@ var textDecoder = new TextDecoder();
 
 // node_modules/multiformats/dist/src/cid.js
 function format(link, base3) {
-  const { bytes: bytes2, version: version2 } = link;
-  switch (version2) {
+  const { bytes: bytes2, version } = link;
+  switch (version) {
     case 0:
       return toStringV0(bytes2, baseCache(link), base3 ?? base58btc.encoder);
     default:
@@ -2449,9 +1498,9 @@ var CID = class _CID {
    * @param code - Code of the codec content is encoded in, see https://github.com/multiformats/multicodec/blob/master/table.csv
    * @param multihash - (Multi)hash of the of the content.
    */
-  constructor(version2, code2, multihash, bytes2) {
+  constructor(version, code2, multihash, bytes2) {
     this.code = code2;
-    this.version = version2;
+    this.version = version;
     this.multihash = multihash;
     this.bytes = bytes2;
     this["/"] = bytes2;
@@ -2547,12 +1596,12 @@ var CID = class _CID {
     if (value instanceof _CID) {
       return value;
     } else if (value["/"] != null && value["/"] === value.bytes || value.asCID === value) {
-      const { version: version2, code: code2, multihash, bytes: bytes2 } = value;
-      return new _CID(version2, code2, multihash, bytes2 ?? encodeCID(version2, code2, multihash.bytes));
+      const { version, code: code2, multihash, bytes: bytes2 } = value;
+      return new _CID(version, code2, multihash, bytes2 ?? encodeCID(version, code2, multihash.bytes));
     } else if (value[cidSymbol] === true) {
-      const { version: version2, multihash, code: code2 } = value;
+      const { version, multihash, code: code2 } = value;
       const digest2 = decode4(multihash);
-      return _CID.create(version2, code2, digest2);
+      return _CID.create(version, code2, digest2);
     } else {
       return null;
     }
@@ -2562,24 +1611,24 @@ var CID = class _CID {
    * @param code - Code of the codec content is encoded in, see https://github.com/multiformats/multicodec/blob/master/table.csv
    * @param digest - (Multi)hash of the of the content.
    */
-  static create(version2, code2, digest2) {
+  static create(version, code2, digest2) {
     if (typeof code2 !== "number") {
       throw new Error("String codecs are no longer supported");
     }
     if (!(digest2.bytes instanceof Uint8Array)) {
       throw new Error("Invalid digest");
     }
-    switch (version2) {
+    switch (version) {
       case 0: {
         if (code2 !== DAG_PB_CODE) {
           throw new Error(`Version 0 CID must use dag-pb (code: ${DAG_PB_CODE}) block encoding`);
         } else {
-          return new _CID(version2, code2, digest2, digest2.bytes);
+          return new _CID(version, code2, digest2, digest2.bytes);
         }
       }
       case 1: {
-        const bytes2 = encodeCID(version2, code2, digest2.bytes);
-        return new _CID(version2, code2, digest2, bytes2);
+        const bytes2 = encodeCID(version, code2, digest2.bytes);
+        return new _CID(version, code2, digest2, bytes2);
       }
       default: {
         throw new Error("Invalid version");
@@ -2652,23 +1701,23 @@ var CID = class _CID {
       offset += length3;
       return i;
     }, "next");
-    let version2 = next();
+    let version = next();
     let codec = DAG_PB_CODE;
-    if (version2 === 18) {
-      version2 = 0;
+    if (version === 18) {
+      version = 0;
       offset = 0;
     } else {
       codec = next();
     }
-    if (version2 !== 0 && version2 !== 1) {
-      throw new RangeError(`Invalid CID version ${version2}`);
+    if (version !== 0 && version !== 1) {
+      throw new RangeError(`Invalid CID version ${version}`);
     }
     const prefixSize = offset;
     const multihashCode = next();
     const digestSize = next();
     const size = offset + digestSize;
     const multihashSize = size - prefixSize;
-    return { version: version2, codec, multihashCode, digestSize, multihashSize, size };
+    return { version, codec, multihashCode, digestSize, multihashSize, size };
   }
   /**
    * Takes cid in a string representation and creates an instance. If `base`
@@ -2713,27 +1762,27 @@ function parseCIDtoBytes(source, base3) {
   }
 }
 __name(parseCIDtoBytes, "parseCIDtoBytes");
-function toStringV0(bytes2, cache3, base3) {
+function toStringV0(bytes2, cache2, base3) {
   const { prefix } = base3;
   if (prefix !== base58btc.prefix) {
     throw Error(`Cannot string encode V0 in ${base3.name} encoding`);
   }
-  const cid = cache3.get(prefix);
+  const cid = cache2.get(prefix);
   if (cid == null) {
     const cid2 = base3.encode(bytes2).slice(1);
-    cache3.set(prefix, cid2);
+    cache2.set(prefix, cid2);
     return cid2;
   } else {
     return cid;
   }
 }
 __name(toStringV0, "toStringV0");
-function toStringV1(bytes2, cache3, base3) {
+function toStringV1(bytes2, cache2, base3) {
   const { prefix } = base3;
-  const cid = cache3.get(prefix);
+  const cid = cache2.get(prefix);
   if (cid == null) {
     const cid2 = base3.encode(bytes2);
-    cache3.set(prefix, cid2);
+    cache2.set(prefix, cid2);
     return cid2;
   } else {
     return cid;
@@ -2742,11 +1791,11 @@ function toStringV1(bytes2, cache3, base3) {
 __name(toStringV1, "toStringV1");
 var DAG_PB_CODE = 112;
 var SHA_256_CODE = 18;
-function encodeCID(version2, code2, multihash) {
-  const codeOffset = encodingLength(version2);
+function encodeCID(version, code2, multihash) {
+  const codeOffset = encodingLength(version);
   const hashOffset = codeOffset + encodingLength(code2);
   const bytes2 = new Uint8Array(hashOffset + multihash.byteLength);
-  encodeTo(version2, bytes2, 0);
+  encodeTo(version, bytes2, 0);
   encodeTo(code2, bytes2, codeOffset);
   bytes2.set(multihash, hashOffset);
   return bytes2;
@@ -2759,17 +1808,17 @@ var bases = { ...identity_exports2, ...base2_exports, ...base8_exports, ...base1
 var hashes = { ...sha2_browser_exports, ...identity_exports };
 
 // node_modules/uint8arrays/dist/src/util/bases.js
-function createCodec(name3, prefix, encode7, decode8) {
+function createCodec(name2, prefix, encode6, decode7) {
   return {
-    name: name3,
+    name: name2,
     prefix,
     encoder: {
-      name: name3,
+      name: name2,
       prefix,
-      encode: encode7
+      encode: encode6
     },
     decoder: {
-      decode: decode8
+      decode: decode7
     }
   };
 }
@@ -2782,11 +1831,11 @@ var string = createCodec("utf8", "u", (buf) => {
   return encoder.encode(str.substring(1));
 });
 var ascii = createCodec("ascii", "a", (buf) => {
-  let string3 = "a";
+  let string2 = "a";
   for (let i = 0; i < buf.length; i++) {
-    string3 += String.fromCharCode(buf[i]);
+    string2 += String.fromCharCode(buf[i]);
   }
-  return string3;
+  return string2;
 }, (str) => {
   str = str.substring(1);
   const buf = allocUnsafe(str.length);
@@ -2807,12 +1856,12 @@ var BASES = {
 var bases_default = BASES;
 
 // node_modules/uint8arrays/dist/src/from-string.js
-function fromString2(string3, encoding = "utf8") {
+function fromString2(string2, encoding = "utf8") {
   const base3 = bases_default[encoding];
   if (base3 == null) {
     throw new Error(`Unsupported encoding "${encoding}"`);
   }
-  return base3.decoder.decode(`${base3.prefix}${string3}`);
+  return base3.decoder.decode(`${base3.prefix}${string2}`);
 }
 __name(fromString2, "fromString");
 
@@ -2842,11 +1891,11 @@ function bytes(b, ...lengths) {
     throw new Error(`Uint8Array expected of length ${lengths}, not of length=${b.length}`);
 }
 __name(bytes, "bytes");
-function hash(h2) {
-  if (typeof h2 !== "function" || typeof h2.create !== "function")
+function hash(h) {
+  if (typeof h !== "function" || typeof h.create !== "function")
     throw new Error("Hash should be wrapped by utils.wrapConstructor");
-  number(h2.outputLen);
-  number(h2.blockLen);
+  number(h.outputLen);
+  number(h.blockLen);
 }
 __name(hash, "hash");
 function exists(instance, checkFinished = true) {
@@ -2960,9 +2009,9 @@ function setBigUint64(view, byteOffset, value, isLE2) {
   const _u32_max = BigInt(4294967295);
   const wh = Number(value >> _32n2 & _u32_max);
   const wl = Number(value & _u32_max);
-  const h2 = isLE2 ? 4 : 0;
+  const h = isLE2 ? 4 : 0;
   const l = isLE2 ? 0 : 4;
-  view.setUint32(byteOffset + h2, wh, isLE2);
+  view.setUint32(byteOffset + h, wh, isLE2);
   view.setUint32(byteOffset + l, wl, isLE2);
 }
 __name(setBigUint64, "setBigUint64");
@@ -2991,16 +2040,16 @@ var HashMD = class extends Hash {
     data = toBytes(data);
     const len = data.length;
     for (let pos = 0; pos < len; ) {
-      const take2 = Math.min(blockLen - this.pos, len - pos);
-      if (take2 === blockLen) {
+      const take = Math.min(blockLen - this.pos, len - pos);
+      if (take === blockLen) {
         const dataView = createView(data);
         for (; blockLen <= len - pos; pos += blockLen)
           this.process(dataView, pos);
         continue;
       }
-      buffer.set(data.subarray(pos, pos + take2), this.pos);
-      this.pos += take2;
-      pos += take2;
+      buffer.set(data.subarray(pos, pos + take), this.pos);
+      this.pos += take;
+      pos += take;
       if (this.pos === blockLen) {
         this.process(view, 0);
         this.pos = 0;
@@ -3071,25 +2120,25 @@ function split(lst, le = false) {
   let Ah = new Uint32Array(lst.length);
   let Al = new Uint32Array(lst.length);
   for (let i = 0; i < lst.length; i++) {
-    const { h: h2, l } = fromBig(lst[i], le);
-    [Ah[i], Al[i]] = [h2, l];
+    const { h, l } = fromBig(lst[i], le);
+    [Ah[i], Al[i]] = [h, l];
   }
   return [Ah, Al];
 }
 __name(split, "split");
-var toBig = /* @__PURE__ */ __name((h2, l) => BigInt(h2 >>> 0) << _32n | BigInt(l >>> 0), "toBig");
-var shrSH = /* @__PURE__ */ __name((h2, _l, s2) => h2 >>> s2, "shrSH");
-var shrSL = /* @__PURE__ */ __name((h2, l, s2) => h2 << 32 - s2 | l >>> s2, "shrSL");
-var rotrSH = /* @__PURE__ */ __name((h2, l, s2) => h2 >>> s2 | l << 32 - s2, "rotrSH");
-var rotrSL = /* @__PURE__ */ __name((h2, l, s2) => h2 << 32 - s2 | l >>> s2, "rotrSL");
-var rotrBH = /* @__PURE__ */ __name((h2, l, s2) => h2 << 64 - s2 | l >>> s2 - 32, "rotrBH");
-var rotrBL = /* @__PURE__ */ __name((h2, l, s2) => h2 >>> s2 - 32 | l << 64 - s2, "rotrBL");
+var toBig = /* @__PURE__ */ __name((h, l) => BigInt(h >>> 0) << _32n | BigInt(l >>> 0), "toBig");
+var shrSH = /* @__PURE__ */ __name((h, _l, s) => h >>> s, "shrSH");
+var shrSL = /* @__PURE__ */ __name((h, l, s) => h << 32 - s | l >>> s, "shrSL");
+var rotrSH = /* @__PURE__ */ __name((h, l, s) => h >>> s | l << 32 - s, "rotrSH");
+var rotrSL = /* @__PURE__ */ __name((h, l, s) => h << 32 - s | l >>> s, "rotrSL");
+var rotrBH = /* @__PURE__ */ __name((h, l, s) => h << 64 - s | l >>> s - 32, "rotrBH");
+var rotrBL = /* @__PURE__ */ __name((h, l, s) => h >>> s - 32 | l << 64 - s, "rotrBL");
 var rotr32H = /* @__PURE__ */ __name((_h, l) => l, "rotr32H");
-var rotr32L = /* @__PURE__ */ __name((h2, _l) => h2, "rotr32L");
-var rotlSH = /* @__PURE__ */ __name((h2, l, s2) => h2 << s2 | l >>> 32 - s2, "rotlSH");
-var rotlSL = /* @__PURE__ */ __name((h2, l, s2) => l << s2 | h2 >>> 32 - s2, "rotlSL");
-var rotlBH = /* @__PURE__ */ __name((h2, l, s2) => l << s2 - 32 | h2 >>> 64 - s2, "rotlBH");
-var rotlBL = /* @__PURE__ */ __name((h2, l, s2) => h2 << s2 - 32 | l >>> 64 - s2, "rotlBL");
+var rotr32L = /* @__PURE__ */ __name((h, _l) => h, "rotr32L");
+var rotlSH = /* @__PURE__ */ __name((h, l, s) => h << s | l >>> 32 - s, "rotlSH");
+var rotlSL = /* @__PURE__ */ __name((h, l, s) => l << s | h >>> 32 - s, "rotlSL");
+var rotlBH = /* @__PURE__ */ __name((h, l, s) => l << s - 32 | h >>> 64 - s, "rotlBH");
+var rotlBL = /* @__PURE__ */ __name((h, l, s) => h << s - 32 | l >>> 64 - s, "rotlBL");
 function add(Ah, Al, Bh, Bl) {
   const l = (Al >>> 0) + (Bl >>> 0);
   return { h: Ah + Bh + (l / 2 ** 32 | 0) | 0, l: l | 0 };
@@ -3542,14 +2591,14 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     k.fill(0);
     i = 0;
   }, "reset");
-  const h2 = /* @__PURE__ */ __name((...b) => hmacFn(k, v, ...b), "h");
+  const h = /* @__PURE__ */ __name((...b) => hmacFn(k, v, ...b), "h");
   const reseed = /* @__PURE__ */ __name((seed = u8n()) => {
-    k = h2(u8fr([0]), seed);
-    v = h2();
+    k = h(u8fr([0]), seed);
+    v = h();
     if (seed.length === 0)
       return;
-    k = h2(u8fr([1]), seed);
-    v = h2();
+    k = h(u8fr([1]), seed);
+    v = h();
   }, "reseed");
   const gen = /* @__PURE__ */ __name(() => {
     if (i++ >= 1e3)
@@ -3557,7 +2606,7 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     let len = 0;
     const out = [];
     while (len < qByteLen) {
-      v = h2();
+      v = h();
       const sl = v.slice();
       out.push(sl);
       len += v.length;
@@ -3661,19 +2710,19 @@ function pow2(x, power, modulo) {
   return res;
 }
 __name(pow2, "pow2");
-function invert(number3, modulo) {
-  if (number3 === _0n2 || modulo <= _0n2) {
-    throw new Error(`invert: expected positive integers, got n=${number3} mod=${modulo}`);
+function invert(number2, modulo) {
+  if (number2 === _0n2 || modulo <= _0n2) {
+    throw new Error(`invert: expected positive integers, got n=${number2} mod=${modulo}`);
   }
-  let a = mod(number3, modulo);
+  let a = mod(number2, modulo);
   let b = modulo;
-  let x = _0n2, y2 = _1n2, u = _1n2, v = _0n2;
+  let x = _0n2, y = _1n2, u = _1n2, v = _0n2;
   while (a !== _0n2) {
     const q = b / a;
     const r = b % a;
-    const m2 = x - u * q;
-    const n = y2 - v * q;
-    b = a, a = r, x = u, y2 = v, u = m2, v = n;
+    const m = x - u * q;
+    const n = y - v * q;
+    b = a, a = r, x = u, y = v, u = m, v = n;
   }
   const gcd = b;
   if (gcd !== _1n2)
@@ -3708,17 +2757,17 @@ function tonelliShanks(P) {
     while (!Fp3.eql(b, Fp3.ONE)) {
       if (Fp3.eql(b, Fp3.ZERO))
         return Fp3.ZERO;
-      let m2 = 1;
-      for (let t2 = Fp3.sqr(b); m2 < r; m2++) {
+      let m = 1;
+      for (let t2 = Fp3.sqr(b); m < r; m++) {
         if (Fp3.eql(t2, Fp3.ONE))
           break;
         t2 = Fp3.sqr(t2);
       }
-      const ge = Fp3.pow(g, _1n2 << BigInt(r - m2 - 1));
+      const ge = Fp3.pow(g, _1n2 << BigInt(r - m - 1));
       g = Fp3.sqr(ge);
       x = Fp3.mul(x, ge);
       b = Fp3.mul(b, g);
-      r = m2;
+      r = m;
     }
     return x;
   }, "tonelliSlow");
@@ -3794,11 +2843,11 @@ function FpPow(f, num, power) {
   if (power === _1n2)
     return num;
   let p = f.ONE;
-  let d2 = num;
+  let d = num;
   while (power > _0n2) {
     if (power & _1n2)
-      p = f.mul(p, d2);
-    d2 = f.sqr(d2);
+      p = f.mul(p, d);
+    d = f.sqr(d);
     power >>= _1n2;
   }
   return p;
@@ -3928,11 +2977,11 @@ function wNAF(c, bits) {
     // non-const time multiplication ladder
     unsafeLadder(elm, n) {
       let p = c.ZERO;
-      let d2 = elm;
+      let d = elm;
       while (n > _0n3) {
         if (n & _1n3)
-          p = p.add(d2);
-        d2 = d2.double();
+          p = p.add(d);
+        d = d.double();
         n >>= _1n3;
       }
       return p;
@@ -3952,7 +3001,7 @@ function wNAF(c, bits) {
       const points = [];
       let p = elm;
       let base3 = p;
-      for (let window2 = 0; window2 < windows; window2++) {
+      for (let window = 0; window < windows; window++) {
         base3 = p;
         points.push(base3);
         for (let i = 1; i < windowSize; i++) {
@@ -3977,8 +3026,8 @@ function wNAF(c, bits) {
       const mask = BigInt(2 ** W - 1);
       const maxNumber = 2 ** W;
       const shiftBy = BigInt(W);
-      for (let window2 = 0; window2 < windows; window2++) {
-        const offset = window2 * windowSize;
+      for (let window = 0; window < windows; window++) {
+        const offset = window * windowSize;
         let wbits = Number(n & mask);
         n >>= shiftBy;
         if (wbits > windowSize) {
@@ -3987,7 +3036,7 @@ function wNAF(c, bits) {
         }
         const offset1 = offset;
         const offset2 = offset + Math.abs(wbits) - 1;
-        const cond1 = window2 % 2 !== 0;
+        const cond1 = window % 2 !== 0;
         const cond2 = wbits < 0;
         if (wbits === 0) {
           f = f.add(constTimeNegate(cond1, precomputes[offset1]));
@@ -4021,8 +3070,8 @@ __name(wNAF, "wNAF");
 function pippenger(c, field, points, scalars) {
   if (!Array.isArray(points) || !Array.isArray(scalars) || scalars.length !== points.length)
     throw new Error("arrays of points and scalars must have equal length");
-  scalars.forEach((s2, i) => {
-    if (!field.isValid(s2))
+  scalars.forEach((s, i) => {
+    if (!field.isValid(s))
       throw new Error(`wrong scalar at index ${i}`);
   });
   points.forEach((p, i) => {
@@ -4126,12 +3175,12 @@ function twistedEdwards(curveDef) {
   }
   __name(assertPoint, "assertPoint");
   const toAffineMemo = memoized((p, iz) => {
-    const { ex: x, ey: y2, ez: z } = p;
+    const { ex: x, ey: y, ez: z } = p;
     const is0 = p.is0();
     if (iz == null)
       iz = is0 ? _8n2 : Fp3.inv(z);
     const ax = modP(x * iz);
-    const ay = modP(y2 * iz);
+    const ay = modP(y * iz);
     const zz = modP(z * iz);
     if (is0)
       return { x: _0n4, y: _1n4 };
@@ -4140,7 +3189,7 @@ function twistedEdwards(curveDef) {
     return { x: ax, y: ay };
   });
   const assertValidMemo = memoized((p) => {
-    const { a, d: d2 } = CURVE;
+    const { a, d } = CURVE;
     if (p.is0())
       throw new Error("bad point: ZERO");
     const { ex: X, ey: Y, ez: Z, et: T } = p;
@@ -4150,7 +3199,7 @@ function twistedEdwards(curveDef) {
     const Z4 = modP(Z2 * Z2);
     const aX2 = modP(X2 * a);
     const left = modP(Z2 * modP(aX2 + Y2));
-    const right = modP(Z4 + modP(d2 * modP(X2 * Y2)));
+    const right = modP(Z4 + modP(d * modP(X2 * Y2)));
     if (left !== right)
       throw new Error("bad point: equation left != right (1)");
     const XY = modP(X * Y);
@@ -4183,10 +3232,10 @@ function twistedEdwards(curveDef) {
     static fromAffine(p) {
       if (p instanceof Point2)
         throw new Error("extended point not allowed");
-      const { x, y: y2 } = p || {};
+      const { x, y } = p || {};
       aCoordinate("x", x);
-      aCoordinate("y", y2);
-      return new Point2(x, y2, _1n4, modP(x * y2));
+      aCoordinate("y", y);
+      return new Point2(x, y, _1n4, modP(x * y));
     }
     static normalizeZ(points) {
       const toInv = Fp3.invertBatch(points.map((p) => p.ez));
@@ -4248,7 +3297,7 @@ function twistedEdwards(curveDef) {
     // Cost: 9M + 1*a + 1*d + 7add.
     add(other) {
       assertPoint(other);
-      const { a, d: d2 } = CURVE;
+      const { a, d } = CURVE;
       const { ex: X1, ey: Y1, ez: Z1, et: T1 } = this;
       const { ex: X2, ey: Y2, ez: Z2, et: T2 } = other;
       if (a === BigInt(-1)) {
@@ -4270,7 +3319,7 @@ function twistedEdwards(curveDef) {
       }
       const A = modP(X1 * X2);
       const B = modP(Y1 * Y2);
-      const C = modP(T1 * d2 * T2);
+      const C = modP(T1 * d * T2);
       const D = modP(Z1 * Z2);
       const E = modP((X1 + Y1) * (X2 + Y2) - A - B);
       const F = D - C;
@@ -4336,19 +3385,19 @@ function twistedEdwards(curveDef) {
     // Converts hash string or Uint8Array to Point.
     // Uses algo from RFC8032 5.1.3.
     static fromHex(hex, zip215 = false) {
-      const { d: d2, a } = CURVE;
+      const { d, a } = CURVE;
       const len = Fp3.BYTES;
       hex = ensureBytes("pointHex", hex, len);
       abool("zip215", zip215);
       const normed = hex.slice();
       const lastByte = hex[len - 1];
       normed[len - 1] = lastByte & ~128;
-      const y2 = bytesToNumberLE(normed);
+      const y = bytesToNumberLE(normed);
       const max = zip215 ? MASK : Fp3.ORDER;
-      aInRange("pointHex.y", y2, _0n4, max);
-      const y22 = modP(y2 * y2);
-      const u = modP(y22 - _1n4);
-      const v = modP(d2 * y22 - a);
+      aInRange("pointHex.y", y, _0n4, max);
+      const y2 = modP(y * y);
+      const u = modP(y2 - _1n4);
+      const v = modP(d * y2 - a);
       let { isValid, value: x } = uvRatio2(u, v);
       if (!isValid)
         throw new Error("Point.fromHex: invalid y coordinate");
@@ -4358,14 +3407,14 @@ function twistedEdwards(curveDef) {
         throw new Error("Point.fromHex: x=0 and x_0=1");
       if (isLastByteOdd !== isXOdd)
         x = modP(-x);
-      return Point2.fromAffine({ x, y: y2 });
+      return Point2.fromAffine({ x, y });
     }
     static fromPrivateKey(privKey) {
       return getExtendedPublicKey(privKey).point;
     }
     toRawBytes() {
-      const { x, y: y2 } = this.toAffine();
-      const bytes2 = numberToBytesLE(y2, Fp3.BYTES);
+      const { x, y } = this.toAffine();
+      const bytes2 = numberToBytesLE(y, Fp3.BYTES);
       bytes2[bytes2.length - 1] |= x & _1n4 ? 128 : 0;
       return bytes2;
     }
@@ -4414,9 +3463,9 @@ function twistedEdwards(curveDef) {
     const r = hashDomainToScalar(options.context, prefix, msg);
     const R = G.multiply(r).toRawBytes();
     const k = hashDomainToScalar(options.context, R, pointBytes, msg);
-    const s2 = modN(r + k * scalar);
-    aInRange("signature.s", s2, _0n4, CURVE_ORDER);
-    const res = concatBytes2(R, numberToBytesLE(s2, Fp3.BYTES));
+    const s = modN(r + k * scalar);
+    aInRange("signature.s", s, _0n4, CURVE_ORDER);
+    const res = concatBytes2(R, numberToBytesLE(s, Fp3.BYTES));
     return ensureBytes("result", res, nByteLength * 2);
   }
   __name(sign, "sign");
@@ -4430,12 +3479,12 @@ function twistedEdwards(curveDef) {
       abool("zip215", zip215);
     if (prehash)
       msg = prehash(msg);
-    const s2 = bytesToNumberLE(sig.slice(len, 2 * len));
+    const s = bytesToNumberLE(sig.slice(len, 2 * len));
     let A, R, SB;
     try {
       A = Point2.fromHex(publicKey, zip215);
       R = Point2.fromHex(sig.slice(0, len), zip215);
-      SB = G.multiplyUnsafe(s2);
+      SB = G.multiplyUnsafe(s);
     } catch (error) {
       return false;
     }
@@ -5130,16 +4179,16 @@ zero.length = function() {
 var TWO_32 = 4294967296n;
 
 // node_modules/protons-runtime/dist/src/utils/utf8.js
-function length2(string3) {
+function length2(string2) {
   let len = 0;
   let c = 0;
-  for (let i = 0; i < string3.length; ++i) {
-    c = string3.charCodeAt(i);
+  for (let i = 0; i < string2.length; ++i) {
+    c = string2.charCodeAt(i);
     if (c < 128) {
       len += 1;
     } else if (c < 2048) {
       len += 2;
-    } else if ((c & 64512) === 55296 && (string3.charCodeAt(i + 1) & 64512) === 56320) {
+    } else if ((c & 64512) === 55296 && (string2.charCodeAt(i + 1) & 64512) === 56320) {
       ++i;
       len += 4;
     } else {
@@ -5185,18 +4234,18 @@ function read2(buffer, start, end) {
   return String.fromCharCode.apply(String, chunk.slice(0, i));
 }
 __name(read2, "read");
-function write(string3, buffer, offset) {
+function write(string2, buffer, offset) {
   const start = offset;
   let c1;
   let c2;
-  for (let i = 0; i < string3.length; ++i) {
-    c1 = string3.charCodeAt(i);
+  for (let i = 0; i < string2.length; ++i) {
+    c1 = string2.charCodeAt(i);
     if (c1 < 128) {
       buffer[offset++] = c1;
     } else if (c1 < 2048) {
       buffer[offset++] = c1 >> 6 | 192;
       buffer[offset++] = c1 & 63 | 128;
-    } else if ((c1 & 64512) === 55296 && ((c2 = string3.charCodeAt(i + 1)) & 64512) === 56320) {
+    } else if ((c1 & 64512) === 55296 && ((c2 = string2.charCodeAt(i + 1)) & 64512) === 56320) {
       c1 = 65536 + ((c1 & 1023) << 10) + (c2 & 1023);
       ++i;
       buffer[offset++] = c1 >> 18 | 240;
@@ -5983,11 +5032,11 @@ __name(createWriter, "createWriter");
 
 // node_modules/protons-runtime/dist/src/encode.js
 function encodeMessage(message2, codec) {
-  const w2 = createWriter();
-  codec.encode(message2, w2, {
+  const w = createWriter();
+  codec.encode(message2, w, {
     lengthDelimited: false
   });
-  return w2.finish();
+  return w.finish();
 }
 __name(encodeMessage, "encodeMessage");
 
@@ -6001,12 +5050,12 @@ var CODEC_TYPES;
   CODEC_TYPES2[CODEC_TYPES2["END_GROUP"] = 4] = "END_GROUP";
   CODEC_TYPES2[CODEC_TYPES2["BIT32"] = 5] = "BIT32";
 })(CODEC_TYPES || (CODEC_TYPES = {}));
-function createCodec2(name3, type, encode7, decode8) {
+function createCodec2(name2, type, encode6, decode7) {
   return {
-    name: name3,
+    name: name2,
     type,
-    encode: encode7,
-    decode: decode8
+    encode: encode6,
+    decode: decode7
   };
 }
 __name(createCodec2, "createCodec");
@@ -6020,21 +5069,21 @@ function enumeration(v) {
     return v[val];
   }
   __name(findValue, "findValue");
-  const encode7 = /* @__PURE__ */ __name(function enumEncode(val, writer) {
+  const encode6 = /* @__PURE__ */ __name(function enumEncode(val, writer) {
     const enumValue = findValue(val);
     writer.int32(enumValue);
   }, "enumEncode");
-  const decode8 = /* @__PURE__ */ __name(function enumDecode(reader) {
+  const decode7 = /* @__PURE__ */ __name(function enumDecode(reader) {
     const val = reader.int32();
     return findValue(val);
   }, "enumDecode");
-  return createCodec2("enum", CODEC_TYPES.VARINT, encode7, decode8);
+  return createCodec2("enum", CODEC_TYPES.VARINT, encode6, decode7);
 }
 __name(enumeration, "enumeration");
 
 // node_modules/protons-runtime/dist/src/codecs/message.js
-function message(encode7, decode8) {
-  return createCodec2("message", CODEC_TYPES.LENGTH_DELIMITED, encode7, decode8);
+function message(encode6, decode7) {
+  return createCodec2("message", CODEC_TYPES.LENGTH_DELIMITED, encode6, decode7);
 }
 __name(message, "message");
 
@@ -6061,20 +5110,20 @@ var PublicKey;
   let _codec;
   PublicKey2.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.Type != null) {
-          w2.uint32(8);
-          KeyType.codec().encode(obj.Type, w2);
+          w.uint32(8);
+          KeyType.codec().encode(obj.Type, w);
         }
         if (obj.Data != null) {
-          w2.uint32(18);
-          w2.bytes(obj.Data);
+          w.uint32(18);
+          w.bytes(obj.Data);
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {};
@@ -6110,20 +5159,20 @@ var PrivateKey;
   let _codec;
   PrivateKey2.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.Type != null) {
-          w2.uint32(8);
-          KeyType.codec().encode(obj.Type, w2);
+          w.uint32(8);
+          KeyType.codec().encode(obj.Type, w);
         }
         if (obj.Data != null) {
-          w2.uint32(18);
-          w2.bytes(obj.Data);
+          w.uint32(18);
+          w.bytes(obj.Data);
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {};
@@ -6801,9 +5850,9 @@ var LocalIdentificationBlock = class extends HexBlock(LocalBaseBlock) {
     if (this.tagNumber < 31 && !this.isHexOnly) {
       const retView2 = new Uint8Array(1);
       if (!sizeOnly) {
-        let number3 = this.tagNumber;
-        number3 &= 31;
-        firstOctet |= number3;
+        let number2 = this.tagNumber;
+        number2 &= 31;
+        firstOctet |= number2;
         retView2[0] = firstOctet;
       }
       return retView2.buffer;
@@ -7035,10 +6084,10 @@ var BaseBlock = class extends LocalBaseBlock {
   static {
     __name(this, "BaseBlock");
   }
-  constructor({ name: name3 = EMPTY_STRING, optional: optional2 = false, primitiveSchema, ...parameters } = {}, valueBlockType) {
+  constructor({ name: name2 = EMPTY_STRING, optional = false, primitiveSchema, ...parameters } = {}, valueBlockType) {
     super(parameters);
-    this.name = name3;
-    this.optional = optional2;
+    this.name = name2;
+    this.optional = optional;
     if (primitiveSchema) {
       this.primitiveSchema = primitiveSchema;
     }
@@ -8382,18 +7431,18 @@ var LocalObjectIdentifierValueBlock = class extends ValueBlock {
     }
     return concat2(retBuffers);
   }
-  fromString(string3) {
+  fromString(string2) {
     this.value = [];
     let pos1 = 0;
     let pos2 = 0;
     let sid = "";
     let flag = false;
     do {
-      pos2 = string3.indexOf(".", pos1);
+      pos2 = string2.indexOf(".", pos1);
       if (pos2 === -1)
-        sid = string3.substring(pos1);
+        sid = string2.substring(pos1);
       else
-        sid = string3.substring(pos1, pos2);
+        sid = string2.substring(pos1, pos2);
       pos1 = pos2 + 1;
       if (flag) {
         const sidBlock = this.value[0];
@@ -8620,17 +7669,17 @@ var LocalRelativeObjectIdentifierValueBlock = class extends ValueBlock {
     }
     return concat2(retBuffers);
   }
-  fromString(string3) {
+  fromString(string2) {
     this.value = [];
     let pos1 = 0;
     let pos2 = 0;
     let sid = "";
     do {
-      pos2 = string3.indexOf(".", pos1);
+      pos2 = string2.indexOf(".", pos1);
       if (pos2 === -1)
-        sid = string3.substring(pos1);
+        sid = string2.substring(pos1);
       else
-        sid = string3.substring(pos1, pos2);
+        sid = string2.substring(pos1, pos2);
       pos1 = pos2 + 1;
       const sidBlock = new LocalRelativeSidValueBlock();
       sidBlock.valueDec = parseInt(sid, 10);
@@ -9160,8 +8209,8 @@ var GeneralizedTime = class extends UTCTime {
       timeString = inputString.substring(0, inputString.length - 1);
       isUTC = true;
     } else {
-      const number3 = new Number(inputString[inputString.length - 1]);
-      if (isNaN(number3.valueOf()))
+      const number2 = new Number(inputString[inputString.length - 1]);
+      if (isNaN(number2.valueOf()))
         throw new Error("Wrong input string for conversion");
       timeString = inputString;
     }
@@ -9183,15 +8232,15 @@ var GeneralizedTime = class extends UTCTime {
         timeString = timeString.substring(0, differencePosition);
         if (differenceString.length !== 2 && differenceString.length !== 4)
           throw new Error("Wrong input string for conversion");
-        let number3 = parseInt(differenceString.substring(0, 2), 10);
-        if (isNaN(number3.valueOf()))
+        let number2 = parseInt(differenceString.substring(0, 2), 10);
+        if (isNaN(number2.valueOf()))
           throw new Error("Wrong input string for conversion");
-        hourDifference = multiplier * number3;
+        hourDifference = multiplier * number2;
         if (differenceString.length === 4) {
-          number3 = parseInt(differenceString.substring(2, 4), 10);
-          if (isNaN(number3.valueOf()))
+          number2 = parseInt(differenceString.substring(2, 4), 10);
+          if (isNaN(number2.valueOf()))
             throw new Error("Wrong input string for conversion");
-          minuteDifference = multiplier * number3;
+          minuteDifference = multiplier * number2;
         }
       }
     }
@@ -9492,11 +8541,11 @@ __name(bnToBuf, "bnToBuf");
 function bufToBn(u8) {
   const hex = [];
   u8.forEach(function(i) {
-    let h2 = i.toString(16);
-    if (h2.length % 2 > 0) {
-      h2 = `0${h2}`;
+    let h = i.toString(16);
+    if (h.length % 2 > 0) {
+      h = `0${h}`;
     }
-    hex.push(h2);
+    hex.push(h);
   });
   return BigInt("0x" + hex.join(""));
 }
@@ -10109,8 +9158,8 @@ var DER = {
     static {
       __name(this, "DERErr");
     }
-    constructor(m2 = "") {
-      super(m2);
+    constructor(m = "") {
+      super(m);
     }
   },
   // Basic building block is TLV (Tag-Length-Value)
@@ -10224,8 +9273,8 @@ function weierstrassPoints(opts) {
   const fromBytes = CURVE.fromBytes || ((bytes2) => {
     const tail = bytes2.subarray(1);
     const x = Fp3.fromBytes(tail.subarray(0, Fp3.BYTES));
-    const y2 = Fp3.fromBytes(tail.subarray(Fp3.BYTES, 2 * Fp3.BYTES));
-    return { x, y: y2 };
+    const y = Fp3.fromBytes(tail.subarray(Fp3.BYTES, 2 * Fp3.BYTES));
+    return { x, y };
   });
   function weierstrassEquation(x) {
     const { a, b } = CURVE;
@@ -10267,14 +9316,14 @@ function weierstrassPoints(opts) {
   }
   __name(assertPrjPoint, "assertPrjPoint");
   const toAffineMemo = memoized((p, iz) => {
-    const { px: x, py: y2, pz: z } = p;
+    const { px: x, py: y, pz: z } = p;
     if (Fp3.eql(z, Fp3.ONE))
-      return { x, y: y2 };
+      return { x, y };
     const is0 = p.is0();
     if (iz == null)
       iz = is0 ? Fp3.ONE : Fp3.inv(z);
     const ax = Fp3.mul(x, iz);
-    const ay = Fp3.mul(y2, iz);
+    const ay = Fp3.mul(y, iz);
     const zz = Fp3.mul(z, iz);
     if (is0)
       return { x: Fp3.ZERO, y: Fp3.ZERO };
@@ -10288,10 +9337,10 @@ function weierstrassPoints(opts) {
         return;
       throw new Error("bad point: ZERO");
     }
-    const { x, y: y2 } = p.toAffine();
-    if (!Fp3.isValid(x) || !Fp3.isValid(y2))
+    const { x, y } = p.toAffine();
+    if (!Fp3.isValid(x) || !Fp3.isValid(y))
       throw new Error("bad point: x or y not FE");
-    const left = Fp3.sqr(y2);
+    const left = Fp3.sqr(y);
     const right = weierstrassEquation(x);
     if (!Fp3.eql(left, right))
       throw new Error("bad point: equation left != right");
@@ -10318,15 +9367,15 @@ function weierstrassPoints(opts) {
     // Does not validate if the point is on-curve.
     // Use fromHex instead, or call assertValidity() later.
     static fromAffine(p) {
-      const { x, y: y2 } = p || {};
-      if (!p || !Fp3.isValid(x) || !Fp3.isValid(y2))
+      const { x, y } = p || {};
+      if (!p || !Fp3.isValid(x) || !Fp3.isValid(y))
         throw new Error("invalid affine point");
       if (p instanceof Point2)
         throw new Error("projective point not allowed");
       const is0 = /* @__PURE__ */ __name((i) => Fp3.eql(i, Fp3.ZERO), "is0");
-      if (is0(x) && is0(y2))
+      if (is0(x) && is0(y))
         return Point2.ZERO;
-      return new Point2(x, y2, Fp3.ONE);
+      return new Point2(x, y, Fp3.ONE);
     }
     get x() {
       return this.toAffine().x;
@@ -10370,9 +9419,9 @@ function weierstrassPoints(opts) {
       assertValidMemo(this);
     }
     hasEvenY() {
-      const { y: y2 } = this.toAffine();
+      const { y } = this.toAffine();
       if (Fp3.isOdd)
-        return !Fp3.isOdd(y2);
+        return !Fp3.isOdd(y);
       throw new Error("Field doesn't support isOdd");
     }
     /**
@@ -10514,13 +9563,13 @@ function weierstrassPoints(opts) {
       let { k1neg, k1, k2neg, k2 } = endo.splitScalar(sc);
       let k1p = I;
       let k2p = I;
-      let d2 = this;
+      let d = this;
       while (k1 > _0n6 || k2 > _0n6) {
         if (k1 & _1n6)
-          k1p = k1p.add(d2);
+          k1p = k1p.add(d);
         if (k2 & _1n6)
-          k2p = k2p.add(d2);
-        d2 = d2.double();
+          k2p = k2p.add(d);
+        d = d.double();
         k1 >>= _1n6;
         k2 >>= _1n6;
       }
@@ -10666,35 +9715,35 @@ function weierstrass(curveDef) {
         if (!inRange(x, _1n6, Fp3.ORDER))
           throw new Error("Point is not on curve");
         const y2 = weierstrassEquation(x);
-        let y3;
+        let y;
         try {
-          y3 = Fp3.sqrt(y2);
+          y = Fp3.sqrt(y2);
         } catch (sqrtError) {
           const suffix = sqrtError instanceof Error ? ": " + sqrtError.message : "";
           throw new Error("Point is not on curve" + suffix);
         }
-        const isYOdd = (y3 & _1n6) === _1n6;
+        const isYOdd = (y & _1n6) === _1n6;
         const isHeadOdd = (head & 1) === 1;
         if (isHeadOdd !== isYOdd)
-          y3 = Fp3.neg(y3);
-        return { x, y: y3 };
+          y = Fp3.neg(y);
+        return { x, y };
       } else if (len === uncompressedLen && head === 4) {
         const x = Fp3.fromBytes(tail.subarray(0, Fp3.BYTES));
-        const y2 = Fp3.fromBytes(tail.subarray(Fp3.BYTES, 2 * Fp3.BYTES));
-        return { x, y: y2 };
+        const y = Fp3.fromBytes(tail.subarray(Fp3.BYTES, 2 * Fp3.BYTES));
+        return { x, y };
       } else {
         throw new Error(`Point of length ${len} was invalid. Expected ${compressedLen} compressed bytes or ${uncompressedLen} uncompressed bytes`);
       }
     }
   });
   const numToNByteStr = /* @__PURE__ */ __name((num) => bytesToHex(numberToBytesBE(num, CURVE.nByteLength)), "numToNByteStr");
-  function isBiggerThanHalfOrder(number3) {
+  function isBiggerThanHalfOrder(number2) {
     const HALF = CURVE_ORDER >> _1n6;
-    return number3 > HALF;
+    return number2 > HALF;
   }
   __name(isBiggerThanHalfOrder, "isBiggerThanHalfOrder");
-  function normalizeS(s2) {
-    return isBiggerThanHalfOrder(s2) ? modN(-s2) : s2;
+  function normalizeS(s) {
+    return isBiggerThanHalfOrder(s) ? modN(-s) : s;
   }
   __name(normalizeS, "normalizeS");
   const slcNum = /* @__PURE__ */ __name((b, from3, to) => bytesToNumberBE(b.slice(from3, to)), "slcNum");
@@ -10702,9 +9751,9 @@ function weierstrass(curveDef) {
     static {
       __name(this, "Signature");
     }
-    constructor(r, s2, recovery) {
+    constructor(r, s, recovery) {
       this.r = r;
-      this.s = s2;
+      this.s = s;
       this.recovery = recovery;
       this.assertValidity();
     }
@@ -10717,8 +9766,8 @@ function weierstrass(curveDef) {
     // DER encoded ECDSA signature
     // https://bitcoin.stackexchange.com/questions/57644/what-are-the-parts-of-a-bitcoin-transaction-input-script
     static fromDER(hex) {
-      const { r, s: s2 } = DER.toSig(ensureBytes("DER", hex));
-      return new Signature(r, s2);
+      const { r, s } = DER.toSig(ensureBytes("DER", hex));
+      return new Signature(r, s);
     }
     assertValidity() {
       aInRange("r", this.r, _1n6, CURVE_ORDER);
@@ -10728,8 +9777,8 @@ function weierstrass(curveDef) {
       return new Signature(this.r, this.s, recovery);
     }
     recoverPublicKey(msgHash) {
-      const { r, s: s2, recovery: rec } = this;
-      const h2 = bits2int_modN(ensureBytes("msgHash", msgHash));
+      const { r, s, recovery: rec } = this;
+      const h = bits2int_modN(ensureBytes("msgHash", msgHash));
       if (rec == null || ![0, 1, 2, 3].includes(rec))
         throw new Error("recovery id invalid");
       const radj = rec === 2 || rec === 3 ? r + CURVE.n : r;
@@ -10738,8 +9787,8 @@ function weierstrass(curveDef) {
       const prefix = (rec & 1) === 0 ? "02" : "03";
       const R = Point2.fromHex(prefix + numToNByteStr(radj));
       const ir = invN(radj);
-      const u1 = modN(-h2 * ir);
-      const u2 = modN(s2 * ir);
+      const u1 = modN(-h * ir);
+      const u2 = modN(s * ir);
       const Q = Point2.BASE.multiplyAndAddUnsafe(R, u1, u2);
       if (!Q)
         throw new Error("point at infinify");
@@ -10852,14 +9901,14 @@ function weierstrass(curveDef) {
     if (prehash)
       msgHash = ensureBytes("prehashed msgHash", hash2(msgHash));
     const h1int = bits2int_modN(msgHash);
-    const d2 = normPrivateKeyToScalar(privateKey);
-    const seedArgs = [int2octets(d2), int2octets(h1int)];
+    const d = normPrivateKeyToScalar(privateKey);
+    const seedArgs = [int2octets(d), int2octets(h1int)];
     if (ent != null && ent !== false) {
       const e = ent === true ? randomBytes3(Fp3.BYTES) : ent;
       seedArgs.push(ensureBytes("extraEntropy", e));
     }
     const seed = concatBytes2(...seedArgs);
-    const m2 = h1int;
+    const m = h1int;
     function k2sig(kBytes) {
       const k = bits2int(kBytes);
       if (!isWithinCurveOrder(k))
@@ -10869,13 +9918,13 @@ function weierstrass(curveDef) {
       const r = modN(q.x);
       if (r === _0n6)
         return;
-      const s2 = modN(ik * modN(m2 + r * d2));
-      if (s2 === _0n6)
+      const s = modN(ik * modN(m + r * d));
+      if (s === _0n6)
         return;
       let recovery = (q.x === r ? 0 : 2) | Number(q.y & _1n6);
-      let normS = s2;
-      if (lowS && isBiggerThanHalfOrder(s2)) {
-        normS = normalizeS(s2);
+      let normS = s;
+      if (lowS && isBiggerThanHalfOrder(s)) {
+        normS = normalizeS(s);
         recovery ^= 1;
       }
       return new Signature(r, normS, recovery);
@@ -10914,8 +9963,8 @@ function weierstrass(curveDef) {
           _sig = Signature.fromCompact(sg);
         }
       } else if (typeof sg === "object" && typeof sg.r === "bigint" && typeof sg.s === "bigint") {
-        const { r: r2, s: s3 } = sg;
-        _sig = new Signature(r2, s3);
+        const { r: r2, s: s2 } = sg;
+        _sig = new Signature(r2, s2);
       } else {
         throw new Error("PARSE");
       }
@@ -10929,10 +9978,10 @@ function weierstrass(curveDef) {
       return false;
     if (prehash)
       msgHash = CURVE.hash(msgHash);
-    const { r, s: s2 } = _sig;
-    const h2 = bits2int_modN(msgHash);
-    const is = invN(s2);
-    const u1 = modN(h2 * is);
+    const { r, s } = _sig;
+    const h = bits2int_modN(msgHash);
+    const is = invN(s);
+    const u1 = modN(h * is);
     const u2 = modN(r * is);
     const R = Point2.BASE.multiplyAndAddUnsafe(P, u1, u2)?.toAffine();
     if (!R)
@@ -10975,12 +10024,12 @@ var secp256k1N = BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25
 var _1n7 = BigInt(1);
 var _2n6 = BigInt(2);
 var divNearest = /* @__PURE__ */ __name((a, b) => (a + b / _2n6) / b, "divNearest");
-function sqrtMod(y2) {
+function sqrtMod(y) {
   const P = secp256k1P;
   const _3n4 = BigInt(3), _6n = BigInt(6), _11n = BigInt(11), _22n = BigInt(22);
   const _23n = BigInt(23), _44n = BigInt(44), _88n = BigInt(88);
-  const b2 = y2 * y2 * y2 % P;
-  const b3 = b2 * b2 * y2 % P;
+  const b2 = y * y * y % P;
+  const b3 = b2 * b2 * y % P;
   const b6 = pow2(b3, _3n4, P) * b3 % P;
   const b9 = pow2(b6, _3n4, P) * b3 % P;
   const b11 = pow2(b9, _2n6, P) * b2 % P;
@@ -10993,7 +10042,7 @@ function sqrtMod(y2) {
   const t1 = pow2(b223, _23n, P) * b22 % P;
   const t2 = pow2(t1, _6n, P) * b2 % P;
   const root = pow2(t2, _2n6, P);
-  if (!Fp2.eql(Fp2.sqr(root), y2))
+  if (!Fp2.eql(Fp2.sqr(root), y))
     throw new Error("Cannot find square root");
   return root;
 }
@@ -11233,18 +10282,6 @@ function unsupportedKey(type) {
   return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, "ERR_UNSUPPORTED_KEY_TYPE");
 }
 __name(unsupportedKey, "unsupportedKey");
-function typeToKey(type) {
-  type = type.toLowerCase();
-  if (type === "rsa" || type === "ed25519" || type === "secp256k1") {
-    return supportedKeys[type];
-  }
-  throw unsupportedKey(type);
-}
-__name(typeToKey, "typeToKey");
-async function generateKeyPair4(type, bits) {
-  return typeToKey(type).generateKeyPair(bits ?? 2048);
-}
-__name(generateKeyPair4, "generateKeyPair");
 function unmarshalPublicKey(buf) {
   const decoded = PublicKey.decode(buf);
   const data = decoded.Data ?? new Uint8Array();
@@ -11260,12 +10297,6 @@ function unmarshalPublicKey(buf) {
   }
 }
 __name(unmarshalPublicKey, "unmarshalPublicKey");
-function marshalPublicKey(key, type) {
-  type = (type ?? "rsa").toLowerCase();
-  typeToKey(type);
-  return key.bytes;
-}
-__name(marshalPublicKey, "marshalPublicKey");
 async function unmarshalPrivateKey2(buf) {
   const decoded = PrivateKey.decode(buf);
   const data = decoded.Data ?? new Uint8Array();
@@ -11281,522 +10312,6 @@ async function unmarshalPrivateKey2(buf) {
   }
 }
 __name(unmarshalPrivateKey2, "unmarshalPrivateKey");
-function marshalPrivateKey(key, type) {
-  type = (type ?? "rsa").toLowerCase();
-  typeToKey(type);
-  return key.bytes;
-}
-__name(marshalPrivateKey, "marshalPrivateKey");
-
-// node_modules/weald/node_modules/ms/dist/index.mjs
-var s = 1e3;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var w = d * 7;
-var y = d * 365.25;
-function ms(value, options) {
-  try {
-    if (typeof value === "string" && value.length > 0) {
-      return parse(value);
-    } else if (typeof value === "number" && isFinite(value)) {
-      return options?.long ? fmtLong(value) : fmtShort(value);
-    }
-    throw new Error("Value is not a string or number.");
-  } catch (error) {
-    const message2 = isError(error) ? `${error.message}. value=${JSON.stringify(value)}` : "An unknown error has occured.";
-    throw new Error(message2);
-  }
-}
-__name(ms, "ms");
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    throw new Error("Value exceeds the maximum length of 100 characters.");
-  }
-  const match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(str);
-  if (!match) {
-    return NaN;
-  }
-  const n = parseFloat(match[1]);
-  const type = (match[2] || "ms").toLowerCase();
-  switch (type) {
-    case "years":
-    case "year":
-    case "yrs":
-    case "yr":
-    case "y":
-      return n * y;
-    case "weeks":
-    case "week":
-    case "w":
-      return n * w;
-    case "days":
-    case "day":
-    case "d":
-      return n * d;
-    case "hours":
-    case "hour":
-    case "hrs":
-    case "hr":
-    case "h":
-      return n * h;
-    case "minutes":
-    case "minute":
-    case "mins":
-    case "min":
-    case "m":
-      return n * m;
-    case "seconds":
-    case "second":
-    case "secs":
-    case "sec":
-    case "s":
-      return n * s;
-    case "milliseconds":
-    case "millisecond":
-    case "msecs":
-    case "msec":
-    case "ms":
-      return n;
-    default:
-      throw new Error(`The unit ${type} was matched, but no matching case exists.`);
-  }
-}
-__name(parse, "parse");
-var dist_default = ms;
-function fmtShort(ms2) {
-  const msAbs = Math.abs(ms2);
-  if (msAbs >= d) {
-    return `${Math.round(ms2 / d)}d`;
-  }
-  if (msAbs >= h) {
-    return `${Math.round(ms2 / h)}h`;
-  }
-  if (msAbs >= m) {
-    return `${Math.round(ms2 / m)}m`;
-  }
-  if (msAbs >= s) {
-    return `${Math.round(ms2 / s)}s`;
-  }
-  return `${ms2}ms`;
-}
-__name(fmtShort, "fmtShort");
-function fmtLong(ms2) {
-  const msAbs = Math.abs(ms2);
-  if (msAbs >= d) {
-    return plural(ms2, msAbs, d, "day");
-  }
-  if (msAbs >= h) {
-    return plural(ms2, msAbs, h, "hour");
-  }
-  if (msAbs >= m) {
-    return plural(ms2, msAbs, m, "minute");
-  }
-  if (msAbs >= s) {
-    return plural(ms2, msAbs, s, "second");
-  }
-  return `${ms2} ms`;
-}
-__name(fmtLong, "fmtLong");
-function plural(ms2, msAbs, n, name3) {
-  const isPlural = msAbs >= n * 1.5;
-  return `${Math.round(ms2 / n)} ${name3}${isPlural ? "s" : ""}`;
-}
-__name(plural, "plural");
-function isError(error) {
-  return typeof error === "object" && error !== null && "message" in error;
-}
-__name(isError, "isError");
-
-// node_modules/weald/dist/src/common.js
-function setup(env) {
-  createDebug.debug = createDebug;
-  createDebug.default = createDebug;
-  createDebug.coerce = coerce2;
-  createDebug.disable = disable;
-  createDebug.enable = enable;
-  createDebug.enabled = enabled;
-  createDebug.humanize = dist_default;
-  createDebug.destroy = destroy;
-  Object.keys(env).forEach((key) => {
-    createDebug[key] = env[key];
-  });
-  createDebug.names = [];
-  createDebug.skips = [];
-  createDebug.formatters = {};
-  function selectColor(namespace) {
-    let hash2 = 0;
-    for (let i = 0; i < namespace.length; i++) {
-      hash2 = (hash2 << 5) - hash2 + namespace.charCodeAt(i);
-      hash2 |= 0;
-    }
-    return createDebug.colors[Math.abs(hash2) % createDebug.colors.length];
-  }
-  __name(selectColor, "selectColor");
-  createDebug.selectColor = selectColor;
-  function createDebug(namespace) {
-    let prevTime;
-    let enableOverride = null;
-    let namespacesCache;
-    let enabledCache;
-    function debug(...args) {
-      if (!debug.enabled) {
-        return;
-      }
-      const self = debug;
-      const curr = Number(/* @__PURE__ */ new Date());
-      const ms2 = curr - (prevTime || curr);
-      self.diff = ms2;
-      self.prev = prevTime;
-      self.curr = curr;
-      prevTime = curr;
-      args[0] = createDebug.coerce(args[0]);
-      if (typeof args[0] !== "string") {
-        args.unshift("%O");
-      }
-      let index = 0;
-      args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format2) => {
-        if (match === "%%") {
-          return "%";
-        }
-        index++;
-        const formatter = createDebug.formatters[format2];
-        if (typeof formatter === "function") {
-          const val = args[index];
-          match = formatter.call(self, val);
-          args.splice(index, 1);
-          index--;
-        }
-        return match;
-      });
-      createDebug.formatArgs.call(self, args);
-      const logFn = self.log || createDebug.log;
-      logFn.apply(self, args);
-    }
-    __name(debug, "debug");
-    debug.namespace = namespace;
-    debug.useColors = createDebug.useColors();
-    debug.color = createDebug.selectColor(namespace);
-    debug.extend = extend;
-    debug.destroy = createDebug.destroy;
-    Object.defineProperty(debug, "enabled", {
-      enumerable: true,
-      configurable: false,
-      get: /* @__PURE__ */ __name(() => {
-        if (enableOverride !== null) {
-          return enableOverride;
-        }
-        if (namespacesCache !== createDebug.namespaces) {
-          namespacesCache = createDebug.namespaces;
-          enabledCache = createDebug.enabled(namespace);
-        }
-        return enabledCache;
-      }, "get"),
-      set: /* @__PURE__ */ __name((v) => {
-        enableOverride = v;
-      }, "set")
-    });
-    if (typeof createDebug.init === "function") {
-      createDebug.init(debug);
-    }
-    return debug;
-  }
-  __name(createDebug, "createDebug");
-  function extend(namespace, delimiter) {
-    const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
-    newDebug.log = this.log;
-    return newDebug;
-  }
-  __name(extend, "extend");
-  function enable(namespaces) {
-    createDebug.save(namespaces);
-    createDebug.namespaces = namespaces;
-    createDebug.names = [];
-    createDebug.skips = [];
-    let i;
-    const split2 = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
-    const len = split2.length;
-    for (i = 0; i < len; i++) {
-      if (!split2[i]) {
-        continue;
-      }
-      namespaces = split2[i].replace(/\*/g, ".*?");
-      if (namespaces[0] === "-") {
-        createDebug.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
-      } else {
-        createDebug.names.push(new RegExp("^" + namespaces + "$"));
-      }
-    }
-  }
-  __name(enable, "enable");
-  function disable() {
-    const namespaces = [
-      ...createDebug.names.map(toNamespace),
-      ...createDebug.skips.map(toNamespace).map((namespace) => "-" + namespace)
-    ].join(",");
-    createDebug.enable("");
-    return namespaces;
-  }
-  __name(disable, "disable");
-  function enabled(name3) {
-    if (name3[name3.length - 1] === "*") {
-      return true;
-    }
-    let i;
-    let len;
-    for (i = 0, len = createDebug.skips.length; i < len; i++) {
-      if (createDebug.skips[i].test(name3)) {
-        return false;
-      }
-    }
-    for (i = 0, len = createDebug.names.length; i < len; i++) {
-      if (createDebug.names[i].test(name3)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  __name(enabled, "enabled");
-  function toNamespace(regexp) {
-    return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
-  }
-  __name(toNamespace, "toNamespace");
-  function coerce2(val) {
-    if (val instanceof Error) {
-      return val.stack ?? val.message;
-    }
-    return val;
-  }
-  __name(coerce2, "coerce");
-  function destroy() {
-    console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-  }
-  __name(destroy, "destroy");
-  createDebug.setupFormatters(createDebug.formatters);
-  createDebug.enable(createDebug.load());
-  return createDebug;
-}
-__name(setup, "setup");
-
-// node_modules/weald/dist/src/browser.js
-var storage = localstorage();
-var colors = [
-  "#0000CC",
-  "#0000FF",
-  "#0033CC",
-  "#0033FF",
-  "#0066CC",
-  "#0066FF",
-  "#0099CC",
-  "#0099FF",
-  "#00CC00",
-  "#00CC33",
-  "#00CC66",
-  "#00CC99",
-  "#00CCCC",
-  "#00CCFF",
-  "#3300CC",
-  "#3300FF",
-  "#3333CC",
-  "#3333FF",
-  "#3366CC",
-  "#3366FF",
-  "#3399CC",
-  "#3399FF",
-  "#33CC00",
-  "#33CC33",
-  "#33CC66",
-  "#33CC99",
-  "#33CCCC",
-  "#33CCFF",
-  "#6600CC",
-  "#6600FF",
-  "#6633CC",
-  "#6633FF",
-  "#66CC00",
-  "#66CC33",
-  "#9900CC",
-  "#9900FF",
-  "#9933CC",
-  "#9933FF",
-  "#99CC00",
-  "#99CC33",
-  "#CC0000",
-  "#CC0033",
-  "#CC0066",
-  "#CC0099",
-  "#CC00CC",
-  "#CC00FF",
-  "#CC3300",
-  "#CC3333",
-  "#CC3366",
-  "#CC3399",
-  "#CC33CC",
-  "#CC33FF",
-  "#CC6600",
-  "#CC6633",
-  "#CC9900",
-  "#CC9933",
-  "#CCCC00",
-  "#CCCC33",
-  "#FF0000",
-  "#FF0033",
-  "#FF0066",
-  "#FF0099",
-  "#FF00CC",
-  "#FF00FF",
-  "#FF3300",
-  "#FF3333",
-  "#FF3366",
-  "#FF3399",
-  "#FF33CC",
-  "#FF33FF",
-  "#FF6600",
-  "#FF6633",
-  "#FF9900",
-  "#FF9933",
-  "#FFCC00",
-  "#FFCC33"
-];
-function useColors() {
-  if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
-    return true;
-  }
-  if (typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/(edge|trident)\/(\d+)/) != null) {
-    return false;
-  }
-  return typeof document !== "undefined" && document.documentElement?.style?.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-  // @ts-expect-error window.console.firebug and window.console.exception are not in the types
-  typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-  // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-  typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/firefox\/(\d+)/) != null && parseInt(RegExp.$1, 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-  typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/applewebkit\/(\d+)/);
-}
-__name(useColors, "useColors");
-function formatArgs(args) {
-  args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + dist_default(this.diff);
-  if (!this.useColors) {
-    return;
-  }
-  const c = "color: " + this.color;
-  args.splice(1, 0, c, "color: inherit");
-  let index = 0;
-  let lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, (match) => {
-    if (match === "%%") {
-      return;
-    }
-    index++;
-    if (match === "%c") {
-      lastC = index;
-    }
-  });
-  args.splice(lastC, 0, c);
-}
-__name(formatArgs, "formatArgs");
-var log = console.debug ?? console.log ?? (() => {
-});
-function save(namespaces) {
-  try {
-    if (namespaces) {
-      storage?.setItem("debug", namespaces);
-    } else {
-      storage?.removeItem("debug");
-    }
-  } catch (error) {
-  }
-}
-__name(save, "save");
-function load() {
-  let r;
-  try {
-    r = storage?.getItem("debug");
-  } catch (error) {
-  }
-  if (!r && typeof process !== "undefined" && "env" in process) {
-    r = process.env.DEBUG;
-  }
-  return r;
-}
-__name(load, "load");
-function localstorage() {
-  try {
-    return localStorage;
-  } catch (error) {
-  }
-}
-__name(localstorage, "localstorage");
-function setupFormatters(formatters) {
-  formatters.j = function(v) {
-    try {
-      return JSON.stringify(v);
-    } catch (error) {
-      return "[UnexpectedJSONParseError]: " + error.message;
-    }
-  };
-}
-__name(setupFormatters, "setupFormatters");
-var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log });
-
-// node_modules/weald/dist/src/index.js
-var src_default = browser_default;
-
-// node_modules/@libp2p/logger/dist/src/index.js
-src_default.formatters.b = (v) => {
-  return v == null ? "undefined" : base58btc.baseEncode(v);
-};
-src_default.formatters.t = (v) => {
-  return v == null ? "undefined" : base32.baseEncode(v);
-};
-src_default.formatters.m = (v) => {
-  return v == null ? "undefined" : base64.baseEncode(v);
-};
-src_default.formatters.p = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.c = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.k = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.a = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-function createDisabledLogger(namespace) {
-  const logger2 = /* @__PURE__ */ __name(() => {
-  }, "logger");
-  logger2.enabled = false;
-  logger2.color = "";
-  logger2.diff = 0;
-  logger2.log = () => {
-  };
-  logger2.namespace = namespace;
-  logger2.destroy = () => true;
-  logger2.extend = () => logger2;
-  return logger2;
-}
-__name(createDisabledLogger, "createDisabledLogger");
-function defaultLogger() {
-  return {
-    forComponent(name3) {
-      return logger(name3);
-    }
-  };
-}
-__name(defaultLogger, "defaultLogger");
-function logger(name3) {
-  let trace = createDisabledLogger(`${name3}:trace`);
-  if (src_default.enabled(`${name3}:trace`) && src_default.names.map((r) => r.toString()).find((n) => n.includes(":trace")) != null) {
-    trace = src_default(`${name3}:trace`);
-  }
-  return Object.assign(src_default(name3), {
-    error: src_default(`${name3}:error`),
-    trace
-  });
-}
-__name(logger, "logger");
 
 // node_modules/@libp2p/peer-id/dist/src/index.js
 var inspect = Symbol.for("nodejs.util.inspect.custom");
@@ -12027,166 +10542,6 @@ async function peerIdFromKeys(publicKey, privateKey) {
   return new RSAPeerIdImpl({ multihash: await sha256.digest(publicKey), publicKey, privateKey });
 }
 __name(peerIdFromKeys, "peerIdFromKeys");
-
-// node_modules/@libp2p/peer-collections/dist/src/util.js
-function mapIterable(iter, map) {
-  const iterator = {
-    [Symbol.iterator]: () => {
-      return iterator;
-    },
-    next: /* @__PURE__ */ __name(() => {
-      const next = iter.next();
-      const val = next.value;
-      if (next.done === true || val == null) {
-        const result = {
-          done: true,
-          value: void 0
-        };
-        return result;
-      }
-      return {
-        done: false,
-        value: map(val)
-      };
-    }, "next")
-  };
-  return iterator;
-}
-__name(mapIterable, "mapIterable");
-
-// node_modules/@libp2p/peer-collections/dist/src/map.js
-var PeerMap = class {
-  static {
-    __name(this, "PeerMap");
-  }
-  map;
-  constructor(map) {
-    this.map = /* @__PURE__ */ new Map();
-    if (map != null) {
-      for (const [key, value] of map.entries()) {
-        this.map.set(key.toString(), value);
-      }
-    }
-  }
-  [Symbol.iterator]() {
-    return this.entries();
-  }
-  clear() {
-    this.map.clear();
-  }
-  delete(peer) {
-    return this.map.delete(peer.toString());
-  }
-  entries() {
-    return mapIterable(this.map.entries(), (val) => {
-      return [peerIdFromString(val[0]), val[1]];
-    });
-  }
-  forEach(fn) {
-    this.map.forEach((value, key) => {
-      fn(value, peerIdFromString(key), this);
-    });
-  }
-  get(peer) {
-    return this.map.get(peer.toString());
-  }
-  has(peer) {
-    return this.map.has(peer.toString());
-  }
-  set(peer, value) {
-    this.map.set(peer.toString(), value);
-  }
-  keys() {
-    return mapIterable(this.map.keys(), (val) => {
-      return peerIdFromString(val);
-    });
-  }
-  values() {
-    return this.map.values();
-  }
-  get size() {
-    return this.map.size;
-  }
-};
-
-// node_modules/@libp2p/peer-collections/dist/src/set.js
-var PeerSet = class _PeerSet {
-  static {
-    __name(this, "PeerSet");
-  }
-  set;
-  constructor(set) {
-    this.set = /* @__PURE__ */ new Set();
-    if (set != null) {
-      for (const key of set) {
-        this.set.add(key.toString());
-      }
-    }
-  }
-  get size() {
-    return this.set.size;
-  }
-  [Symbol.iterator]() {
-    return this.values();
-  }
-  add(peer) {
-    this.set.add(peer.toString());
-  }
-  clear() {
-    this.set.clear();
-  }
-  delete(peer) {
-    this.set.delete(peer.toString());
-  }
-  entries() {
-    return mapIterable(this.set.entries(), (val) => {
-      const peerId2 = peerIdFromString(val[0]);
-      return [peerId2, peerId2];
-    });
-  }
-  forEach(predicate) {
-    this.set.forEach((str) => {
-      const id = peerIdFromString(str);
-      predicate(id, id, this);
-    });
-  }
-  has(peer) {
-    return this.set.has(peer.toString());
-  }
-  values() {
-    return mapIterable(this.set.values(), (val) => {
-      return peerIdFromString(val);
-    });
-  }
-  intersection(other) {
-    const output2 = new _PeerSet();
-    for (const peerId2 of other) {
-      if (this.has(peerId2)) {
-        output2.add(peerId2);
-      }
-    }
-    return output2;
-  }
-  difference(other) {
-    const output2 = new _PeerSet();
-    for (const peerId2 of this) {
-      if (!other.has(peerId2)) {
-        output2.add(peerId2);
-      }
-    }
-    return output2;
-  }
-  union(other) {
-    const output2 = new _PeerSet();
-    for (const peerId2 of other) {
-      output2.add(peerId2);
-    }
-    for (const peerId2 of this) {
-      output2.add(peerId2);
-    }
-    return output2;
-  }
-};
 
 // node_modules/uint8arraylist/dist/src/index.js
 var symbol = Symbol.for("@achingbrain/uint8arraylist");
@@ -12620,411 +10975,6 @@ var Uint8ArrayList = class _Uint8ArrayList {
   }
 };
 
-// node_modules/@libp2p/utils/dist/src/filters/fingerprint.js
-var MAX_FINGERPRINT_SIZE = 64;
-var Fingerprint = class {
-  static {
-    __name(this, "Fingerprint");
-  }
-  fp;
-  h;
-  seed;
-  constructor(buf, hash2, seed, fingerprintSize = 2) {
-    if (fingerprintSize > MAX_FINGERPRINT_SIZE) {
-      throw new TypeError("Invalid Fingerprint Size");
-    }
-    const fnv = hash2.hashV(buf, seed);
-    const fp = alloc(fingerprintSize);
-    for (let i = 0; i < fp.length; i++) {
-      fp[i] = fnv[i];
-    }
-    if (fp.length === 0) {
-      fp[0] = 7;
-    }
-    this.fp = fp;
-    this.h = hash2;
-    this.seed = seed;
-  }
-  hash() {
-    return this.h.hash(this.fp, this.seed);
-  }
-  equals(other) {
-    if (!(other?.fp instanceof Uint8Array)) {
-      return false;
-    }
-    return equals3(this.fp, other.fp);
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/filters/utils.js
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-__name(getRandomInt, "getRandomInt");
-
-// node_modules/@libp2p/utils/dist/src/filters/bucket.js
-var Bucket = class {
-  static {
-    __name(this, "Bucket");
-  }
-  contents;
-  constructor(size) {
-    this.contents = new Array(size).fill(null);
-  }
-  has(fingerprint) {
-    if (!(fingerprint instanceof Fingerprint)) {
-      throw new TypeError("Invalid Fingerprint");
-    }
-    return this.contents.some((fp) => {
-      return fingerprint.equals(fp);
-    });
-  }
-  add(fingerprint) {
-    if (!(fingerprint instanceof Fingerprint)) {
-      throw new TypeError("Invalid Fingerprint");
-    }
-    for (let i = 0; i < this.contents.length; i++) {
-      if (this.contents[i] == null) {
-        this.contents[i] = fingerprint;
-        return true;
-      }
-    }
-    return true;
-  }
-  swap(fingerprint) {
-    if (!(fingerprint instanceof Fingerprint)) {
-      throw new TypeError("Invalid Fingerprint");
-    }
-    const i = getRandomInt(0, this.contents.length - 1);
-    const current = this.contents[i];
-    this.contents[i] = fingerprint;
-    return current;
-  }
-  remove(fingerprint) {
-    if (!(fingerprint instanceof Fingerprint)) {
-      throw new TypeError("Invalid Fingerprint");
-    }
-    const found = this.contents.findIndex((fp) => {
-      return fingerprint.equals(fp);
-    });
-    if (found > -1) {
-      this.contents[found] = null;
-      return true;
-    } else {
-      return false;
-    }
-  }
-};
-
-// node_modules/@sindresorhus/fnv1a/index.js
-var FNV_PRIMES = {
-  32: 16777619n,
-  64: 1099511628211n,
-  128: 309485009821345068724781371n,
-  256: 374144419156711147060143317175368453031918731002211n,
-  512: 35835915874844867368919076489095108449946327955754392558399825615420669938882575126094039892345713852759n,
-  1024: 5016456510113118655434598811035278955030765345404790744303017523831112055108147451509157692220295382716162651878526895249385292291816524375083746691371804094271873160484737966720260389217684476157468082573n
-};
-var FNV_OFFSETS = {
-  32: 2166136261n,
-  64: 14695981039346656037n,
-  128: 144066263297769815596495629667062367629n,
-  256: 100029257958052580907070968620625704837092796014241193945225284501741471925557n,
-  512: 9659303129496669498009435400716310466090418745672637896108374329434462657994582932197716438449813051892206539805784495328239340083876191928701583869517785n,
-  1024: 14197795064947621068722070641403218320880622795441933960878474914617582723252296732303717722150864096521202355549365628174669108571814760471015076148029755969804077320157692458563003215304957150157403644460363550505412711285966361610267868082893823963790439336411086884584107735010676915n
-};
-var cachedEncoder = new globalThis.TextEncoder();
-function fnv1aUint8Array(uint8Array, size) {
-  const fnvPrime = FNV_PRIMES[size];
-  let hash2 = FNV_OFFSETS[size];
-  for (let index = 0; index < uint8Array.length; index++) {
-    hash2 ^= BigInt(uint8Array[index]);
-    hash2 = BigInt.asUintN(size, hash2 * fnvPrime);
-  }
-  return hash2;
-}
-__name(fnv1aUint8Array, "fnv1aUint8Array");
-function fnv1aEncodeInto(string3, size, utf8Buffer) {
-  if (utf8Buffer.length === 0) {
-    throw new Error("The `utf8Buffer` option must have a length greater than zero");
-  }
-  const fnvPrime = FNV_PRIMES[size];
-  let hash2 = FNV_OFFSETS[size];
-  let remaining = string3;
-  while (remaining.length > 0) {
-    const result = cachedEncoder.encodeInto(remaining, utf8Buffer);
-    remaining = remaining.slice(result.read);
-    for (let index = 0; index < result.written; index++) {
-      hash2 ^= BigInt(utf8Buffer[index]);
-      hash2 = BigInt.asUintN(size, hash2 * fnvPrime);
-    }
-  }
-  return hash2;
-}
-__name(fnv1aEncodeInto, "fnv1aEncodeInto");
-function fnv1a(value, { size = 32, utf8Buffer } = {}) {
-  if (!FNV_PRIMES[size]) {
-    throw new Error("The `size` option must be one of 32, 64, 128, 256, 512, or 1024");
-  }
-  if (typeof value === "string") {
-    if (utf8Buffer) {
-      return fnv1aEncodeInto(value, size, utf8Buffer);
-    }
-    value = cachedEncoder.encode(value);
-  }
-  return fnv1aUint8Array(value, size);
-}
-__name(fnv1a, "fnv1a");
-
-// node_modules/@libp2p/utils/dist/src/filters/hashes.js
-var import_murmurhash3js_revisited = __toESM(require_murmurhash3js_revisited(), 1);
-var fnv1a2 = {
-  hash: /* @__PURE__ */ __name((input) => {
-    return Number(fnv1a(input, {
-      size: 32
-    }));
-  }, "hash"),
-  hashV: /* @__PURE__ */ __name((input, seed) => {
-    return numberToBuffer(fnv1a2.hash(input, seed));
-  }, "hashV")
-};
-function numberToBuffer(num) {
-  let hex = num.toString(16);
-  if (hex.length % 2 === 1) {
-    hex = `0${hex}`;
-  }
-  return fromString2(hex, "base16");
-}
-__name(numberToBuffer, "numberToBuffer");
-
-// node_modules/@libp2p/utils/dist/src/filters/cuckoo-filter.js
-var maxCuckooCount = 500;
-var CuckooFilter = class {
-  static {
-    __name(this, "CuckooFilter");
-  }
-  bucketSize;
-  filterSize;
-  fingerprintSize;
-  buckets;
-  count;
-  hash;
-  seed;
-  constructor(init) {
-    this.filterSize = init.filterSize;
-    this.bucketSize = init.bucketSize ?? 4;
-    this.fingerprintSize = init.fingerprintSize ?? 2;
-    this.count = 0;
-    this.buckets = [];
-    this.hash = init.hash ?? fnv1a2;
-    this.seed = init.seed ?? getRandomInt(0, Math.pow(2, 10));
-  }
-  add(item) {
-    if (typeof item === "string") {
-      item = fromString2(item);
-    }
-    const fingerprint = new Fingerprint(item, this.hash, this.seed, this.fingerprintSize);
-    const j = this.hash.hash(item, this.seed) % this.filterSize;
-    const k = (j ^ fingerprint.hash()) % this.filterSize;
-    if (this.buckets[j] == null) {
-      this.buckets[j] = new Bucket(this.bucketSize);
-    }
-    if (this.buckets[k] == null) {
-      this.buckets[k] = new Bucket(this.bucketSize);
-    }
-    if (this.buckets[j].add(fingerprint) || this.buckets[k].add(fingerprint)) {
-      this.count++;
-      return true;
-    }
-    const rand = [j, k];
-    let i = rand[getRandomInt(0, rand.length - 1)];
-    if (this.buckets[i] == null) {
-      this.buckets[i] = new Bucket(this.bucketSize);
-    }
-    for (let n = 0; n < maxCuckooCount; n++) {
-      const swapped = this.buckets[i].swap(fingerprint);
-      if (swapped == null) {
-        continue;
-      }
-      i = (i ^ swapped.hash()) % this.filterSize;
-      if (this.buckets[i] == null) {
-        this.buckets[i] = new Bucket(this.bucketSize);
-      }
-      if (this.buckets[i].add(swapped)) {
-        this.count++;
-        return true;
-      } else {
-        continue;
-      }
-    }
-    return false;
-  }
-  has(item) {
-    if (typeof item === "string") {
-      item = fromString2(item);
-    }
-    const fingerprint = new Fingerprint(item, this.hash, this.seed, this.fingerprintSize);
-    const j = this.hash.hash(item, this.seed) % this.filterSize;
-    const inJ = this.buckets[j]?.has(fingerprint) ?? false;
-    if (inJ) {
-      return inJ;
-    }
-    const k = (j ^ fingerprint.hash()) % this.filterSize;
-    return this.buckets[k]?.has(fingerprint) ?? false;
-  }
-  remove(item) {
-    if (typeof item === "string") {
-      item = fromString2(item);
-    }
-    const fingerprint = new Fingerprint(item, this.hash, this.seed, this.fingerprintSize);
-    const j = this.hash.hash(item, this.seed) % this.filterSize;
-    const inJ = this.buckets[j]?.remove(fingerprint) ?? false;
-    if (inJ) {
-      this.count--;
-      return inJ;
-    }
-    const k = (j ^ fingerprint.hash()) % this.filterSize;
-    const inK = this.buckets[k]?.remove(fingerprint) ?? false;
-    if (inK) {
-      this.count--;
-    }
-    return inK;
-  }
-  get reliable() {
-    return Math.floor(100 * (this.count / this.filterSize)) <= 90;
-  }
-};
-var MAX_LOAD = {
-  1: 0.5,
-  2: 0.84,
-  4: 0.95,
-  8: 0.98
-};
-function calculateBucketSize(errorRate = 1e-3) {
-  if (errorRate > 2e-3) {
-    return 2;
-  }
-  if (errorRate > 1e-5) {
-    return 4;
-  }
-  return 8;
-}
-__name(calculateBucketSize, "calculateBucketSize");
-function optimize(maxItems, errorRate = 1e-3) {
-  const bucketSize = calculateBucketSize(errorRate);
-  const load2 = MAX_LOAD[bucketSize];
-  const filterSize = Math.round(maxItems / load2);
-  const fingerprintSize = Math.min(Math.ceil(Math.log2(1 / errorRate) + Math.log2(2 * bucketSize)), MAX_FINGERPRINT_SIZE);
-  return {
-    filterSize,
-    bucketSize,
-    fingerprintSize
-  };
-}
-__name(optimize, "optimize");
-
-// node_modules/@libp2p/utils/dist/src/filters/scalable-cuckoo-filter.js
-var ScalableCuckooFilter = class {
-  static {
-    __name(this, "ScalableCuckooFilter");
-  }
-  filterSize;
-  bucketSize;
-  fingerprintSize;
-  scale;
-  filterSeries;
-  hash;
-  seed;
-  constructor(init) {
-    this.bucketSize = init.bucketSize ?? 4;
-    this.filterSize = init.filterSize ?? (1 << 18) / this.bucketSize;
-    this.fingerprintSize = init.fingerprintSize ?? 2;
-    this.scale = init.scale ?? 2;
-    this.hash = init.hash ?? fnv1a2;
-    this.seed = init.seed ?? getRandomInt(0, Math.pow(2, 10));
-    this.filterSeries = [
-      new CuckooFilter({
-        filterSize: this.filterSize,
-        bucketSize: this.bucketSize,
-        fingerprintSize: this.fingerprintSize,
-        hash: this.hash,
-        seed: this.seed
-      })
-    ];
-  }
-  add(item) {
-    if (typeof item === "string") {
-      item = fromString2(item);
-    }
-    if (this.has(item)) {
-      return true;
-    }
-    let current = this.filterSeries.find((cuckoo) => {
-      return cuckoo.reliable;
-    });
-    if (current == null) {
-      const curSize = this.filterSize * Math.pow(this.scale, this.filterSeries.length);
-      current = new CuckooFilter({
-        filterSize: curSize,
-        bucketSize: this.bucketSize,
-        fingerprintSize: this.fingerprintSize,
-        hash: this.hash,
-        seed: this.seed
-      });
-      this.filterSeries.push(current);
-    }
-    return current.add(item);
-  }
-  has(item) {
-    if (typeof item === "string") {
-      item = fromString2(item);
-    }
-    for (let i = 0; i < this.filterSeries.length; i++) {
-      if (this.filterSeries[i].has(item)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  remove(item) {
-    if (typeof item === "string") {
-      item = fromString2(item);
-    }
-    for (let i = 0; i < this.filterSeries.length; i++) {
-      if (this.filterSeries[i].remove(item)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  get count() {
-    return this.filterSeries.reduce((acc, curr) => {
-      return acc + curr.count;
-    }, 0);
-  }
-};
-function createScalableCuckooFilter(maxItems, errorRate = 1e-3, options) {
-  return new ScalableCuckooFilter({
-    ...optimize(maxItems, errorRate),
-    ...options ?? {}
-  });
-}
-__name(createScalableCuckooFilter, "createScalableCuckooFilter");
-
-// node_modules/@libp2p/peer-id-factory/dist/src/index.js
-var createEd25519PeerId = /* @__PURE__ */ __name(async () => {
-  const key = await generateKeyPair4("Ed25519");
-  const id = await createFromPrivKey(key);
-  if (id.type === "Ed25519") {
-    return id;
-  }
-  throw new Error(`Generated unexpected PeerId type "${id.type}"`);
-}, "createEd25519PeerId");
-async function createFromPrivKey(privateKey) {
-  return peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey));
-}
-__name(createFromPrivKey, "createFromPrivKey");
-
 // node_modules/@libp2p/peer-record/dist/src/errors.js
 var codes = {
   ERR_SIGNATURE_NOT_VALID: "ERR_SIGNATURE_NOT_VALID"
@@ -13036,28 +10986,28 @@ var Envelope;
   let _codec;
   Envelope2.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.publicKey != null && obj.publicKey.byteLength > 0) {
-          w2.uint32(10);
-          w2.bytes(obj.publicKey);
+          w.uint32(10);
+          w.bytes(obj.publicKey);
         }
         if (obj.payloadType != null && obj.payloadType.byteLength > 0) {
-          w2.uint32(18);
-          w2.bytes(obj.payloadType);
+          w.uint32(18);
+          w.bytes(obj.payloadType);
         }
         if (obj.payload != null && obj.payload.byteLength > 0) {
-          w2.uint32(26);
-          w2.bytes(obj.payload);
+          w.uint32(26);
+          w.bytes(obj.payload);
         }
         if (obj.signature != null && obj.signature.byteLength > 0) {
-          w2.uint32(42);
-          w2.bytes(obj.signature);
+          w.uint32(42);
+          w.bytes(obj.signature);
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {
@@ -13110,9 +11060,9 @@ var RecordEnvelope = class _RecordEnvelope {
    */
   static createFromProtobuf = /* @__PURE__ */ __name(async (data) => {
     const envelopeData = Envelope.decode(data);
-    const peerId2 = await peerIdFromKeys(envelopeData.publicKey);
+    const peerId = await peerIdFromKeys(envelopeData.publicKey);
     return new _RecordEnvelope({
-      peerId: peerId2,
+      peerId,
       payloadType: envelopeData.payloadType,
       payload: envelopeData.payload,
       signature: envelopeData.signature
@@ -13122,18 +11072,18 @@ var RecordEnvelope = class _RecordEnvelope {
    * Seal marshals the given Record, places the marshaled bytes inside an Envelope
    * and signs it with the given peerId's private key
    */
-  static seal = /* @__PURE__ */ __name(async (record, peerId2) => {
-    if (peerId2.privateKey == null) {
+  static seal = /* @__PURE__ */ __name(async (record, peerId) => {
+    if (peerId.privateKey == null) {
       throw new Error("Missing private key");
     }
     const domain = record.domain;
     const payloadType = record.codec;
     const payload = record.marshal();
     const signData = formatSignaturePayload(domain, payloadType, payload);
-    const key = await unmarshalPrivateKey2(peerId2.privateKey);
+    const key = await unmarshalPrivateKey2(peerId.privateKey);
     const signature = await key.sign(signData.subarray());
     return new _RecordEnvelope({
-      peerId: peerId2,
+      peerId,
       payloadType,
       payload,
       signature
@@ -13161,8 +11111,8 @@ var RecordEnvelope = class _RecordEnvelope {
    * by a libp2p peer.
    */
   constructor(init) {
-    const { peerId: peerId2, payloadType, payload, signature } = init;
-    this.peerId = peerId2;
+    const { peerId, payloadType, payload, signature } = init;
+    this.peerId = peerId;
     this.payloadType = payloadType;
     this.payload = payload;
     this.signature = signature;
@@ -13212,12 +11162,12 @@ var formatSignaturePayload = /* @__PURE__ */ __name((domain, payloadType, payloa
 
 // node_modules/@libp2p/utils/dist/src/array-equals.js
 function arrayEquals(a, b) {
-  const sort2 = /* @__PURE__ */ __name((a2, b2) => a2.toString().localeCompare(b2.toString()), "sort");
+  const sort = /* @__PURE__ */ __name((a2, b2) => a2.toString().localeCompare(b2.toString()), "sort");
   if (a.length !== b.length) {
     return false;
   }
-  b.sort(sort2);
-  return a.sort(sort2).every((item, index) => b[index].equals(item));
+  b.sort(sort);
+  return a.sort(sort).every((item, index) => b[index].equals(item));
 }
 __name(arrayEquals, "arrayEquals");
 
@@ -13597,11 +11547,11 @@ table.forEach((row) => {
   codes2[proto.code] = proto;
   names[proto.name] = proto;
 });
-function createProtocol(code2, size, name3, resolvable, path) {
+function createProtocol(code2, size, name2, resolvable, path) {
   return {
     code: code2,
     size,
-    name: name3,
+    name: name2,
     resolvable: Boolean(resolvable),
     path: Boolean(path)
   };
@@ -13722,7 +11672,7 @@ __name(convertToBytes, "convertToBytes");
 var decoders = Object.values(bases).map((c) => c.decoder);
 var anybaseDecoder = function() {
   let acc = decoders[0].or(decoders[1]);
-  decoders.slice(2).forEach((d2) => acc = acc.or(d2));
+  decoders.slice(2).forEach((d) => acc = acc.or(d));
   return acc;
 }();
 function ip2bytes(ipString) {
@@ -14089,12 +12039,12 @@ var Multiaddr = class _Multiaddr {
   }
   decapsulate(addr) {
     const addrString = addr.toString();
-    const s2 = this.toString();
-    const i = s2.lastIndexOf(addrString);
+    const s = this.toString();
+    const i = s.lastIndexOf(addrString);
     if (i < 0) {
       throw new Error(`Address ${this.toString()} does not contain subaddress: ${addr.toString()}`);
     }
-    return new _Multiaddr(s2.slice(0, i));
+    return new _Multiaddr(s.slice(0, i));
   }
   decapsulateCode(code2) {
     const tuples = this.tuples();
@@ -14108,9 +12058,9 @@ var Multiaddr = class _Multiaddr {
   getPeerId() {
     try {
       let tuples = [];
-      this.stringTuples().forEach(([code2, name3]) => {
+      this.stringTuples().forEach(([code2, name2]) => {
         if (code2 === names.p2p.code) {
-          tuples.push([code2, name3]);
+          tuples.push([code2, name2]);
         }
         if (code2 === names["p2p-circuit"].code) {
           tuples = [];
@@ -14211,16 +12161,16 @@ var PeerRecord;
     let _codec2;
     AddressInfo2.codec = () => {
       if (_codec2 == null) {
-        _codec2 = message((obj, w2, opts = {}) => {
+        _codec2 = message((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
-            w2.fork();
+            w.fork();
           }
           if (obj.multiaddr != null && obj.multiaddr.byteLength > 0) {
-            w2.uint32(10);
-            w2.bytes(obj.multiaddr);
+            w.uint32(10);
+            w.bytes(obj.multiaddr);
           }
           if (opts.lengthDelimited !== false) {
-            w2.ldelim();
+            w.ldelim();
           }
         }, (reader, length3) => {
           const obj = {
@@ -14253,26 +12203,26 @@ var PeerRecord;
   let _codec;
   PeerRecord3.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.peerId != null && obj.peerId.byteLength > 0) {
-          w2.uint32(10);
-          w2.bytes(obj.peerId);
+          w.uint32(10);
+          w.bytes(obj.peerId);
         }
         if (obj.seq != null && obj.seq !== 0n) {
-          w2.uint32(16);
-          w2.uint64(obj.seq);
+          w.uint32(16);
+          w.uint64(obj.seq);
         }
         if (obj.addresses != null) {
           for (const value of obj.addresses) {
-            w2.uint32(26);
-            PeerRecord3.AddressInfo.codec().encode(value, w2);
+            w.uint32(26);
+            PeerRecord3.AddressInfo.codec().encode(value, w);
           }
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {
@@ -14321,10 +12271,10 @@ var PeerRecord2 = class _PeerRecord {
    */
   static createFromProtobuf = /* @__PURE__ */ __name((buf) => {
     const peerRecord = PeerRecord.decode(buf);
-    const peerId2 = peerIdFromBytes(peerRecord.peerId);
+    const peerId = peerIdFromBytes(peerRecord.peerId);
     const multiaddrs = (peerRecord.addresses ?? []).map((a) => multiaddr(a.multiaddr));
     const seqNumber = peerRecord.seq;
-    return new _PeerRecord({ peerId: peerId2, multiaddrs, seqNumber });
+    return new _PeerRecord({ peerId, multiaddrs, seqNumber });
   }, "createFromProtobuf");
   static DOMAIN = ENVELOPE_DOMAIN_PEER_RECORD;
   static CODEC = ENVELOPE_PAYLOAD_TYPE_PEER_RECORD;
@@ -14335,8 +12285,8 @@ var PeerRecord2 = class _PeerRecord {
   codec = _PeerRecord.CODEC;
   marshaled;
   constructor(init) {
-    const { peerId: peerId2, multiaddrs, seqNumber } = init;
-    this.peerId = peerId2;
+    const { peerId, multiaddrs, seqNumber } = init;
+    this.peerId = peerId;
     this.multiaddrs = multiaddrs ?? [];
     this.seqNumber = seqNumber ?? BigInt(Date.now());
   }
@@ -14348,8 +12298,8 @@ var PeerRecord2 = class _PeerRecord {
       this.marshaled = PeerRecord.encode({
         peerId: this.peerId.toBytes(),
         seq: BigInt(this.seqNumber),
-        addresses: this.multiaddrs.map((m2) => ({
-          multiaddr: m2.bytes
+        addresses: this.multiaddrs.map((m) => ({
+          multiaddr: m.bytes
         }))
       });
     }
@@ -14397,7 +12347,88 @@ function all(source) {
   return arr;
 }
 __name(all, "all");
-var src_default2 = all;
+var src_default = all;
+
+// node_modules/@libp2p/peer-collections/dist/src/util.js
+function mapIterable(iter, map) {
+  const iterator = {
+    [Symbol.iterator]: () => {
+      return iterator;
+    },
+    next: /* @__PURE__ */ __name(() => {
+      const next = iter.next();
+      const val = next.value;
+      if (next.done === true || val == null) {
+        const result = {
+          done: true,
+          value: void 0
+        };
+        return result;
+      }
+      return {
+        done: false,
+        value: map(val)
+      };
+    }, "next")
+  };
+  return iterator;
+}
+__name(mapIterable, "mapIterable");
+
+// node_modules/@libp2p/peer-collections/dist/src/map.js
+var PeerMap = class {
+  static {
+    __name(this, "PeerMap");
+  }
+  map;
+  constructor(map) {
+    this.map = /* @__PURE__ */ new Map();
+    if (map != null) {
+      for (const [key, value] of map.entries()) {
+        this.map.set(key.toString(), value);
+      }
+    }
+  }
+  [Symbol.iterator]() {
+    return this.entries();
+  }
+  clear() {
+    this.map.clear();
+  }
+  delete(peer) {
+    return this.map.delete(peer.toString());
+  }
+  entries() {
+    return mapIterable(this.map.entries(), (val) => {
+      return [peerIdFromString(val[0]), val[1]];
+    });
+  }
+  forEach(fn) {
+    this.map.forEach((value, key) => {
+      fn(value, peerIdFromString(key), this);
+    });
+  }
+  get(peer) {
+    return this.map.get(peer.toString());
+  }
+  has(peer) {
+    return this.map.has(peer.toString());
+  }
+  set(peer, value) {
+    this.map.set(peer.toString(), value);
+  }
+  keys() {
+    return mapIterable(this.map.keys(), (val) => {
+      return peerIdFromString(val);
+    });
+  }
+  values() {
+    return this.map.values();
+  }
+  get size() {
+    return this.map.size;
+  }
+};
 
 // node_modules/p-queue/node_modules/eventemitter3/index.mjs
 var import_index3 = __toESM(require_eventemitter3(), 1);
@@ -14412,7 +12443,7 @@ var TimeoutError = class extends Error {
     this.name = "TimeoutError";
   }
 };
-var AbortError2 = class extends Error {
+var AbortError = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -14422,7 +12453,7 @@ var AbortError2 = class extends Error {
     this.message = message2;
   }
 };
-var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError2(errorMessage) : new DOMException(errorMessage), "getDOMException");
+var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError(errorMessage) : new DOMException(errorMessage), "getDOMException");
 var getAbortedReason = /* @__PURE__ */ __name((signal) => {
   const reason = signal.reason === void 0 ? getDOMException("This operation was aborted.") : signal.reason;
   return reason instanceof Error ? reason : getDOMException(reason);
@@ -14619,14 +12650,14 @@ var PQueue = class extends import_index3.default {
   get #isIntervalPaused() {
     const now = Date.now();
     if (this.#intervalId === void 0) {
-      const delay2 = this.#intervalEnd - now;
-      if (delay2 < 0) {
+      const delay = this.#intervalEnd - now;
+      if (delay < 0) {
         this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
       } else {
         if (this.#timeoutId === void 0) {
           this.#timeoutId = setTimeout(() => {
             this.#onResumeInterval();
-          }, delay2);
+          }, delay);
         }
         return true;
       }
@@ -14801,10 +12832,10 @@ var PQueue = class extends import_index3.default {
     }
     await this.#onEvent("idle");
   }
-  async #onEvent(event, filter2) {
+  async #onEvent(event, filter) {
     return new Promise((resolve) => {
       const listener = /* @__PURE__ */ __name(() => {
-        if (filter2 && !filter2()) {
+        if (filter && !filter()) {
           return;
         }
         this.off(event, listener);
@@ -14871,7 +12902,7 @@ observable.dispatchEvent = function(type, worker, event) {
   }
   events[type].forEach((fn) => fn(worker, event));
 };
-var src_default3 = observable;
+var src_default2 = observable;
 
 // node_modules/mortice/dist/src/constants.js
 var WORKER_REQUEST_READ_LOCK = "lock:worker:request-read";
@@ -14928,13 +12959,13 @@ var handleWorkerLockRequest = /* @__PURE__ */ __name((emitter, masterEvent, requ
     }));
   };
 }, "handleWorkerLockRequest");
-var makeWorkerLockRequest = /* @__PURE__ */ __name((name3, requestType, grantType, releaseType) => {
+var makeWorkerLockRequest = /* @__PURE__ */ __name((name2, requestType, grantType, releaseType) => {
   return async () => {
     const id = nanoid();
     globalThis.postMessage({
       type: requestType,
       identifier: id,
-      name: name3
+      name: name2
     });
     return new Promise((resolve) => {
       const listener = /* @__PURE__ */ __name((event) => {
@@ -14951,7 +12982,7 @@ var makeWorkerLockRequest = /* @__PURE__ */ __name((name3, requestType, grantTyp
             globalThis.postMessage({
               type: releaseType,
               identifier: id,
-              name: name3
+              name: name2
             });
           });
         }
@@ -14963,19 +12994,19 @@ var makeWorkerLockRequest = /* @__PURE__ */ __name((name3, requestType, grantTyp
 var defaultOptions = {
   singleProcess: false
 };
-var browser_default2 = /* @__PURE__ */ __name((options) => {
+var browser_default = /* @__PURE__ */ __name((options) => {
   options = Object.assign({}, defaultOptions, options);
   const isPrimary = Boolean(globalThis.document) || options.singleProcess;
   if (isPrimary) {
     const emitter = new EventTarget();
-    src_default3.addEventListener("message", handleWorkerLockRequest(emitter, "requestReadLock", WORKER_REQUEST_READ_LOCK, WORKER_RELEASE_READ_LOCK, MASTER_GRANT_READ_LOCK));
-    src_default3.addEventListener("message", handleWorkerLockRequest(emitter, "requestWriteLock", WORKER_REQUEST_WRITE_LOCK, WORKER_RELEASE_WRITE_LOCK, MASTER_GRANT_WRITE_LOCK));
+    src_default2.addEventListener("message", handleWorkerLockRequest(emitter, "requestReadLock", WORKER_REQUEST_READ_LOCK, WORKER_RELEASE_READ_LOCK, MASTER_GRANT_READ_LOCK));
+    src_default2.addEventListener("message", handleWorkerLockRequest(emitter, "requestWriteLock", WORKER_REQUEST_WRITE_LOCK, WORKER_RELEASE_WRITE_LOCK, MASTER_GRANT_WRITE_LOCK));
     return emitter;
   }
   return {
     isWorker: true,
-    readLock: /* @__PURE__ */ __name((name3) => makeWorkerLockRequest(name3, WORKER_REQUEST_READ_LOCK, MASTER_GRANT_READ_LOCK, WORKER_RELEASE_READ_LOCK), "readLock"),
-    writeLock: /* @__PURE__ */ __name((name3) => makeWorkerLockRequest(name3, WORKER_REQUEST_WRITE_LOCK, MASTER_GRANT_WRITE_LOCK, WORKER_RELEASE_WRITE_LOCK), "writeLock")
+    readLock: /* @__PURE__ */ __name((name2) => makeWorkerLockRequest(name2, WORKER_REQUEST_READ_LOCK, MASTER_GRANT_READ_LOCK, WORKER_RELEASE_READ_LOCK), "readLock"),
+    writeLock: /* @__PURE__ */ __name((name2) => makeWorkerLockRequest(name2, WORKER_REQUEST_WRITE_LOCK, MASTER_GRANT_WRITE_LOCK, WORKER_RELEASE_WRITE_LOCK), "writeLock")
   };
 }, "default");
 
@@ -14999,11 +13030,11 @@ async function createReleaseable(queue, options) {
   return p;
 }
 __name(createReleaseable, "createReleaseable");
-var createMutex = /* @__PURE__ */ __name((name3, options) => {
+var createMutex = /* @__PURE__ */ __name((name2, options) => {
   if (implementation.isWorker === true) {
     return {
-      readLock: implementation.readLock(name3, options),
-      writeLock: implementation.writeLock(name3, options)
+      readLock: implementation.readLock(name2, options),
+      writeLock: implementation.writeLock(name2, options)
     };
   }
   const masterQueue = new PQueue({ concurrency: 1 });
@@ -15044,7 +13075,7 @@ var defaultOptions2 = {
 function createMortice(options) {
   const opts = Object.assign({}, defaultOptions2, options);
   if (implementation == null) {
-    implementation = browser_default2(opts);
+    implementation = browser_default(opts);
     if (implementation.isWorker !== true) {
       implementation.addEventListener("requestReadLock", (event) => {
         if (mutexes[event.data.name] == null) {
@@ -15084,20 +13115,20 @@ var Peer;
     let _codec2;
     Peer$metadataEntry2.codec = () => {
       if (_codec2 == null) {
-        _codec2 = message((obj, w2, opts = {}) => {
+        _codec2 = message((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
-            w2.fork();
+            w.fork();
           }
           if (obj.key != null && obj.key !== "") {
-            w2.uint32(10);
-            w2.string(obj.key);
+            w.uint32(10);
+            w.string(obj.key);
           }
           if (obj.value != null && obj.value.byteLength > 0) {
-            w2.uint32(18);
-            w2.bytes(obj.value);
+            w.uint32(18);
+            w.bytes(obj.value);
           }
           if (opts.lengthDelimited !== false) {
-            w2.ldelim();
+            w.ldelim();
           }
         }, (reader, length3) => {
           const obj = {
@@ -15136,20 +13167,20 @@ var Peer;
     let _codec2;
     Peer$tagsEntry2.codec = () => {
       if (_codec2 == null) {
-        _codec2 = message((obj, w2, opts = {}) => {
+        _codec2 = message((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
-            w2.fork();
+            w.fork();
           }
           if (obj.key != null && obj.key !== "") {
-            w2.uint32(10);
-            w2.string(obj.key);
+            w.uint32(10);
+            w.string(obj.key);
           }
           if (obj.value != null) {
-            w2.uint32(18);
-            Tag.codec().encode(obj.value, w2);
+            w.uint32(18);
+            Tag.codec().encode(obj.value, w);
           }
           if (opts.lengthDelimited !== false) {
-            w2.ldelim();
+            w.ldelim();
           }
         }, (reader, length3) => {
           const obj = {
@@ -15185,44 +13216,44 @@ var Peer;
   let _codec;
   Peer2.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.addresses != null) {
           for (const value of obj.addresses) {
-            w2.uint32(10);
-            Address.codec().encode(value, w2);
+            w.uint32(10);
+            Address.codec().encode(value, w);
           }
         }
         if (obj.protocols != null) {
           for (const value of obj.protocols) {
-            w2.uint32(18);
-            w2.string(value);
+            w.uint32(18);
+            w.string(value);
           }
         }
         if (obj.publicKey != null) {
-          w2.uint32(34);
-          w2.bytes(obj.publicKey);
+          w.uint32(34);
+          w.bytes(obj.publicKey);
         }
         if (obj.peerRecordEnvelope != null) {
-          w2.uint32(42);
-          w2.bytes(obj.peerRecordEnvelope);
+          w.uint32(42);
+          w.bytes(obj.peerRecordEnvelope);
         }
         if (obj.metadata != null && obj.metadata.size !== 0) {
           for (const [key, value] of obj.metadata.entries()) {
-            w2.uint32(50);
-            Peer2.Peer$metadataEntry.codec().encode({ key, value }, w2);
+            w.uint32(50);
+            Peer2.Peer$metadataEntry.codec().encode({ key, value }, w);
           }
         }
         if (obj.tags != null && obj.tags.size !== 0) {
           for (const [key, value] of obj.tags.entries()) {
-            w2.uint32(58);
-            Peer2.Peer$tagsEntry.codec().encode({ key, value }, w2);
+            w.uint32(58);
+            Peer2.Peer$tagsEntry.codec().encode({ key, value }, w);
           }
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {
@@ -15279,20 +13310,20 @@ var Address;
   let _codec;
   Address2.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.multiaddr != null && obj.multiaddr.byteLength > 0) {
-          w2.uint32(10);
-          w2.bytes(obj.multiaddr);
+          w.uint32(10);
+          w.bytes(obj.multiaddr);
         }
         if (obj.isCertified != null) {
-          w2.uint32(16);
-          w2.bool(obj.isCertified);
+          w.uint32(16);
+          w.bool(obj.isCertified);
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {
@@ -15330,20 +13361,20 @@ var Tag;
   let _codec;
   Tag2.codec = () => {
     if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
+      _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
-          w2.fork();
+          w.fork();
         }
         if (obj.value != null && obj.value !== 0) {
-          w2.uint32(8);
-          w2.uint32(obj.value);
+          w.uint32(8);
+          w.uint32(obj.value);
         }
         if (obj.expiry != null) {
-          w2.uint32(16);
-          w2.uint64(obj.expiry);
+          w.uint32(16);
+          w.uint64(obj.expiry);
         }
         if (opts.lengthDelimited !== false) {
-          w2.ldelim();
+          w.ldelim();
         }
       }, (reader, length3) => {
         const obj = {
@@ -15378,12 +13409,12 @@ var Tag;
 })(Tag || (Tag = {}));
 
 // node_modules/@libp2p/peer-store/dist/src/utils/bytes-to-peer.js
-function bytesToPeer(peerId2, buf) {
+function bytesToPeer(peerId, buf) {
   const peer = Peer.decode(buf);
-  if (peer.publicKey != null && peerId2.publicKey == null) {
-    peerId2 = peerIdFromPeerId({
-      ...peerId2,
-      publicKey: peerId2.publicKey
+  if (peer.publicKey != null && peerId.publicKey == null) {
+    peerId = peerIdFromPeerId({
+      ...peerId,
+      publicKey: peerId.publicKey
     });
   }
   const tags = /* @__PURE__ */ new Map();
@@ -15396,7 +13427,7 @@ function bytesToPeer(peerId2, buf) {
   }
   return {
     ...peer,
-    id: peerId2,
+    id: peerId,
     addresses: peer.addresses.map(({ multiaddr: ma, isCertified }) => {
       return {
         multiaddr: multiaddr(ma),
@@ -15423,11 +13454,11 @@ var Key = class _Key {
    * @param {string | Uint8Array} s
    * @param {boolean} [clean]
    */
-  constructor(s2, clean) {
-    if (typeof s2 === "string") {
-      this._buf = fromString2(s2);
-    } else if (s2 instanceof Uint8Array) {
-      this._buf = s2;
+  constructor(s, clean) {
+    if (typeof s === "string") {
+      this._buf = fromString2(s);
+    } else if (s instanceof Uint8Array) {
+      this._buf = s;
     } else {
       throw new Error("Invalid key, should be String of Uint8Array");
     }
@@ -15639,8 +13670,8 @@ var Key = class _Key {
    * // => Key('/Comedy/MontyPython/Actor:JohnCleese')
    * ```
    */
-  instance(s2) {
-    return new _Key(this.toString() + ":" + s2);
+  instance(s) {
+    return new _Key(this.toString() + ":" + s);
   }
   /**
    * Returns the "path" of this key (parent + type).
@@ -15773,17 +13804,17 @@ __name(flatten, "flatten");
 
 // node_modules/@libp2p/peer-store/dist/src/utils/peer-id-to-datastore-key.js
 var NAMESPACE_COMMON = "/peers/";
-function peerIdToDatastoreKey(peerId2) {
-  if (!isPeerId(peerId2) || peerId2.type == null) {
+function peerIdToDatastoreKey(peerId) {
+  if (!isPeerId(peerId) || peerId.type == null) {
     throw new CodeError("Invalid PeerId", codes3.ERR_INVALID_PARAMETERS);
   }
-  const b32key = peerId2.toCID().toString();
+  const b32key = peerId.toCID().toString();
   return new Key(`${NAMESPACE_COMMON}${b32key}`);
 }
 __name(peerIdToDatastoreKey, "peerIdToDatastoreKey");
 
 // node_modules/@libp2p/peer-store/dist/src/utils/dedupe-addresses.js
-async function dedupeFilterAndSortAddresses(peerId2, filter2, addresses) {
+async function dedupeFilterAndSortAddresses(peerId, filter, addresses) {
   const addressMap = /* @__PURE__ */ new Map();
   for (const addr of addresses) {
     if (addr == null) {
@@ -15795,7 +13826,7 @@ async function dedupeFilterAndSortAddresses(peerId2, filter2, addresses) {
     if (!isMultiaddr(addr.multiaddr)) {
       throw new CodeError("Multiaddr was invalid", codes3.ERR_INVALID_PARAMETERS);
     }
-    if (!await filter2(peerId2, addr.multiaddr)) {
+    if (!await filter(peerId, addr.multiaddr)) {
       continue;
     }
     const isCertified = addr.isCertified ?? false;
@@ -15820,15 +13851,15 @@ async function dedupeFilterAndSortAddresses(peerId2, filter2, addresses) {
 __name(dedupeFilterAndSortAddresses, "dedupeFilterAndSortAddresses");
 
 // node_modules/@libp2p/peer-store/dist/src/utils/to-peer-pb.js
-async function toPeerPB(peerId2, data, strategy, options) {
+async function toPeerPB(peerId, data, strategy, options) {
   if (data == null) {
     throw new CodeError("Invalid PeerData", codes3.ERR_INVALID_PARAMETERS);
   }
-  if (data.publicKey != null && peerId2.publicKey != null && !equals3(data.publicKey, peerId2.publicKey)) {
+  if (data.publicKey != null && peerId.publicKey != null && !equals3(data.publicKey, peerId.publicKey)) {
     throw new CodeError("publicKey bytes do not match peer id publicKey bytes", codes3.ERR_INVALID_PARAMETERS);
   }
   const existingPeer = options.existingPeer;
-  if (existingPeer != null && !peerId2.equals(existingPeer.id)) {
+  if (existingPeer != null && !peerId.equals(existingPeer.id)) {
     throw new CodeError("peer id did not match existing peer id", codes3.ERR_INVALID_PARAMETERS);
   }
   let addresses = existingPeer?.addresses ?? [];
@@ -15915,16 +13946,16 @@ async function toPeerPB(peerId2, data, strategy, options) {
     }
   }
   const output2 = {
-    addresses: await dedupeFilterAndSortAddresses(peerId2, options.addressFilter ?? (async () => true), addresses),
+    addresses: await dedupeFilterAndSortAddresses(peerId, options.addressFilter ?? (async () => true), addresses),
     protocols: [...protocols.values()].sort((a, b) => {
       return a.localeCompare(b);
     }),
     metadata,
     tags,
-    publicKey: existingPeer?.id.publicKey ?? data.publicKey ?? peerId2.publicKey,
+    publicKey: existingPeer?.id.publicKey ?? data.publicKey ?? peerId.publicKey,
     peerRecordEnvelope
   };
-  if (peerId2.type !== "RSA") {
+  if (peerId.type !== "RSA") {
     delete output2.publicKey;
   }
   return output2;
@@ -15995,30 +14026,30 @@ function mapTag(key, tag) {
 __name(mapTag, "mapTag");
 
 // node_modules/@libp2p/peer-store/dist/src/store.js
-function decodePeer(key, value, cache3) {
+function decodePeer(key, value, cache2) {
   const base32Str = key.toString().split("/")[2];
   const buf = base32.decode(base32Str);
-  const peerId2 = peerIdFromBytes(buf);
-  const cached = cache3.get(peerId2);
+  const peerId = peerIdFromBytes(buf);
+  const cached = cache2.get(peerId);
   if (cached != null) {
     return cached;
   }
-  const peer = bytesToPeer(peerId2, value);
-  cache3.set(peerId2, peer);
+  const peer = bytesToPeer(peerId, value);
+  cache2.set(peerId, peer);
   return peer;
 }
 __name(decodePeer, "decodePeer");
-function mapQuery(query, cache3) {
+function mapQuery(query, cache2) {
   if (query == null) {
     return {};
   }
   return {
     prefix: NAMESPACE_COMMON,
     filters: (query.filters ?? []).map((fn) => ({ key, value }) => {
-      return fn(decodePeer(key, value, cache3));
+      return fn(decodePeer(key, value, cache2));
     }),
     orders: (query.orders ?? []).map((fn) => (a, b) => {
-      return fn(decodePeer(a.key, a.value, cache3), decodePeer(b.key, b.value, cache3));
+      return fn(decodePeer(a.key, a.value, cache2), decodePeer(b.key, b.value, cache2));
     })
   };
 }
@@ -16040,41 +14071,41 @@ var PersistentStore = class {
       singleProcess: true
     });
   }
-  async has(peerId2) {
-    return this.datastore.has(peerIdToDatastoreKey(peerId2));
+  async has(peerId) {
+    return this.datastore.has(peerIdToDatastoreKey(peerId));
   }
-  async delete(peerId2) {
-    if (this.peerId.equals(peerId2)) {
+  async delete(peerId) {
+    if (this.peerId.equals(peerId)) {
       throw new CodeError("Cannot delete self peer", codes3.ERR_INVALID_PARAMETERS);
     }
-    await this.datastore.delete(peerIdToDatastoreKey(peerId2));
+    await this.datastore.delete(peerIdToDatastoreKey(peerId));
   }
-  async load(peerId2) {
-    const buf = await this.datastore.get(peerIdToDatastoreKey(peerId2));
-    return bytesToPeer(peerId2, buf);
+  async load(peerId) {
+    const buf = await this.datastore.get(peerIdToDatastoreKey(peerId));
+    return bytesToPeer(peerId, buf);
   }
-  async save(peerId2, data) {
-    const { existingBuf, existingPeer } = await this.#findExistingPeer(peerId2);
-    const peerPb = await toPeerPB(peerId2, data, "patch", {
+  async save(peerId, data) {
+    const { existingBuf, existingPeer } = await this.#findExistingPeer(peerId);
+    const peerPb = await toPeerPB(peerId, data, "patch", {
       addressFilter: this.addressFilter
     });
-    return this.#saveIfDifferent(peerId2, peerPb, existingBuf, existingPeer);
+    return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer);
   }
-  async patch(peerId2, data) {
-    const { existingBuf, existingPeer } = await this.#findExistingPeer(peerId2);
-    const peerPb = await toPeerPB(peerId2, data, "patch", {
+  async patch(peerId, data) {
+    const { existingBuf, existingPeer } = await this.#findExistingPeer(peerId);
+    const peerPb = await toPeerPB(peerId, data, "patch", {
       addressFilter: this.addressFilter,
       existingPeer
     });
-    return this.#saveIfDifferent(peerId2, peerPb, existingBuf, existingPeer);
+    return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer);
   }
-  async merge(peerId2, data) {
-    const { existingBuf, existingPeer } = await this.#findExistingPeer(peerId2);
-    const peerPb = await toPeerPB(peerId2, data, "merge", {
+  async merge(peerId, data) {
+    const { existingBuf, existingPeer } = await this.#findExistingPeer(peerId);
+    const peerPb = await toPeerPB(peerId, data, "merge", {
       addressFilter: this.addressFilter,
       existingPeer
     });
-    return this.#saveIfDifferent(peerId2, peerPb, existingBuf, existingPeer);
+    return this.#saveIfDifferent(peerId, peerPb, existingBuf, existingPeer);
   }
   async *all(query) {
     const peerCache = new PeerMap();
@@ -16086,10 +14117,10 @@ var PersistentStore = class {
       yield peer;
     }
   }
-  async #findExistingPeer(peerId2) {
+  async #findExistingPeer(peerId) {
     try {
-      const existingBuf = await this.datastore.get(peerIdToDatastoreKey(peerId2));
-      const existingPeer = bytesToPeer(peerId2, existingBuf);
+      const existingBuf = await this.datastore.get(peerIdToDatastoreKey(peerId));
+      const existingPeer = bytesToPeer(peerId, existingBuf);
       return {
         existingBuf,
         existingPeer
@@ -16101,18 +14132,18 @@ var PersistentStore = class {
     }
     return {};
   }
-  async #saveIfDifferent(peerId2, peer, existingBuf, existingPeer) {
+  async #saveIfDifferent(peerId, peer, existingBuf, existingPeer) {
     const buf = Peer.encode(peer);
     if (existingBuf != null && equals3(buf, existingBuf)) {
       return {
-        peer: bytesToPeer(peerId2, buf),
+        peer: bytesToPeer(peerId, buf),
         previous: existingPeer,
         updated: false
       };
     }
-    await this.datastore.put(peerIdToDatastoreKey(peerId2), buf);
+    await this.datastore.put(peerIdToDatastoreKey(peerId), buf);
     return {
-      peer: bytesToPeer(peerId2, buf),
+      peer: bytesToPeer(peerId, buf),
       previous: existingPeer,
       updated: true
     };
@@ -16153,40 +14184,40 @@ var PersistentPeerStore = class {
     const release = await this.store.lock.readLock();
     this.log.trace("all got read lock");
     try {
-      return await src_default2(this.store.all(query));
+      return await src_default(this.store.all(query));
     } finally {
       this.log.trace("all release read lock");
       release();
     }
   }
-  async delete(peerId2) {
+  async delete(peerId) {
     this.log.trace("delete await write lock");
     const release = await this.store.lock.writeLock();
     this.log.trace("delete got write lock");
     try {
-      await this.store.delete(peerId2);
+      await this.store.delete(peerId);
     } finally {
       this.log.trace("delete release write lock");
       release();
     }
   }
-  async has(peerId2) {
+  async has(peerId) {
     this.log.trace("has await read lock");
     const release = await this.store.lock.readLock();
     this.log.trace("has got read lock");
     try {
-      return await this.store.has(peerId2);
+      return await this.store.has(peerId);
     } finally {
       this.log.trace("has release read lock");
       release();
     }
   }
-  async get(peerId2) {
+  async get(peerId) {
     this.log.trace("get await read lock");
     const release = await this.store.lock.readLock();
     this.log.trace("get got read lock");
     try {
-      return await this.store.load(peerId2);
+      return await this.store.load(peerId);
     } finally {
       this.log.trace("get release read lock");
       release();
@@ -16274,6284 +14305,8 @@ var PersistentPeerStore = class {
     }
   }
 };
-
-// node_modules/it-drain/dist/src/index.js
-function isAsyncIterable2(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable2, "isAsyncIterable");
-function drain(source) {
-  if (isAsyncIterable2(source)) {
-    return (async () => {
-      for await (const _ of source) {
-      }
-    })();
-  } else {
-    for (const _ of source) {
-    }
-  }
-}
-__name(drain, "drain");
-var src_default4 = drain;
-
-// node_modules/it-peekable/dist/src/index.js
-function peekable(iterable) {
-  const [iterator, symbol3] = iterable[Symbol.asyncIterator] != null ? [iterable[Symbol.asyncIterator](), Symbol.asyncIterator] : [iterable[Symbol.iterator](), Symbol.iterator];
-  const queue = [];
-  return {
-    peek: /* @__PURE__ */ __name(() => {
-      return iterator.next();
-    }, "peek"),
-    push: /* @__PURE__ */ __name((value) => {
-      queue.push(value);
-    }, "push"),
-    next: /* @__PURE__ */ __name(() => {
-      if (queue.length > 0) {
-        return {
-          done: false,
-          value: queue.shift()
-        };
-      }
-      return iterator.next();
-    }, "next"),
-    [symbol3]() {
-      return this;
-    }
-  };
-}
-__name(peekable, "peekable");
-var src_default5 = peekable;
-
-// node_modules/it-filter/dist/src/index.js
-function isAsyncIterable3(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable3, "isAsyncIterable");
-function filter(source, fn) {
-  let index = 0;
-  if (isAsyncIterable3(source)) {
-    return async function* () {
-      for await (const entry of source) {
-        if (await fn(entry, index++)) {
-          yield entry;
-        }
-      }
-    }();
-  }
-  const peekable2 = src_default5(source);
-  const { value, done } = peekable2.next();
-  if (done === true) {
-    return function* () {
-    }();
-  }
-  const res = fn(value, index++);
-  if (typeof res.then === "function") {
-    return async function* () {
-      if (await res) {
-        yield value;
-      }
-      for await (const entry of peekable2) {
-        if (await fn(entry, index++)) {
-          yield entry;
-        }
-      }
-    }();
-  }
-  const func2 = fn;
-  return function* () {
-    if (res === true) {
-      yield value;
-    }
-    for (const entry of peekable2) {
-      if (func2(entry, index++)) {
-        yield entry;
-      }
-    }
-  }();
-}
-__name(filter, "filter");
-var src_default6 = filter;
-
-// node_modules/it-sort/dist/src/index.js
-function isAsyncIterable4(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable4, "isAsyncIterable");
-function sort(source, sorter) {
-  if (isAsyncIterable4(source)) {
-    return async function* () {
-      const arr = await src_default2(source);
-      yield* arr.sort(sorter);
-    }();
-  }
-  return function* () {
-    const arr = src_default2(source);
-    yield* arr.sort(sorter);
-  }();
-}
-__name(sort, "sort");
-var src_default7 = sort;
-
-// node_modules/it-take/dist/src/index.js
-function isAsyncIterable5(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable5, "isAsyncIterable");
-function take(source, limit) {
-  if (isAsyncIterable5(source)) {
-    return async function* () {
-      let items = 0;
-      if (limit < 1) {
-        return;
-      }
-      for await (const entry of source) {
-        yield entry;
-        items++;
-        if (items === limit) {
-          return;
-        }
-      }
-    }();
-  }
-  return function* () {
-    let items = 0;
-    if (limit < 1) {
-      return;
-    }
-    for (const entry of source) {
-      yield entry;
-      items++;
-      if (items === limit) {
-        return;
-      }
-    }
-  }();
-}
-__name(take, "take");
-var src_default8 = take;
-
-// node_modules/libp2p/node_modules/datastore-core/dist/src/base.js
-var BaseDatastore = class {
-  static {
-    __name(this, "BaseDatastore");
-  }
-  put(key, val, options) {
-    return Promise.reject(new Error(".put is not implemented"));
-  }
-  get(key, options) {
-    return Promise.reject(new Error(".get is not implemented"));
-  }
-  has(key, options) {
-    return Promise.reject(new Error(".has is not implemented"));
-  }
-  delete(key, options) {
-    return Promise.reject(new Error(".delete is not implemented"));
-  }
-  async *putMany(source, options = {}) {
-    for await (const { key, value } of source) {
-      await this.put(key, value, options);
-      yield key;
-    }
-  }
-  async *getMany(source, options = {}) {
-    for await (const key of source) {
-      yield {
-        key,
-        value: await this.get(key, options)
-      };
-    }
-  }
-  async *deleteMany(source, options = {}) {
-    for await (const key of source) {
-      await this.delete(key, options);
-      yield key;
-    }
-  }
-  batch() {
-    let puts = [];
-    let dels = [];
-    return {
-      put(key, value) {
-        puts.push({ key, value });
-      },
-      delete(key) {
-        dels.push(key);
-      },
-      commit: /* @__PURE__ */ __name(async (options) => {
-        await src_default4(this.putMany(puts, options));
-        puts = [];
-        await src_default4(this.deleteMany(dels, options));
-        dels = [];
-      }, "commit")
-    };
-  }
-  /**
-   * Extending classes should override `query` or implement this method
-   */
-  // eslint-disable-next-line require-yield
-  async *_all(q, options) {
-    throw new Error("._all is not implemented");
-  }
-  /**
-   * Extending classes should override `queryKeys` or implement this method
-   */
-  // eslint-disable-next-line require-yield
-  async *_allKeys(q, options) {
-    throw new Error("._allKeys is not implemented");
-  }
-  query(q, options) {
-    let it = this._all(q, options);
-    if (q.prefix != null) {
-      const prefix = q.prefix;
-      it = src_default6(it, (e) => e.key.toString().startsWith(prefix));
-    }
-    if (Array.isArray(q.filters)) {
-      it = q.filters.reduce((it2, f) => src_default6(it2, f), it);
-    }
-    if (Array.isArray(q.orders)) {
-      it = q.orders.reduce((it2, f) => src_default7(it2, f), it);
-    }
-    if (q.offset != null) {
-      let i = 0;
-      const offset = q.offset;
-      it = src_default6(it, () => i++ >= offset);
-    }
-    if (q.limit != null) {
-      it = src_default8(it, q.limit);
-    }
-    return it;
-  }
-  queryKeys(q, options) {
-    let it = this._allKeys(q, options);
-    if (q.prefix != null) {
-      const prefix = q.prefix;
-      it = src_default6(it, (key) => key.toString().startsWith(prefix));
-    }
-    if (Array.isArray(q.filters)) {
-      it = q.filters.reduce((it2, f) => src_default6(it2, f), it);
-    }
-    if (Array.isArray(q.orders)) {
-      it = q.orders.reduce((it2, f) => src_default7(it2, f), it);
-    }
-    if (q.offset != null) {
-      const offset = q.offset;
-      let i = 0;
-      it = src_default6(it, () => i++ >= offset);
-    }
-    if (q.limit != null) {
-      it = src_default8(it, q.limit);
-    }
-    return it;
-  }
-};
-
-// node_modules/libp2p/node_modules/datastore-core/dist/src/errors.js
-var import_err_code = __toESM(require_err_code(), 1);
-function notFoundError(err) {
-  err = err ?? new Error("Not Found");
-  return (0, import_err_code.default)(err, "ERR_NOT_FOUND");
-}
-__name(notFoundError, "notFoundError");
-
-// node_modules/libp2p/node_modules/datastore-core/dist/src/memory.js
-var MemoryDatastore = class extends BaseDatastore {
-  static {
-    __name(this, "MemoryDatastore");
-  }
-  data;
-  constructor() {
-    super();
-    this.data = /* @__PURE__ */ new Map();
-  }
-  put(key, val) {
-    this.data.set(key.toString(), val);
-    return key;
-  }
-  get(key) {
-    const result = this.data.get(key.toString());
-    if (result == null) {
-      throw notFoundError();
-    }
-    return result;
-  }
-  has(key) {
-    return this.data.has(key.toString());
-  }
-  delete(key) {
-    this.data.delete(key.toString());
-  }
-  *_all() {
-    for (const [key, value] of this.data.entries()) {
-      yield { key: new Key(key), value };
-    }
-  }
-  *_allKeys() {
-    for (const key of this.data.keys()) {
-      yield new Key(key);
-    }
-  }
-};
-
-// node_modules/libp2p/dist/src/address-manager/utils.js
-function debounce(func2, wait) {
-  let timeout;
-  return function() {
-    const later = /* @__PURE__ */ __name(function() {
-      timeout = void 0;
-      func2();
-    }, "later");
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-__name(debounce, "debounce");
-
-// node_modules/libp2p/dist/src/address-manager/index.js
-var defaultAddressFilter = /* @__PURE__ */ __name((addrs) => addrs, "defaultAddressFilter");
-function stripPeerId(ma, peerId2) {
-  const observedPeerIdStr = ma.getPeerId();
-  if (observedPeerIdStr != null) {
-    const observedPeerId = peerIdFromString(observedPeerIdStr);
-    if (observedPeerId.equals(peerId2)) {
-      ma = ma.decapsulate(multiaddr(`/p2p/${peerId2.toString()}`));
-    }
-  }
-  return ma;
-}
-__name(stripPeerId, "stripPeerId");
-var DefaultAddressManager = class {
-  static {
-    __name(this, "DefaultAddressManager");
-  }
-  log;
-  components;
-  // this is an array to allow for duplicates, e.g. multiples of `/ip4/0.0.0.0/tcp/0`
-  listen;
-  announce;
-  observed;
-  announceFilter;
-  /**
-   * Responsible for managing the peer addresses.
-   * Peers can specify their listen and announce addresses.
-   * The listen addresses will be used by the libp2p transports to listen for new connections,
-   * while the announce addresses will be used for the peer addresses' to other peers in the network.
-   */
-  constructor(components, init = {}) {
-    const { listen = [], announce = [] } = init;
-    this.components = components;
-    this.log = components.logger.forComponent("libp2p:address-manager");
-    this.listen = listen.map((ma) => ma.toString());
-    this.announce = new Set(announce.map((ma) => ma.toString()));
-    this.observed = /* @__PURE__ */ new Map();
-    this.announceFilter = init.announceFilter ?? defaultAddressFilter;
-    this._updatePeerStoreAddresses = debounce(this._updatePeerStoreAddresses.bind(this), 1e3);
-    components.events.addEventListener("transport:listening", () => {
-      this._updatePeerStoreAddresses();
-    });
-    components.events.addEventListener("transport:close", () => {
-      this._updatePeerStoreAddresses();
-    });
-  }
-  [Symbol.toStringTag] = "@libp2p/address-manager";
-  _updatePeerStoreAddresses() {
-    const addrs = this.getAnnounceAddrs().concat(this.components.transportManager.getAddrs()).concat([...this.observed.entries()].filter(([_, metadata]) => metadata.confident).map(([str]) => multiaddr(str))).map((ma) => {
-      if (ma.getPeerId() === this.components.peerId.toString()) {
-        return ma.decapsulate(`/p2p/${this.components.peerId.toString()}`);
-      }
-      return ma;
-    });
-    this.components.peerStore.patch(this.components.peerId, {
-      multiaddrs: addrs
-    }).catch((err) => {
-      this.log.error("error updating addresses", err);
-    });
-  }
-  /**
-   * Get peer listen multiaddrs
-   */
-  getListenAddrs() {
-    return Array.from(this.listen).map((a) => multiaddr(a));
-  }
-  /**
-   * Get peer announcing multiaddrs
-   */
-  getAnnounceAddrs() {
-    return Array.from(this.announce).map((a) => multiaddr(a));
-  }
-  /**
-   * Get observed multiaddrs
-   */
-  getObservedAddrs() {
-    return Array.from(this.observed).map(([a]) => multiaddr(a));
-  }
-  /**
-   * Add peer observed addresses
-   */
-  addObservedAddr(addr) {
-    addr = stripPeerId(addr, this.components.peerId);
-    const addrString = addr.toString();
-    if (this.observed.has(addrString)) {
-      return;
-    }
-    this.observed.set(addrString, {
-      confident: false
-    });
-  }
-  confirmObservedAddr(addr) {
-    addr = stripPeerId(addr, this.components.peerId);
-    const addrString = addr.toString();
-    const metadata = this.observed.get(addrString) ?? {
-      confident: false
-    };
-    const startingConfidence = metadata.confident;
-    this.observed.set(addrString, {
-      confident: true
-    });
-    if (!startingConfidence) {
-      this._updatePeerStoreAddresses();
-    }
-  }
-  removeObservedAddr(addr) {
-    addr = stripPeerId(addr, this.components.peerId);
-    const addrString = addr.toString();
-    this.observed.delete(addrString);
-  }
-  getAddresses() {
-    let addrs = this.getAnnounceAddrs().map((ma) => ma.toString());
-    if (addrs.length === 0) {
-      addrs = this.components.transportManager.getAddrs().map((ma) => ma.toString());
-    }
-    addrs = addrs.concat(Array.from(this.observed).filter(([ma, metadata]) => metadata.confident).map(([ma]) => ma));
-    const addrSet = new Set(addrs);
-    return this.announceFilter(Array.from(addrSet).map((str) => multiaddr(str))).map((ma) => {
-      if (ma.protos().pop()?.path === true) {
-        return ma;
-      }
-      if (ma.getPeerId() === this.components.peerId.toString()) {
-        return ma;
-      }
-      return ma.encapsulate(`/p2p/${this.components.peerId.toString()}`);
-    });
-  }
-};
-
-// node_modules/libp2p/dist/src/components.js
-var DefaultComponents = class {
-  static {
-    __name(this, "DefaultComponents");
-  }
-  components = {};
-  _started = false;
-  constructor(init = {}) {
-    this.components = {};
-    for (const [key, value] of Object.entries(init)) {
-      this.components[key] = value;
-    }
-    if (this.components.logger == null) {
-      this.components.logger = defaultLogger();
-    }
-  }
-  isStarted() {
-    return this._started;
-  }
-  async _invokeStartableMethod(methodName) {
-    await Promise.all(Object.values(this.components).filter((obj) => isStartable(obj)).map(async (startable) => {
-      await startable[methodName]?.();
-    }));
-  }
-  async beforeStart() {
-    await this._invokeStartableMethod("beforeStart");
-  }
-  async start() {
-    await this._invokeStartableMethod("start");
-    this._started = true;
-  }
-  async afterStart() {
-    await this._invokeStartableMethod("afterStart");
-  }
-  async beforeStop() {
-    await this._invokeStartableMethod("beforeStop");
-  }
-  async stop() {
-    await this._invokeStartableMethod("stop");
-    this._started = false;
-  }
-  async afterStop() {
-    await this._invokeStartableMethod("afterStop");
-  }
-};
-var OPTIONAL_SERVICES = [
-  "metrics",
-  "connectionProtector",
-  "dns"
-];
-var NON_SERVICE_PROPERTIES = [
-  "components",
-  "isStarted",
-  "beforeStart",
-  "start",
-  "afterStart",
-  "beforeStop",
-  "stop",
-  "afterStop",
-  "then",
-  "_invokeStartableMethod"
-];
-function defaultComponents(init = {}) {
-  const components = new DefaultComponents(init);
-  const proxy = new Proxy(components, {
-    get(target, prop, receiver) {
-      if (typeof prop === "string" && !NON_SERVICE_PROPERTIES.includes(prop)) {
-        const service = components.components[prop];
-        if (service == null && !OPTIONAL_SERVICES.includes(prop)) {
-          throw new CodeError(`${prop} not set`, "ERR_SERVICE_MISSING");
-        }
-        return service;
-      }
-      return Reflect.get(target, prop, receiver);
-    },
-    set(target, prop, value) {
-      if (typeof prop === "string") {
-        components.components[prop] = value;
-      } else {
-        Reflect.set(target, prop, value);
-      }
-      return true;
-    }
-  });
-  return proxy;
-}
-__name(defaultComponents, "defaultComponents");
-function checkServiceDependencies(components) {
-  const serviceCapabilities2 = {};
-  for (const service of Object.values(components.components)) {
-    for (const capability of getServiceCapabilities(service)) {
-      serviceCapabilities2[capability] = true;
-    }
-  }
-  for (const service of Object.values(components.components)) {
-    for (const capability of getServiceDependencies(service)) {
-      if (serviceCapabilities2[capability] !== true) {
-        throw new CodeError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`, "ERR_UNMET_SERVICE_DEPENDENCIES");
-      }
-    }
-  }
-}
-__name(checkServiceDependencies, "checkServiceDependencies");
-function getServiceCapabilities(service) {
-  if (Array.isArray(service?.[serviceCapabilities])) {
-    return service[serviceCapabilities];
-  }
-  return [];
-}
-__name(getServiceCapabilities, "getServiceCapabilities");
-function getServiceDependencies(service) {
-  if (Array.isArray(service?.[serviceDependencies])) {
-    return service[serviceDependencies];
-  }
-  return [];
-}
-__name(getServiceDependencies, "getServiceDependencies");
-function getServiceName(service) {
-  return service?.[Symbol.toStringTag] ?? service?.toString() ?? "unknown";
-}
-__name(getServiceName, "getServiceName");
-
-// node_modules/@libp2p/utils/dist/src/private-ip.js
-var import_netmask2 = __toESM(require_netmask(), 1);
-var PRIVATE_IP_RANGES = [
-  "0.0.0.0/8",
-  "10.0.0.0/8",
-  "100.64.0.0/10",
-  "127.0.0.0/8",
-  "169.254.0.0/16",
-  "172.16.0.0/12",
-  "192.0.0.0/24",
-  "192.0.0.0/29",
-  "192.0.0.8/32",
-  "192.0.0.9/32",
-  "192.0.0.10/32",
-  "192.0.0.170/32",
-  "192.0.0.171/32",
-  "192.0.2.0/24",
-  "192.31.196.0/24",
-  "192.52.193.0/24",
-  "192.88.99.0/24",
-  "192.168.0.0/16",
-  "192.175.48.0/24",
-  "198.18.0.0/15",
-  "198.51.100.0/24",
-  "203.0.113.0/24",
-  "240.0.0.0/4",
-  "255.255.255.255/32"
-];
-var NETMASK_RANGES = PRIVATE_IP_RANGES.map((ipRange) => new import_netmask2.Netmask(ipRange));
-function ipv4Check(ipAddr) {
-  for (const r of NETMASK_RANGES) {
-    if (r.contains(ipAddr))
-      return true;
-  }
-  return false;
-}
-__name(ipv4Check, "ipv4Check");
-function isIpv4MappedIpv6(ipAddr) {
-  return /^::ffff:([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,4})$/.test(ipAddr);
-}
-__name(isIpv4MappedIpv6, "isIpv4MappedIpv6");
-function ipv4MappedIpv6Check(ipAddr) {
-  const parts = ipAddr.split(":");
-  if (parts.length < 2) {
-    return false;
-  }
-  const octet34 = parts[parts.length - 1].padStart(4, "0");
-  const octet12 = parts[parts.length - 2].padStart(4, "0");
-  const ip4 = `${parseInt(octet12.substring(0, 2), 16)}.${parseInt(octet12.substring(2), 16)}.${parseInt(octet34.substring(0, 2), 16)}.${parseInt(octet34.substring(2), 16)}`;
-  return ipv4Check(ip4);
-}
-__name(ipv4MappedIpv6Check, "ipv4MappedIpv6Check");
-function isIpv4EmbeddedIpv6(ipAddr) {
-  return /^::ffff:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr);
-}
-__name(isIpv4EmbeddedIpv6, "isIpv4EmbeddedIpv6");
-function ipv4EmbeddedIpv6Check(ipAddr) {
-  const parts = ipAddr.split(":");
-  const ip4 = parts[parts.length - 1];
-  return ipv4Check(ip4);
-}
-__name(ipv4EmbeddedIpv6Check, "ipv4EmbeddedIpv6Check");
-function ipv6Check(ipAddr) {
-  return /^::$/.test(ipAddr) || /^::1$/.test(ipAddr) || /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) || /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ipAddr) || /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ipAddr) || /^ff([0-9a-fA-F]{2,2}):/i.test(ipAddr);
-}
-__name(ipv6Check, "ipv6Check");
-function isPrivateIp(ip) {
-  if (isIPv4(ip))
-    return ipv4Check(ip);
-  else if (isIpv4MappedIpv6(ip))
-    return ipv4MappedIpv6Check(ip);
-  else if (isIpv4EmbeddedIpv6(ip))
-    return ipv4EmbeddedIpv6Check(ip);
-  else if (isIPv6(ip))
-    return ipv6Check(ip);
-  else
-    return void 0;
-}
-__name(isPrivateIp, "isPrivateIp");
-
-// node_modules/libp2p/dist/src/config/connection-gater.browser.js
-function connectionGater(gater = {}) {
-  return {
-    denyDialPeer: /* @__PURE__ */ __name(async () => false, "denyDialPeer"),
-    denyDialMultiaddr: /* @__PURE__ */ __name(async (multiaddr2) => {
-      const tuples = multiaddr2.stringTuples();
-      if (tuples[0][0] === 4 || tuples[0][0] === 41) {
-        return Boolean(isPrivateIp(`${tuples[0][1]}`));
-      }
-      return false;
-    }, "denyDialMultiaddr"),
-    denyInboundConnection: /* @__PURE__ */ __name(async () => false, "denyInboundConnection"),
-    denyOutboundConnection: /* @__PURE__ */ __name(async () => false, "denyOutboundConnection"),
-    denyInboundEncryptedConnection: /* @__PURE__ */ __name(async () => false, "denyInboundEncryptedConnection"),
-    denyOutboundEncryptedConnection: /* @__PURE__ */ __name(async () => false, "denyOutboundEncryptedConnection"),
-    denyInboundUpgradedConnection: /* @__PURE__ */ __name(async () => false, "denyInboundUpgradedConnection"),
-    denyOutboundUpgradedConnection: /* @__PURE__ */ __name(async () => false, "denyOutboundUpgradedConnection"),
-    filterMultiaddrForPeer: /* @__PURE__ */ __name(async () => true, "filterMultiaddrForPeer"),
-    ...gater
-  };
-}
-__name(connectionGater, "connectionGater");
-
-// node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
-var toParts = /* @__PURE__ */ __name((ma) => {
-  return ma.toString().split("/").slice(1);
-}, "toParts");
-var func = /* @__PURE__ */ __name((fn) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      if (vals.length < 1) {
-        return false;
-      }
-      if (fn(vals[0])) {
-        return vals.slice(1);
-      }
-      return false;
-    }, "match"),
-    pattern: "fn"
-  };
-}, "func");
-var literal = /* @__PURE__ */ __name((str) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => func((val) => val === str).match(vals), "match"),
-    pattern: str
-  };
-}, "literal");
-var string2 = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => func((val) => typeof val === "string").match(vals), "match"),
-    pattern: "{string}"
-  };
-}, "string");
-var number2 = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => func((val) => !isNaN(parseInt(val))).match(vals), "match"),
-    pattern: "{number}"
-  };
-}, "number");
-var peerId = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      if (vals.length < 2) {
-        return false;
-      }
-      if (vals[0] !== "p2p" && vals[0] !== "ipfs") {
-        return false;
-      }
-      if (vals[1].startsWith("Q") || vals[1].startsWith("1")) {
-        try {
-          base58btc.decode(`z${vals[1]}`);
-        } catch (err) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-      return vals.slice(2);
-    }, "match"),
-    pattern: "/p2p/{peerid}"
-  };
-}, "peerId");
-var certhash = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      if (vals.length < 2) {
-        return false;
-      }
-      if (vals[0] !== "certhash") {
-        return false;
-      }
-      try {
-        base64url.decode(vals[1]);
-      } catch {
-        return false;
-      }
-      return vals.slice(2);
-    }, "match"),
-    pattern: "/certhash/{certhash}"
-  };
-}, "certhash");
-var optional = /* @__PURE__ */ __name((matcher) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      const result = matcher.match(vals);
-      if (result === false) {
-        return vals;
-      }
-      return result;
-    }, "match"),
-    pattern: `optional(${matcher.pattern})`
-  };
-}, "optional");
-var or2 = /* @__PURE__ */ __name((...matchers) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      let matches;
-      for (const matcher of matchers) {
-        const result = matcher.match(vals);
-        if (result === false) {
-          continue;
-        }
-        if (matches == null || result.length < matches.length) {
-          matches = result;
-        }
-      }
-      if (matches == null) {
-        return false;
-      }
-      return matches;
-    }, "match"),
-    pattern: `or(${matchers.map((m2) => m2.pattern).join(", ")})`
-  };
-}, "or");
-var and = /* @__PURE__ */ __name((...matchers) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      for (const matcher of matchers) {
-        const result = matcher.match(vals);
-        if (result === false) {
-          return false;
-        }
-        vals = result;
-      }
-      return vals;
-    }, "match"),
-    pattern: `and(${matchers.map((m2) => m2.pattern).join(", ")})`
-  };
-}, "and");
-function fmt(...matchers) {
-  function match(ma) {
-    let parts = toParts(ma);
-    for (const matcher of matchers) {
-      const result = matcher.match(parts);
-      if (result === false) {
-        return false;
-      }
-      parts = result;
-    }
-    return parts;
-  }
-  __name(match, "match");
-  function matches(ma) {
-    const result = match(ma);
-    return result !== false;
-  }
-  __name(matches, "matches");
-  function exactMatch(ma) {
-    const result = match(ma);
-    if (result === false) {
-      return false;
-    }
-    return result.length === 0;
-  }
-  __name(exactMatch, "exactMatch");
-  return {
-    matches,
-    exactMatch
-  };
-}
-__name(fmt, "fmt");
-var _DNS4 = and(literal("dns4"), string2());
-var _DNS6 = and(literal("dns6"), string2());
-var _DNSADDR = and(literal("dnsaddr"), string2());
-var _DNS = and(literal("dns"), string2());
-var DNS4 = fmt(_DNS4);
-var DNS6 = fmt(_DNS6);
-var DNSADDR = fmt(_DNSADDR);
-var DNS = fmt(or2(_DNS, _DNSADDR, _DNS4, _DNS6));
-var _IP4 = and(literal("ip4"), func(isIPv4));
-var _IP6 = and(literal("ip6"), func(isIPv6));
-var _IP = or2(_IP4, _IP6);
-var _IP_OR_DOMAIN = or2(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
-var IP_OR_DOMAIN = fmt(_IP_OR_DOMAIN);
-var IP4 = fmt(_IP4);
-var IP6 = fmt(_IP6);
-var IP = fmt(_IP);
-var _TCP = and(_IP_OR_DOMAIN, literal("tcp"), number2());
-var _UDP = and(_IP_OR_DOMAIN, literal("udp"), number2());
-var TCP = fmt(_TCP);
-var UDP = fmt(_UDP);
-var _QUIC = and(_UDP, literal("quic"));
-var _QUICV1 = and(_UDP, literal("quic-v1"));
-var QUIC_V0_OR_V1 = or2(_QUIC, _QUICV1);
-var QUIC = fmt(_QUIC);
-var QUICV1 = fmt(_QUICV1);
-var _WEB = or2(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUICV1);
-var _WebSockets = or2(and(_WEB, literal("ws"), optional(peerId())));
-var WebSockets = fmt(_WebSockets);
-var _WebSocketsSecure = or2(and(_WEB, literal("wss"), optional(peerId())), and(_WEB, literal("tls"), literal("ws"), optional(peerId())));
-var WebSocketsSecure = fmt(_WebSocketsSecure);
-var _WebRTCDirect = and(_UDP, literal("webrtc-direct"), optional(certhash()), optional(certhash()), optional(peerId()));
-var WebRTCDirect = fmt(_WebRTCDirect);
-var _WebTransport = and(_QUICV1, literal("webtransport"), optional(certhash()), optional(certhash()), optional(peerId()));
-var WebTransport = fmt(_WebTransport);
-var _P2P = or2(_WebSockets, _WebSocketsSecure, and(_TCP, optional(peerId())), and(QUIC_V0_OR_V1, optional(peerId())), and(_IP_OR_DOMAIN, optional(peerId())), _WebRTCDirect, _WebTransport, peerId());
-var P2P = fmt(_P2P);
-var _Circuit = and(_P2P, literal("p2p-circuit"), peerId());
-var Circuit = fmt(_Circuit);
-var _WebRTC = or2(and(_P2P, literal("p2p-circuit"), literal("webrtc"), optional(peerId())), and(_P2P, literal("webrtc"), optional(peerId())), literal("webrtc"));
-var WebRTC = fmt(_WebRTC);
-var _HTTP = or2(and(_IP_OR_DOMAIN, literal("tcp"), number2(), literal("http"), optional(peerId())), and(_IP_OR_DOMAIN, literal("http"), optional(peerId())));
-var HTTP = fmt(_HTTP);
-var _HTTPS = or2(and(_IP_OR_DOMAIN, literal("tcp"), or2(and(literal("443"), literal("http")), and(number2(), literal("https"))), optional(peerId())), and(_IP_OR_DOMAIN, literal("tls"), literal("http"), optional(peerId())), and(_IP_OR_DOMAIN, literal("https"), optional(peerId())));
-var HTTPS = fmt(_HTTPS);
-
-// node_modules/@libp2p/utils/dist/src/multiaddr/is-private.js
-function isPrivate(ma) {
-  try {
-    const { address } = ma.nodeAddress();
-    return Boolean(isPrivateIp(address));
-  } catch {
-    return true;
-  }
-}
-__name(isPrivate, "isPrivate");
-
-// node_modules/@libp2p/utils/dist/src/address-sort.js
-function publicAddressesFirst(a, b) {
-  const isAPrivate = isPrivate(a.multiaddr);
-  const isBPrivate = isPrivate(b.multiaddr);
-  if (isAPrivate && !isBPrivate) {
-    return 1;
-  } else if (!isAPrivate && isBPrivate) {
-    return -1;
-  }
-  return 0;
-}
-__name(publicAddressesFirst, "publicAddressesFirst");
-function certifiedAddressesFirst(a, b) {
-  if (a.isCertified && !b.isCertified) {
-    return -1;
-  } else if (!a.isCertified && b.isCertified) {
-    return 1;
-  }
-  return 0;
-}
-__name(certifiedAddressesFirst, "certifiedAddressesFirst");
-function circuitRelayAddressesLast(a, b) {
-  const isACircuit = Circuit.exactMatch(a.multiaddr);
-  const isBCircuit = Circuit.exactMatch(b.multiaddr);
-  if (isACircuit && !isBCircuit) {
-    return 1;
-  } else if (!isACircuit && isBCircuit) {
-    return -1;
-  }
-  return 0;
-}
-__name(circuitRelayAddressesLast, "circuitRelayAddressesLast");
-function defaultAddressSort(a, b) {
-  const publicResult = publicAddressesFirst(a, b);
-  if (publicResult !== 0) {
-    return publicResult;
-  }
-  const relayResult = circuitRelayAddressesLast(a, b);
-  if (relayResult !== 0) {
-    return relayResult;
-  }
-  const certifiedResult = certifiedAddressesFirst(a, b);
-  return certifiedResult;
-}
-__name(defaultAddressSort, "defaultAddressSort");
-
-// node_modules/progress-events/dist/src/index.js
-var CustomProgressEvent = class extends Event {
-  static {
-    __name(this, "CustomProgressEvent");
-  }
-  type;
-  detail;
-  constructor(type, detail) {
-    super(type);
-    this.type = type;
-    this.detail = detail;
-  }
-};
-
-// node_modules/@multiformats/dns/dist/src/utils/get-types.js
-function getTypes(types) {
-  const DEFAULT_TYPES = [
-    RecordType.A
-  ];
-  if (types == null) {
-    return DEFAULT_TYPES;
-  }
-  if (Array.isArray(types)) {
-    if (types.length === 0) {
-      return DEFAULT_TYPES;
-    }
-    return types;
-  }
-  return [
-    types
-  ];
-}
-__name(getTypes, "getTypes");
-
-// node_modules/@multiformats/dns/dist/src/utils/to-dns-response.js
-var DEFAULT_TTL = 60;
-function toDNSResponse(obj) {
-  return {
-    Status: obj.Status ?? 0,
-    TC: obj.TC ?? obj.flag_tc ?? false,
-    RD: obj.RD ?? obj.flag_rd ?? false,
-    RA: obj.RA ?? obj.flag_ra ?? false,
-    AD: obj.AD ?? obj.flag_ad ?? false,
-    CD: obj.CD ?? obj.flag_cd ?? false,
-    Question: (obj.Question ?? obj.questions ?? []).map((question) => {
-      return {
-        name: question.name,
-        type: RecordType[question.type]
-      };
-    }),
-    Answer: (obj.Answer ?? obj.answers ?? []).map((answer) => {
-      return {
-        name: answer.name,
-        type: RecordType[answer.type],
-        TTL: answer.TTL ?? answer.ttl ?? DEFAULT_TTL,
-        data: answer.data instanceof Uint8Array ? toString2(answer.data) : answer.data
-      };
-    })
-  };
-}
-__name(toDNSResponse, "toDNSResponse");
-
-// node_modules/@multiformats/dns/dist/src/resolvers/dns-json-over-https.js
-var DEFAULT_QUERY_CONCURRENCY = 4;
-function dnsJsonOverHttps(url, init = {}) {
-  const httpQueue = new PQueue({
-    concurrency: init.queryConcurrency ?? DEFAULT_QUERY_CONCURRENCY
-  });
-  return async (fqdn, options = {}) => {
-    const searchParams = new URLSearchParams();
-    searchParams.set("name", fqdn);
-    getTypes(options.types).forEach((type) => {
-      searchParams.append("type", RecordType[type]);
-    });
-    options.onProgress?.(new CustomProgressEvent("dns:query", { detail: fqdn }));
-    const response = await httpQueue.add(async () => {
-      const res = await fetch(`${url}?${searchParams}`, {
-        headers: {
-          accept: "application/dns-json"
-        },
-        signal: options?.signal
-      });
-      if (res.status !== 200) {
-        throw new Error(`Unexpected HTTP status: ${res.status} - ${res.statusText}`);
-      }
-      const response2 = toDNSResponse(await res.json());
-      options.onProgress?.(new CustomProgressEvent("dns:response", { detail: response2 }));
-      return response2;
-    }, {
-      signal: options.signal
-    });
-    if (response == null) {
-      throw new Error("No DNS response received");
-    }
-    return response;
-  };
-}
-__name(dnsJsonOverHttps, "dnsJsonOverHttps");
-
-// node_modules/@multiformats/dns/dist/src/resolvers/default.browser.js
-function defaultResolver() {
-  return [
-    dnsJsonOverHttps("https://cloudflare-dns.com/dns-query"),
-    dnsJsonOverHttps("https://dns.google/resolve")
-  ];
-}
-__name(defaultResolver, "defaultResolver");
-
-// node_modules/@multiformats/dns/dist/src/utils/cache.js
-var import_hashlru = __toESM(require_hashlru(), 1);
-var CachedAnswers = class {
-  static {
-    __name(this, "CachedAnswers");
-  }
-  lru;
-  constructor(maxSize) {
-    this.lru = (0, import_hashlru.default)(maxSize);
-  }
-  get(fqdn, types) {
-    let foundAllAnswers = true;
-    const answers = [];
-    for (const type of types) {
-      const cached = this.getAnswers(fqdn, type);
-      if (cached.length === 0) {
-        foundAllAnswers = false;
-        break;
-      }
-      answers.push(...cached);
-    }
-    if (foundAllAnswers) {
-      return toDNSResponse({ answers });
-    }
-  }
-  getAnswers(domain, type) {
-    const key = `${domain.toLowerCase()}-${type}`;
-    const answers = this.lru.get(key);
-    if (answers != null) {
-      const cachedAnswers = answers.filter((entry) => {
-        return entry.expires > Date.now();
-      }).map(({ expires, value }) => ({
-        ...value,
-        TTL: Math.round((expires - Date.now()) / 1e3),
-        type: RecordType[value.type]
-      }));
-      if (cachedAnswers.length === 0) {
-        this.lru.remove(key);
-      }
-      return cachedAnswers;
-    }
-    return [];
-  }
-  add(domain, answer) {
-    const key = `${domain.toLowerCase()}-${answer.type}`;
-    const answers = this.lru.get(key) ?? [];
-    answers.push({
-      expires: Date.now() + (answer.TTL ?? DEFAULT_TTL) * 1e3,
-      value: answer
-    });
-    this.lru.set(key, answers);
-  }
-  remove(domain, type) {
-    const key = `${domain.toLowerCase()}-${type}`;
-    this.lru.remove(key);
-  }
-  clear() {
-    this.lru.clear();
-  }
-};
-function cache2(size) {
-  return new CachedAnswers(size);
-}
-__name(cache2, "cache");
-
-// node_modules/@multiformats/dns/dist/src/dns.js
-var DEFAULT_ANSWER_CACHE_SIZE = 1e3;
-var DNS2 = class {
-  static {
-    __name(this, "DNS");
-  }
-  resolvers;
-  cache;
-  constructor(init) {
-    this.resolvers = {};
-    this.cache = cache2(init.cacheSize ?? DEFAULT_ANSWER_CACHE_SIZE);
-    Object.entries(init.resolvers ?? {}).forEach(([tld, resolver]) => {
-      if (!Array.isArray(resolver)) {
-        resolver = [resolver];
-      }
-      if (!tld.endsWith(".")) {
-        tld = `${tld}.`;
-      }
-      this.resolvers[tld] = resolver;
-    });
-    if (this.resolvers["."] == null) {
-      this.resolvers["."] = defaultResolver();
-    }
-  }
-  /**
-   * Queries DNS resolvers for the passed record types for the passed domain.
-   *
-   * If cached records exist for all desired types they will be returned
-   * instead.
-   *
-   * Any new responses will be added to the cache for subsequent requests.
-   */
-  async query(domain, options = {}) {
-    const types = getTypes(options.types);
-    const cached = options.cached !== false ? this.cache.get(domain, types) : void 0;
-    if (cached != null) {
-      options.onProgress?.(new CustomProgressEvent("dns:cache", { detail: cached }));
-      return cached;
-    }
-    const tld = `${domain.split(".").pop()}.`;
-    const resolvers2 = (this.resolvers[tld] ?? this.resolvers["."]).sort(() => {
-      return Math.random() > 0.5 ? -1 : 1;
-    });
-    const errors = [];
-    for (const resolver of resolvers2) {
-      if (options.signal?.aborted === true) {
-        break;
-      }
-      try {
-        const result = await resolver(domain, {
-          ...options,
-          types
-        });
-        for (const answer of result.Answer) {
-          this.cache.add(domain, answer);
-        }
-        return result;
-      } catch (err) {
-        errors.push(err);
-        options.onProgress?.(new CustomProgressEvent("dns:error", { detail: err }));
-      }
-    }
-    if (errors.length === 1) {
-      throw errors[0];
-    }
-    throw new AggregateError(errors, `DNS lookup of ${domain} ${types} failed`);
-  }
-};
-
-// node_modules/@multiformats/dns/dist/src/index.js
-var RecordType;
-(function(RecordType2) {
-  RecordType2[RecordType2["A"] = 1] = "A";
-  RecordType2[RecordType2["CNAME"] = 5] = "CNAME";
-  RecordType2[RecordType2["TXT"] = 16] = "TXT";
-  RecordType2[RecordType2["AAAA"] = 28] = "AAAA";
-})(RecordType || (RecordType = {}));
-function dns(init = {}) {
-  return new DNS2(init);
-}
-__name(dns, "dns");
-
-// node_modules/@multiformats/multiaddr/dist/src/resolvers/dnsaddr.js
-var MAX_RECURSIVE_DEPTH = 32;
-var { code: dnsaddrCode } = getProtocol("dnsaddr");
-var dnsaddrResolver = /* @__PURE__ */ __name(async function dnsaddrResolver2(ma, options = {}) {
-  const recursionLimit = options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH;
-  if (recursionLimit === 0) {
-    throw new CodeError("Max recursive depth reached", "ERR_MAX_RECURSIVE_DEPTH_REACHED");
-  }
-  const [, hostname] = ma.stringTuples().find(([proto]) => proto === dnsaddrCode) ?? [];
-  const resolver = options?.dns ?? dns();
-  const result = await resolver.query(`_dnsaddr.${hostname}`, {
-    signal: options?.signal,
-    types: [
-      RecordType.TXT
-    ]
-  });
-  const peerId2 = ma.getPeerId();
-  const output2 = [];
-  for (const answer of result.Answer) {
-    const addr = answer.data.replace(/["']/g, "").trim().split("=")[1];
-    if (addr == null) {
-      continue;
-    }
-    if (peerId2 != null && !addr.includes(peerId2)) {
-      continue;
-    }
-    const ma2 = multiaddr(addr);
-    if (addr.startsWith("/dnsaddr")) {
-      const resolved = await ma2.resolve({
-        ...options,
-        maxRecursiveDepth: recursionLimit - 1
-      });
-      output2.push(...resolved.map((ma3) => ma3.toString()));
-    } else {
-      output2.push(ma2.toString());
-    }
-  }
-  return output2;
-}, "dnsaddrResolver");
-
-// node_modules/merge-options/index.mjs
-var import_index4 = __toESM(require_merge_options(), 1);
-var merge_options_default = import_index4.default;
-
-// node_modules/libp2p/dist/src/errors.js
-var messages;
-(function(messages2) {
-  messages2["NOT_STARTED_YET"] = "The libp2p node is not started yet";
-  messages2["ERR_PROTECTOR_REQUIRED"] = "Private network is enforced, but no protector was provided";
-  messages2["NOT_FOUND"] = "Not found";
-})(messages || (messages = {}));
-var codes4;
-(function(codes5) {
-  codes5["ERR_PROTECTOR_REQUIRED"] = "ERR_PROTECTOR_REQUIRED";
-  codes5["ERR_PEER_DIAL_INTERCEPTED"] = "ERR_PEER_DIAL_INTERCEPTED";
-  codes5["ERR_CONNECTION_INTERCEPTED"] = "ERR_CONNECTION_INTERCEPTED";
-  codes5["ERR_INVALID_PROTOCOLS_FOR_STREAM"] = "ERR_INVALID_PROTOCOLS_FOR_STREAM";
-  codes5["ERR_CONNECTION_ENDED"] = "ERR_CONNECTION_ENDED";
-  codes5["ERR_CONNECTION_FAILED"] = "ERR_CONNECTION_FAILED";
-  codes5["ERR_NODE_NOT_STARTED"] = "ERR_NODE_NOT_STARTED";
-  codes5["ERR_ALREADY_ABORTED"] = "ERR_ALREADY_ABORTED";
-  codes5["ERR_TOO_MANY_ADDRESSES"] = "ERR_TOO_MANY_ADDRESSES";
-  codes5["ERR_NO_VALID_ADDRESSES"] = "ERR_NO_VALID_ADDRESSES";
-  codes5["ERR_RELAYED_DIAL"] = "ERR_RELAYED_DIAL";
-  codes5["ERR_DIALED_SELF"] = "ERR_DIALED_SELF";
-  codes5["ERR_DISCOVERED_SELF"] = "ERR_DISCOVERED_SELF";
-  codes5["ERR_DUPLICATE_TRANSPORT"] = "ERR_DUPLICATE_TRANSPORT";
-  codes5["ERR_ENCRYPTION_FAILED"] = "ERR_ENCRYPTION_FAILED";
-  codes5["ERR_HOP_REQUEST_FAILED"] = "ERR_HOP_REQUEST_FAILED";
-  codes5["ERR_INVALID_KEY"] = "ERR_INVALID_KEY";
-  codes5["ERR_INVALID_MESSAGE"] = "ERR_INVALID_MESSAGE";
-  codes5["ERR_INVALID_PARAMETERS"] = "ERR_INVALID_PARAMETERS";
-  codes5["ERR_INVALID_PEER"] = "ERR_INVALID_PEER";
-  codes5["ERR_MUXER_UNAVAILABLE"] = "ERR_MUXER_UNAVAILABLE";
-  codes5["ERR_NOT_FOUND"] = "ERR_NOT_FOUND";
-  codes5["ERR_TRANSPORT_UNAVAILABLE"] = "ERR_TRANSPORT_UNAVAILABLE";
-  codes5["ERR_TRANSPORT_DIAL_FAILED"] = "ERR_TRANSPORT_DIAL_FAILED";
-  codes5["ERR_UNSUPPORTED_PROTOCOL"] = "ERR_UNSUPPORTED_PROTOCOL";
-  codes5["ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED"] = "ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED";
-  codes5["ERR_INVALID_MULTIADDR"] = "ERR_INVALID_MULTIADDR";
-  codes5["ERR_SIGNATURE_NOT_VALID"] = "ERR_SIGNATURE_NOT_VALID";
-  codes5["ERR_FIND_SELF"] = "ERR_FIND_SELF";
-  codes5["ERR_NO_ROUTERS_AVAILABLE"] = "ERR_NO_ROUTERS_AVAILABLE";
-  codes5["ERR_CONNECTION_NOT_MULTIPLEXED"] = "ERR_CONNECTION_NOT_MULTIPLEXED";
-  codes5["ERR_NO_DIAL_TOKENS"] = "ERR_NO_DIAL_TOKENS";
-  codes5["ERR_INVALID_CMS"] = "ERR_INVALID_CMS";
-  codes5["ERR_MISSING_KEYS"] = "ERR_MISSING_KEYS";
-  codes5["ERR_NO_KEY"] = "ERR_NO_KEY";
-  codes5["ERR_INVALID_KEY_NAME"] = "ERR_INVALID_KEY_NAME";
-  codes5["ERR_INVALID_KEY_TYPE"] = "ERR_INVALID_KEY_TYPE";
-  codes5["ERR_KEY_ALREADY_EXISTS"] = "ERR_KEY_ALREADY_EXISTS";
-  codes5["ERR_INVALID_KEY_SIZE"] = "ERR_INVALID_KEY_SIZE";
-  codes5["ERR_KEY_NOT_FOUND"] = "ERR_KEY_NOT_FOUND";
-  codes5["ERR_OLD_KEY_NAME_INVALID"] = "ERR_OLD_KEY_NAME_INVALID";
-  codes5["ERR_NEW_KEY_NAME_INVALID"] = "ERR_NEW_KEY_NAME_INVALID";
-  codes5["ERR_PASSWORD_REQUIRED"] = "ERR_PASSWORD_REQUIRED";
-  codes5["ERR_PEM_REQUIRED"] = "ERR_PEM_REQUIRED";
-  codes5["ERR_CANNOT_READ_KEY"] = "ERR_CANNOT_READ_KEY";
-  codes5["ERR_MISSING_PRIVATE_KEY"] = "ERR_MISSING_PRIVATE_KEY";
-  codes5["ERR_MISSING_PUBLIC_KEY"] = "ERR_MISSING_PUBLIC_KEY";
-  codes5["ERR_INVALID_OLD_PASS_TYPE"] = "ERR_INVALID_OLD_PASS_TYPE";
-  codes5["ERR_INVALID_NEW_PASS_TYPE"] = "ERR_INVALID_NEW_PASS_TYPE";
-  codes5["ERR_INVALID_PASS_LENGTH"] = "ERR_INVALID_PASS_LENGTH";
-  codes5["ERR_NOT_IMPLEMENTED"] = "ERR_NOT_IMPLEMENTED";
-  codes5["ERR_WRONG_PING_ACK"] = "ERR_WRONG_PING_ACK";
-  codes5["ERR_INVALID_RECORD"] = "ERR_INVALID_RECORD";
-  codes5["ERR_ALREADY_SUCCEEDED"] = "ERR_ALREADY_SUCCEEDED";
-  codes5["ERR_NO_HANDLER_FOR_PROTOCOL"] = "ERR_NO_HANDLER_FOR_PROTOCOL";
-  codes5["ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS"] = "ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS";
-  codes5["ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS"] = "ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS";
-  codes5["ERR_CONNECTION_DENIED"] = "ERR_CONNECTION_DENIED";
-  codes5["ERR_TRANSFER_LIMIT_EXCEEDED"] = "ERR_TRANSFER_LIMIT_EXCEEDED";
-})(codes4 || (codes4 = {}));
-
-// node_modules/libp2p/dist/src/config.js
-var DefaultConfig = {
-  addresses: {
-    listen: [],
-    announce: [],
-    noAnnounce: [],
-    announceFilter: /* @__PURE__ */ __name((multiaddrs) => multiaddrs, "announceFilter")
-  },
-  connectionManager: {
-    resolvers: {
-      dnsaddr: dnsaddrResolver
-    },
-    addressSorter: defaultAddressSort
-  },
-  transportManager: {
-    faultTolerance: FaultTolerance.FATAL_ALL
-  }
-};
-async function validateConfig(opts) {
-  const resultingOptions = merge_options_default(DefaultConfig, opts);
-  if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
-    throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes4.ERR_PROTECTOR_REQUIRED);
-  }
-  if (resultingOptions.privateKey != null && !(await peerIdFromKeys(resultingOptions.privateKey.public.bytes, resultingOptions.privateKey.bytes)).equals(resultingOptions.peerId)) {
-    throw new CodeError("Private key doesn't match peer id", codes4.ERR_INVALID_KEY);
-  }
-  return resultingOptions;
-}
-__name(validateConfig, "validateConfig");
-
-// node_modules/delay/index.js
-var createAbortError = /* @__PURE__ */ __name(() => {
-  const error = new Error("Delay aborted");
-  error.name = "AbortError";
-  return error;
-}, "createAbortError");
-var clearMethods = /* @__PURE__ */ new WeakMap();
-function createDelay({ clearTimeout: defaultClear, setTimeout: defaultSet } = {}) {
-  return (milliseconds, { value, signal } = {}) => {
-    if (signal?.aborted) {
-      return Promise.reject(createAbortError());
-    }
-    let timeoutId;
-    let settle;
-    let rejectFunction;
-    const clear = defaultClear ?? clearTimeout;
-    const signalListener = /* @__PURE__ */ __name(() => {
-      clear(timeoutId);
-      rejectFunction(createAbortError());
-    }, "signalListener");
-    const cleanup = /* @__PURE__ */ __name(() => {
-      if (signal) {
-        signal.removeEventListener("abort", signalListener);
-      }
-    }, "cleanup");
-    const delayPromise = new Promise((resolve, reject) => {
-      settle = /* @__PURE__ */ __name(() => {
-        cleanup();
-        resolve(value);
-      }, "settle");
-      rejectFunction = reject;
-      timeoutId = (defaultSet ?? setTimeout)(settle, milliseconds);
-    });
-    if (signal) {
-      signal.addEventListener("abort", signalListener, { once: true });
-    }
-    clearMethods.set(delayPromise, () => {
-      clear(timeoutId);
-      timeoutId = null;
-      settle();
-    });
-    return delayPromise;
-  };
-}
-__name(createDelay, "createDelay");
-var delay = createDelay();
-var delay_default = delay;
-
-// node_modules/@libp2p/utils/dist/src/rate-limiter.js
-var RateLimiter = class {
-  static {
-    __name(this, "RateLimiter");
-  }
-  memoryStorage;
-  points;
-  duration;
-  blockDuration;
-  execEvenly;
-  execEvenlyMinDelayMs;
-  keyPrefix;
-  constructor(opts = {}) {
-    this.points = opts.points ?? 4;
-    this.duration = opts.duration ?? 1;
-    this.blockDuration = opts.blockDuration ?? 0;
-    this.execEvenly = opts.execEvenly ?? false;
-    this.execEvenlyMinDelayMs = opts.execEvenlyMinDelayMs ?? this.duration * 1e3 / this.points;
-    this.keyPrefix = opts.keyPrefix ?? "rlflx";
-    this.memoryStorage = new MemoryStorage();
-  }
-  async consume(key, pointsToConsume = 1, options = {}) {
-    const rlKey = this.getKey(key);
-    const secDuration = this._getKeySecDuration(options);
-    let res = this.memoryStorage.incrby(rlKey, pointsToConsume, secDuration);
-    res.remainingPoints = Math.max(this.points - res.consumedPoints, 0);
-    if (res.consumedPoints > this.points) {
-      if (this.blockDuration > 0 && res.consumedPoints <= this.points + pointsToConsume) {
-        res = this.memoryStorage.set(rlKey, res.consumedPoints, this.blockDuration);
-      }
-      throw new CodeError("Rate limit exceeded", "ERR_RATE_LIMIT_EXCEEDED", res);
-    } else if (this.execEvenly && res.msBeforeNext > 0 && !res.isFirstInDuration) {
-      let delayMs = Math.ceil(res.msBeforeNext / (res.remainingPoints + 2));
-      if (delayMs < this.execEvenlyMinDelayMs) {
-        delayMs = res.consumedPoints * this.execEvenlyMinDelayMs;
-      }
-      await delay_default(delayMs);
-    }
-    return res;
-  }
-  penalty(key, points = 1, options = {}) {
-    const rlKey = this.getKey(key);
-    const secDuration = this._getKeySecDuration(options);
-    const res = this.memoryStorage.incrby(rlKey, points, secDuration);
-    res.remainingPoints = Math.max(this.points - res.consumedPoints, 0);
-    return res;
-  }
-  reward(key, points = 1, options = {}) {
-    const rlKey = this.getKey(key);
-    const secDuration = this._getKeySecDuration(options);
-    const res = this.memoryStorage.incrby(rlKey, -points, secDuration);
-    res.remainingPoints = Math.max(this.points - res.consumedPoints, 0);
-    return res;
-  }
-  /**
-   * Block any key for secDuration seconds
-   *
-   * @param key
-   * @param secDuration
-   */
-  block(key, secDuration) {
-    const msDuration = secDuration * 1e3;
-    const initPoints = this.points + 1;
-    this.memoryStorage.set(this.getKey(key), initPoints, secDuration);
-    return {
-      remainingPoints: 0,
-      msBeforeNext: msDuration === 0 ? -1 : msDuration,
-      consumedPoints: initPoints,
-      isFirstInDuration: false
-    };
-  }
-  set(key, points, secDuration = 0) {
-    const msDuration = (secDuration >= 0 ? secDuration : this.duration) * 1e3;
-    this.memoryStorage.set(this.getKey(key), points, secDuration);
-    return {
-      remainingPoints: 0,
-      msBeforeNext: msDuration === 0 ? -1 : msDuration,
-      consumedPoints: points,
-      isFirstInDuration: false
-    };
-  }
-  get(key) {
-    const res = this.memoryStorage.get(this.getKey(key));
-    if (res != null) {
-      res.remainingPoints = Math.max(this.points - res.consumedPoints, 0);
-    }
-    return res;
-  }
-  delete(key) {
-    this.memoryStorage.delete(this.getKey(key));
-  }
-  _getKeySecDuration(options) {
-    if (options?.customDuration != null && options.customDuration >= 0) {
-      return options.customDuration;
-    }
-    return this.duration;
-  }
-  getKey(key) {
-    return this.keyPrefix.length > 0 ? `${this.keyPrefix}:${key}` : key;
-  }
-  parseKey(rlKey) {
-    return rlKey.substring(this.keyPrefix.length);
-  }
-};
-var MemoryStorage = class {
-  static {
-    __name(this, "MemoryStorage");
-  }
-  storage;
-  constructor() {
-    this.storage = /* @__PURE__ */ new Map();
-  }
-  incrby(key, value, durationSec) {
-    const existing = this.storage.get(key);
-    if (existing != null) {
-      const msBeforeExpires = existing.expiresAt != null ? existing.expiresAt.getTime() - (/* @__PURE__ */ new Date()).getTime() : -1;
-      if (existing.expiresAt == null || msBeforeExpires > 0) {
-        existing.value += value;
-        return {
-          remainingPoints: 0,
-          msBeforeNext: msBeforeExpires,
-          consumedPoints: existing.value,
-          isFirstInDuration: false
-        };
-      }
-      return this.set(key, value, durationSec);
-    }
-    return this.set(key, value, durationSec);
-  }
-  set(key, value, durationSec) {
-    const durationMs = durationSec * 1e3;
-    const existing = this.storage.get(key);
-    if (existing != null) {
-      clearTimeout(existing.timeoutId);
-    }
-    const record = {
-      value,
-      expiresAt: durationMs > 0 ? new Date(Date.now() + durationMs) : void 0
-    };
-    this.storage.set(key, record);
-    if (durationMs > 0) {
-      record.timeoutId = setTimeout(() => {
-        this.storage.delete(key);
-      }, durationMs);
-      if (record.timeoutId.unref != null) {
-        record.timeoutId.unref();
-      }
-    }
-    return {
-      remainingPoints: 0,
-      msBeforeNext: durationMs === 0 ? -1 : durationMs,
-      consumedPoints: record.value,
-      isFirstInDuration: true
-    };
-  }
-  get(key) {
-    const existing = this.storage.get(key);
-    if (existing != null) {
-      const msBeforeExpires = existing.expiresAt != null ? existing.expiresAt.getTime() - (/* @__PURE__ */ new Date()).getTime() : -1;
-      return {
-        remainingPoints: 0,
-        msBeforeNext: msBeforeExpires,
-        consumedPoints: existing.value,
-        isFirstInDuration: false
-      };
-    }
-  }
-  delete(key) {
-    const record = this.storage.get(key);
-    if (record != null) {
-      if (record.timeoutId != null) {
-        clearTimeout(record.timeoutId);
-      }
-      this.storage.delete(key);
-      return true;
-    }
-    return false;
-  }
-};
-
-// node_modules/libp2p/dist/src/get-peer.js
-function getPeerAddress(peer) {
-  if (isPeerId(peer)) {
-    return { peerId: peer, multiaddrs: [] };
-  }
-  if (!Array.isArray(peer)) {
-    peer = [peer];
-  }
-  let peerId2;
-  if (peer.length > 0) {
-    const peerIdStr = peer[0].getPeerId();
-    peerId2 = peerIdStr == null ? void 0 : peerIdFromString(peerIdStr);
-    peer.forEach((ma) => {
-      if (!isMultiaddr(ma)) {
-        throw new CodeError("Invalid Multiaddr", codes4.ERR_INVALID_MULTIADDR);
-      }
-      const maPeerIdStr = ma.getPeerId();
-      if (maPeerIdStr == null) {
-        if (peerId2 != null) {
-          throw new CodeError("Multiaddrs must all have the same peer id or have no peer id", codes4.ERR_INVALID_PARAMETERS);
-        }
-      } else {
-        const maPeerId = peerIdFromString(maPeerIdStr);
-        if (peerId2?.equals(maPeerId) !== true) {
-          throw new CodeError("Multiaddrs must all have the same peer id or have no peer id", codes4.ERR_INVALID_PARAMETERS);
-        }
-      }
-    });
-  }
-  return {
-    peerId: peerId2,
-    multiaddrs: peer
-  };
-}
-__name(getPeerAddress, "getPeerAddress");
-
-// node_modules/p-defer/index.js
-function pDefer() {
-  const deferred = {};
-  deferred.promise = new Promise((resolve, reject) => {
-    deferred.resolve = resolve;
-    deferred.reject = reject;
-  });
-  return deferred;
-}
-__name(pDefer, "pDefer");
-
-// node_modules/it-pushable/dist/src/fifo.js
-var FixedFIFO = class {
-  static {
-    __name(this, "FixedFIFO");
-  }
-  buffer;
-  mask;
-  top;
-  btm;
-  next;
-  constructor(hwm) {
-    if (!(hwm > 0) || (hwm - 1 & hwm) !== 0) {
-      throw new Error("Max size for a FixedFIFO should be a power of two");
-    }
-    this.buffer = new Array(hwm);
-    this.mask = hwm - 1;
-    this.top = 0;
-    this.btm = 0;
-    this.next = null;
-  }
-  push(data) {
-    if (this.buffer[this.top] !== void 0) {
-      return false;
-    }
-    this.buffer[this.top] = data;
-    this.top = this.top + 1 & this.mask;
-    return true;
-  }
-  shift() {
-    const last = this.buffer[this.btm];
-    if (last === void 0) {
-      return void 0;
-    }
-    this.buffer[this.btm] = void 0;
-    this.btm = this.btm + 1 & this.mask;
-    return last;
-  }
-  isEmpty() {
-    return this.buffer[this.btm] === void 0;
-  }
-};
-var FIFO = class {
-  static {
-    __name(this, "FIFO");
-  }
-  size;
-  hwm;
-  head;
-  tail;
-  constructor(options = {}) {
-    this.hwm = options.splitLimit ?? 16;
-    this.head = new FixedFIFO(this.hwm);
-    this.tail = this.head;
-    this.size = 0;
-  }
-  calculateSize(obj) {
-    if (obj?.byteLength != null) {
-      return obj.byteLength;
-    }
-    return 1;
-  }
-  push(val) {
-    if (val?.value != null) {
-      this.size += this.calculateSize(val.value);
-    }
-    if (!this.head.push(val)) {
-      const prev = this.head;
-      this.head = prev.next = new FixedFIFO(2 * this.head.buffer.length);
-      this.head.push(val);
-    }
-  }
-  shift() {
-    let val = this.tail.shift();
-    if (val === void 0 && this.tail.next != null) {
-      const next = this.tail.next;
-      this.tail.next = null;
-      this.tail = next;
-      val = this.tail.shift();
-    }
-    if (val?.value != null) {
-      this.size -= this.calculateSize(val.value);
-    }
-    return val;
-  }
-  isEmpty() {
-    return this.head.isEmpty();
-  }
-};
-
-// node_modules/it-pushable/dist/src/index.js
-var AbortError3 = class extends Error {
-  static {
-    __name(this, "AbortError");
-  }
-  type;
-  code;
-  constructor(message2, code2) {
-    super(message2 ?? "The operation was aborted");
-    this.type = "aborted";
-    this.code = code2 ?? "ABORT_ERR";
-  }
-};
-function pushable(options = {}) {
-  const getNext = /* @__PURE__ */ __name((buffer) => {
-    const next = buffer.shift();
-    if (next == null) {
-      return { done: true };
-    }
-    if (next.error != null) {
-      throw next.error;
-    }
-    return {
-      done: next.done === true,
-      // @ts-expect-error if done is false, value will be present
-      value: next.value
-    };
-  }, "getNext");
-  return _pushable(getNext, options);
-}
-__name(pushable, "pushable");
-function _pushable(getNext, options) {
-  options = options ?? {};
-  let onEnd = options.onEnd;
-  let buffer = new FIFO();
-  let pushable2;
-  let onNext;
-  let ended;
-  let drain2 = pDefer();
-  const waitNext = /* @__PURE__ */ __name(async () => {
-    try {
-      if (!buffer.isEmpty()) {
-        return getNext(buffer);
-      }
-      if (ended) {
-        return { done: true };
-      }
-      return await new Promise((resolve, reject) => {
-        onNext = /* @__PURE__ */ __name((next) => {
-          onNext = null;
-          buffer.push(next);
-          try {
-            resolve(getNext(buffer));
-          } catch (err) {
-            reject(err);
-          }
-          return pushable2;
-        }, "onNext");
-      });
-    } finally {
-      if (buffer.isEmpty()) {
-        queueMicrotask(() => {
-          drain2.resolve();
-          drain2 = pDefer();
-        });
-      }
-    }
-  }, "waitNext");
-  const bufferNext = /* @__PURE__ */ __name((next) => {
-    if (onNext != null) {
-      return onNext(next);
-    }
-    buffer.push(next);
-    return pushable2;
-  }, "bufferNext");
-  const bufferError = /* @__PURE__ */ __name((err) => {
-    buffer = new FIFO();
-    if (onNext != null) {
-      return onNext({ error: err });
-    }
-    buffer.push({ error: err });
-    return pushable2;
-  }, "bufferError");
-  const push = /* @__PURE__ */ __name((value) => {
-    if (ended) {
-      return pushable2;
-    }
-    if (options?.objectMode !== true && value?.byteLength == null) {
-      throw new Error("objectMode was not true but tried to push non-Uint8Array value");
-    }
-    return bufferNext({ done: false, value });
-  }, "push");
-  const end = /* @__PURE__ */ __name((err) => {
-    if (ended)
-      return pushable2;
-    ended = true;
-    return err != null ? bufferError(err) : bufferNext({ done: true });
-  }, "end");
-  const _return = /* @__PURE__ */ __name(() => {
-    buffer = new FIFO();
-    end();
-    return { done: true };
-  }, "_return");
-  const _throw = /* @__PURE__ */ __name((err) => {
-    end(err);
-    return { done: true };
-  }, "_throw");
-  pushable2 = {
-    [Symbol.asyncIterator]() {
-      return this;
-    },
-    next: waitNext,
-    return: _return,
-    throw: _throw,
-    push,
-    end,
-    get readableLength() {
-      return buffer.size;
-    },
-    onEmpty: /* @__PURE__ */ __name(async (options2) => {
-      const signal = options2?.signal;
-      signal?.throwIfAborted();
-      if (buffer.isEmpty()) {
-        return;
-      }
-      let cancel;
-      let listener;
-      if (signal != null) {
-        cancel = new Promise((resolve, reject) => {
-          listener = /* @__PURE__ */ __name(() => {
-            reject(new AbortError3());
-          }, "listener");
-          signal.addEventListener("abort", listener);
-        });
-      }
-      try {
-        await Promise.race([
-          drain2.promise,
-          cancel
-        ]);
-      } finally {
-        if (listener != null && signal != null) {
-          signal?.removeEventListener("abort", listener);
-        }
-      }
-    }, "onEmpty")
-  };
-  if (onEnd == null) {
-    return pushable2;
-  }
-  const _pushable2 = pushable2;
-  pushable2 = {
-    [Symbol.asyncIterator]() {
-      return this;
-    },
-    next() {
-      return _pushable2.next();
-    },
-    throw(err) {
-      _pushable2.throw(err);
-      if (onEnd != null) {
-        onEnd(err);
-        onEnd = void 0;
-      }
-      return { done: true };
-    },
-    return() {
-      _pushable2.return();
-      if (onEnd != null) {
-        onEnd();
-        onEnd = void 0;
-      }
-      return { done: true };
-    },
-    push,
-    end(err) {
-      _pushable2.end(err);
-      if (onEnd != null) {
-        onEnd(err);
-        onEnd = void 0;
-      }
-      return pushable2;
-    },
-    get readableLength() {
-      return _pushable2.readableLength;
-    },
-    onEmpty: /* @__PURE__ */ __name((opts) => {
-      return _pushable2.onEmpty(opts);
-    }, "onEmpty")
-  };
-  return pushable2;
-}
-__name(_pushable, "_pushable");
-
-// node_modules/race-event/dist/src/index.js
-var AbortError4 = class extends Error {
-  static {
-    __name(this, "AbortError");
-  }
-  type;
-  code;
-  constructor(message2, code2) {
-    super(message2 ?? "The operation was aborted");
-    this.type = "aborted";
-    this.name = "AbortError";
-    this.code = code2 ?? "ABORT_ERR";
-  }
-};
-async function raceEvent(emitter, eventName, signal, opts) {
-  const error = new AbortError4(opts?.errorMessage, opts?.errorCode);
-  if (signal?.aborted === true) {
-    return Promise.reject(error);
-  }
-  return new Promise((resolve, reject) => {
-    function removeListeners() {
-      signal?.removeEventListener("abort", abortListener);
-      emitter.removeEventListener(eventName, eventListener);
-      if (opts?.errorEvent != null) {
-        emitter.removeEventListener(opts.errorEvent, errorEventListener);
-      }
-    }
-    __name(removeListeners, "removeListeners");
-    const eventListener = /* @__PURE__ */ __name((evt) => {
-      try {
-        if (opts?.filter?.(evt) === false) {
-          return;
-        }
-      } catch (err) {
-        removeListeners();
-        reject(err);
-        return;
-      }
-      removeListeners();
-      resolve(evt);
-    }, "eventListener");
-    const errorEventListener = /* @__PURE__ */ __name((evt) => {
-      removeListeners();
-      reject(evt.detail);
-    }, "errorEventListener");
-    const abortListener = /* @__PURE__ */ __name(() => {
-      removeListeners();
-      reject(error);
-    }, "abortListener");
-    signal?.addEventListener("abort", abortListener);
-    emitter.addEventListener(eventName, eventListener);
-    if (opts?.errorEvent != null) {
-      emitter.addEventListener(opts.errorEvent, errorEventListener);
-    }
-  });
-}
-__name(raceEvent, "raceEvent");
-
-// node_modules/race-signal/dist/src/index.js
-var AbortError5 = class extends Error {
-  static {
-    __name(this, "AbortError");
-  }
-  type;
-  code;
-  constructor(message2, code2, name3) {
-    super(message2 ?? "The operation was aborted");
-    this.type = "aborted";
-    this.name = name3 ?? "AbortError";
-    this.code = code2 ?? "ABORT_ERR";
-  }
-};
-async function raceSignal(promise, signal, opts) {
-  if (signal == null) {
-    return promise;
-  }
-  if (signal.aborted) {
-    return Promise.reject(new AbortError5(opts?.errorMessage, opts?.errorCode, opts?.errorName));
-  }
-  let listener;
-  const error = new AbortError5(opts?.errorMessage, opts?.errorCode, opts?.errorName);
-  try {
-    return await Promise.race([
-      promise,
-      new Promise((resolve, reject) => {
-        listener = /* @__PURE__ */ __name(() => {
-          reject(error);
-        }, "listener");
-        signal.addEventListener("abort", listener);
-      })
-    ]);
-  } finally {
-    if (listener != null) {
-      signal.removeEventListener("abort", listener);
-    }
-  }
-}
-__name(raceSignal, "raceSignal");
-
-// node_modules/@libp2p/utils/dist/src/queue/recipient.js
-var JobRecipient = class {
-  static {
-    __name(this, "JobRecipient");
-  }
-  deferred;
-  signal;
-  constructor(signal) {
-    this.signal = signal;
-    this.deferred = pDefer();
-    this.onAbort = this.onAbort.bind(this);
-    this.signal?.addEventListener("abort", this.onAbort);
-  }
-  onAbort() {
-    this.deferred.reject(this.signal?.reason ?? new AbortError());
-  }
-  cleanup() {
-    this.signal?.removeEventListener("abort", this.onAbort);
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/queue/job.js
-function randomId() {
-  return `${parseInt(String(Math.random() * 1e9), 10).toString()}${Date.now()}`;
-}
-__name(randomId, "randomId");
-var Job = class {
-  static {
-    __name(this, "Job");
-  }
-  id;
-  fn;
-  options;
-  recipients;
-  status;
-  timeline;
-  controller;
-  constructor(fn, options) {
-    this.id = randomId();
-    this.status = "queued";
-    this.fn = fn;
-    this.options = options;
-    this.recipients = [];
-    this.timeline = {
-      created: Date.now()
-    };
-    this.controller = new AbortController();
-    setMaxListeners2(Infinity, this.controller.signal);
-    this.onAbort = this.onAbort.bind(this);
-  }
-  abort(err) {
-    this.controller.abort(err);
-  }
-  onAbort() {
-    const allAborted = this.recipients.reduce((acc, curr) => {
-      return acc && curr.signal?.aborted === true;
-    }, true);
-    if (allAborted) {
-      this.controller.abort(new AbortError());
-      this.cleanup();
-    }
-  }
-  async join(options = {}) {
-    const recipient = new JobRecipient(options.signal);
-    this.recipients.push(recipient);
-    options.signal?.addEventListener("abort", this.onAbort);
-    return recipient.deferred.promise;
-  }
-  async run() {
-    this.status = "running";
-    this.timeline.started = Date.now();
-    try {
-      this.controller.signal.throwIfAborted();
-      const result = await raceSignal(this.fn({
-        ...this.options ?? {},
-        signal: this.controller.signal
-      }), this.controller.signal);
-      this.recipients.forEach((recipient) => {
-        recipient.deferred.resolve(result);
-      });
-      this.status = "complete";
-    } catch (err) {
-      this.recipients.forEach((recipient) => {
-        recipient.deferred.reject(err);
-      });
-      this.status = "errored";
-    } finally {
-      this.timeline.finished = Date.now();
-      this.cleanup();
-    }
-  }
-  cleanup() {
-    this.recipients.forEach((recipient) => {
-      recipient.cleanup();
-      recipient.signal?.removeEventListener("abort", this.onAbort);
-    });
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/queue/index.js
-var Queue = class extends TypedEventEmitter {
-  static {
-    __name(this, "Queue");
-  }
-  concurrency;
-  queue;
-  pending;
-  sort;
-  constructor(init = {}) {
-    super();
-    this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY;
-    this.pending = 0;
-    if (init.metricName != null) {
-      init.metrics?.registerMetricGroup(init.metricName, {
-        calculate: /* @__PURE__ */ __name(() => {
-          return {
-            size: this.queue.length,
-            running: this.pending,
-            queued: this.queue.length - this.pending
-          };
-        }, "calculate")
-      });
-    }
-    this.sort = init.sort;
-    this.queue = [];
-  }
-  tryToStartAnother() {
-    if (this.size === 0) {
-      queueMicrotask(() => {
-        this.safeDispatchEvent("empty");
-      });
-      if (this.running === 0) {
-        queueMicrotask(() => {
-          this.safeDispatchEvent("idle");
-        });
-      }
-      return false;
-    }
-    if (this.pending < this.concurrency) {
-      let job;
-      for (const j of this.queue) {
-        if (j.status === "queued") {
-          job = j;
-          break;
-        }
-      }
-      if (job == null) {
-        return false;
-      }
-      this.safeDispatchEvent("active");
-      this.pending++;
-      void job.run().finally(() => {
-        for (let i = 0; i < this.queue.length; i++) {
-          if (this.queue[i] === job) {
-            this.queue.splice(i, 1);
-            break;
-          }
-        }
-        this.pending--;
-        this.tryToStartAnother();
-        this.safeDispatchEvent("next");
-      });
-      return true;
-    }
-    return false;
-  }
-  enqueue(job) {
-    this.queue.push(job);
-    if (this.sort != null) {
-      this.queue.sort(this.sort);
-    }
-  }
-  /**
-   * Adds a sync or async task to the queue. Always returns a promise.
-   */
-  async add(fn, options) {
-    options?.signal?.throwIfAborted();
-    const job = new Job(fn, options);
-    this.enqueue(job);
-    this.safeDispatchEvent("add");
-    this.tryToStartAnother();
-    return job.join(options).then((result) => {
-      this.safeDispatchEvent("completed", { detail: result });
-      this.safeDispatchEvent("success", { detail: { job, result } });
-      return result;
-    }).catch((err) => {
-      if (job.status === "queued") {
-        for (let i = 0; i < this.queue.length; i++) {
-          if (this.queue[i] === job) {
-            this.queue.splice(i, 1);
-            break;
-          }
-        }
-      }
-      this.safeDispatchEvent("error", { detail: err });
-      this.safeDispatchEvent("failure", { detail: { job, error: err } });
-      throw err;
-    });
-  }
-  /**
-   * Clear the queue
-   */
-  clear() {
-    this.queue.splice(0, this.queue.length);
-  }
-  /**
-   * Abort all jobs in the queue and clear it
-   */
-  abort() {
-    this.queue.forEach((job) => {
-      job.abort(new AbortError());
-    });
-    this.clear();
-  }
-  /**
-   * Can be called multiple times. Useful if you for example add additional items at a later time.
-   *
-   * @returns A promise that settles when the queue becomes empty.
-   */
-  async onEmpty(options) {
-    if (this.size === 0) {
-      return;
-    }
-    await raceEvent(this, "empty", options?.signal);
-  }
-  /**
-   * @returns A promise that settles when the queue size is less than the given
-   * limit: `queue.size < limit`.
-   *
-   * If you want to avoid having the queue grow beyond a certain size you can
-   * `await queue.onSizeLessThan()` before adding a new item.
-   *
-   * Note that this only limits the number of items waiting to start. There
-   * could still be up to `concurrency` jobs already running that this call does
-   * not include in its calculation.
-   */
-  async onSizeLessThan(limit, options) {
-    if (this.size < limit) {
-      return;
-    }
-    await raceEvent(this, "next", options?.signal, {
-      filter: /* @__PURE__ */ __name(() => this.size < limit, "filter")
-    });
-  }
-  /**
-   * The difference with `.onEmpty` is that `.onIdle` guarantees that all work
-   * from the queue has finished. `.onEmpty` merely signals that the queue is
-   * empty, but it could mean that some promises haven't completed yet.
-   *
-   * @returns A promise that settles when the queue becomes empty, and all
-   * promises have completed; `queue.size === 0 && queue.pending === 0`.
-   */
-  async onIdle(options) {
-    if (this.pending === 0 && this.size === 0) {
-      return;
-    }
-    await raceEvent(this, "idle", options?.signal);
-  }
-  /**
-   * Size of the queue including running items
-   */
-  get size() {
-    return this.queue.length;
-  }
-  /**
-   * The number of queued items waiting to run.
-   */
-  get queued() {
-    return this.queue.length - this.pending;
-  }
-  /**
-   * The number of items currently running.
-   */
-  get running() {
-    return this.pending;
-  }
-  /**
-   * Returns an async generator that makes it easy to iterate over the results
-   * of jobs added to the queue.
-   *
-   * The generator will end when the queue becomes idle, that is there are no
-   * jobs running and no jobs that have yet to run.
-   *
-   * If you need to keep the queue open indefinitely, consider using it-pushable
-   * instead.
-   */
-  async *toGenerator(options) {
-    options?.signal?.throwIfAborted();
-    const stream = pushable({
-      objectMode: true
-    });
-    const cleanup = /* @__PURE__ */ __name((err) => {
-      if (err != null) {
-        this.abort();
-      } else {
-        this.clear();
-      }
-      stream.end(err);
-    }, "cleanup");
-    const onQueueJobComplete = /* @__PURE__ */ __name((evt) => {
-      if (evt.detail != null) {
-        stream.push(evt.detail);
-      }
-    }, "onQueueJobComplete");
-    const onQueueError = /* @__PURE__ */ __name((evt) => {
-      cleanup(evt.detail);
-    }, "onQueueError");
-    const onQueueIdle = /* @__PURE__ */ __name(() => {
-      cleanup();
-    }, "onQueueIdle");
-    const onSignalAbort = /* @__PURE__ */ __name(() => {
-      cleanup(new CodeError("Queue aborted", "ERR_QUEUE_ABORTED"));
-    }, "onSignalAbort");
-    this.addEventListener("completed", onQueueJobComplete);
-    this.addEventListener("error", onQueueError);
-    this.addEventListener("idle", onQueueIdle);
-    options?.signal?.addEventListener("abort", onSignalAbort);
-    try {
-      yield* stream;
-    } finally {
-      this.removeEventListener("completed", onQueueJobComplete);
-      this.removeEventListener("error", onQueueError);
-      this.removeEventListener("idle", onQueueIdle);
-      options?.signal?.removeEventListener("abort", onSignalAbort);
-      cleanup();
-    }
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/peer-queue.js
-var PeerQueue = class extends Queue {
-  static {
-    __name(this, "PeerQueue");
-  }
-  has(peerId2) {
-    return this.find(peerId2) != null;
-  }
-  find(peerId2) {
-    return this.queue.find((job) => {
-      return peerId2.equals(job.options.peerId);
-    });
-  }
-};
-
-// node_modules/libp2p/dist/src/connection-manager/constants.defaults.js
-var DIAL_TIMEOUT = 5e3;
-var INBOUND_UPGRADE_TIMEOUT = 2e3;
-var MAX_PEER_ADDRS_TO_DIAL = 25;
-var AUTO_DIAL_INTERVAL = 5e3;
-var AUTO_DIAL_CONCURRENCY = 25;
-var AUTO_DIAL_PRIORITY = 0;
-var AUTO_DIAL_MAX_QUEUE_LENGTH = 100;
-var AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE = 10;
-var INBOUND_CONNECTION_THRESHOLD = 5;
-var MAX_INCOMING_PENDING_CONNECTIONS = 10;
-var LAST_DIAL_FAILURE_KEY = "last-dial-failure";
-var MAX_DIAL_QUEUE_LENGTH = 500;
-
-// node_modules/libp2p/dist/src/connection-manager/constants.browser.js
-var MIN_CONNECTIONS = 5;
-var MAX_CONNECTIONS = 100;
-var MAX_PARALLEL_DIALS = 50;
-var AUTO_DIAL_PEER_RETRY_THRESHOLD = 1e3 * 60 * 7;
-
-// node_modules/libp2p/dist/src/connection-manager/auto-dial.js
-var defaultOptions3 = {
-  minConnections: MIN_CONNECTIONS,
-  maxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
-  autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY,
-  autoDialInterval: AUTO_DIAL_INTERVAL,
-  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
-  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
-};
-var AutoDial = class {
-  static {
-    __name(this, "AutoDial");
-  }
-  connectionManager;
-  peerStore;
-  queue;
-  minConnections;
-  autoDialPriority;
-  autoDialIntervalMs;
-  autoDialMaxQueueLength;
-  autoDialPeerRetryThresholdMs;
-  autoDialDiscoveredPeersDebounce;
-  autoDialInterval;
-  started;
-  running;
-  log;
-  /**
-   * Proactively tries to connect to known peers stored in the PeerStore.
-   * It will keep the number of connections below the upper limit and sort
-   * the peers to connect based on whether we know their keys and protocols.
-   */
-  constructor(components, init) {
-    this.connectionManager = components.connectionManager;
-    this.peerStore = components.peerStore;
-    this.minConnections = init.minConnections ?? defaultOptions3.minConnections;
-    this.autoDialPriority = init.autoDialPriority ?? defaultOptions3.autoDialPriority;
-    this.autoDialIntervalMs = init.autoDialInterval ?? defaultOptions3.autoDialInterval;
-    this.autoDialMaxQueueLength = init.maxQueueLength ?? defaultOptions3.maxQueueLength;
-    this.autoDialPeerRetryThresholdMs = init.autoDialPeerRetryThreshold ?? defaultOptions3.autoDialPeerRetryThreshold;
-    this.autoDialDiscoveredPeersDebounce = init.autoDialDiscoveredPeersDebounce ?? defaultOptions3.autoDialDiscoveredPeersDebounce;
-    this.log = components.logger.forComponent("libp2p:connection-manager:auto-dial");
-    this.started = false;
-    this.running = false;
-    this.queue = new PeerQueue({
-      concurrency: init.autoDialConcurrency ?? defaultOptions3.autoDialConcurrency,
-      metricName: "libp2p_autodial_queue",
-      metrics: components.metrics
-    });
-    this.queue.addEventListener("error", (evt) => {
-      this.log.error("error during auto-dial", evt.detail);
-    });
-    components.events.addEventListener("connection:close", () => {
-      this.autoDial().catch((err) => {
-        this.log.error(err);
-      });
-    });
-    let debounce2;
-    components.events.addEventListener("peer:discovery", () => {
-      clearTimeout(debounce2);
-      debounce2 = setTimeout(() => {
-        this.autoDial().catch((err) => {
-          this.log.error(err);
-        });
-      }, this.autoDialDiscoveredPeersDebounce);
-    });
-  }
-  isStarted() {
-    return this.started;
-  }
-  start() {
-    this.started = true;
-  }
-  afterStart() {
-    this.autoDial().catch((err) => {
-      this.log.error("error while autodialing", err);
-    });
-  }
-  stop() {
-    this.queue.clear();
-    clearTimeout(this.autoDialInterval);
-    this.started = false;
-    this.running = false;
-  }
-  async autoDial() {
-    if (!this.started || this.running) {
-      return;
-    }
-    const connections = this.connectionManager.getConnectionsMap();
-    const numConnections = connections.size;
-    if (numConnections >= this.minConnections) {
-      if (this.minConnections > 0) {
-        this.log.trace("have enough connections %d/%d", numConnections, this.minConnections);
-      }
-      return;
-    }
-    if (this.queue.size > this.autoDialMaxQueueLength) {
-      this.log("not enough connections %d/%d but auto dial queue is full", numConnections, this.minConnections);
-      this.sheduleNextAutodial();
-      return;
-    }
-    this.running = true;
-    this.log("not enough connections %d/%d - will dial peers to increase the number of connections", numConnections, this.minConnections);
-    const dialQueue = new PeerSet(
-      // @ts-expect-error boolean filter removes falsy peer IDs
-      this.connectionManager.getDialQueue().map((queue) => queue.peerId).filter(Boolean)
-    );
-    const peers = await this.peerStore.all({
-      filters: [
-        // remove some peers
-        (peer) => {
-          if (peer.addresses.length === 0) {
-            this.log.trace("not autodialing %p because they have no addresses", peer.id);
-            return false;
-          }
-          if (connections.has(peer.id)) {
-            this.log.trace("not autodialing %p because they are already connected", peer.id);
-            return false;
-          }
-          if (dialQueue.has(peer.id)) {
-            this.log.trace("not autodialing %p because they are already being dialed", peer.id);
-            return false;
-          }
-          if (this.queue.has(peer.id)) {
-            this.log.trace("not autodialing %p because they are already being autodialed", peer.id);
-            return false;
-          }
-          return true;
-        }
-      ]
-    });
-    const shuffledPeers = peers.sort(() => Math.random() > 0.5 ? 1 : -1);
-    const peerValues = new PeerMap();
-    for (const peer of shuffledPeers) {
-      if (peerValues.has(peer.id)) {
-        continue;
-      }
-      peerValues.set(peer.id, [...peer.tags.values()].reduce((acc, curr) => {
-        return acc + curr.value;
-      }, 0));
-    }
-    const sortedPeers = shuffledPeers.sort((a, b) => {
-      const peerAValue = peerValues.get(a.id) ?? 0;
-      const peerBValue = peerValues.get(b.id) ?? 0;
-      if (peerAValue > peerBValue) {
-        return -1;
-      }
-      if (peerAValue < peerBValue) {
-        return 1;
-      }
-      return 0;
-    });
-    const peersThatHaveNotFailed = sortedPeers.filter((peer) => {
-      const lastDialFailure = peer.metadata.get(LAST_DIAL_FAILURE_KEY);
-      if (lastDialFailure == null) {
-        return true;
-      }
-      const lastDialFailureTimestamp = parseInt(toString2(lastDialFailure));
-      if (isNaN(lastDialFailureTimestamp)) {
-        return true;
-      }
-      return Date.now() - lastDialFailureTimestamp > this.autoDialPeerRetryThresholdMs;
-    });
-    this.log("selected %d/%d peers to dial", peersThatHaveNotFailed.length, peers.length);
-    for (const peer of peersThatHaveNotFailed) {
-      this.queue.add(async () => {
-        const numConnections2 = this.connectionManager.getConnectionsMap().size;
-        if (numConnections2 >= this.minConnections) {
-          this.log("got enough connections now %d/%d", numConnections2, this.minConnections);
-          this.queue.clear();
-          return;
-        }
-        this.log("connecting to a peerStore stored peer %p", peer.id);
-        await this.connectionManager.openConnection(peer.id, {
-          priority: this.autoDialPriority
-        });
-      }, {
-        peerId: peer.id
-      }).catch((err) => {
-        this.log.error("could not connect to peerStore stored peer", err);
-      });
-    }
-    this.running = false;
-    this.sheduleNextAutodial();
-  }
-  sheduleNextAutodial() {
-    if (!this.started) {
-      return;
-    }
-    this.autoDialInterval = setTimeout(() => {
-      this.autoDial().catch((err) => {
-        this.log.error("error while autodialing", err);
-      });
-    }, this.autoDialIntervalMs);
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/close.js
-var DEFAULT_CLOSABLE_PROTOCOLS = [
-  // identify
-  "/ipfs/id/1.0.0",
-  // identify-push
-  "/ipfs/id/push/1.0.0",
-  // autonat
-  "/libp2p/autonat/1.0.0",
-  // dcutr
-  "/libp2p/dcutr"
-];
-async function safelyCloseConnectionIfUnused(connection, options) {
-  const streamProtocols = connection?.streams?.map((stream) => stream.protocol) ?? [];
-  const closableProtocols = options?.closableProtocols ?? DEFAULT_CLOSABLE_PROTOCOLS;
-  if (streamProtocols.filter((proto) => proto != null && !closableProtocols.includes(proto)).length > 0) {
-    return;
-  }
-  try {
-    await connection?.close(options);
-  } catch (err) {
-    connection?.abort(err);
-  }
-}
-__name(safelyCloseConnectionIfUnused, "safelyCloseConnectionIfUnused");
-
-// node_modules/libp2p/dist/src/connection-manager/connection-pruner.js
-var defaultOptions4 = {
-  maxConnections: MAX_CONNECTIONS,
-  allow: []
-};
-var ConnectionPruner = class {
-  static {
-    __name(this, "ConnectionPruner");
-  }
-  maxConnections;
-  connectionManager;
-  peerStore;
-  allow;
-  events;
-  log;
-  constructor(components, init = {}) {
-    this.maxConnections = init.maxConnections ?? defaultOptions4.maxConnections;
-    this.allow = init.allow ?? defaultOptions4.allow;
-    this.connectionManager = components.connectionManager;
-    this.peerStore = components.peerStore;
-    this.events = components.events;
-    this.log = components.logger.forComponent("libp2p:connection-manager:connection-pruner");
-    components.events.addEventListener("connection:open", () => {
-      this.maybePruneConnections().catch((err) => {
-        this.log.error(err);
-      });
-    });
-  }
-  /**
-   * If we have more connections than our maximum, select some excess connections
-   * to prune based on peer value
-   */
-  async maybePruneConnections() {
-    const connections = this.connectionManager.getConnections();
-    const numConnections = connections.length;
-    this.log("checking max connections limit %d/%d", numConnections, this.maxConnections);
-    if (numConnections <= this.maxConnections) {
-      return;
-    }
-    const peerValues = new PeerMap();
-    for (const connection of connections) {
-      const remotePeer = connection.remotePeer;
-      if (peerValues.has(remotePeer)) {
-        continue;
-      }
-      peerValues.set(remotePeer, 0);
-      try {
-        const peer = await this.peerStore.get(remotePeer);
-        peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
-          return acc + curr.value;
-        }, 0));
-      } catch (err) {
-        if (err.code !== "ERR_NOT_FOUND") {
-          this.log.error("error loading peer tags", err);
-        }
-      }
-    }
-    const sortedConnections = this.sortConnections(connections, peerValues);
-    const toPrune = Math.max(numConnections - this.maxConnections, 0);
-    const toClose = [];
-    for (const connection of sortedConnections) {
-      this.log("too many connections open - closing a connection to %p", connection.remotePeer);
-      const connectionInAllowList = this.allow.some((ma) => {
-        return connection.remoteAddr.toString().startsWith(ma.toString());
-      });
-      if (!connectionInAllowList) {
-        toClose.push(connection);
-      }
-      if (toClose.length === toPrune) {
-        break;
-      }
-    }
-    await Promise.all(toClose.map(async (connection) => {
-      await safelyCloseConnectionIfUnused(connection, {
-        signal: AbortSignal.timeout(1e3)
-      });
-    }));
-    this.events.safeDispatchEvent("connection:prune", { detail: toClose });
-  }
-  sortConnections(connections, peerValues) {
-    return connections.sort((a, b) => {
-      const connectionALifespan = a.timeline.open;
-      const connectionBLifespan = b.timeline.open;
-      if (connectionALifespan < connectionBLifespan) {
-        return 1;
-      }
-      if (connectionALifespan > connectionBLifespan) {
-        return -1;
-      }
-      return 0;
-    }).sort((a, b) => {
-      if (a.direction === "outbound" && b.direction === "inbound") {
-        return 1;
-      }
-      if (a.direction === "inbound" && b.direction === "outbound") {
-        return -1;
-      }
-      return 0;
-    }).sort((a, b) => {
-      if (a.streams.length > b.streams.length) {
-        return 1;
-      }
-      if (a.streams.length < b.streams.length) {
-        return -1;
-      }
-      return 0;
-    }).sort((a, b) => {
-      const peerAValue = peerValues.get(a.remotePeer) ?? 0;
-      const peerBValue = peerValues.get(b.remotePeer) ?? 0;
-      if (peerAValue > peerBValue) {
-        return 1;
-      }
-      if (peerAValue < peerBValue) {
-        return -1;
-      }
-      return 0;
-    });
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/priority-queue.js
-var PriorityQueue2 = class extends Queue {
-  static {
-    __name(this, "PriorityQueue");
-  }
-  constructor(init = {}) {
-    super({
-      ...init,
-      sort: /* @__PURE__ */ __name((a, b) => {
-        if (a.options.priority > b.options.priority) {
-          return -1;
-        }
-        if (a.options.priority < b.options.priority) {
-          return 1;
-        }
-        return 0;
-      }, "sort")
-    });
-  }
-};
-
-// node_modules/any-signal/dist/src/index.js
-function anySignal(signals) {
-  const controller = new globalThis.AbortController();
-  function onAbort() {
-    controller.abort();
-    for (const signal2 of signals) {
-      if (signal2?.removeEventListener != null) {
-        signal2.removeEventListener("abort", onAbort);
-      }
-    }
-  }
-  __name(onAbort, "onAbort");
-  for (const signal2 of signals) {
-    if (signal2?.aborted === true) {
-      onAbort();
-      break;
-    }
-    if (signal2?.addEventListener != null) {
-      signal2.addEventListener("abort", onAbort);
-    }
-  }
-  function clear() {
-    for (const signal2 of signals) {
-      if (signal2?.removeEventListener != null) {
-        signal2.removeEventListener("abort", onAbort);
-      }
-    }
-  }
-  __name(clear, "clear");
-  const signal = controller.signal;
-  signal.clear = clear;
-  return signal;
-}
-__name(anySignal, "anySignal");
-
-// node_modules/libp2p/dist/src/connection-manager/utils.js
-async function resolveMultiaddrs(ma, options) {
-  let resolvable = false;
-  for (const key of resolvers.keys()) {
-    resolvable = ma.protoNames().includes(key);
-    if (resolvable) {
-      break;
-    }
-  }
-  if (!resolvable) {
-    return [ma];
-  }
-  const output2 = await ma.resolve(options);
-  options.log("resolved %s to", ma, output2.map((ma2) => ma2.toString()));
-  return output2;
-}
-__name(resolveMultiaddrs, "resolveMultiaddrs");
-
-// node_modules/libp2p/dist/src/connection-manager/dial-queue.js
-var defaultOptions5 = {
-  addressSorter: defaultAddressSort,
-  maxParallelDials: MAX_PARALLEL_DIALS,
-  maxDialQueueLength: MAX_DIAL_QUEUE_LENGTH,
-  maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
-  dialTimeout: DIAL_TIMEOUT,
-  resolvers: {
-    dnsaddr: dnsaddrResolver
-  }
-};
-var DialQueue = class {
-  static {
-    __name(this, "DialQueue");
-  }
-  queue;
-  components;
-  addressSorter;
-  maxPeerAddrsToDial;
-  maxDialQueueLength;
-  dialTimeout;
-  shutDownController;
-  connections;
-  log;
-  constructor(components, init = {}) {
-    this.addressSorter = init.addressSorter ?? defaultOptions5.addressSorter;
-    this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions5.maxPeerAddrsToDial;
-    this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions5.maxDialQueueLength;
-    this.dialTimeout = init.dialTimeout ?? defaultOptions5.dialTimeout;
-    this.connections = init.connections ?? new PeerMap();
-    this.log = components.logger.forComponent("libp2p:connection-manager:dial-queue");
-    this.components = components;
-    this.shutDownController = new AbortController();
-    setMaxListeners2(Infinity, this.shutDownController.signal);
-    for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      resolvers.set(key, value);
-    }
-    this.queue = new PriorityQueue2({
-      concurrency: init.maxParallelDials ?? defaultOptions5.maxParallelDials,
-      metricName: "libp2p_dial_queue",
-      metrics: components.metrics
-    });
-    this.queue.addEventListener("error", (event) => {
-      this.log.error("error in dial queue", event.detail);
-    });
-  }
-  start() {
-    this.shutDownController = new AbortController();
-    setMaxListeners2(Infinity, this.shutDownController.signal);
-  }
-  /**
-   * Clears any pending dials
-   */
-  stop() {
-    this.shutDownController.abort();
-    this.queue.abort();
-  }
-  /**
-   * Connects to a given peer, multiaddr or list of multiaddrs.
-   *
-   * If a peer is passed, all known multiaddrs will be tried. If a multiaddr or
-   * multiaddrs are passed only those will be dialled.
-   *
-   * Where a list of multiaddrs is passed, if any contain a peer id then all
-   * multiaddrs in the list must contain the same peer id.
-   *
-   * The dial to the first address that is successfully able to upgrade a
-   * connection will be used, all other dials will be aborted when that happens.
-   */
-  async dial(peerIdOrMultiaddr, options = {}) {
-    const { peerId: peerId2, multiaddrs } = getPeerAddress(peerIdOrMultiaddr);
-    const existingConnection = Array.from(this.connections.values()).flat().find((conn) => {
-      if (options.force === true) {
-        return false;
-      }
-      if (conn.remotePeer.equals(peerId2)) {
-        return true;
-      }
-      return multiaddrs.find((addr) => {
-        return addr.equals(conn.remoteAddr);
-      });
-    });
-    if (existingConnection != null) {
-      this.log("already connected to %a", existingConnection.remoteAddr);
-      options.onProgress?.(new CustomProgressEvent("dial-queue:already-connected"));
-      return existingConnection;
-    }
-    const existingDial = this.queue.queue.find((job) => {
-      if (peerId2?.equals(job.options.peerId) === true) {
-        return true;
-      }
-      const addresses = job.options.multiaddrs;
-      if (addresses == null) {
-        return false;
-      }
-      for (const multiaddr2 of multiaddrs) {
-        if (addresses.has(multiaddr2.toString())) {
-          return true;
-        }
-      }
-      return false;
-    });
-    if (existingDial != null) {
-      this.log("joining existing dial target for %p", peerId2);
-      for (const multiaddr2 of multiaddrs) {
-        existingDial.options.multiaddrs.add(multiaddr2.toString());
-      }
-      options.onProgress?.(new CustomProgressEvent("dial-queue:already-in-dial-queue"));
-      return existingDial.join(options);
-    }
-    if (this.queue.size >= this.maxDialQueueLength) {
-      throw new CodeError("Dial queue is full", "ERR_DIAL_QUEUE_FULL");
-    }
-    this.log("creating dial target for %p", peerId2, multiaddrs.map((ma) => ma.toString()));
-    options.onProgress?.(new CustomProgressEvent("dial-queue:add-to-dial-queue"));
-    return this.queue.add(async (options2) => {
-      options2?.onProgress?.(new CustomProgressEvent("dial-queue:start-dial"));
-      const signal = this.createDialAbortController(options2?.signal);
-      let addrsToDial;
-      try {
-        addrsToDial = await this.calculateMultiaddrs(peerId2, options2?.multiaddrs, {
-          ...options2,
-          signal
-        });
-        options2?.onProgress?.(new CustomProgressEvent("dial-queue:calculated-addresses", addrsToDial));
-        addrsToDial.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()).forEach((addr) => {
-          options2?.multiaddrs.add(addr);
-        });
-      } catch (err) {
-        signal.clear();
-        throw err;
-      }
-      try {
-        let dialed = 0;
-        const errors = [];
-        for (const address of addrsToDial) {
-          if (dialed === this.maxPeerAddrsToDial) {
-            this.log("dialed maxPeerAddrsToDial (%d) addresses for %p, not trying any others", dialed, peerId2);
-            throw new CodeError("Peer had more than maxPeerAddrsToDial", codes4.ERR_TOO_MANY_ADDRESSES);
-          }
-          dialed++;
-          try {
-            const conn = await this.components.transportManager.dial(address.multiaddr, {
-              ...options2,
-              signal
-            });
-            this.log("dial to %a succeeded", address.multiaddr);
-            return conn;
-          } catch (err) {
-            this.log.error("dial failed to %a", address.multiaddr, err);
-            if (peerId2 != null) {
-              try {
-                await this.components.peerStore.patch(peerId2, {
-                  metadata: {
-                    [LAST_DIAL_FAILURE_KEY]: fromString2(Date.now().toString())
-                  }
-                });
-              } catch (err2) {
-                this.log.error("could not update last dial failure key for %p", peerId2, err2);
-              }
-            }
-            if (signal.aborted) {
-              throw new CodeError(err.message, ERR_TIMEOUT);
-            }
-            errors.push(err);
-          }
-        }
-        if (errors.length === 1) {
-          throw errors[0];
-        }
-        throw new AggregateCodeError(errors, "All multiaddr dials failed", codes4.ERR_TRANSPORT_DIAL_FAILED);
-      } finally {
-        signal.clear();
-      }
-    }, {
-      peerId: peerId2,
-      priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
-      multiaddrs: new Set(multiaddrs.map((ma) => ma.toString())),
-      signal: options.signal,
-      onProgress: options.onProgress
-    });
-  }
-  createDialAbortController(userSignal) {
-    const signal = anySignal([
-      AbortSignal.timeout(this.dialTimeout),
-      this.shutDownController.signal,
-      userSignal
-    ]);
-    setMaxListeners2(Infinity, signal);
-    return signal;
-  }
-  // eslint-disable-next-line complexity
-  async calculateMultiaddrs(peerId2, multiaddrs = /* @__PURE__ */ new Set(), options = {}) {
-    const addrs = [...multiaddrs].map((ma) => ({
-      multiaddr: multiaddr(ma),
-      isCertified: false
-    }));
-    if (peerId2 != null) {
-      if (this.components.peerId.equals(peerId2)) {
-        throw new CodeError("Tried to dial self", codes4.ERR_DIALED_SELF);
-      }
-      if (await this.components.connectionGater.denyDialPeer?.(peerId2) === true) {
-        throw new CodeError("The dial request is blocked by gater.allowDialPeer", codes4.ERR_PEER_DIAL_INTERCEPTED);
-      }
-      if (addrs.length === 0) {
-        this.log("loading multiaddrs for %p", peerId2);
-        try {
-          const peer = await this.components.peerStore.get(peerId2);
-          addrs.push(...peer.addresses);
-          this.log("loaded multiaddrs for %p", peerId2, addrs.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
-        } catch (err) {
-          if (err.code !== codes4.ERR_NOT_FOUND) {
-            throw err;
-          }
-        }
-      }
-      if (addrs.length === 0) {
-        this.log("looking up multiaddrs for %p in the peer routing", peerId2);
-        try {
-          const peerInfo = await this.components.peerRouting.findPeer(peerId2);
-          this.log("found multiaddrs for %p in the peer routing", peerId2, addrs.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
-          addrs.push(...peerInfo.multiaddrs.map((multiaddr2) => ({
-            multiaddr: multiaddr2,
-            isCertified: false
-          })));
-        } catch (err) {
-          if (err.code !== codes4.ERR_NO_ROUTERS_AVAILABLE) {
-            this.log.error("looking up multiaddrs for %p in the peer routing failed", peerId2, err);
-          }
-        }
-      }
-    }
-    let resolvedAddresses = (await Promise.all(addrs.map(async (addr) => {
-      const result = await resolveMultiaddrs(addr.multiaddr, {
-        dns: this.components.dns,
-        ...options,
-        log: this.log
-      });
-      if (result.length === 1 && result[0].equals(addr.multiaddr)) {
-        return addr;
-      }
-      return result.map((multiaddr2) => ({
-        multiaddr: multiaddr2,
-        isCertified: false
-      }));
-    }))).flat();
-    if (peerId2 != null) {
-      const peerIdMultiaddr = `/p2p/${peerId2.toString()}`;
-      resolvedAddresses = resolvedAddresses.map((addr) => {
-        const lastProto = addr.multiaddr.protos().pop();
-        if (lastProto?.path === true) {
-          return addr;
-        }
-        if (addr.multiaddr.getPeerId() == null) {
-          return {
-            multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
-            isCertified: addr.isCertified
-          };
-        }
-        return addr;
-      });
-    }
-    const filteredAddrs = resolvedAddresses.filter((addr) => {
-      if (this.components.transportManager.dialTransportForMultiaddr(addr.multiaddr) == null) {
-        return false;
-      }
-      const addrPeerId = addr.multiaddr.getPeerId();
-      if (peerId2 != null && addrPeerId != null) {
-        return peerId2.equals(addrPeerId);
-      }
-      return true;
-    });
-    const dedupedAddrs = /* @__PURE__ */ new Map();
-    for (const addr of filteredAddrs) {
-      const maStr = addr.multiaddr.toString();
-      const existing = dedupedAddrs.get(maStr);
-      if (existing != null) {
-        existing.isCertified = existing.isCertified || addr.isCertified || false;
-        continue;
-      }
-      dedupedAddrs.set(maStr, addr);
-    }
-    const dedupedMultiaddrs = [...dedupedAddrs.values()];
-    if (dedupedMultiaddrs.length === 0) {
-      throw new CodeError("The dial request has no valid addresses", codes4.ERR_NO_VALID_ADDRESSES);
-    }
-    const gatedAdrs = [];
-    for (const addr of dedupedMultiaddrs) {
-      if (this.components.connectionGater.denyDialMultiaddr != null && await this.components.connectionGater.denyDialMultiaddr(addr.multiaddr)) {
-        continue;
-      }
-      gatedAdrs.push(addr);
-    }
-    const sortedGatedAddrs = gatedAdrs.sort(this.addressSorter);
-    if (sortedGatedAddrs.length === 0) {
-      throw new CodeError("The connection gater denied all addresses in the dial request", codes4.ERR_NO_VALID_ADDRESSES);
-    }
-    this.log.trace("addresses for %p before filtering", peerId2 ?? "unknown peer", resolvedAddresses.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
-    this.log.trace("addresses for %p after filtering", peerId2 ?? "unknown peer", sortedGatedAddrs.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
-    return sortedGatedAddrs;
-  }
-  async isDialable(multiaddr2, options = {}) {
-    if (!Array.isArray(multiaddr2)) {
-      multiaddr2 = [multiaddr2];
-    }
-    try {
-      const addresses = await this.calculateMultiaddrs(void 0, new Set(multiaddr2.map((ma) => ma.toString())), options);
-      if (options.runOnTransientConnection === false) {
-        return addresses.find((addr) => {
-          return !Circuit.matches(addr.multiaddr);
-        }) != null;
-      }
-      return true;
-    } catch (err) {
-      this.log.trace("error calculating if multiaddr(s) were dialable", err);
-    }
-    return false;
-  }
-};
-
-// node_modules/libp2p/dist/src/connection-manager/index.js
-var DEFAULT_DIAL_PRIORITY = 50;
-var defaultOptions6 = {
-  minConnections: MIN_CONNECTIONS,
-  maxConnections: MAX_CONNECTIONS,
-  inboundConnectionThreshold: INBOUND_CONNECTION_THRESHOLD,
-  maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS,
-  autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY,
-  autoDialMaxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
-  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
-  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
-};
-var DefaultConnectionManager = class {
-  static {
-    __name(this, "DefaultConnectionManager");
-  }
-  started;
-  connections;
-  allow;
-  deny;
-  maxIncomingPendingConnections;
-  incomingPendingConnections;
-  maxConnections;
-  dialQueue;
-  autoDial;
-  connectionPruner;
-  inboundConnectionRateLimiter;
-  peerStore;
-  metrics;
-  events;
-  log;
-  constructor(components, init = {}) {
-    this.maxConnections = init.maxConnections ?? defaultOptions6.maxConnections;
-    const minConnections = init.minConnections ?? defaultOptions6.minConnections;
-    if (this.maxConnections < minConnections) {
-      throw new CodeError("Connection Manager maxConnections must be greater than minConnections", codes4.ERR_INVALID_PARAMETERS);
-    }
-    this.connections = new PeerMap();
-    this.started = false;
-    this.peerStore = components.peerStore;
-    this.metrics = components.metrics;
-    this.events = components.events;
-    this.log = components.logger.forComponent("libp2p:connection-manager");
-    this.onConnect = this.onConnect.bind(this);
-    this.onDisconnect = this.onDisconnect.bind(this);
-    this.events.addEventListener("connection:open", this.onConnect);
-    this.events.addEventListener("connection:close", this.onDisconnect);
-    this.allow = (init.allow ?? []).map((ma) => multiaddr(ma));
-    this.deny = (init.deny ?? []).map((ma) => multiaddr(ma));
-    this.incomingPendingConnections = 0;
-    this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions6.maxIncomingPendingConnections;
-    this.inboundConnectionRateLimiter = new RateLimiter({
-      points: init.inboundConnectionThreshold ?? defaultOptions6.inboundConnectionThreshold,
-      duration: 1
-    });
-    this.autoDial = new AutoDial({
-      connectionManager: this,
-      peerStore: components.peerStore,
-      events: components.events,
-      logger: components.logger
-    }, {
-      minConnections,
-      autoDialConcurrency: init.autoDialConcurrency ?? defaultOptions6.autoDialConcurrency,
-      autoDialPriority: init.autoDialPriority ?? defaultOptions6.autoDialPriority,
-      autoDialPeerRetryThreshold: init.autoDialPeerRetryThreshold ?? defaultOptions6.autoDialPeerRetryThreshold,
-      autoDialDiscoveredPeersDebounce: init.autoDialDiscoveredPeersDebounce ?? defaultOptions6.autoDialDiscoveredPeersDebounce,
-      maxQueueLength: init.autoDialMaxQueueLength ?? defaultOptions6.autoDialMaxQueueLength
-    });
-    this.connectionPruner = new ConnectionPruner({
-      connectionManager: this,
-      peerStore: components.peerStore,
-      events: components.events,
-      logger: components.logger
-    }, {
-      maxConnections: this.maxConnections,
-      allow: this.allow
-    });
-    this.dialQueue = new DialQueue(components, {
-      addressSorter: init.addressSorter ?? defaultAddressSort,
-      maxParallelDials: init.maxParallelDials ?? MAX_PARALLEL_DIALS,
-      maxDialQueueLength: init.maxDialQueueLength ?? MAX_DIAL_QUEUE_LENGTH,
-      maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
-      dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
-      resolvers: init.resolvers ?? {
-        dnsaddr: dnsaddrResolver
-      },
-      connections: this.connections
-    });
-  }
-  [Symbol.toStringTag] = "@libp2p/connection-manager";
-  isStarted() {
-    return this.started;
-  }
-  /**
-   * Starts the Connection Manager. If Metrics are not enabled on libp2p
-   * only event loop and connection limits will be monitored.
-   */
-  async start() {
-    this.metrics?.registerMetricGroup("libp2p_connection_manager_connections", {
-      calculate: /* @__PURE__ */ __name(() => {
-        const metric = {
-          inbound: 0,
-          outbound: 0
-        };
-        for (const conns of this.connections.values()) {
-          for (const conn of conns) {
-            if (conn.direction === "inbound") {
-              metric.inbound++;
-            } else {
-              metric.outbound++;
-            }
-          }
-        }
-        return metric;
-      }, "calculate")
-    });
-    this.metrics?.registerMetricGroup("libp2p_protocol_streams_total", {
-      label: "protocol",
-      calculate: /* @__PURE__ */ __name(() => {
-        const metric = {};
-        for (const conns of this.connections.values()) {
-          for (const conn of conns) {
-            for (const stream of conn.streams) {
-              const key = `${stream.direction} ${stream.protocol ?? "unnegotiated"}`;
-              metric[key] = (metric[key] ?? 0) + 1;
-            }
-          }
-        }
-        return metric;
-      }, "calculate")
-    });
-    this.metrics?.registerMetricGroup("libp2p_connection_manager_protocol_streams_per_connection_90th_percentile", {
-      label: "protocol",
-      calculate: /* @__PURE__ */ __name(() => {
-        const allStreams = {};
-        for (const conns of this.connections.values()) {
-          for (const conn of conns) {
-            const streams = {};
-            for (const stream of conn.streams) {
-              const key = `${stream.direction} ${stream.protocol ?? "unnegotiated"}`;
-              streams[key] = (streams[key] ?? 0) + 1;
-            }
-            for (const [protocol, count] of Object.entries(streams)) {
-              allStreams[protocol] = allStreams[protocol] ?? [];
-              allStreams[protocol].push(count);
-            }
-          }
-        }
-        const metric = {};
-        for (let [protocol, counts] of Object.entries(allStreams)) {
-          counts = counts.sort((a, b) => a - b);
-          const index = Math.floor(counts.length * 0.9);
-          metric[protocol] = counts[index];
-        }
-        return metric;
-      }, "calculate")
-    });
-    this.dialQueue.start();
-    this.autoDial.start();
-    this.started = true;
-    this.log("started");
-  }
-  async afterStart() {
-    void Promise.resolve().then(async () => {
-      const keepAlivePeers = await this.peerStore.all({
-        filters: [(peer) => {
-          return peer.tags.has(KEEP_ALIVE);
-        }]
-      });
-      await Promise.all(keepAlivePeers.map(async (peer) => {
-        await this.openConnection(peer.id).catch((err) => {
-          this.log.error(err);
-        });
-      }));
-    }).catch((err) => {
-      this.log.error(err);
-    });
-    this.autoDial.afterStart();
-  }
-  /**
-   * Stops the Connection Manager
-   */
-  async stop() {
-    this.dialQueue.stop();
-    this.autoDial.stop();
-    const tasks = [];
-    for (const connectionList of this.connections.values()) {
-      for (const connection of connectionList) {
-        tasks.push((async () => {
-          try {
-            await connection.close();
-          } catch (err) {
-            this.log.error(err);
-          }
-        })());
-      }
-    }
-    this.log("closing %d connections", tasks.length);
-    await Promise.all(tasks);
-    this.connections.clear();
-    this.log("stopped");
-  }
-  onConnect(evt) {
-    void this._onConnect(evt).catch((err) => {
-      this.log.error(err);
-    });
-  }
-  /**
-   * Tracks the incoming connection and check the connection limit
-   */
-  async _onConnect(evt) {
-    const { detail: connection } = evt;
-    if (!this.started) {
-      await connection.close();
-      return;
-    }
-    const peerId2 = connection.remotePeer;
-    const storedConns = this.connections.get(peerId2);
-    let isNewPeer = false;
-    if (storedConns != null) {
-      storedConns.push(connection);
-    } else {
-      isNewPeer = true;
-      this.connections.set(peerId2, [connection]);
-    }
-    if (peerId2.publicKey != null && peerId2.type === "RSA") {
-      await this.peerStore.patch(peerId2, {
-        publicKey: peerId2.publicKey
-      });
-    }
-    if (isNewPeer) {
-      this.events.safeDispatchEvent("peer:connect", { detail: connection.remotePeer });
-    }
-  }
-  /**
-   * Removes the connection from tracking
-   */
-  onDisconnect(evt) {
-    const { detail: connection } = evt;
-    if (!this.started) {
-      return;
-    }
-    const peerId2 = connection.remotePeer;
-    let storedConn = this.connections.get(peerId2);
-    if (storedConn != null && storedConn.length > 1) {
-      storedConn = storedConn.filter((conn) => conn.id !== connection.id);
-      this.connections.set(peerId2, storedConn);
-    } else if (storedConn != null) {
-      this.connections.delete(peerId2);
-      this.events.safeDispatchEvent("peer:disconnect", { detail: connection.remotePeer });
-    }
-  }
-  getConnections(peerId2) {
-    if (peerId2 != null) {
-      return this.connections.get(peerId2) ?? [];
-    }
-    let conns = [];
-    for (const c of this.connections.values()) {
-      conns = conns.concat(c);
-    }
-    return conns;
-  }
-  getConnectionsMap() {
-    return this.connections;
-  }
-  async openConnection(peerIdOrMultiaddr, options = {}) {
-    if (!this.isStarted()) {
-      throw new CodeError("Not started", codes4.ERR_NODE_NOT_STARTED);
-    }
-    options.signal?.throwIfAborted();
-    const { peerId: peerId2 } = getPeerAddress(peerIdOrMultiaddr);
-    if (peerId2 != null && options.force !== true) {
-      this.log("dial %p", peerId2);
-      const existingConnection = this.getConnections(peerId2).find((conn) => !conn.transient);
-      if (existingConnection != null) {
-        this.log("had an existing non-transient connection to %p", peerId2);
-        options.onProgress?.(new CustomProgressEvent("dial-queue:already-connected"));
-        return existingConnection;
-      }
-    }
-    const connection = await this.dialQueue.dial(peerIdOrMultiaddr, {
-      ...options,
-      priority: options.priority ?? DEFAULT_DIAL_PRIORITY
-    });
-    let peerConnections = this.connections.get(connection.remotePeer);
-    if (peerConnections == null) {
-      peerConnections = [];
-      this.connections.set(connection.remotePeer, peerConnections);
-    }
-    let trackedConnection = false;
-    for (const conn of peerConnections) {
-      if (conn.id === connection.id) {
-        trackedConnection = true;
-      }
-    }
-    if (!trackedConnection) {
-      peerConnections.push(connection);
-    }
-    return connection;
-  }
-  async closeConnections(peerId2, options = {}) {
-    const connections = this.connections.get(peerId2) ?? [];
-    await Promise.all(connections.map(async (connection) => {
-      try {
-        await connection.close(options);
-      } catch (err) {
-        connection.abort(err);
-      }
-    }));
-  }
-  async acceptIncomingConnection(maConn) {
-    const denyConnection = this.deny.some((ma) => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString());
-    });
-    if (denyConnection) {
-      this.log("connection from %a refused - connection remote address was in deny list", maConn.remoteAddr);
-      return false;
-    }
-    const allowConnection = this.allow.some((ma) => {
-      return maConn.remoteAddr.toString().startsWith(ma.toString());
-    });
-    if (allowConnection) {
-      this.incomingPendingConnections++;
-      return true;
-    }
-    if (this.incomingPendingConnections === this.maxIncomingPendingConnections) {
-      this.log("connection from %a refused - incomingPendingConnections exceeded by host", maConn.remoteAddr);
-      return false;
-    }
-    if (maConn.remoteAddr.isThinWaistAddress()) {
-      const host = maConn.remoteAddr.nodeAddress().address;
-      try {
-        await this.inboundConnectionRateLimiter.consume(host, 1);
-      } catch {
-        this.log("connection from %a refused - inboundConnectionThreshold exceeded by host %s", maConn.remoteAddr, host);
-        return false;
-      }
-    }
-    if (this.getConnections().length < this.maxConnections) {
-      this.incomingPendingConnections++;
-      return true;
-    }
-    this.log("connection from %a refused - maxConnections exceeded", maConn.remoteAddr);
-    return false;
-  }
-  afterUpgradeInbound() {
-    this.incomingPendingConnections--;
-  }
-  getDialQueue() {
-    const statusMap = {
-      queued: "queued",
-      running: "active",
-      errored: "error",
-      complete: "success"
-    };
-    return this.dialQueue.queue.queue.map((job) => {
-      return {
-        id: job.id,
-        status: statusMap[job.status],
-        peerId: job.options.peerId,
-        multiaddrs: [...job.options.multiaddrs].map((ma) => multiaddr(ma))
-      };
-    });
-  }
-  async isDialable(multiaddr2, options = {}) {
-    return this.dialQueue.isDialable(multiaddr2, options);
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/moving-average.js
-var MovingAverage = class {
-  static {
-    __name(this, "MovingAverage");
-  }
-  movingAverage;
-  variance;
-  deviation;
-  forecast;
-  timespan;
-  previousTime;
-  constructor(timespan) {
-    this.timespan = timespan;
-    this.movingAverage = 0;
-    this.variance = 0;
-    this.deviation = 0;
-    this.forecast = 0;
-  }
-  alpha(t, pt) {
-    return 1 - Math.exp(-(t - pt) / this.timespan);
-  }
-  push(value, time = Date.now()) {
-    if (this.previousTime != null) {
-      const a = this.alpha(time, this.previousTime);
-      const diff = value - this.movingAverage;
-      const incr = a * diff;
-      this.movingAverage = a * value + (1 - a) * this.movingAverage;
-      this.variance = (1 - a) * (this.variance + diff * incr);
-      this.deviation = Math.sqrt(this.variance);
-      this.forecast = this.movingAverage + a * diff;
-    } else {
-      this.movingAverage = value;
-    }
-    this.previousTime = time;
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/adaptive-timeout.js
-var DEFAULT_TIMEOUT_MULTIPLIER = 1.2;
-var DEFAULT_FAILURE_MULTIPLIER = 2;
-var DEFAULT_MIN_TIMEOUT = 2e3;
-var AdaptiveTimeout = class {
-  static {
-    __name(this, "AdaptiveTimeout");
-  }
-  success;
-  failure;
-  next;
-  metric;
-  timeoutMultiplier;
-  failureMultiplier;
-  minTimeout;
-  constructor(init = {}) {
-    this.success = new MovingAverage(init.interval ?? 5e3);
-    this.failure = new MovingAverage(init.interval ?? 5e3);
-    this.next = new MovingAverage(init.interval ?? 5e3);
-    this.failureMultiplier = init.failureMultiplier ?? DEFAULT_FAILURE_MULTIPLIER;
-    this.timeoutMultiplier = init.timeoutMultiplier ?? DEFAULT_TIMEOUT_MULTIPLIER;
-    this.minTimeout = init.minTimeout ?? DEFAULT_MIN_TIMEOUT;
-    if (init.metricName != null) {
-      this.metric = init.metrics?.registerMetricGroup(init.metricName);
-    }
-  }
-  getTimeoutSignal(options = {}) {
-    const timeout = Math.max(Math.round(this.next.movingAverage * (options.timeoutFactor ?? this.timeoutMultiplier)), this.minTimeout);
-    const sendTimeout = AbortSignal.timeout(timeout);
-    const timeoutSignal = anySignal([options.signal, sendTimeout]);
-    setMaxListeners2(Infinity, timeoutSignal, sendTimeout);
-    timeoutSignal.start = Date.now();
-    timeoutSignal.timeout = timeout;
-    return timeoutSignal;
-  }
-  cleanUp(signal) {
-    const time = Date.now() - signal.start;
-    if (signal.aborted) {
-      this.failure.push(time);
-      this.next.push(time * this.failureMultiplier);
-      this.metric?.update({
-        failureMovingAverage: this.failure.movingAverage,
-        failureDeviation: this.failure.deviation,
-        failureForecast: this.failure.forecast,
-        failureVariance: this.failure.variance,
-        failure: time
-      });
-    } else {
-      this.success.push(time);
-      this.next.push(time);
-      this.metric?.update({
-        successMovingAverage: this.success.movingAverage,
-        successDeviation: this.success.deviation,
-        successForecast: this.success.forecast,
-        successVariance: this.success.variance,
-        success: time
-      });
-    }
-  }
-};
-
-// node_modules/it-queueless-pushable/dist/src/index.js
-var QueuelessPushable = class {
-  static {
-    __name(this, "QueuelessPushable");
-  }
-  readNext;
-  haveNext;
-  ended;
-  nextResult;
-  constructor() {
-    this.ended = false;
-    this.readNext = pDefer();
-    this.haveNext = pDefer();
-  }
-  [Symbol.asyncIterator]() {
-    return this;
-  }
-  async next() {
-    if (this.nextResult == null) {
-      await this.haveNext.promise;
-    }
-    if (this.nextResult == null) {
-      throw new Error("HaveNext promise resolved but nextResult was undefined");
-    }
-    const nextResult = this.nextResult;
-    this.nextResult = void 0;
-    this.readNext.resolve();
-    this.readNext = pDefer();
-    return nextResult;
-  }
-  async throw(err) {
-    this.ended = true;
-    if (err != null) {
-      this.haveNext.promise.catch(() => {
-      });
-      this.haveNext.reject(err);
-    }
-    const result = {
-      done: true,
-      value: void 0
-    };
-    return result;
-  }
-  async return() {
-    const result = {
-      done: true,
-      value: void 0
-    };
-    await this._push(void 0);
-    return result;
-  }
-  async push(value, options) {
-    await this._push(value, options);
-  }
-  async end(err, options) {
-    if (err != null) {
-      await this.throw(err);
-    } else {
-      await this._push(void 0, options);
-    }
-  }
-  async _push(value, options) {
-    if (value != null && this.ended) {
-      throw new Error("Cannot push value onto an ended pushable");
-    }
-    while (this.nextResult != null) {
-      await this.readNext.promise;
-    }
-    if (value != null) {
-      this.nextResult = { done: false, value };
-    } else {
-      this.ended = true;
-      this.nextResult = { done: true, value: void 0 };
-    }
-    this.haveNext.resolve();
-    this.haveNext = pDefer();
-    await raceSignal(this.readNext.promise, options?.signal, options);
-  }
-};
-function queuelessPushable() {
-  return new QueuelessPushable();
-}
-__name(queuelessPushable, "queuelessPushable");
-
-// node_modules/it-byte-stream/dist/src/errors.js
-var UnexpectedEOFError = class extends Error {
-  static {
-    __name(this, "UnexpectedEOFError");
-  }
-  name = "UnexpectedEOFError";
-  code = "ERR_UNEXPECTED_EOF";
-};
-
-// node_modules/it-byte-stream/dist/src/index.js
-var CodeError2 = class extends Error {
-  static {
-    __name(this, "CodeError");
-  }
-  code;
-  constructor(message2, code2) {
-    super(message2);
-    this.code = code2;
-  }
-};
-var AbortError6 = class extends CodeError2 {
-  static {
-    __name(this, "AbortError");
-  }
-  type;
-  constructor(message2) {
-    super(message2, "ABORT_ERR");
-    this.type = "aborted";
-    this.name = "AbortError";
-  }
-};
-function byteStream(duplex, opts) {
-  const write3 = queuelessPushable();
-  duplex.sink(write3).catch(async (err) => {
-    await write3.end(err);
-  });
-  duplex.sink = async (source2) => {
-    for await (const buf of source2) {
-      await write3.push(buf);
-    }
-    await write3.end();
-  };
-  let source = duplex.source;
-  if (duplex.source[Symbol.iterator] != null) {
-    source = duplex.source[Symbol.iterator]();
-  } else if (duplex.source[Symbol.asyncIterator] != null) {
-    source = duplex.source[Symbol.asyncIterator]();
-  }
-  const readBuffer = new Uint8ArrayList();
-  const W = {
-    read: /* @__PURE__ */ __name(async (bytes2, options) => {
-      options?.signal?.throwIfAborted();
-      let listener;
-      const abortPromise = new Promise((resolve, reject) => {
-        listener = /* @__PURE__ */ __name(() => {
-          reject(new AbortError6("Read aborted"));
-        }, "listener");
-        options?.signal?.addEventListener("abort", listener);
-      });
-      try {
-        if (bytes2 == null) {
-          const { done, value } = await Promise.race([
-            source.next(),
-            abortPromise
-          ]);
-          if (done === true) {
-            return new Uint8ArrayList();
-          }
-          return value;
-        }
-        while (readBuffer.byteLength < bytes2) {
-          const { value, done } = await Promise.race([
-            source.next(),
-            abortPromise
-          ]);
-          if (done === true) {
-            throw new UnexpectedEOFError("unexpected end of input");
-          }
-          readBuffer.append(value);
-        }
-        const buf = readBuffer.sublist(0, bytes2);
-        readBuffer.consume(bytes2);
-        return buf;
-      } finally {
-        if (listener != null) {
-          options?.signal?.removeEventListener("abort", listener);
-        }
-      }
-    }, "read"),
-    write: /* @__PURE__ */ __name(async (data, options) => {
-      options?.signal?.throwIfAborted();
-      if (data instanceof Uint8Array) {
-        await write3.push(data, options);
-      } else {
-        await write3.push(data.subarray(), options);
-      }
-    }, "write"),
-    unwrap: /* @__PURE__ */ __name(() => {
-      if (readBuffer.byteLength > 0) {
-        const originalStream = duplex.source;
-        duplex.source = async function* () {
-          if (opts?.yieldBytes === false) {
-            yield readBuffer;
-          } else {
-            yield* readBuffer;
-          }
-          yield* originalStream;
-        }();
-      }
-      return duplex;
-    }, "unwrap")
-  };
-  return W;
-}
-__name(byteStream, "byteStream");
-
-// node_modules/libp2p/dist/src/connection-monitor.js
-var DEFAULT_PING_INTERVAL_MS = 1e4;
-var PROTOCOL_VERSION = "1.0.0";
-var PROTOCOL_NAME = "ping";
-var PROTOCOL_PREFIX = "ipfs";
-var PING_LENGTH = 32;
-var ConnectionMonitor = class {
-  static {
-    __name(this, "ConnectionMonitor");
-  }
-  protocol;
-  components;
-  log;
-  heartbeatInterval;
-  pingIntervalMs;
-  abortController;
-  timeout;
-  constructor(components, init = {}) {
-    this.components = components;
-    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`;
-    this.log = components.logger.forComponent("libp2p:connection-monitor");
-    this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS;
-    this.timeout = new AdaptiveTimeout({
-      ...init.pingTimeout ?? {},
-      metrics: components.metrics,
-      metricName: "libp2p_connection_monitor_ping_time_milliseconds"
-    });
-  }
-  [Symbol.toStringTag] = "@libp2p/connection-monitor";
-  [serviceCapabilities] = [
-    "@libp2p/connection-monitor"
-  ];
-  start() {
-    this.abortController = new AbortController();
-    this.heartbeatInterval = setInterval(() => {
-      this.components.connectionManager.getConnections().forEach((conn) => {
-        Promise.resolve().then(async () => {
-          let start = Date.now();
-          try {
-            const signal = this.timeout.getTimeoutSignal({
-              signal: this.abortController?.signal
-            });
-            const stream = await conn.newStream(this.protocol, {
-              signal,
-              runOnTransientConnection: true
-            });
-            const bs = byteStream(stream);
-            start = Date.now();
-            await Promise.all([
-              bs.write(randomBytes2(PING_LENGTH), {
-                signal
-              }),
-              bs.read(PING_LENGTH, {
-                signal
-              })
-            ]);
-            conn.rtt = Date.now() - start;
-            await bs.unwrap().close({
-              signal
-            });
-          } catch (err) {
-            if (err.code !== "ERR_UNSUPPORTED_PROTOCOL") {
-              throw err;
-            }
-            conn.rtt = (Date.now() - start) / 2;
-          }
-        }).catch((err) => {
-          this.log.error("error during heartbeat, aborting connection", err);
-          conn.abort(err);
-        });
-      });
-    }, this.pingIntervalMs);
-  }
-  stop() {
-    this.abortController?.abort();
-    if (this.heartbeatInterval != null) {
-      clearInterval(this.heartbeatInterval);
-    }
-  }
-};
-
-// node_modules/it-merge/dist/src/index.js
-function isAsyncIterable6(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable6, "isAsyncIterable");
-function merge(...sources) {
-  const syncSources = [];
-  for (const source of sources) {
-    if (!isAsyncIterable6(source)) {
-      syncSources.push(source);
-    }
-  }
-  if (syncSources.length === sources.length) {
-    return function* () {
-      for (const source of syncSources) {
-        yield* source;
-      }
-    }();
-  }
-  return async function* () {
-    const output2 = pushable({
-      objectMode: true
-    });
-    void Promise.resolve().then(async () => {
-      try {
-        await Promise.all(sources.map(async (source) => {
-          for await (const item of source) {
-            output2.push(item);
-          }
-        }));
-        output2.end();
-      } catch (err) {
-        output2.end(err);
-      }
-    });
-    yield* output2;
-  }();
-}
-__name(merge, "merge");
-var src_default9 = merge;
-
-// node_modules/libp2p/dist/src/content-routing.js
-var CompoundContentRouting = class {
-  static {
-    __name(this, "CompoundContentRouting");
-  }
-  routers;
-  started;
-  components;
-  constructor(components, init) {
-    this.routers = init.routers ?? [];
-    this.started = false;
-    this.components = components;
-  }
-  [Symbol.toStringTag] = "@libp2p/content-routing";
-  isStarted() {
-    return this.started;
-  }
-  async start() {
-    this.started = true;
-  }
-  async stop() {
-    this.started = false;
-  }
-  /**
-   * Iterates over all content routers in parallel to find providers of the given key
-   */
-  async *findProviders(key, options = {}) {
-    if (this.routers.length === 0) {
-      throw new CodeError("No content routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
-    }
-    const self = this;
-    const seen = new PeerSet();
-    for await (const peer of src_default9(...self.routers.map((router) => router.findProviders(key, options)))) {
-      if (peer == null) {
-        continue;
-      }
-      if (peer.multiaddrs.length > 0) {
-        await this.components.peerStore.merge(peer.id, {
-          multiaddrs: peer.multiaddrs
-        });
-      }
-      if (seen.has(peer.id)) {
-        continue;
-      }
-      seen.add(peer.id);
-      yield peer;
-    }
-  }
-  /**
-   * Iterates over all content routers in parallel to notify it is
-   * a provider of the given key
-   */
-  async provide(key, options = {}) {
-    if (this.routers.length === 0) {
-      throw new CodeError("No content routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
-    }
-    await Promise.all(this.routers.map(async (router) => {
-      await router.provide(key, options);
-    }));
-  }
-  /**
-   * Store the given key/value pair in the available content routings
-   */
-  async put(key, value, options) {
-    if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes4.ERR_NODE_NOT_STARTED);
-    }
-    await Promise.all(this.routers.map(async (router) => {
-      await router.put(key, value, options);
-    }));
-  }
-  /**
-   * Get the value to the given key.
-   * Times out after 1 minute by default.
-   */
-  async get(key, options) {
-    if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes4.ERR_NODE_NOT_STARTED);
-    }
-    return Promise.any(this.routers.map(async (router) => {
-      return router.get(key, options);
-    }));
-  }
-};
-
-// node_modules/it-parallel/dist/src/index.js
-var CustomEvent2 = globalThis.CustomEvent ?? Event;
-async function* parallel(source, options = {}) {
-  let concurrency = options.concurrency ?? Infinity;
-  if (concurrency < 1) {
-    concurrency = Infinity;
-  }
-  const ordered = options.ordered == null ? false : options.ordered;
-  const emitter = new EventTarget();
-  const ops = [];
-  let slotAvailable = pDefer();
-  let resultAvailable = pDefer();
-  let sourceFinished = false;
-  let sourceErr;
-  let opErred = false;
-  emitter.addEventListener("task-complete", () => {
-    resultAvailable.resolve();
-  });
-  void Promise.resolve().then(async () => {
-    try {
-      for await (const task of source) {
-        if (ops.length === concurrency) {
-          slotAvailable = pDefer();
-          await slotAvailable.promise;
-        }
-        if (opErred) {
-          break;
-        }
-        const op = {
-          done: false
-        };
-        ops.push(op);
-        task().then((result) => {
-          op.done = true;
-          op.ok = true;
-          op.value = result;
-          emitter.dispatchEvent(new CustomEvent2("task-complete"));
-        }, (err) => {
-          op.done = true;
-          op.err = err;
-          emitter.dispatchEvent(new CustomEvent2("task-complete"));
-        });
-      }
-      sourceFinished = true;
-      emitter.dispatchEvent(new CustomEvent2("task-complete"));
-    } catch (err) {
-      sourceErr = err;
-      emitter.dispatchEvent(new CustomEvent2("task-complete"));
-    }
-  });
-  function valuesAvailable() {
-    if (ordered) {
-      return ops[0]?.done;
-    }
-    return Boolean(ops.find((op) => op.done));
-  }
-  __name(valuesAvailable, "valuesAvailable");
-  function* yieldOrderedValues() {
-    while (ops.length > 0 && ops[0].done) {
-      const op = ops[0];
-      ops.shift();
-      if (op.ok) {
-        yield op.value;
-      } else {
-        opErred = true;
-        slotAvailable.resolve();
-        throw op.err;
-      }
-      slotAvailable.resolve();
-    }
-  }
-  __name(yieldOrderedValues, "yieldOrderedValues");
-  function* yieldUnOrderedValues() {
-    while (valuesAvailable()) {
-      for (let i = 0; i < ops.length; i++) {
-        if (ops[i].done) {
-          const op = ops[i];
-          ops.splice(i, 1);
-          i--;
-          if (op.ok) {
-            yield op.value;
-          } else {
-            opErred = true;
-            slotAvailable.resolve();
-            throw op.err;
-          }
-          slotAvailable.resolve();
-        }
-      }
-    }
-  }
-  __name(yieldUnOrderedValues, "yieldUnOrderedValues");
-  while (true) {
-    if (!valuesAvailable()) {
-      resultAvailable = pDefer();
-      await resultAvailable.promise;
-    }
-    if (sourceErr != null) {
-      throw sourceErr;
-    }
-    if (ordered) {
-      yield* yieldOrderedValues();
-    } else {
-      yield* yieldUnOrderedValues();
-    }
-    if (sourceFinished && ops.length === 0) {
-      break;
-    }
-  }
-}
-__name(parallel, "parallel");
-
-// node_modules/libp2p/dist/src/peer-routing.js
-var DefaultPeerRouting = class {
-  static {
-    __name(this, "DefaultPeerRouting");
-  }
-  log;
-  peerId;
-  peerStore;
-  routers;
-  constructor(components, init = {}) {
-    this.log = components.logger.forComponent("libp2p:peer-routing");
-    this.peerId = components.peerId;
-    this.peerStore = components.peerStore;
-    this.routers = init.routers ?? [];
-  }
-  [Symbol.toStringTag] = "@libp2p/peer-routing";
-  /**
-   * Iterates over all peer routers in parallel to find the given peer
-   */
-  async findPeer(id, options) {
-    if (this.routers.length === 0) {
-      throw new CodeError("No peer routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
-    }
-    if (id.toString() === this.peerId.toString()) {
-      throw new CodeError("Should not try to find self", codes4.ERR_FIND_SELF);
-    }
-    const self = this;
-    const source = src_default9(...this.routers.map((router) => async function* () {
-      try {
-        yield await router.findPeer(id, options);
-      } catch (err) {
-        self.log.error(err);
-      }
-    }()));
-    for await (const peer of source) {
-      if (peer == null) {
-        continue;
-      }
-      if (peer.multiaddrs.length > 0) {
-        await this.peerStore.merge(peer.id, {
-          multiaddrs: peer.multiaddrs
-        });
-      }
-      return peer;
-    }
-    throw new CodeError(messages.NOT_FOUND, codes4.ERR_NOT_FOUND);
-  }
-  /**
-   * Attempt to find the closest peers on the network to the given key
-   */
-  async *getClosestPeers(key, options = {}) {
-    if (this.routers.length === 0) {
-      throw new CodeError("No peer routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
-    }
-    const self = this;
-    const seen = createScalableCuckooFilter(1024);
-    for await (const peer of parallel(async function* () {
-      const source = src_default9(...self.routers.map((router) => router.getClosestPeers(key, options)));
-      for await (let peer2 of source) {
-        yield async () => {
-          if (peer2.multiaddrs.length === 0) {
-            try {
-              peer2 = await self.findPeer(peer2.id, {
-                ...options,
-                useCache: false
-              });
-            } catch (err) {
-              self.log.error("could not find peer multiaddrs", err);
-              return;
-            }
-          }
-          return peer2;
-        };
-      }
-    }())) {
-      if (peer == null) {
-        continue;
-      }
-      if (peer.multiaddrs.length > 0) {
-        await this.peerStore.merge(peer.id, {
-          multiaddrs: peer.multiaddrs
-        });
-      }
-      if (seen.has(peer.id.toBytes())) {
-        continue;
-      }
-      seen.add(peer.id.toBytes());
-      yield peer;
-    }
-  }
-};
-
-// node_modules/libp2p/dist/src/random-walk.js
-var RandomWalk = class extends TypedEventEmitter {
-  static {
-    __name(this, "RandomWalk");
-  }
-  peerRouting;
-  log;
-  walking;
-  walkers;
-  shutdownController;
-  walkController;
-  needNext;
-  constructor(components) {
-    super();
-    this.log = components.logger.forComponent("libp2p:random-walk");
-    this.peerRouting = components.peerRouting;
-    this.walkers = 0;
-    this.walking = false;
-    this.shutdownController = new AbortController();
-    setMaxListeners2(Infinity, this.shutdownController.signal);
-  }
-  [Symbol.toStringTag] = "@libp2p/random-walk";
-  start() {
-    this.shutdownController = new AbortController();
-    setMaxListeners2(Infinity, this.shutdownController.signal);
-  }
-  stop() {
-    this.shutdownController.abort();
-  }
-  async *walk(options) {
-    if (!this.walking) {
-      this.startWalk();
-    }
-    this.walkers++;
-    const signal = anySignal([this.shutdownController.signal, options?.signal]);
-    setMaxListeners2(Infinity, signal);
-    try {
-      while (true) {
-        this.needNext?.resolve();
-        this.needNext = pDefer();
-        const event = await raceEvent(this, "walk:peer", signal, {
-          errorEvent: "walk:error"
-        });
-        yield event.detail;
-      }
-    } finally {
-      signal.clear();
-      this.walkers--;
-      if (this.walkers === 0) {
-        this.walkController?.abort();
-        this.walkController = void 0;
-      }
-    }
-  }
-  startWalk() {
-    this.walking = true;
-    this.walkController = new AbortController();
-    setMaxListeners2(Infinity, this.walkController.signal);
-    const signal = anySignal([this.walkController.signal, this.shutdownController.signal]);
-    setMaxListeners2(Infinity, signal);
-    const start = Date.now();
-    let found = 0;
-    Promise.resolve().then(async () => {
-      this.log("start walk");
-      while (this.walkers > 0) {
-        try {
-          const data = randomBytes2(32);
-          let s2 = Date.now();
-          for await (const peer of this.peerRouting.getClosestPeers(data, { signal })) {
-            if (signal.aborted) {
-              this.log("aborting walk");
-            }
-            signal.throwIfAborted();
-            this.log("found peer %p after %dms for %d walkers", peer.id, Date.now() - s2, this.walkers);
-            found++;
-            this.safeDispatchEvent("walk:peer", {
-              detail: peer
-            });
-            if (this.walkers === 1 && this.needNext != null) {
-              this.log("wait for need next");
-              await raceSignal(this.needNext.promise, signal);
-            }
-            s2 = Date.now();
-          }
-          this.log("walk iteration for %b and %d walkers finished, found %d peers", data, this.walkers, found);
-        } catch (err) {
-          this.log.error("randomwalk errored", err);
-          this.safeDispatchEvent("walk:error", {
-            detail: err
-          });
-        }
-      }
-      this.log("no walkers left, ended walk");
-    }).catch((err) => {
-      this.log.error("randomwalk errored", err);
-    }).finally(() => {
-      this.log("finished walk, found %d peers after %dms", found, Date.now() - start);
-      this.walking = false;
-    });
-  }
-};
-
-// node_modules/libp2p/dist/src/registrar.js
-var DEFAULT_MAX_INBOUND_STREAMS = 32;
-var DEFAULT_MAX_OUTBOUND_STREAMS = 64;
-var DefaultRegistrar = class {
-  static {
-    __name(this, "DefaultRegistrar");
-  }
-  log;
-  topologies;
-  handlers;
-  components;
-  constructor(components) {
-    this.log = components.logger.forComponent("libp2p:registrar");
-    this.topologies = /* @__PURE__ */ new Map();
-    this.handlers = /* @__PURE__ */ new Map();
-    this.components = components;
-    this._onDisconnect = this._onDisconnect.bind(this);
-    this._onPeerUpdate = this._onPeerUpdate.bind(this);
-    this._onPeerIdentify = this._onPeerIdentify.bind(this);
-    this.components.events.addEventListener("peer:disconnect", this._onDisconnect);
-    this.components.events.addEventListener("peer:update", this._onPeerUpdate);
-    this.components.events.addEventListener("peer:identify", this._onPeerIdentify);
-  }
-  [Symbol.toStringTag] = "@libp2p/registrar";
-  getProtocols() {
-    return Array.from(/* @__PURE__ */ new Set([
-      ...this.handlers.keys()
-    ])).sort();
-  }
-  getHandler(protocol) {
-    const handler = this.handlers.get(protocol);
-    if (handler == null) {
-      throw new CodeError(`No handler registered for protocol ${protocol}`, codes4.ERR_NO_HANDLER_FOR_PROTOCOL);
-    }
-    return handler;
-  }
-  getTopologies(protocol) {
-    const topologies = this.topologies.get(protocol);
-    if (topologies == null) {
-      return [];
-    }
-    return [
-      ...topologies.values()
-    ];
-  }
-  /**
-   * Registers the `handler` for each protocol
-   */
-  async handle(protocol, handler, opts) {
-    if (this.handlers.has(protocol)) {
-      throw new CodeError(`Handler already registered for protocol ${protocol}`, codes4.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED);
-    }
-    const options = merge_options_default.bind({ ignoreUndefined: true })({
-      maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
-      maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
-    }, opts);
-    this.handlers.set(protocol, {
-      handler,
-      options
-    });
-    await this.components.peerStore.merge(this.components.peerId, {
-      protocols: [protocol]
-    });
-  }
-  /**
-   * Removes the handler for each protocol. The protocol
-   * will no longer be supported on streams.
-   */
-  async unhandle(protocols) {
-    const protocolList = Array.isArray(protocols) ? protocols : [protocols];
-    protocolList.forEach((protocol) => {
-      this.handlers.delete(protocol);
-    });
-    await this.components.peerStore.patch(this.components.peerId, {
-      protocols: this.getProtocols()
-    });
-  }
-  /**
-   * Register handlers for a set of multicodecs given
-   */
-  async register(protocol, topology) {
-    if (topology == null) {
-      throw new CodeError("invalid topology", codes4.ERR_INVALID_PARAMETERS);
-    }
-    const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`;
-    let topologies = this.topologies.get(protocol);
-    if (topologies == null) {
-      topologies = /* @__PURE__ */ new Map();
-      this.topologies.set(protocol, topologies);
-    }
-    topologies.set(id, topology);
-    return id;
-  }
-  /**
-   * Unregister topology
-   */
-  unregister(id) {
-    for (const [protocol, topologies] of this.topologies.entries()) {
-      if (topologies.has(id)) {
-        topologies.delete(id);
-        if (topologies.size === 0) {
-          this.topologies.delete(protocol);
-        }
-      }
-    }
-  }
-  /**
-   * Remove a disconnected peer from the record
-   */
-  _onDisconnect(evt) {
-    const remotePeer = evt.detail;
-    void this.components.peerStore.get(remotePeer).then((peer) => {
-      for (const protocol of peer.protocols) {
-        const topologies = this.topologies.get(protocol);
-        if (topologies == null) {
-          continue;
-        }
-        for (const topology of topologies.values()) {
-          if (topology.filter?.has(remotePeer) === false) {
-            continue;
-          }
-          topology.filter?.remove(remotePeer);
-          topology.onDisconnect?.(remotePeer);
-        }
-      }
-    }).catch((err) => {
-      if (err.code === codes4.ERR_NOT_FOUND) {
-        return;
-      }
-      this.log.error("could not inform topologies of disconnecting peer %p", remotePeer, err);
-    });
-  }
-  /**
-   * When a peer is updated, if they have removed supported protocols notify any
-   * topologies interested in the removed protocols.
-   */
-  _onPeerUpdate(evt) {
-    const { peer, previous } = evt.detail;
-    const removed = (previous?.protocols ?? []).filter((protocol) => !peer.protocols.includes(protocol));
-    for (const protocol of removed) {
-      const topologies = this.topologies.get(protocol);
-      if (topologies == null) {
-        continue;
-      }
-      for (const topology of topologies.values()) {
-        if (topology.filter?.has(peer.id) === false) {
-          continue;
-        }
-        topology.filter?.remove(peer.id);
-        topology.onDisconnect?.(peer.id);
-      }
-    }
-  }
-  /**
-   * After identify has completed and we have received the list of supported
-   * protocols, notify any topologies interested in those protocols.
-   */
-  _onPeerIdentify(evt) {
-    const protocols = evt.detail.protocols;
-    const connection = evt.detail.connection;
-    const peerId2 = evt.detail.peerId;
-    for (const protocol of protocols) {
-      const topologies = this.topologies.get(protocol);
-      if (topologies == null) {
-        continue;
-      }
-      for (const topology of topologies.values()) {
-        if (connection.transient && topology.notifyOnTransient !== true) {
-          continue;
-        }
-        if (topology.filter?.has(peerId2) === true) {
-          continue;
-        }
-        topology.filter?.add(peerId2);
-        topology.onConnect?.(peerId2, connection);
-      }
-    }
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/tracked-map.js
-var TrackedMap = class extends Map {
-  static {
-    __name(this, "TrackedMap");
-  }
-  metric;
-  constructor(init) {
-    super();
-    const { name: name3, metrics } = init;
-    this.metric = metrics.registerMetric(name3);
-    this.updateComponentMetric();
-  }
-  set(key, value) {
-    super.set(key, value);
-    this.updateComponentMetric();
-    return this;
-  }
-  delete(key) {
-    const deleted = super.delete(key);
-    this.updateComponentMetric();
-    return deleted;
-  }
-  clear() {
-    super.clear();
-    this.updateComponentMetric();
-  }
-  updateComponentMetric() {
-    this.metric.update(this.size);
-  }
-};
-function trackedMap(config) {
-  const { name: name3, metrics } = config;
-  let map;
-  if (metrics != null) {
-    map = new TrackedMap({ name: name3, metrics });
-  } else {
-    map = /* @__PURE__ */ new Map();
-  }
-  return map;
-}
-__name(trackedMap, "trackedMap");
-
-// node_modules/libp2p/dist/src/transport-manager.js
-var DefaultTransportManager = class {
-  static {
-    __name(this, "DefaultTransportManager");
-  }
-  log;
-  components;
-  transports;
-  listeners;
-  faultTolerance;
-  started;
-  constructor(components, init = {}) {
-    this.log = components.logger.forComponent("libp2p:transports");
-    this.components = components;
-    this.started = false;
-    this.transports = /* @__PURE__ */ new Map();
-    this.listeners = trackedMap({
-      name: "libp2p_transport_manager_listeners",
-      metrics: this.components.metrics
-    });
-    this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL;
-  }
-  [Symbol.toStringTag] = "@libp2p/transport-manager";
-  /**
-   * Adds a `Transport` to the manager
-   */
-  add(transport) {
-    const tag = transport[Symbol.toStringTag];
-    if (tag == null) {
-      throw new CodeError("Transport must have a valid tag", codes4.ERR_INVALID_KEY);
-    }
-    if (this.transports.has(tag)) {
-      throw new CodeError(`There is already a transport with the tag ${tag}`, codes4.ERR_DUPLICATE_TRANSPORT);
-    }
-    this.log("adding transport %s", tag);
-    this.transports.set(tag, transport);
-    if (!this.listeners.has(tag)) {
-      this.listeners.set(tag, []);
-    }
-  }
-  isStarted() {
-    return this.started;
-  }
-  start() {
-    this.started = true;
-  }
-  async afterStart() {
-    const addrs = this.components.addressManager.getListenAddrs();
-    await this.listen(addrs);
-  }
-  /**
-   * Stops all listeners
-   */
-  async stop() {
-    const tasks = [];
-    for (const [key, listeners] of this.listeners) {
-      this.log("closing listeners for %s", key);
-      while (listeners.length > 0) {
-        const listener = listeners.pop();
-        if (listener == null) {
-          continue;
-        }
-        tasks.push(listener.close());
-      }
-    }
-    await Promise.all(tasks);
-    this.log("all listeners closed");
-    for (const key of this.listeners.keys()) {
-      this.listeners.set(key, []);
-    }
-    this.started = false;
-  }
-  /**
-   * Dials the given Multiaddr over it's supported transport
-   */
-  async dial(ma, options) {
-    const transport = this.dialTransportForMultiaddr(ma);
-    if (transport == null) {
-      throw new CodeError(`No transport available for address ${String(ma)}`, codes4.ERR_TRANSPORT_UNAVAILABLE);
-    }
-    options?.onProgress?.(new CustomProgressEvent("transport-manager:selected-transport", transport[Symbol.toStringTag]));
-    try {
-      return await transport.dial(ma, {
-        ...options,
-        upgrader: this.components.upgrader
-      });
-    } catch (err) {
-      if (err.code == null) {
-        err.code = codes4.ERR_TRANSPORT_DIAL_FAILED;
-      }
-      throw err;
-    }
-  }
-  /**
-   * Returns all Multiaddr's the listeners are using
-   */
-  getAddrs() {
-    let addrs = [];
-    for (const listeners of this.listeners.values()) {
-      for (const listener of listeners) {
-        addrs = [...addrs, ...listener.getAddrs()];
-      }
-    }
-    return addrs;
-  }
-  /**
-   * Returns all the transports instances
-   */
-  getTransports() {
-    return Array.of(...this.transports.values());
-  }
-  /**
-   * Returns all the listener instances
-   */
-  getListeners() {
-    return Array.of(...this.listeners.values()).flat();
-  }
-  /**
-   * Finds a transport that matches the given Multiaddr
-   */
-  dialTransportForMultiaddr(ma) {
-    for (const transport of this.transports.values()) {
-      const addrs = transport.dialFilter([ma]);
-      if (addrs.length > 0) {
-        return transport;
-      }
-    }
-  }
-  /**
-   * Finds a transport that matches the given Multiaddr
-   */
-  listenTransportForMultiaddr(ma) {
-    for (const transport of this.transports.values()) {
-      const addrs = transport.listenFilter([ma]);
-      if (addrs.length > 0) {
-        return transport;
-      }
-    }
-  }
-  /**
-   * Starts listeners for each listen Multiaddr
-   */
-  async listen(addrs) {
-    if (!this.isStarted()) {
-      throw new CodeError("Not started", codes4.ERR_NODE_NOT_STARTED);
-    }
-    if (addrs == null || addrs.length === 0) {
-      this.log("no addresses were provided for listening, this node is dial only");
-      return;
-    }
-    const couldNotListen = [];
-    for (const [key, transport] of this.transports.entries()) {
-      const supportedAddrs = transport.listenFilter(addrs);
-      const tasks = [];
-      for (const addr of supportedAddrs) {
-        this.log("creating listener for %s on %a", key, addr);
-        const listener = transport.createListener({
-          upgrader: this.components.upgrader
-        });
-        let listeners = this.listeners.get(key) ?? [];
-        if (listeners == null) {
-          listeners = [];
-          this.listeners.set(key, listeners);
-        }
-        listeners.push(listener);
-        listener.addEventListener("listening", () => {
-          this.components.events.safeDispatchEvent("transport:listening", {
-            detail: listener
-          });
-        });
-        listener.addEventListener("close", () => {
-          const index = listeners.findIndex((l) => l === listener);
-          listeners.splice(index, 1);
-          this.components.events.safeDispatchEvent("transport:close", {
-            detail: listener
-          });
-        });
-        tasks.push(listener.listen(addr));
-      }
-      if (tasks.length === 0) {
-        couldNotListen.push(key);
-        continue;
-      }
-      const results = await Promise.allSettled(tasks);
-      const isListening = results.find((r) => r.status === "fulfilled");
-      if (isListening == null && this.faultTolerance !== FaultTolerance.NO_FATAL) {
-        throw new CodeError(`Transport (${key}) could not listen on any available address`, codes4.ERR_NO_VALID_ADDRESSES);
-      }
-    }
-    if (couldNotListen.length === this.transports.size) {
-      const message2 = `no valid addresses were provided for transports [${couldNotListen.join(", ")}]`;
-      if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
-        throw new CodeError(message2, codes4.ERR_NO_VALID_ADDRESSES);
-      }
-      this.log(`libp2p in dial mode only: ${message2}`);
-    }
-  }
-  /**
-   * Removes the given transport from the manager.
-   * If a transport has any running listeners, they will be closed.
-   */
-  async remove(key) {
-    const listeners = this.listeners.get(key) ?? [];
-    this.log.trace("removing transport %s", key);
-    const tasks = [];
-    this.log.trace("closing listeners for %s", key);
-    while (listeners.length > 0) {
-      const listener = listeners.pop();
-      if (listener == null) {
-        continue;
-      }
-      tasks.push(listener.close());
-    }
-    await Promise.all(tasks);
-    this.transports.delete(key);
-    this.listeners.delete(key);
-  }
-  /**
-   * Removes all transports from the manager.
-   * If any listeners are running, they will be closed.
-   *
-   * @async
-   */
-  async removeAll() {
-    const tasks = [];
-    for (const key of this.transports.keys()) {
-      tasks.push(this.remove(key));
-    }
-    await Promise.all(tasks);
-  }
-};
-
-// node_modules/@libp2p/multistream-select/dist/src/constants.js
-var PROTOCOL_ID = "/multistream/1.0.0";
-var MAX_PROTOCOL_LENGTH = 1024;
-
-// node_modules/it-length-prefixed-stream/dist/src/errors.js
-var InvalidMessageLengthError = class extends Error {
-  static {
-    __name(this, "InvalidMessageLengthError");
-  }
-  name = "InvalidMessageLengthError";
-  code = "ERR_INVALID_MSG_LENGTH";
-};
-var InvalidDataLengthError = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthError");
-  }
-  name = "InvalidDataLengthError";
-  code = "ERR_MSG_DATA_TOO_LONG";
-};
-var InvalidDataLengthLengthError = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthLengthError");
-  }
-  name = "InvalidDataLengthLengthError";
-  code = "ERR_MSG_LENGTH_TOO_LONG";
-};
-
-// node_modules/it-length-prefixed-stream/dist/src/index.js
-function lpStream(duplex, opts = {}) {
-  const bytes2 = byteStream(duplex, opts);
-  if (opts.maxDataLength != null && opts.maxLengthLength == null) {
-    opts.maxLengthLength = encodingLength2(opts.maxDataLength);
-  }
-  const decodeLength = opts?.lengthDecoder ?? decode6;
-  const encodeLength = opts?.lengthEncoder ?? encode5;
-  const W = {
-    read: /* @__PURE__ */ __name(async (options) => {
-      let dataLength = -1;
-      const lengthBuffer = new Uint8ArrayList();
-      while (true) {
-        lengthBuffer.append(await bytes2.read(1, options));
-        try {
-          dataLength = decodeLength(lengthBuffer);
-        } catch (err) {
-          if (err instanceof RangeError) {
-            continue;
-          }
-          throw err;
-        }
-        if (dataLength < 0) {
-          throw new InvalidMessageLengthError("Invalid message length");
-        }
-        if (opts?.maxLengthLength != null && lengthBuffer.byteLength > opts.maxLengthLength) {
-          throw new InvalidDataLengthLengthError("message length length too long");
-        }
-        if (dataLength > -1) {
-          break;
-        }
-      }
-      if (opts?.maxDataLength != null && dataLength > opts.maxDataLength) {
-        throw new InvalidDataLengthError("message length too long");
-      }
-      return bytes2.read(dataLength, options);
-    }, "read"),
-    write: /* @__PURE__ */ __name(async (data, options) => {
-      await bytes2.write(new Uint8ArrayList(encodeLength(data.byteLength), data), options);
-    }, "write"),
-    writeV: /* @__PURE__ */ __name(async (data, options) => {
-      const list = new Uint8ArrayList(...data.flatMap((buf) => [encodeLength(buf.byteLength), buf]));
-      await bytes2.write(list, options);
-    }, "writeV"),
-    unwrap: /* @__PURE__ */ __name(() => {
-      return bytes2.unwrap();
-    }, "unwrap")
-  };
-  return W;
-}
-__name(lpStream, "lpStream");
-
-// node_modules/@libp2p/multistream-select/dist/src/multistream.js
-var NewLine = fromString2("\n");
-async function write2(writer, buffer, options) {
-  await writer.write(buffer, options);
-}
-__name(write2, "write");
-async function writeAll(writer, buffers, options) {
-  await writer.writeV(buffers, options);
-}
-__name(writeAll, "writeAll");
-async function read3(reader, options) {
-  const buf = await reader.read(options);
-  if (buf.byteLength === 0 || buf.get(buf.byteLength - 1) !== NewLine[0]) {
-    options.log.error("Invalid mss message - missing newline", buf);
-    throw new CodeError("missing newline", "ERR_INVALID_MULTISTREAM_SELECT_MESSAGE");
-  }
-  return buf.sublist(0, -1);
-}
-__name(read3, "read");
-async function readString(reader, options) {
-  const buf = await read3(reader, options);
-  return toString2(buf.subarray());
-}
-__name(readString, "readString");
-
-// node_modules/@libp2p/multistream-select/dist/src/select.js
-async function select(stream, protocols, options) {
-  protocols = Array.isArray(protocols) ? [...protocols] : [protocols];
-  if (protocols.length === 1 && options.negotiateFully === false) {
-    return optimisticSelect(stream, protocols[0], options);
-  }
-  const lp = lpStream(stream, {
-    ...options,
-    maxDataLength: MAX_PROTOCOL_LENGTH
-  });
-  const protocol = protocols.shift();
-  if (protocol == null) {
-    throw new Error("At least one protocol must be specified");
-  }
-  options.log.trace('select: write ["%s", "%s"]', PROTOCOL_ID, protocol);
-  const p1 = fromString2(`${PROTOCOL_ID}
-`);
-  const p2 = fromString2(`${protocol}
-`);
-  await writeAll(lp, [p1, p2], options);
-  options.log.trace("select: reading multistream-select header");
-  let response = await readString(lp, options);
-  options.log.trace('select: read "%s"', response);
-  if (response === PROTOCOL_ID) {
-    options.log.trace("select: reading protocol response");
-    response = await readString(lp, options);
-    options.log.trace('select: read "%s"', response);
-  }
-  if (response === protocol) {
-    return { stream: lp.unwrap(), protocol };
-  }
-  for (const protocol2 of protocols) {
-    options.log.trace('select: write "%s"', protocol2);
-    await write2(lp, fromString2(`${protocol2}
-`), options);
-    options.log.trace("select: reading protocol response");
-    const response2 = await readString(lp, options);
-    options.log.trace('select: read "%s" for "%s"', response2, protocol2);
-    if (response2 === protocol2) {
-      return { stream: lp.unwrap(), protocol: protocol2 };
-    }
-  }
-  throw new CodeError("protocol selection failed", "ERR_UNSUPPORTED_PROTOCOL");
-}
-__name(select, "select");
-function optimisticSelect(stream, protocol, options) {
-  const originalSink = stream.sink.bind(stream);
-  const originalSource = stream.source;
-  let negotiated = false;
-  let negotiating = false;
-  const doneNegotiating = pDefer();
-  let sentProtocol = false;
-  let sendingProtocol = false;
-  const doneSendingProtocol = pDefer();
-  let readProtocol = false;
-  let readingProtocol = false;
-  const doneReadingProtocol = pDefer();
-  const lp = lpStream({
-    sink: originalSink,
-    source: originalSource
-  }, {
-    ...options,
-    maxDataLength: MAX_PROTOCOL_LENGTH
-  });
-  stream.sink = async (source) => {
-    const { sink } = lp.unwrap();
-    await sink(async function* () {
-      let sentData = false;
-      for await (const buf of source) {
-        if (sendingProtocol) {
-          await doneSendingProtocol.promise;
-        }
-        if (!sentProtocol) {
-          sendingProtocol = true;
-          options.log.trace('optimistic: write ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength);
-          const protocolString = `${protocol}
-`;
-          yield new Uint8ArrayList(
-            Uint8Array.from([19]),
-            // length of PROTOCOL_ID plus newline
-            fromString2(`${PROTOCOL_ID}
-`),
-            encode5(protocolString.length),
-            fromString2(protocolString),
-            buf
-          ).subarray();
-          options.log.trace('optimistic: wrote ["%s", "%s", data(%d)] in sink', PROTOCOL_ID, protocol, buf.byteLength);
-          sentProtocol = true;
-          sendingProtocol = false;
-          doneSendingProtocol.resolve();
-          negotiate().catch((err) => {
-            options.log.error("could not finish optimistic protocol negotiation of %s", protocol, err);
-          });
-        } else {
-          yield buf;
-        }
-        sentData = true;
-      }
-      if (!sentData) {
-        await negotiate();
-      }
-    }());
-  };
-  async function negotiate() {
-    if (negotiating) {
-      options.log.trace("optimistic: already negotiating %s stream", protocol);
-      await doneNegotiating.promise;
-      return;
-    }
-    negotiating = true;
-    try {
-      if (!sentProtocol) {
-        options.log.trace("optimistic: doing send protocol for %s stream", protocol);
-        await doSendProtocol();
-      }
-      if (!readProtocol) {
-        options.log.trace("optimistic: doing read protocol for %s stream", protocol);
-        await doReadProtocol();
-      }
-    } finally {
-      negotiating = false;
-      negotiated = true;
-      doneNegotiating.resolve();
-    }
-  }
-  __name(negotiate, "negotiate");
-  async function doSendProtocol() {
-    if (sendingProtocol) {
-      await doneSendingProtocol.promise;
-      return;
-    }
-    sendingProtocol = true;
-    try {
-      options.log.trace('optimistic: write ["%s", "%s", data] in source', PROTOCOL_ID, protocol);
-      await lp.writeV([
-        fromString2(`${PROTOCOL_ID}
-`),
-        fromString2(`${protocol}
-`)
-      ]);
-      options.log.trace('optimistic: wrote ["%s", "%s", data] in source', PROTOCOL_ID, protocol);
-    } finally {
-      sentProtocol = true;
-      sendingProtocol = false;
-      doneSendingProtocol.resolve();
-    }
-  }
-  __name(doSendProtocol, "doSendProtocol");
-  async function doReadProtocol() {
-    if (readingProtocol) {
-      await doneReadingProtocol.promise;
-      return;
-    }
-    readingProtocol = true;
-    try {
-      options.log.trace("optimistic: reading multistream select header");
-      let response = await readString(lp, options);
-      options.log.trace('optimistic: read multistream select header "%s"', response);
-      if (response === PROTOCOL_ID) {
-        response = await readString(lp, options);
-      }
-      options.log.trace('optimistic: read protocol "%s", expecting "%s"', response, protocol);
-      if (response !== protocol) {
-        throw new CodeError("protocol selection failed", "ERR_UNSUPPORTED_PROTOCOL");
-      }
-    } finally {
-      readProtocol = true;
-      readingProtocol = false;
-      doneReadingProtocol.resolve();
-    }
-  }
-  __name(doReadProtocol, "doReadProtocol");
-  stream.source = async function* () {
-    await negotiate();
-    options.log.trace('optimistic: reading data from "%s" stream', protocol);
-    yield* lp.unwrap().source;
-  }();
-  if (stream.closeRead != null) {
-    const originalCloseRead = stream.closeRead.bind(stream);
-    stream.closeRead = async (opts) => {
-      if (!negotiated) {
-        await negotiate().catch((err) => {
-          options.log.error("could not negotiate protocol before close read", err);
-        });
-      }
-      await originalCloseRead(opts);
-    };
-  }
-  if (stream.closeWrite != null) {
-    const originalCloseWrite = stream.closeWrite.bind(stream);
-    stream.closeWrite = async (opts) => {
-      if (!negotiated) {
-        await negotiate().catch((err) => {
-          options.log.error("could not negotiate protocol before close write", err);
-        });
-      }
-      await originalCloseWrite(opts);
-    };
-  }
-  if (stream.close != null) {
-    const originalClose = stream.close.bind(stream);
-    stream.close = async (opts) => {
-      const tasks = [];
-      if (sendingProtocol) {
-        tasks.push(doneSendingProtocol.promise);
-      }
-      if (readingProtocol) {
-        tasks.push(doneReadingProtocol.promise);
-      }
-      if (tasks.length > 0) {
-        await raceSignal(Promise.all(tasks), opts?.signal);
-      } else {
-        negotiated = true;
-        negotiating = false;
-        doneNegotiating.resolve();
-      }
-      await originalClose(opts);
-    };
-  }
-  return {
-    stream,
-    protocol
-  };
-}
-__name(optimisticSelect, "optimisticSelect");
-
-// node_modules/it-length-prefixed/dist/src/utils.js
-function isAsyncIterable7(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable7, "isAsyncIterable");
-
-// node_modules/it-length-prefixed/dist/src/encode.js
-var defaultEncoder = /* @__PURE__ */ __name((length3) => {
-  const lengthLength = encodingLength2(length3);
-  const lengthBuf = allocUnsafe(lengthLength);
-  encode5(length3, lengthBuf);
-  defaultEncoder.bytes = lengthLength;
-  return lengthBuf;
-}, "defaultEncoder");
-defaultEncoder.bytes = 0;
-function encode6(source, options) {
-  options = options ?? {};
-  const encodeLength = options.lengthEncoder ?? defaultEncoder;
-  function* maybeYield(chunk) {
-    const length3 = encodeLength(chunk.byteLength);
-    if (length3 instanceof Uint8Array) {
-      yield length3;
-    } else {
-      yield* length3;
-    }
-    if (chunk instanceof Uint8Array) {
-      yield chunk;
-    } else {
-      yield* chunk;
-    }
-  }
-  __name(maybeYield, "maybeYield");
-  if (isAsyncIterable7(source)) {
-    return async function* () {
-      for await (const chunk of source) {
-        yield* maybeYield(chunk);
-      }
-    }();
-  }
-  return function* () {
-    for (const chunk of source) {
-      yield* maybeYield(chunk);
-    }
-  }();
-}
-__name(encode6, "encode");
-encode6.single = (chunk, options) => {
-  options = options ?? {};
-  const encodeLength = options.lengthEncoder ?? defaultEncoder;
-  return new Uint8ArrayList(encodeLength(chunk.byteLength), chunk);
-};
-
-// node_modules/it-length-prefixed/dist/src/errors.js
-var InvalidMessageLengthError2 = class extends Error {
-  static {
-    __name(this, "InvalidMessageLengthError");
-  }
-  name = "InvalidMessageLengthError";
-  code = "ERR_INVALID_MSG_LENGTH";
-};
-var InvalidDataLengthError2 = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthError");
-  }
-  name = "InvalidDataLengthError";
-  code = "ERR_MSG_DATA_TOO_LONG";
-};
-var InvalidDataLengthLengthError2 = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthLengthError");
-  }
-  name = "InvalidDataLengthLengthError";
-  code = "ERR_MSG_LENGTH_TOO_LONG";
-};
-var UnexpectedEOFError2 = class extends Error {
-  static {
-    __name(this, "UnexpectedEOFError");
-  }
-  name = "UnexpectedEOFError";
-  code = "ERR_UNEXPECTED_EOF";
-};
-
-// node_modules/it-length-prefixed/dist/src/decode.js
-var MAX_LENGTH_LENGTH = 8;
-var MAX_DATA_LENGTH = 1024 * 1024 * 4;
-var ReadMode;
-(function(ReadMode2) {
-  ReadMode2[ReadMode2["LENGTH"] = 0] = "LENGTH";
-  ReadMode2[ReadMode2["DATA"] = 1] = "DATA";
-})(ReadMode || (ReadMode = {}));
-var defaultDecoder = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode6(buf);
-  defaultDecoder.bytes = encodingLength2(length3);
-  return length3;
-}, "defaultDecoder");
-defaultDecoder.bytes = 0;
-function decode7(source, options) {
-  const buffer = new Uint8ArrayList();
-  let mode = ReadMode.LENGTH;
-  let dataLength = -1;
-  const lengthDecoder = options?.lengthDecoder ?? defaultDecoder;
-  const maxLengthLength = options?.maxLengthLength ?? MAX_LENGTH_LENGTH;
-  const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH;
-  function* maybeYield() {
-    while (buffer.byteLength > 0) {
-      if (mode === ReadMode.LENGTH) {
-        try {
-          dataLength = lengthDecoder(buffer);
-          if (dataLength < 0) {
-            throw new InvalidMessageLengthError2("Invalid message length");
-          }
-          if (dataLength > maxDataLength) {
-            throw new InvalidDataLengthError2("Message length too long");
-          }
-          const dataLengthLength = lengthDecoder.bytes;
-          buffer.consume(dataLengthLength);
-          if (options?.onLength != null) {
-            options.onLength(dataLength);
-          }
-          mode = ReadMode.DATA;
-        } catch (err) {
-          if (err instanceof RangeError) {
-            if (buffer.byteLength > maxLengthLength) {
-              throw new InvalidDataLengthLengthError2("Message length length too long");
-            }
-            break;
-          }
-          throw err;
-        }
-      }
-      if (mode === ReadMode.DATA) {
-        if (buffer.byteLength < dataLength) {
-          break;
-        }
-        const data = buffer.sublist(0, dataLength);
-        buffer.consume(dataLength);
-        if (options?.onData != null) {
-          options.onData(data);
-        }
-        yield data;
-        mode = ReadMode.LENGTH;
-      }
-    }
-  }
-  __name(maybeYield, "maybeYield");
-  if (isAsyncIterable7(source)) {
-    return async function* () {
-      for await (const buf of source) {
-        buffer.append(buf);
-        yield* maybeYield();
-      }
-      if (buffer.byteLength > 0) {
-        throw new UnexpectedEOFError2("Unexpected end of input");
-      }
-    }();
-  }
-  return function* () {
-    for (const buf of source) {
-      buffer.append(buf);
-      yield* maybeYield();
-    }
-    if (buffer.byteLength > 0) {
-      throw new UnexpectedEOFError2("Unexpected end of input");
-    }
-  }();
-}
-__name(decode7, "decode");
-decode7.fromReader = (reader, options) => {
-  let byteLength = 1;
-  const varByteSource = async function* () {
-    while (true) {
-      try {
-        const { done, value } = await reader.next(byteLength);
-        if (done === true) {
-          return;
-        }
-        if (value != null) {
-          yield value;
-        }
-      } catch (err) {
-        if (err.code === "ERR_UNDER_READ") {
-          return { done: true, value: null };
-        }
-        throw err;
-      } finally {
-        byteLength = 1;
-      }
-    }
-  }();
-  const onLength = /* @__PURE__ */ __name((l) => {
-    byteLength = l;
-  }, "onLength");
-  return decode7(varByteSource, {
-    ...options ?? {},
-    onLength
-  });
-};
-
-// node_modules/@libp2p/multistream-select/dist/src/handle.js
-async function handle(stream, protocols, options) {
-  protocols = Array.isArray(protocols) ? protocols : [protocols];
-  options.log.trace("handle: available protocols %s", protocols);
-  const lp = lpStream(stream, {
-    ...options,
-    maxDataLength: MAX_PROTOCOL_LENGTH,
-    maxLengthLength: 2
-    // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
-  });
-  while (true) {
-    options.log.trace("handle: reading incoming string");
-    const protocol = await readString(lp, options);
-    options.log.trace('handle: read "%s"', protocol);
-    if (protocol === PROTOCOL_ID) {
-      options.log.trace('handle: respond with "%s" for "%s"', PROTOCOL_ID, protocol);
-      await write2(lp, fromString2(`${PROTOCOL_ID}
-`), options);
-      options.log.trace('handle: responded with "%s" for "%s"', PROTOCOL_ID, protocol);
-      continue;
-    }
-    if (protocols.includes(protocol)) {
-      options.log.trace('handle: respond with "%s" for "%s"', protocol, protocol);
-      await write2(lp, fromString2(`${protocol}
-`), options);
-      options.log.trace('handle: responded with "%s" for "%s"', protocol, protocol);
-      return { stream: lp.unwrap(), protocol };
-    }
-    if (protocol === "ls") {
-      const protos = new Uint8ArrayList(...protocols.map((p) => encode6.single(fromString2(`${p}
-`))), fromString2("\n"));
-      options.log.trace('handle: respond with "%s" for %s', protocols, protocol);
-      await write2(lp, protos, options);
-      options.log.trace('handle: responded with "%s" for %s', protocols, protocol);
-      continue;
-    }
-    options.log('handle: respond with "na" for "%s"', protocol);
-    await write2(lp, fromString2("na\n"), options);
-    options.log('handle: responded with "na" for "%s"', protocol);
-  }
-}
-__name(handle, "handle");
-
-// node_modules/libp2p/dist/src/connection/index.js
-var CLOSE_TIMEOUT = 500;
-var ConnectionImpl = class {
-  static {
-    __name(this, "ConnectionImpl");
-  }
-  /**
-   * Connection identifier.
-   */
-  id;
-  /**
-   * Observed multiaddr of the remote peer
-   */
-  remoteAddr;
-  /**
-   * Remote peer id
-   */
-  remotePeer;
-  direction;
-  timeline;
-  multiplexer;
-  encryption;
-  status;
-  transient;
-  log;
-  /**
-   * User provided tags
-   *
-   */
-  tags;
-  /**
-   * Reference to the new stream function of the multiplexer
-   */
-  _newStream;
-  /**
-   * Reference to the close function of the raw connection
-   */
-  _close;
-  _abort;
-  /**
-   * Reference to the getStreams function of the muxer
-   */
-  _getStreams;
-  /**
-   * An implementation of the js-libp2p connection.
-   * Any libp2p transport should use an upgrader to return this connection.
-   */
-  constructor(init) {
-    const { remoteAddr, remotePeer, newStream, close, abort, getStreams } = init;
-    this.id = `${parseInt(String(Math.random() * 1e9)).toString(36)}${Date.now()}`;
-    this.remoteAddr = remoteAddr;
-    this.remotePeer = remotePeer;
-    this.direction = init.direction;
-    this.status = "open";
-    this.timeline = init.timeline;
-    this.multiplexer = init.multiplexer;
-    this.encryption = init.encryption;
-    this.transient = init.transient ?? false;
-    this.log = init.logger.forComponent(`libp2p:connection:${this.direction}:${this.id}`);
-    if (this.remoteAddr.getPeerId() == null) {
-      this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`);
-    }
-    this._newStream = newStream;
-    this._close = close;
-    this._abort = abort;
-    this._getStreams = getStreams;
-    this.tags = [];
-  }
-  [Symbol.toStringTag] = "Connection";
-  [connectionSymbol] = true;
-  /**
-   * Get all the streams of the muxer
-   */
-  get streams() {
-    return this._getStreams();
-  }
-  /**
-   * Create a new stream from this connection
-   */
-  async newStream(protocols, options) {
-    if (this.status === "closing") {
-      throw new CodeError("the connection is being closed", "ERR_CONNECTION_BEING_CLOSED");
-    }
-    if (this.status === "closed") {
-      throw new CodeError("the connection is closed", "ERR_CONNECTION_CLOSED");
-    }
-    if (!Array.isArray(protocols)) {
-      protocols = [protocols];
-    }
-    if (this.transient && options?.runOnTransientConnection !== true) {
-      throw new CodeError("Cannot open protocol stream on transient connection", "ERR_TRANSIENT_CONNECTION");
-    }
-    const stream = await this._newStream(protocols, options);
-    stream.direction = "outbound";
-    return stream;
-  }
-  /**
-   * Close the connection
-   */
-  async close(options = {}) {
-    if (this.status === "closed" || this.status === "closing") {
-      return;
-    }
-    this.log("closing connection to %a", this.remoteAddr);
-    this.status = "closing";
-    if (options.signal == null) {
-      const signal = AbortSignal.timeout(CLOSE_TIMEOUT);
-      setMaxListeners2(Infinity, signal);
-      options = {
-        ...options,
-        signal
-      };
-    }
-    try {
-      this.log.trace("closing all streams");
-      await Promise.all(this.streams.map(async (s2) => s2.close(options)));
-      this.log.trace("closing underlying transport");
-      await this._close(options);
-      this.log.trace("updating timeline with close time");
-      this.status = "closed";
-      this.timeline.close = Date.now();
-    } catch (err) {
-      this.log.error("error encountered during graceful close of connection to %a", this.remoteAddr, err);
-      this.abort(err);
-    }
-  }
-  abort(err) {
-    this.log.error("aborting connection to %a due to error", this.remoteAddr, err);
-    this.status = "closing";
-    this.streams.forEach((s2) => {
-      s2.abort(err);
-    });
-    this.log.error("all streams aborted", this.streams.length);
-    this._abort(err);
-    this.timeline.close = Date.now();
-    this.status = "closed";
-  }
-};
-function createConnection(init) {
-  return new ConnectionImpl(init);
-}
-__name(createConnection, "createConnection");
-
-// node_modules/libp2p/dist/src/upgrader.js
-var DEFAULT_PROTOCOL_SELECT_TIMEOUT = 3e4;
-function findIncomingStreamLimit(protocol, registrar) {
-  try {
-    const { options } = registrar.getHandler(protocol);
-    return options.maxInboundStreams;
-  } catch (err) {
-    if (err.code !== codes4.ERR_NO_HANDLER_FOR_PROTOCOL) {
-      throw err;
-    }
-  }
-  return DEFAULT_MAX_INBOUND_STREAMS;
-}
-__name(findIncomingStreamLimit, "findIncomingStreamLimit");
-function findOutgoingStreamLimit(protocol, registrar, options = {}) {
-  try {
-    const { options: options2 } = registrar.getHandler(protocol);
-    if (options2.maxOutboundStreams != null) {
-      return options2.maxOutboundStreams;
-    }
-  } catch (err) {
-    if (err.code !== codes4.ERR_NO_HANDLER_FOR_PROTOCOL) {
-      throw err;
-    }
-  }
-  return options.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS;
-}
-__name(findOutgoingStreamLimit, "findOutgoingStreamLimit");
-function countStreams(protocol, direction, connection) {
-  let streamCount = 0;
-  connection.streams.forEach((stream) => {
-    if (stream.direction === direction && stream.protocol === protocol) {
-      streamCount++;
-    }
-  });
-  return streamCount;
-}
-__name(countStreams, "countStreams");
-var DefaultUpgrader = class {
-  static {
-    __name(this, "DefaultUpgrader");
-  }
-  components;
-  connectionEncryption;
-  muxers;
-  inboundUpgradeTimeout;
-  events;
-  constructor(components, init) {
-    this.components = components;
-    this.connectionEncryption = /* @__PURE__ */ new Map();
-    init.connectionEncryption.forEach((encrypter) => {
-      this.connectionEncryption.set(encrypter.protocol, encrypter);
-    });
-    this.muxers = /* @__PURE__ */ new Map();
-    init.muxers.forEach((muxer) => {
-      this.muxers.set(muxer.protocol, muxer);
-    });
-    this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT;
-    this.events = components.events;
-  }
-  [Symbol.toStringTag] = "@libp2p/upgrader";
-  async shouldBlockConnection(remotePeer, maConn, connectionType) {
-    const connectionGater2 = this.components.connectionGater[connectionType];
-    if (connectionGater2 !== void 0) {
-      if (await connectionGater2(remotePeer, maConn)) {
-        throw new CodeError(`The multiaddr connection is blocked by gater.${connectionType}`, codes4.ERR_CONNECTION_INTERCEPTED);
-      }
-    }
-  }
-  /**
-   * Upgrades an inbound connection
-   */
-  async upgradeInbound(maConn, opts) {
-    const accept = await this.components.connectionManager.acceptIncomingConnection(maConn);
-    if (!accept) {
-      throw new CodeError("connection denied", codes4.ERR_CONNECTION_DENIED);
-    }
-    let encryptedConn;
-    let remotePeer;
-    let upgradedConn;
-    let muxerFactory;
-    let cryptoProtocol;
-    const signal = AbortSignal.timeout(this.inboundUpgradeTimeout);
-    const onAbort = /* @__PURE__ */ __name(() => {
-      maConn.abort(new CodeError("inbound upgrade timeout", ERR_TIMEOUT));
-    }, "onAbort");
-    signal.addEventListener("abort", onAbort, { once: true });
-    setMaxListeners2(Infinity, signal);
-    try {
-      if (await this.components.connectionGater.denyInboundConnection?.(maConn) === true) {
-        throw new CodeError("The multiaddr connection is blocked by gater.acceptConnection", codes4.ERR_CONNECTION_INTERCEPTED);
-      }
-      this.components.metrics?.trackMultiaddrConnection(maConn);
-      maConn.log("starting the inbound connection upgrade");
-      let protectedConn = maConn;
-      if (opts?.skipProtection !== true) {
-        const protector = this.components.connectionProtector;
-        if (protector != null) {
-          maConn.log("protecting the inbound connection");
-          protectedConn = await protector.protect(maConn);
-        }
-      }
-      try {
-        encryptedConn = protectedConn;
-        if (opts?.skipEncryption !== true) {
-          opts?.onProgress?.(new CustomProgressEvent("upgrader:encrypt-inbound-connection"));
-          ({
-            conn: encryptedConn,
-            remotePeer,
-            protocol: cryptoProtocol
-          } = await this._encryptInbound(protectedConn));
-          const maConn2 = {
-            ...protectedConn,
-            ...encryptedConn
-          };
-          await this.shouldBlockConnection(remotePeer, maConn2, "denyInboundEncryptedConnection");
-        } else {
-          const idStr = maConn.remoteAddr.getPeerId();
-          if (idStr == null) {
-            throw new CodeError("inbound connection that skipped encryption must have a peer id", codes4.ERR_INVALID_MULTIADDR);
-          }
-          const remotePeerId = peerIdFromString(idStr);
-          cryptoProtocol = "native";
-          remotePeer = remotePeerId;
-        }
-        upgradedConn = encryptedConn;
-        if (opts?.muxerFactory != null) {
-          muxerFactory = opts.muxerFactory;
-        } else if (this.muxers.size > 0) {
-          opts?.onProgress?.(new CustomProgressEvent("upgrader:multiplex-inbound-connection"));
-          const multiplexed = await this._multiplexInbound({
-            ...protectedConn,
-            ...encryptedConn
-          }, this.muxers);
-          muxerFactory = multiplexed.muxerFactory;
-          upgradedConn = multiplexed.stream;
-        }
-      } catch (err) {
-        maConn.log.error("failed to upgrade inbound connection", err);
-        throw err;
-      }
-      await this.shouldBlockConnection(remotePeer, maConn, "denyInboundUpgradedConnection");
-      maConn.log("successfully upgraded inbound connection");
-      return this._createConnection({
-        cryptoProtocol,
-        direction: "inbound",
-        maConn,
-        upgradedConn,
-        muxerFactory,
-        remotePeer,
-        transient: opts?.transient
-      });
-    } finally {
-      signal.removeEventListener("abort", onAbort);
-      this.components.connectionManager.afterUpgradeInbound();
-    }
-  }
-  /**
-   * Upgrades an outbound connection
-   */
-  async upgradeOutbound(maConn, opts) {
-    const idStr = maConn.remoteAddr.getPeerId();
-    let remotePeerId;
-    if (idStr != null) {
-      remotePeerId = peerIdFromString(idStr);
-      await this.shouldBlockConnection(remotePeerId, maConn, "denyOutboundConnection");
-    }
-    let encryptedConn;
-    let remotePeer;
-    let upgradedConn;
-    let cryptoProtocol;
-    let muxerFactory;
-    this.components.metrics?.trackMultiaddrConnection(maConn);
-    maConn.log("starting the outbound connection upgrade");
-    let protectedConn = maConn;
-    if (opts?.skipProtection !== true) {
-      const protector = this.components.connectionProtector;
-      if (protector != null) {
-        protectedConn = await protector.protect(maConn);
-      }
-    }
-    try {
-      encryptedConn = protectedConn;
-      if (opts?.skipEncryption !== true) {
-        ({
-          conn: encryptedConn,
-          remotePeer,
-          protocol: cryptoProtocol
-        } = await this._encryptOutbound(protectedConn, remotePeerId));
-        const maConn2 = {
-          ...protectedConn,
-          ...encryptedConn
-        };
-        await this.shouldBlockConnection(remotePeer, maConn2, "denyOutboundEncryptedConnection");
-      } else {
-        if (remotePeerId == null) {
-          throw new CodeError("Encryption was skipped but no peer id was passed", codes4.ERR_INVALID_PEER);
-        }
-        cryptoProtocol = "native";
-        remotePeer = remotePeerId;
-      }
-      upgradedConn = encryptedConn;
-      if (opts?.muxerFactory != null) {
-        muxerFactory = opts.muxerFactory;
-      } else if (this.muxers.size > 0) {
-        const multiplexed = await this._multiplexOutbound({
-          ...protectedConn,
-          ...encryptedConn
-        }, this.muxers);
-        muxerFactory = multiplexed.muxerFactory;
-        upgradedConn = multiplexed.stream;
-      }
-    } catch (err) {
-      maConn.log.error("failed to upgrade outbound connection", err);
-      await maConn.close(err);
-      throw err;
-    }
-    await this.shouldBlockConnection(remotePeer, maConn, "denyOutboundUpgradedConnection");
-    maConn.log("successfully upgraded outbound connection");
-    return this._createConnection({
-      cryptoProtocol,
-      direction: "outbound",
-      maConn,
-      upgradedConn,
-      muxerFactory,
-      remotePeer,
-      transient: opts?.transient
-    });
-  }
-  /**
-   * A convenience method for generating a new `Connection`
-   */
-  _createConnection(opts) {
-    const { cryptoProtocol, direction, maConn, upgradedConn, remotePeer, muxerFactory, transient } = opts;
-    let muxer;
-    let newStream;
-    let connection;
-    if (muxerFactory != null) {
-      muxer = muxerFactory.createStreamMuxer({
-        direction,
-        // Run anytime a remote stream is created
-        onIncomingStream: /* @__PURE__ */ __name((muxedStream) => {
-          if (connection == null) {
-            return;
-          }
-          void Promise.resolve().then(async () => {
-            const protocols = this.components.registrar.getProtocols();
-            const { stream, protocol } = await handle(muxedStream, protocols, {
-              log: muxedStream.log,
-              yieldBytes: false
-            });
-            if (connection == null) {
-              return;
-            }
-            connection.log("incoming stream opened on %s", protocol);
-            const incomingLimit = findIncomingStreamLimit(protocol, this.components.registrar);
-            const streamCount = countStreams(protocol, "inbound", connection);
-            if (streamCount === incomingLimit) {
-              const err = new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes4.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS);
-              muxedStream.abort(err);
-              throw err;
-            }
-            muxedStream.source = stream.source;
-            muxedStream.sink = stream.sink;
-            muxedStream.protocol = protocol;
-            if (stream.closeWrite != null) {
-              muxedStream.closeWrite = stream.closeWrite;
-            }
-            if (stream.closeRead != null) {
-              muxedStream.closeRead = stream.closeRead;
-            }
-            if (stream.close != null) {
-              muxedStream.close = stream.close;
-            }
-            await this.components.peerStore.merge(remotePeer, {
-              protocols: [protocol]
-            });
-            this.components.metrics?.trackProtocolStream(muxedStream, connection);
-            this._onStream({ connection, stream: muxedStream, protocol });
-          }).catch(async (err) => {
-            connection.log.error("error handling incoming stream id %s", muxedStream.id, err.message, err.code, err.stack);
-            if (muxedStream.timeline.close == null) {
-              await muxedStream.close();
-            }
-          });
-        }, "onIncomingStream")
-      });
-      newStream = /* @__PURE__ */ __name(async (protocols, options = {}) => {
-        if (muxer == null) {
-          throw new CodeError("Stream is not multiplexed", codes4.ERR_MUXER_UNAVAILABLE);
-        }
-        connection.log("starting new stream for protocols %s", protocols);
-        const muxedStream = await muxer.newStream();
-        connection.log.trace("started new stream %s for protocols %s", muxedStream.id, protocols);
-        try {
-          if (options.signal == null) {
-            muxedStream.log("no abort signal was passed while trying to negotiate protocols %s falling back to default timeout", protocols);
-            const signal = AbortSignal.timeout(DEFAULT_PROTOCOL_SELECT_TIMEOUT);
-            setMaxListeners2(Infinity, signal);
-            options = {
-              ...options,
-              signal
-            };
-          }
-          muxedStream.log.trace("selecting protocol from protocols %s", protocols);
-          const { stream, protocol } = await select(muxedStream, protocols, {
-            ...options,
-            log: muxedStream.log,
-            yieldBytes: true
-          });
-          muxedStream.log("selected protocol %s", protocol);
-          const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options);
-          const streamCount = countStreams(protocol, "outbound", connection);
-          if (streamCount >= outgoingLimit) {
-            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - ${streamCount}/${outgoingLimit}`, codes4.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS);
-            muxedStream.abort(err);
-            throw err;
-          }
-          await this.components.peerStore.merge(remotePeer, {
-            protocols: [protocol]
-          });
-          muxedStream.source = stream.source;
-          muxedStream.sink = stream.sink;
-          muxedStream.protocol = protocol;
-          if (stream.closeWrite != null) {
-            muxedStream.closeWrite = stream.closeWrite;
-          }
-          if (stream.closeRead != null) {
-            muxedStream.closeRead = stream.closeRead;
-          }
-          if (stream.close != null) {
-            muxedStream.close = stream.close;
-          }
-          this.components.metrics?.trackProtocolStream(muxedStream, connection);
-          return muxedStream;
-        } catch (err) {
-          connection.log.error("could not create new stream for protocols %s", protocols, err);
-          if (muxedStream.timeline.close == null) {
-            muxedStream.abort(err);
-          }
-          if (err.code != null) {
-            throw err;
-          }
-          throw new CodeError(String(err), codes4.ERR_UNSUPPORTED_PROTOCOL);
-        }
-      }, "newStream");
-      void Promise.all([
-        muxer.sink(upgradedConn.source),
-        upgradedConn.sink(muxer.source)
-      ]).catch((err) => {
-        connection.log.error("error piping data through muxer", err);
-      });
-    }
-    const _timeline = maConn.timeline;
-    maConn.timeline = new Proxy(_timeline, {
-      set: /* @__PURE__ */ __name((...args) => {
-        if (connection != null && args[1] === "close" && args[2] != null && _timeline.close == null) {
-          (async () => {
-            try {
-              if (connection.status === "open") {
-                await connection.close();
-              }
-            } catch (err) {
-              connection.log.error("error closing connection after timeline close", err);
-            } finally {
-              this.events.safeDispatchEvent("connection:close", {
-                detail: connection
-              });
-            }
-          })().catch((err) => {
-            connection.log.error("error thrown while dispatching connection:close event", err);
-          });
-        }
-        return Reflect.set(...args);
-      }, "set")
-    });
-    maConn.timeline.upgraded = Date.now();
-    const errConnectionNotMultiplexed = /* @__PURE__ */ __name(() => {
-      throw new CodeError("connection is not multiplexed", codes4.ERR_CONNECTION_NOT_MULTIPLEXED);
-    }, "errConnectionNotMultiplexed");
-    connection = createConnection({
-      remoteAddr: maConn.remoteAddr,
-      remotePeer,
-      status: "open",
-      direction,
-      timeline: maConn.timeline,
-      multiplexer: muxer?.protocol,
-      encryption: cryptoProtocol,
-      transient,
-      logger: this.components.logger,
-      newStream: newStream ?? errConnectionNotMultiplexed,
-      getStreams: /* @__PURE__ */ __name(() => {
-        if (muxer != null) {
-          return muxer.streams;
-        } else {
-          return [];
-        }
-      }, "getStreams"),
-      close: /* @__PURE__ */ __name(async (options) => {
-        if (muxer != null) {
-          connection.log.trace("close muxer");
-          await muxer.close(options);
-        }
-        connection.log.trace("close maconn");
-        await maConn.close(options);
-        connection.log.trace("closed maconn");
-      }, "close"),
-      abort: /* @__PURE__ */ __name((err) => {
-        maConn.abort(err);
-        if (muxer != null) {
-          muxer.abort(err);
-        }
-      }, "abort")
-    });
-    this.events.safeDispatchEvent("connection:open", {
-      detail: connection
-    });
-    return connection;
-  }
-  /**
-   * Routes incoming streams to the correct handler
-   */
-  _onStream(opts) {
-    const { connection, stream, protocol } = opts;
-    const { handler, options } = this.components.registrar.getHandler(protocol);
-    if (connection.transient && options.runOnTransientConnection !== true) {
-      throw new CodeError("Cannot open protocol stream on transient connection", "ERR_TRANSIENT_CONNECTION");
-    }
-    handler({ connection, stream });
-  }
-  /**
-   * Attempts to encrypt the incoming `connection` with the provided `cryptos`
-   */
-  async _encryptInbound(connection) {
-    const protocols = Array.from(this.connectionEncryption.keys());
-    connection.log("handling inbound crypto protocol selection", protocols);
-    try {
-      const { stream, protocol } = await handle(connection, protocols, {
-        log: connection.log
-      });
-      const encrypter = this.connectionEncryption.get(protocol);
-      if (encrypter == null) {
-        throw new Error(`no crypto module found for ${protocol}`);
-      }
-      connection.log("encrypting inbound connection using", protocol);
-      return {
-        ...await encrypter.secureInbound(this.components.peerId, stream),
-        protocol
-      };
-    } catch (err) {
-      connection.log.error("encrypting inbound connection failed", err);
-      throw new CodeError(err.message, codes4.ERR_ENCRYPTION_FAILED);
-    }
-  }
-  /**
-   * Attempts to encrypt the given `connection` with the provided connection encrypters.
-   * The first `ConnectionEncrypter` module to succeed will be used
-   */
-  async _encryptOutbound(connection, remotePeerId) {
-    const protocols = Array.from(this.connectionEncryption.keys());
-    connection.log("selecting outbound crypto protocol", protocols);
-    try {
-      connection.log.trace("selecting encrypter from %s", protocols);
-      const { stream, protocol } = await select(connection, protocols, {
-        log: connection.log,
-        yieldBytes: true
-      });
-      const encrypter = this.connectionEncryption.get(protocol);
-      if (encrypter == null) {
-        throw new Error(`no crypto module found for ${protocol}`);
-      }
-      connection.log("encrypting outbound connection to %p using %s", remotePeerId, encrypter);
-      return {
-        ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
-        protocol
-      };
-    } catch (err) {
-      connection.log.error("encrypting outbound connection to %p failed", remotePeerId, err);
-      throw new CodeError(err.message, codes4.ERR_ENCRYPTION_FAILED);
-    }
-  }
-  /**
-   * Selects one of the given muxers via multistream-select. That
-   * muxer will be used for all future streams on the connection.
-   */
-  async _multiplexOutbound(connection, muxers) {
-    const protocols = Array.from(muxers.keys());
-    connection.log("outbound selecting muxer %s", protocols);
-    try {
-      connection.log.trace("selecting stream muxer from %s", protocols);
-      const { stream, protocol } = await select(connection, protocols, {
-        log: connection.log,
-        yieldBytes: true
-      });
-      connection.log("selected %s as muxer protocol", protocol);
-      const muxerFactory = muxers.get(protocol);
-      return { stream, muxerFactory };
-    } catch (err) {
-      connection.log.error("error multiplexing outbound connection", err);
-      throw new CodeError(String(err), codes4.ERR_MUXER_UNAVAILABLE);
-    }
-  }
-  /**
-   * Registers support for one of the given muxers via multistream-select. The
-   * selected muxer will be used for all future streams on the connection.
-   */
-  async _multiplexInbound(connection, muxers) {
-    const protocols = Array.from(muxers.keys());
-    connection.log("inbound handling muxers %s", protocols);
-    try {
-      const { stream, protocol } = await handle(connection, protocols, {
-        log: connection.log
-      });
-      const muxerFactory = muxers.get(protocol);
-      return { stream, muxerFactory };
-    } catch (err) {
-      connection.log.error("error multiplexing inbound connection", err);
-      throw new CodeError(String(err), codes4.ERR_MUXER_UNAVAILABLE);
-    }
-  }
-};
-
-// node_modules/libp2p/dist/src/version.js
-var version = "1.9.4";
-var name2 = "libp2p";
-
-// node_modules/libp2p/dist/src/libp2p.js
-var Libp2pNode = class extends TypedEventEmitter {
-  static {
-    __name(this, "Libp2pNode");
-  }
-  peerId;
-  peerStore;
-  contentRouting;
-  peerRouting;
-  metrics;
-  services;
-  logger;
-  status;
-  components;
-  log;
-  constructor(init) {
-    super();
-    this.status = "stopped";
-    const events2 = new TypedEventEmitter();
-    const originalDispatch = events2.dispatchEvent.bind(events2);
-    events2.dispatchEvent = (evt) => {
-      const internalResult = originalDispatch(evt);
-      const externalResult = this.dispatchEvent(new CustomEvent(evt.type, { detail: evt.detail }));
-      return internalResult || externalResult;
-    };
-    setMaxListeners2(Infinity, events2);
-    this.peerId = init.peerId;
-    this.logger = init.logger ?? defaultLogger();
-    this.log = this.logger.forComponent("libp2p");
-    this.services = {};
-    const components = this.components = defaultComponents({
-      peerId: init.peerId,
-      privateKey: init.privateKey,
-      nodeInfo: init.nodeInfo ?? {
-        name: name2,
-        version
-      },
-      logger: this.logger,
-      events: events2,
-      datastore: init.datastore ?? new MemoryDatastore(),
-      connectionGater: connectionGater(init.connectionGater),
-      dns: init.dns
-    });
-    this.peerStore = this.configureComponent("peerStore", new PersistentPeerStore(components, {
-      addressFilter: this.components.connectionGater.filterMultiaddrForPeer,
-      ...init.peerStore
-    }));
-    if (init.metrics != null) {
-      this.metrics = this.configureComponent("metrics", init.metrics(this.components));
-    }
-    components.events.addEventListener("peer:update", (evt) => {
-      if (evt.detail.previous == null) {
-        const peerInfo = {
-          id: evt.detail.peer.id,
-          multiaddrs: evt.detail.peer.addresses.map((a) => a.multiaddr)
-        };
-        components.events.safeDispatchEvent("peer:discovery", { detail: peerInfo });
-      }
-    });
-    if (init.connectionProtector != null) {
-      this.configureComponent("connectionProtector", init.connectionProtector(components));
-    }
-    this.components.upgrader = new DefaultUpgrader(this.components, {
-      connectionEncryption: (init.connectionEncryption ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
-      muxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
-      inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout
-    });
-    this.configureComponent("transportManager", new DefaultTransportManager(this.components, init.transportManager));
-    this.configureComponent("connectionManager", new DefaultConnectionManager(this.components, init.connectionManager));
-    if (init.connectionMonitor?.enabled !== false) {
-      this.configureComponent("connectionMonitor", new ConnectionMonitor(this.components, init.connectionMonitor));
-    }
-    this.configureComponent("registrar", new DefaultRegistrar(this.components));
-    this.configureComponent("addressManager", new DefaultAddressManager(this.components, init.addresses));
-    const peerRouters = (init.peerRouters ?? []).map((fn, index) => this.configureComponent(`peer-router-${index}`, fn(this.components)));
-    this.peerRouting = this.components.peerRouting = this.configureComponent("peerRouting", new DefaultPeerRouting(this.components, {
-      routers: peerRouters
-    }));
-    const contentRouters = (init.contentRouters ?? []).map((fn, index) => this.configureComponent(`content-router-${index}`, fn(this.components)));
-    this.contentRouting = this.components.contentRouting = this.configureComponent("contentRouting", new CompoundContentRouting(this.components, {
-      routers: contentRouters
-    }));
-    this.configureComponent("randomWalk", new RandomWalk(this.components));
-    (init.peerDiscovery ?? []).forEach((fn, index) => {
-      const service = this.configureComponent(`peer-discovery-${index}`, fn(this.components));
-      service.addEventListener("peer", (evt) => {
-        this.#onDiscoveryPeer(evt);
-      });
-    });
-    init.transports?.forEach((fn, index) => {
-      this.components.transportManager.add(this.configureComponent(`transport-${index}`, fn(this.components)));
-    });
-    if (init.services != null) {
-      for (const name3 of Object.keys(init.services)) {
-        const createService = init.services[name3];
-        const service = createService(this.components);
-        if (service == null) {
-          this.log.error("service factory %s returned null or undefined instance", name3);
-          continue;
-        }
-        this.services[name3] = service;
-        this.configureComponent(name3, service);
-        if (service[contentRoutingSymbol] != null) {
-          this.log("registering service %s for content routing", name3);
-          contentRouters.push(service[contentRoutingSymbol]);
-        }
-        if (service[peerRoutingSymbol] != null) {
-          this.log("registering service %s for peer routing", name3);
-          peerRouters.push(service[peerRoutingSymbol]);
-        }
-        if (service[peerDiscoverySymbol] != null) {
-          this.log("registering service %s for peer discovery", name3);
-          service[peerDiscoverySymbol].addEventListener?.("peer", (evt) => {
-            this.#onDiscoveryPeer(evt);
-          });
-        }
-      }
-    }
-    checkServiceDependencies(components);
-  }
-  configureComponent(name3, component) {
-    if (component == null) {
-      this.log.error("component %s was null or undefined", name3);
-    }
-    this.components[name3] = component;
-    return component;
-  }
-  /**
-   * Starts the libp2p node and all its subsystems
-   */
-  async start() {
-    if (this.status !== "stopped") {
-      return;
-    }
-    this.status = "starting";
-    this.log("libp2p is starting");
-    try {
-      await this.components.beforeStart?.();
-      await this.components.start();
-      await this.components.afterStart?.();
-      this.status = "started";
-      this.safeDispatchEvent("start", { detail: this });
-      this.log("libp2p has started");
-    } catch (err) {
-      this.log.error("An error occurred starting libp2p", err);
-      this.status = "started";
-      await this.stop();
-      throw err;
-    }
-  }
-  /**
-   * Stop the libp2p node by closing its listeners and open connections
-   */
-  async stop() {
-    if (this.status !== "started") {
-      return;
-    }
-    this.log("libp2p is stopping");
-    this.status = "stopping";
-    await this.components.beforeStop?.();
-    await this.components.stop();
-    await this.components.afterStop?.();
-    this.status = "stopped";
-    this.safeDispatchEvent("stop", { detail: this });
-    this.log("libp2p has stopped");
-  }
-  getConnections(peerId2) {
-    return this.components.connectionManager.getConnections(peerId2);
-  }
-  getDialQueue() {
-    return this.components.connectionManager.getDialQueue();
-  }
-  getPeers() {
-    const peerSet2 = new PeerSet();
-    for (const conn of this.components.connectionManager.getConnections()) {
-      peerSet2.add(conn.remotePeer);
-    }
-    return Array.from(peerSet2);
-  }
-  async dial(peer, options = {}) {
-    return this.components.connectionManager.openConnection(peer, {
-      // ensure any userland dials take top priority in the queue
-      priority: 75,
-      ...options
-    });
-  }
-  async dialProtocol(peer, protocols, options = {}) {
-    if (protocols == null) {
-      throw new CodeError("no protocols were provided to open a stream", codes4.ERR_INVALID_PROTOCOLS_FOR_STREAM);
-    }
-    protocols = Array.isArray(protocols) ? protocols : [protocols];
-    if (protocols.length === 0) {
-      throw new CodeError("no protocols were provided to open a stream", codes4.ERR_INVALID_PROTOCOLS_FOR_STREAM);
-    }
-    const connection = await this.dial(peer, options);
-    return connection.newStream(protocols, options);
-  }
-  getMultiaddrs() {
-    return this.components.addressManager.getAddresses();
-  }
-  getProtocols() {
-    return this.components.registrar.getProtocols();
-  }
-  async hangUp(peer, options = {}) {
-    if (isMultiaddr(peer)) {
-      peer = peerIdFromString(peer.getPeerId() ?? "");
-    }
-    await this.components.connectionManager.closeConnections(peer, options);
-  }
-  /**
-   * Get the public key for the given peer id
-   */
-  async getPublicKey(peer, options = {}) {
-    this.log("getPublicKey %p", peer);
-    if (peer.publicKey != null) {
-      return peer.publicKey;
-    }
-    try {
-      const peerInfo = await this.peerStore.get(peer);
-      if (peerInfo.id.publicKey != null) {
-        return peerInfo.id.publicKey;
-      }
-    } catch (err) {
-      if (err.code !== codes4.ERR_NOT_FOUND) {
-        throw err;
-      }
-    }
-    const peerKey = concat([
-      fromString2("/pk/"),
-      peer.multihash.digest
-    ]);
-    const bytes2 = await this.contentRouting.get(peerKey, options);
-    unmarshalPublicKey(bytes2);
-    await this.peerStore.patch(peer, {
-      publicKey: bytes2
-    });
-    return bytes2;
-  }
-  async handle(protocols, handler, options) {
-    if (!Array.isArray(protocols)) {
-      protocols = [protocols];
-    }
-    await Promise.all(protocols.map(async (protocol) => {
-      await this.components.registrar.handle(protocol, handler, options);
-    }));
-  }
-  async unhandle(protocols) {
-    if (!Array.isArray(protocols)) {
-      protocols = [protocols];
-    }
-    await Promise.all(protocols.map(async (protocol) => {
-      await this.components.registrar.unhandle(protocol);
-    }));
-  }
-  async register(protocol, topology) {
-    return this.components.registrar.register(protocol, topology);
-  }
-  unregister(id) {
-    this.components.registrar.unregister(id);
-  }
-  async isDialable(multiaddr2, options = {}) {
-    return this.components.connectionManager.isDialable(multiaddr2, options);
-  }
-  /**
-   * Called whenever peer discovery services emit `peer` events and adds peers
-   * to the peer store.
-   */
-  #onDiscoveryPeer(evt) {
-    const { detail: peer } = evt;
-    if (peer.id.toString() === this.peerId.toString()) {
-      this.log.error(new Error(codes4.ERR_DISCOVERED_SELF));
-      return;
-    }
-    void this.components.peerStore.merge(peer.id, {
-      multiaddrs: peer.multiaddrs
-    }).catch((err) => {
-      this.log.error(err);
-    });
-  }
-};
-async function createLibp2pNode(options = {}) {
-  const peerId2 = options.peerId ??= await createEd25519PeerId();
-  if (peerId2.privateKey == null) {
-    throw new CodeError("peer id was missing private key", "ERR_MISSING_PRIVATE_KEY");
-  }
-  options.privateKey ??= await unmarshalPrivateKey2(peerId2.privateKey);
-  return new Libp2pNode(await validateConfig(options));
-}
-__name(createLibp2pNode, "createLibp2pNode");
-
-// node_modules/libp2p/dist/src/index.js
-async function createLibp2p(options = {}) {
-  const node = await createLibp2pNode(options);
-  if (options.start !== false) {
-    await node.start();
-  }
-  return node;
-}
-__name(createLibp2p, "createLibp2p");
 export {
-  createLibp2p
+  PersistentPeerStore
 };
 /*! Bundled license information:
 
@@ -22648,4 +14403,4 @@ asn1js/build/index.es.js:
 @noble/curves/esm/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 */
-//# sourceMappingURL=lib-libp2p.js.map
+//# sourceMappingURL=lib-peer-store.js.map

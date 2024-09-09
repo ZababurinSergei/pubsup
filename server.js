@@ -10,28 +10,26 @@ import http from 'http'
 /* eslint-disable no-console */
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
+import { mplex } from '@libp2p/mplex'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
-import { identify } from '@libp2p/identify'
+import {identify, identifyPush} from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { createLibp2p } from 'libp2p'
+import { tcp } from '@libp2p/tcp'
 import * as  peerIdLib  from '@libp2p/peer-id'
 import * as createEd25519PeerId from '@libp2p/peer-id-factory'
 import { webTransport } from '@libp2p/webtransport'
 import fs from "node:fs";
-import { kadDHT } from '@libp2p/kad-dht'
+import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { MemoryDatastore } from 'datastore-core'
 
+// const datastore = new MemoryDatastore()
 let __dirname = process.cwd();
 const buffer = fs.readFileSync(__dirname + '/peerId.proto')
 const peerId =  await createEd25519PeerId.createFromProtobuf(buffer)
-// console.log(peerId222)
-// const peerId_1 = await createEd25519PeerId.createEd25519PeerId()
-// const peerId =  await createEd25519PeerId.createFromProtobuf(createEd25519PeerId.exportToProtobuf(peerId_1))
-// fs.writeFileSync(__dirname + '/peerId.proto', createEd25519PeerId.exportToProtobuf(peerId_1))
-// console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', createEd25519PeerId.exportToProtobuf(peerId_1))
-// console.log('-------------------------------',peerId)
-// console.log('=========== peerId ===============', peerId_1.toJSON())
-dotenv.config();
 
+dotenv.config();
 
 const port = process.env.PORT
     ? process.env.PORT
@@ -141,7 +139,7 @@ async function main () {
     <img src="./assets/logo.png" alt="org Logo" width="128">
     <h2>This is a relay</h2>
     <div id="addr">You can add this bootstrap list with the address <p
-    onclick="(function(self) {      
+    onclick="(function(self) {
         if ('clipboard' in navigator) {
             navigator.clipboard.writeText(self.textContent)
             .then(() => {
@@ -167,15 +165,7 @@ async function main () {
 
     app.use(queue.getErrorMiddleware());
 
-    // app.listen(port, () => {
-    //   console.log('pid: ', process.pid);
-    //   console.log('listening on http://localhost:' + port);
-    // });
-
-    // const webSocketServer = webSockets()
-    // console.log(webSocketServer)
-
-    let adresses = process.env.PORT
+    let addresses = process.env.PORT
         ? {
             listen: [
                 `/ip4/0.0.0.0/tcp/${port}/ws`,
@@ -189,14 +179,20 @@ async function main () {
         }
         : {
             listen: [
+                `/ip4/0.0.0.0/tcp/${port}`,
                 `/ip4/0.0.0.0/tcp/${port}/ws`
             ],
-            announce: [`/dns4/localhost/tcp/${port}/ws/p2p/${peerId.toString()}`]
+            announce: [
+                `/dns4/localhost/tcp/${port}`,
+                `/dns4/localhost/tcp/${port}/ws`
+            ]
         }
 
     const node = await createLibp2p({
         peerId,
-        addresses: adresses,
+        PersistentPeerStore,
+        MemoryDatastore,
+        addresses: addresses,
         transports: [
             webTransport(),
             webSockets({ server })
@@ -205,10 +201,12 @@ async function main () {
             noise()
         ],
         streamMuxers: [
-            yamux()
+            yamux(),
+            mplex()
         ],
         services: {
             identify: identify(),
+            identifyPush: identifyPush(),
             relay: circuitRelayServer(),
             dht: kadDHT({
                 kBucketSize: 20,
@@ -217,16 +215,14 @@ async function main () {
                 clientMode: false,
                 querySelfInterval: 5000,
                 initialQuerySelfInterval: 1000,
-                allowQueryWithZeroPeers: false,
+                allowQueryWithZeroPeers: true,
                 protocol: "/universe/kad/1.0.0",
                 logPrefix: "libp2p:kad-dht",
                 pingTimeout: 10000,
                 pingConcurrency: 10,
                 maxInboundStreams: 32,
                 maxOutboundStreams: 64,
-                peerInfoMapper: (peerInfo) => {
-                    console.log('peerInfo: ', peerInfo)
-                }
+                peerInfoMapper: removePrivateAddressesMapper
             })
         }
     })

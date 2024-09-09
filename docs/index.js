@@ -3,7 +3,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
-import {identify} from '@libp2p/identify'
+import { identify, identifyPush } from '@libp2p/identify'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import * as filters from '@libp2p/websockets/filters'
@@ -11,22 +11,31 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
 import { bootstrap } from '@libp2p/bootstrap'
-import { kadDHT } from '@libp2p/kad-dht'
-// import {autoNAT} from "@libp2p/autonat";
-// import {createDelegatedRoutingV1HttpApiClient} from "@helia/delegated-routing-v1-http-api-client";
-// import {ipnsValidator} from "ipns/validator";
-// import {ipnsSelector} from "ipns/selector";
-// import {keychain} from "@libp2p/keychain";
-// import {ping} from "@libp2p/ping";
-// import {uPnPNAT} from "@libp2p/upnp-nat";
+import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
+import { PersistentPeerStore } from '@libp2p/peer-store'
+import { IDBDatastore } from 'datastore-idb'
+
+const store = new IDBDatastore('/fs', {
+  prefix: '/universe',
+  version: 1
+})
+
+await store.open()
 
 const isLocalhost = window.location.hostname === 'localhost'
 
-console.log('isLocalhost', isLocalhost)
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const isBootstrap = urlParams.has('bootstrap')
+const isLanKad = urlParams.has('lanKad')
+
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
+  getlMultiaddresses: () => document.getElementById('get-multiaddresses'),
+
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
+
   dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
 
   subscribeTopicInput: () => document.getElementById('subscribe-topic-input'),
@@ -37,7 +46,10 @@ const DOM = {
 
   output: () => document.getElementById('output'),
 
+  listeningMultiaddresses: () => document.getElementById('listening-ma'),
+
   listeningAddressesList: () => document.getElementById('listening-addresses'),
+
   peerConnectionsList: () => document.getElementById('peer-connections'),
   topicPeerList: () => document.getElementById('topic-peers')
 }
@@ -70,7 +82,39 @@ const appendOutput = (line) => {
 }
 const clean = (line) => line.replaceAll('\n', '')
 
+let boot = []
+console.log('isBootstrap', isBootstrap)
+if(isBootstrap) {
+  boot = [
+    bootstrap({
+      list: [
+        isLocalhost
+            ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+            : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+      ]
+    })
+  ]
+}
+
+if(isLanKad) {
+  boot = [
+    bootstrap({
+      list: [
+        '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nb',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa',
+        '/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt'
+      ]
+    })
+  ]
+}
+
+
 const libp2p = await createLibp2p({
+  store,
+  PersistentPeerStore,
   addresses: {
     listen: [
       // create listeners for incoming WebRTC connection attempts on all
@@ -93,15 +137,7 @@ const libp2p = await createLibp2p({
       discoverRelays: 2
     })
   ],
-  peerDiscovery: [
-    bootstrap({
-      list: [
-          isLocalhost
-          ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-          : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-      ]
-    })
-  ],
+  peerDiscovery: boot,
   // a connection encrypter is necessary to dial the relay
   connectionEncryption: [noise()],
   // a stream muxer is necessary to dial the relay
@@ -145,25 +181,28 @@ const libp2p = await createLibp2p({
   },
   services: {
     identify: identify(),
+    identifyPush: identifyPush(),
     pubsub: gossipsub(),
     dcutr: dcutr(),
     dht: kadDHT({
-      kBucketSize: 20,
+      kBucketSize: 4,
       kBucketSplitThreshold: `kBucketSize`,
-      prefixLength: 32,
+      prefixLength: 6,
       clientMode: false,
       querySelfInterval: 5000,
       initialQuerySelfInterval: 1000,
       allowQueryWithZeroPeers: false,
+      // protocol: '/ipfs/lan/kad/1.0.0',
       protocol: "/universe/kad/1.0.0",
       logPrefix: "libp2p:kad-dht",
       pingTimeout: 10000,
       pingConcurrency: 10,
-      maxInboundStreams: 32,
-      maxOutboundStreams: 64,
-      peerInfoMapper: (peer) => {
-        console.log('!!!!!!!!!!! peerInfoMapper !!!!!!!!!!', peer)
-      }
+      // maxInboundStreams: 32,
+      // maxOutboundStreams: 64,
+      maxInboundStreams: 3,
+      maxOutboundStreams: 6,
+      // peerInfoMapper: removePrivateAddressesMapper,
+      peerInfoMapper: removePublicAddressesMapper,
     })
   },
   connectionManager: {
@@ -172,14 +211,13 @@ const libp2p = await createLibp2p({
 })
 
 DOM.peerId().innerText = libp2p.peerId.toString()
-
+console.log('multiaddress:',libp2p.getMultiaddrs())
 function updatePeerList () {
   // Update connections list
   const peerList = libp2p.getPeers()
     .map(peerId => {
       const el = document.createElement('li')
       el.textContent = peerId.toString()
-
       const addrList = document.createElement('ul')
 
       for (const conn of libp2p.getConnections(peerId)) {
@@ -197,28 +235,51 @@ function updatePeerList () {
 }
 
 libp2p.addEventListener('peer:discovery', (evt) => {
-  console.log(`Connected to the relay ${evt.detail.id.toString()}`)
+  console.log(`peer:discovery ${evt.detail.id.toString()}`)
 })
 
 // update peer connections
-libp2p.addEventListener('connection:open', () => {
+libp2p.addEventListener('connection:open', (event) => {
+  console.log('connection:open', event.detail)
   updatePeerList()
 })
 
-libp2p.addEventListener('connection:close', () => {
+libp2p.addEventListener('connection:close', (event) => {
+  console.log('connection:close', event.detail)
   updatePeerList()
 })
 
 // update listening addresses
-libp2p.addEventListener('self:peer:update', () => {
+libp2p.addEventListener('self:peer:update', (event) => {
+  console.log('self:peer:update', event.detail)
   const multiaddrs = libp2p.getMultiaddrs()
     .map((ma) => {
       const el = document.createElement('li')
       el.textContent = ma.toString()
+      el.onclick = (event) => {
+        navigator.clipboard.writeText(event.currentTarget.textContent)
+            .then(() => {})
+            .catch((err) => console.error(err.name, err.message));
+      }
       return el
     })
   DOM.listeningAddressesList().replaceChildren(...multiaddrs)
 })
+
+DOM.getlMultiaddresses().onclick = async () => {
+  const multiaddrs = libp2p.getMultiaddrs()
+      .map((ma) => {
+        const el = document.createElement('li')
+        el.textContent = ma.toString()
+        el.onclick = (event) => {
+          navigator.clipboard.writeText(event.currentTarget.textContent)
+              .then(() => {})
+              .catch((err) => console.error(err.name, err.message));
+        }
+        return el
+      })
+  DOM.listeningMultiaddresses().replaceChildren(...multiaddrs)
+}
 
 // dial remote peer
 DOM.dialMultiaddrButton().onclick = async () => {
@@ -251,7 +312,6 @@ DOM.sendTopicMessageButton().onclick = async () => {
 // update topic peers
 setInterval(() => {
   const topic = DOM.subscribeTopicInput().value
-
   const peerList = libp2p.services.pubsub.getSubscribers(topic)
     .map(peerId => {
       const el = document.createElement('li')
