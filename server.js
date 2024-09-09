@@ -218,14 +218,14 @@ async function main () {
                 querySelfInterval: 5000,
                 initialQuerySelfInterval: 1000,
                 allowQueryWithZeroPeers: false,
-                protocol: "/ipfs/kad/1.0.0",
+                protocol: "/universe/kad/1.0.0",
                 logPrefix: "libp2p:kad-dht",
                 pingTimeout: 10000,
                 pingConcurrency: 10,
                 maxInboundStreams: 32,
                 maxOutboundStreams: 64,
-                peerInfoMapper: (peer) => {
-                    console.log('!!!!!!!!!!! peerInfoMapper !!!!!!!!!!', peer)
+                peerInfoMapper: (peerInfo) => {
+                    console.log('peerInfo: ', peerInfo)
                 }
             })
         }
@@ -241,20 +241,6 @@ async function main () {
 
     console.log('pid: ', process.pid);
     console.log('listening on http://localhost:' + port);
-    // httpProxy.createServer({
-    //   target: proxtBalancer,
-    //   ws: true
-    // }).listen(port);
-
-    // app.listen(port, () => {
-    //   console.log('pid: ', process.pid);
-    //   console.log('listening on http://localhost:' + port);
-    // });
-
-    // server.listen(port, () => {
-    //   console.log('pid: ', process.pid);
-    //   console.log('listening on http://localhost:' + port);
-    // })
 }
 
 main()

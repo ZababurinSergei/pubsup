@@ -155,7 +155,7 @@ const libp2p = await createLibp2p({
       querySelfInterval: 5000,
       initialQuerySelfInterval: 1000,
       allowQueryWithZeroPeers: false,
-      protocol: "/ipfs/kad/1.0.0",
+      protocol: "/universe/kad/1.0.0",
       logPrefix: "libp2p:kad-dht",
       pingTimeout: 10000,
       pingConcurrency: 10,
