@@ -32,8 +32,6 @@ const isLanKad = urlParams.has('lanKad')
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
-  getlMultiaddresses: () => document.getElementById('get-multiaddresses'),
-
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
 
   dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
@@ -45,8 +43,6 @@ const DOM = {
   sendTopicMessageButton: () => document.getElementById('send-topic-message-button'),
 
   output: () => document.getElementById('output'),
-
-  listeningMultiaddresses: () => document.getElementById('listening-ma'),
 
   listeningAddressesList: () => document.getElementById('listening-addresses'),
 
@@ -265,21 +261,6 @@ libp2p.addEventListener('self:peer:update', (event) => {
     })
   DOM.listeningAddressesList().replaceChildren(...multiaddrs)
 })
-
-DOM.getlMultiaddresses().onclick = async () => {
-  const multiaddrs = libp2p.getMultiaddrs()
-      .map((ma) => {
-        const el = document.createElement('li')
-        el.textContent = ma.toString()
-        el.onclick = (event) => {
-          navigator.clipboard.writeText(event.currentTarget.textContent)
-              .then(() => {})
-              .catch((err) => console.error(err.name, err.message));
-        }
-        return el
-      })
-  DOM.listeningMultiaddresses().replaceChildren(...multiaddrs)
-}
 
 // dial remote peer
 DOM.dialMultiaddrButton().onclick = async () => {
