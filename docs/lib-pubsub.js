@@ -36981,6 +36981,29 @@ function removePrivateAddressesMapper(peer) {
   };
 }
 __name(removePrivateAddressesMapper, "removePrivateAddressesMapper");
+function removePublicAddressesMapper(peer) {
+  return {
+    ...peer,
+    multiaddrs: peer.multiaddrs.filter((multiaddr2) => {
+      const [[type, addr]] = multiaddr2.stringTuples();
+      if (addr === "localhost") {
+        return true;
+      }
+      if (type !== 4 && type !== 6) {
+        return false;
+      }
+      if (addr == null) {
+        return false;
+      }
+      const isPrivate2 = isPrivateIp(addr);
+      if (isPrivate2 == null) {
+        return false;
+      }
+      return isPrivate2;
+    })
+  };
+}
+__name(removePublicAddressesMapper, "removePublicAddressesMapper");
 async function convertBuffer(buf) {
   const multihash = await sha256.digest(buf);
   return multihash.digest;
@@ -56323,6 +56346,8 @@ export {
   kadDHT,
   multiaddr,
   noise,
+  removePrivateAddressesMapper,
+  removePublicAddressesMapper,
   toString2 as toString,
   webRTC,
   webSockets,
