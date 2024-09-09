@@ -32,6 +32,7 @@
     "@libp2p/kad-dht": "^12.1.5",
     "@libp2p/mplex": "^10.1.5",
     "@libp2p/peer-store": "^10.1.5",
+    "@libp2p/ping": "^1.1.6",
     "@libp2p/tcp": "^9.1.6",
     "@libp2p/webrtc": "^4.1.10",
     "@libp2p/websockets": "^8.2.0",

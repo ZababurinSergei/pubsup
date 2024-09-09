@@ -187,7 +187,7 @@ const libp2p = await createLibp2p({
       clientMode: false,
       querySelfInterval: 5000,
       initialQuerySelfInterval: 1000,
-      allowQueryWithZeroPeers: false,
+      allowQueryWithZeroPeers: true,
       // protocol: '/ipfs/lan/kad/1.0.0',
       protocol: "/universe/kad/1.0.0",
       logPrefix: "libp2p:kad-dht",
@@ -215,10 +215,16 @@ function updatePeerList () {
       const el = document.createElement('li')
       el.textContent = peerId.toString()
       const addrList = document.createElement('ul')
-
       for (const conn of libp2p.getConnections(peerId)) {
         const addr = document.createElement('li')
-        addr.textContent = conn.remoteAddr.toString()
+
+        let connection = conn.remoteAddr.toString().split(conn.multiplexer)
+        connection = connection.length > 1
+            ? `${conn.multiplexer}${connection[1]}`
+            : connection[0]
+
+        // console.log('------- Connections ------------', conn.multiplexer, conn.remoteAddr.toString().split(conn.multiplexer))
+        addr.textContent = connection
 
         addrList.appendChild(addr)
       }

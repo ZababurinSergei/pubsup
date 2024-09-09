@@ -179,11 +179,9 @@ async function main () {
         }
         : {
             listen: [
-                `/ip4/0.0.0.0/tcp/${port}`,
                 `/ip4/0.0.0.0/tcp/${port}/ws`
             ],
             announce: [
-                `/dns4/localhost/tcp/${port}`,
                 `/dns4/localhost/tcp/${port}/ws`
             ]
         }
