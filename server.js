@@ -356,7 +356,12 @@ async function main () {
             peers.push(item.toString())
         }
 
-        res.json({status: true, peers: peers});
+        res.json({
+            status: true,
+            peers: peers,
+            dhtMode:  node.services.dht.getMode(),
+            MA: node.getMultiaddrs()
+        });
     });
 
     app.post('/add-task', (req, res) => {
