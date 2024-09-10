@@ -34,22 +34,30 @@ const urlParams = new URLSearchParams(queryString);
 const isBootstrap = urlParams.has('bootstrap')
 const isLanKad = urlParams.has('lanKad')
 const isPubsubPeerDiscovery = urlParams.has('pubsubPeerDiscovery')
+const isPeerInfoMapper = urlParams.has('peerInfoMapper')
+let publicAddressesMapper = removePublicAddressesMapper
+
+let DhtProtocol = "/universe/kad/1.0.0"
 console.log('isBootstrap', isBootstrap)
 console.log('isPubsubPeerDiscovery', isPubsubPeerDiscovery)
+
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
-
   dhtMode: () => document.getElementById('dht-mode'),
+
+  clearButton: () => document.getElementById('clear-button'),
 
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
 
   dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
 
   subscribeTopicInput: () => document.getElementById('subscribe-topic-input'),
+
   subscribeTopicButton: () => document.getElementById('subscribe-topic-button'),
 
   sendTopicMessageInput: () => document.getElementById('send-topic-message-input'),
+
   sendTopicMessageButton: () => document.getElementById('send-topic-message-button'),
 
   output: () => document.getElementById('output'),
@@ -57,6 +65,7 @@ const DOM = {
   listeningAddressesList: () => document.getElementById('listening-addresses'),
 
   peerConnectionsList: () => document.getElementById('peer-connections'),
+
   topicPeerList: () => document.getElementById('topic-peers')
 }
 
@@ -118,7 +127,20 @@ if(isBootstrap) {
   }
 }
 
+if(isPeerInfoMapper) {
+  if(urlParams.get('peerInfoMapper') === 'public') {
+    publicAddressesMapper = removePublicAddressesMapper
+  }
+
+  if(urlParams.get('peerInfoMapper') === 'private') {
+    publicAddressesMapper = removePrivateAddressesMapper
+  }
+}
+
 if(isLanKad) {
+  DhtProtocol = `${urlParams.get('lanKad')}kad/1.0.0`
+
+  // console.log('----------------------------', DhtProtocol)
   boot = [
     bootstrap({
       list: [
@@ -215,8 +237,7 @@ const libp2p = await createLibp2p({
       querySelfInterval: 5000,
       initialQuerySelfInterval: 1000,
       allowQueryWithZeroPeers: false,
-      // protocol: '/ipfs/lan/kad/1.0.0',
-      protocol: "/universe/kad/1.0.0",
+      protocol: DhtProtocol,
       logPrefix: "libp2p:kad-dht",
       pingTimeout: 10000,
       pingConcurrency: 10,
@@ -225,7 +246,7 @@ const libp2p = await createLibp2p({
       maxInboundStreams: 3,
       maxOutboundStreams: 6,
       // peerInfoMapper: removePrivateAddressesMapper,
-      peerInfoMapper: removePublicAddressesMapper,
+      peerInfoMapper: publicAddressesMapper,
     })
   },
   connectionManager: {
@@ -306,6 +327,10 @@ libp2p.addEventListener('self:peer:update', (event) => {
     })
   DOM.listeningAddressesList().replaceChildren(...multiaddrs)
 })
+
+DOM.clearButton().onclick = async () => {
+  DOM.dialMultiaddrInput().value = ''
+}
 
 // dial remote peer
 DOM.dialMultiaddrButton().onclick = async () => {
