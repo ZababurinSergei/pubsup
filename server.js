@@ -20,7 +20,6 @@ import * as  peerIdLib  from '@libp2p/peer-id'
 import * as createEd25519PeerId from '@libp2p/peer-id-factory'
 import { webTransport } from '@libp2p/webtransport'
 import fs from "node:fs";
-import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
@@ -245,8 +244,6 @@ async function main () {
 
     const node = await createLibp2p({
         peerId,
-        PersistentPeerStore,
-        MemoryDatastore,
         addresses: addresses,
         transports: [
             webTransport(),
@@ -266,28 +263,11 @@ async function main () {
             pubsub: gossipsub(),
             autoNat: autoNAT(),
             relay: circuitRelayServer(),
-            ping: ping(),
-            dht: kadDHT({
-                kBucketSize: 20,
-                kBucketSplitThreshold: `kBucketSize`,
-                prefixLength: 32,
-                clientMode: false,
-                querySelfInterval: 5000,
-                initialQuerySelfInterval: 1000,
-                allowQueryWithZeroPeers: false,
-                protocol: "/universe/kad/1.0.0",
-                logPrefix: "libp2p:kad-dht",
-                pingTimeout: 10000,
-                pingConcurrency: 10,
-                maxInboundStreams: 32,
-                maxOutboundStreams: 64,
-                peerInfoMapper: removePrivateAddressesMapper
-            })
+            ping: ping()
         }
     })
 
     node.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
-    // console.log('-------------------', node.services.dht.setMode() )
     console.log(`Node started with id ${node.peerId.toString()}`)
     let pathNode = ''
 
