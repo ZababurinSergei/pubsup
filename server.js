@@ -23,6 +23,7 @@ import fs from "node:fs";
 import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
+import {ping} from "@libp2p/ping";
 
 // const datastore = new MemoryDatastore()
 let __dirname = process.cwd();
@@ -258,6 +259,7 @@ async function main () {
             identify: identify(),
             identifyPush: identifyPush(),
             relay: circuitRelayServer(),
+            ping: ping(),
             dht: kadDHT({
                 kBucketSize: 20,
                 kBucketSplitThreshold: `kBucketSize`,

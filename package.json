@@ -31,6 +31,7 @@
     "@libp2p/identify": "^2.1.5",
     "@libp2p/kad-dht": "^12.1.5",
     "@libp2p/mplex": "^10.1.5",
+    "@libp2p/peer-id": "^4.2.4",
     "@libp2p/peer-store": "^10.1.5",
     "@libp2p/ping": "^1.1.6",
     "@libp2p/tcp": "^9.1.6",

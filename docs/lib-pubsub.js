@@ -4784,18 +4784,18 @@ __name(merge, "merge");
 var src_default = merge;
 
 // node_modules/it-pipe/dist/src/index.js
-function pipe(first, ...rest) {
-  if (first == null) {
+function pipe(first2, ...rest) {
+  if (first2 == null) {
     throw new Error("Empty pipeline");
   }
-  if (isDuplex(first)) {
-    const duplex = first;
-    first = /* @__PURE__ */ __name(() => duplex.source, "first");
-  } else if (isIterable(first) || isAsyncIterable3(first)) {
-    const source = first;
-    first = /* @__PURE__ */ __name(() => source, "first");
+  if (isDuplex(first2)) {
+    const duplex = first2;
+    first2 = /* @__PURE__ */ __name(() => duplex.source, "first");
+  } else if (isIterable(first2) || isAsyncIterable3(first2)) {
+    const source = first2;
+    first2 = /* @__PURE__ */ __name(() => source, "first");
   }
-  const fns = [first, ...rest];
+  const fns = [first2, ...rest];
   if (fns.length > 1) {
     if (isDuplex(fns[fns.length - 1])) {
       fns[fns.length - 1] = fns[fns.length - 1].sink;
@@ -12834,9 +12834,9 @@ _a$q = BitString;
 })();
 BitString.NAME = BIT_STRING_NAME;
 var _a$p;
-function viewAdd(first, second4) {
+function viewAdd(first2, second4) {
   const c = new Uint8Array([0]);
-  const firstView = new Uint8Array(first);
+  const firstView = new Uint8Array(first2);
   const secondView = new Uint8Array(second4);
   let firstViewCopy = firstView.slice(0);
   const firstViewCopyLength = firstViewCopy.length - 1;
@@ -12885,9 +12885,9 @@ function power2(n) {
   return powers2[n];
 }
 __name(power2, "power2");
-function viewSub(first, second4) {
+function viewSub(first2, second4) {
   let b = 0;
-  const firstView = new Uint8Array(first);
+  const firstView = new Uint8Array(first2);
   const secondView = new Uint8Array(second4);
   const firstViewCopy = firstView.slice(0);
   const firstViewCopyLength = firstViewCopy.length - 1;
@@ -13081,9 +13081,9 @@ var Integer = class _Integer extends BaseBlock {
     const hex = bigIntValue.toString(16).replace(/^-/, "");
     const view = new Uint8Array(pvtsutils.Convert.FromHex(hex));
     if (bigIntValue < 0) {
-      const first = new Uint8Array(view.length + (view[0] & 128 ? 1 : 0));
-      first[0] |= 128;
-      const firstInt = BigInt(`0x${pvtsutils.Convert.ToHex(first)}`);
+      const first2 = new Uint8Array(view.length + (view[0] & 128 ? 1 : 0));
+      first2[0] |= 128;
+      const firstInt = BigInt(`0x${pvtsutils.Convert.ToHex(first2)}`);
       const secondInt = firstInt + bigIntValue;
       const second4 = pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromHex(secondInt.toString(16)));
       second4[0] |= 128;
@@ -15044,13 +15044,13 @@ var DER = {
         throw new E("tlv.encode: wrong tag");
       if (data.length < 2 || data[pos++] !== tag)
         throw new E("tlv.decode: wrong tlv");
-      const first = data[pos++];
-      const isLong = !!(first & 128);
+      const first2 = data[pos++];
+      const isLong = !!(first2 & 128);
       let length4 = 0;
       if (!isLong)
-        length4 = first;
+        length4 = first2;
       else {
-        const lenLen = first & 127;
+        const lenLen = first2 & 127;
         if (!lenLen)
           throw new E("tlv.decode(long): indefinite length not supported");
         if (lenLen > 4)
@@ -30478,19 +30478,19 @@ var import_index5 = __toESM(require_eventemitter3(), 1);
 
 // node_modules/p-queue/dist/lower-bound.js
 function lowerBound(array, value, comparator) {
-  let first = 0;
+  let first2 = 0;
   let count = array.length;
   while (count > 0) {
     const step = Math.trunc(count / 2);
-    let it = first + step;
+    let it = first2 + step;
     if (comparator(array[it], value) <= 0) {
-      first = ++it;
+      first2 = ++it;
       count -= step + 1;
     } else {
       count = step;
     }
   }
-  return first;
+  return first2;
 }
 __name(lowerBound, "lowerBound");
 
@@ -57516,6 +57516,163 @@ var IDBDatastore = class extends BaseDatastore2 {
     await deleteDB(this.location);
   }
 };
+
+// node_modules/it-first/dist/src/index.js
+function isAsyncIterable12(thing) {
+  return thing[Symbol.asyncIterator] != null;
+}
+__name(isAsyncIterable12, "isAsyncIterable");
+function first(source) {
+  if (isAsyncIterable12(source)) {
+    return (async () => {
+      for await (const entry of source) {
+        return entry;
+      }
+      return void 0;
+    })();
+  }
+  for (const entry of source) {
+    return entry;
+  }
+  return void 0;
+}
+__name(first, "first");
+var src_default13 = first;
+
+// node_modules/@libp2p/ping/dist/src/constants.js
+var PING_LENGTH2 = 32;
+var PROTOCOL_VERSION2 = "1.0.0";
+var PROTOCOL_NAME2 = "ping";
+var PROTOCOL_PREFIX2 = "ipfs";
+var TIMEOUT = 1e4;
+var MAX_INBOUND_STREAMS = 2;
+var MAX_OUTBOUND_STREAMS = 1;
+var ERR_WRONG_PING_ACK = "ERR_WRONG_PING_ACK";
+
+// node_modules/@libp2p/ping/dist/src/ping.js
+var PingService = class {
+  static {
+    __name(this, "PingService");
+  }
+  protocol;
+  components;
+  started;
+  timeout;
+  maxInboundStreams;
+  maxOutboundStreams;
+  runOnTransientConnection;
+  log;
+  constructor(components, init = {}) {
+    this.components = components;
+    this.log = components.logger.forComponent("libp2p:ping");
+    this.started = false;
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX2}/${PROTOCOL_NAME2}/${PROTOCOL_VERSION2}`;
+    this.timeout = init.timeout ?? TIMEOUT;
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS;
+    this.runOnTransientConnection = init.runOnTransientConnection ?? true;
+    this.handleMessage = this.handleMessage.bind(this);
+  }
+  [Symbol.toStringTag] = "@libp2p/ping";
+  async start() {
+    await this.components.registrar.handle(this.protocol, this.handleMessage, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnTransientConnection: this.runOnTransientConnection
+    });
+    this.started = true;
+  }
+  async stop() {
+    await this.components.registrar.unhandle(this.protocol);
+    this.started = false;
+  }
+  isStarted() {
+    return this.started;
+  }
+  /**
+   * A handler to register with Libp2p to process ping messages
+   */
+  handleMessage(data) {
+    this.log("incoming ping from %p", data.connection.remotePeer);
+    const { stream } = data;
+    const start2 = Date.now();
+    const signal = AbortSignal.timeout(this.timeout);
+    signal.addEventListener("abort", () => {
+      stream?.abort(new CodeError("ping timeout", ERR_TIMEOUT));
+    });
+    void pipe(stream, async function* (source) {
+      let received = 0;
+      for await (const buf of source) {
+        received += buf.byteLength;
+        if (received > PING_LENGTH2) {
+          stream?.abort(new CodeError("Too much data received", ERR_INVALID_MESSAGE));
+          return;
+        }
+        yield buf;
+      }
+    }, stream).catch((err) => {
+      this.log.error("incoming ping from %p failed with error", data.connection.remotePeer, err);
+      stream?.abort(err);
+    }).finally(() => {
+      const ms2 = Date.now() - start2;
+      this.log("incoming ping from %p complete in %dms", data.connection.remotePeer, ms2);
+    });
+  }
+  /**
+   * Ping a given peer and wait for its response, getting the operation latency.
+   */
+  async ping(peer, options = {}) {
+    this.log("pinging %p", peer);
+    const start2 = Date.now();
+    const data = randomBytes2(PING_LENGTH2);
+    const connection = await this.components.connectionManager.openConnection(peer, options);
+    let stream;
+    let onAbort = /* @__PURE__ */ __name(() => {
+    }, "onAbort");
+    if (options.signal == null) {
+      const signal = AbortSignal.timeout(this.timeout);
+      options = {
+        ...options,
+        signal
+      };
+    }
+    try {
+      stream = await connection.newStream(this.protocol, {
+        ...options,
+        runOnTransientConnection: this.runOnTransientConnection
+      });
+      onAbort = /* @__PURE__ */ __name(() => {
+        stream?.abort(new CodeError("ping timeout", ERR_TIMEOUT));
+      }, "onAbort");
+      options.signal?.addEventListener("abort", onAbort, { once: true });
+      const result = await pipe([data], stream, async (source) => src_default13(source));
+      const ms2 = Date.now() - start2;
+      if (result == null) {
+        throw new CodeError(`Did not receive a ping ack after ${ms2}ms`, ERR_WRONG_PING_ACK);
+      }
+      if (!equals3(data, result.subarray())) {
+        throw new CodeError(`Received wrong ping ack after ${ms2}ms`, ERR_WRONG_PING_ACK);
+      }
+      this.log("ping %p complete in %dms", connection.remotePeer, ms2);
+      return ms2;
+    } catch (err) {
+      this.log.error("error while pinging %p", connection.remotePeer, err);
+      stream?.abort(err);
+      throw err;
+    } finally {
+      options.signal?.removeEventListener("abort", onAbort);
+      if (stream != null) {
+        await stream.close();
+      }
+    }
+  }
+};
+
+// node_modules/@libp2p/ping/dist/src/index.js
+function ping(init = {}) {
+  return (components) => new PingService(components, init);
+}
+__name(ping, "ping");
 export {
   IDBDatastore,
   MemoryDatastore2 as MemoryDatastore,
@@ -57531,6 +57688,8 @@ export {
   kadDHT,
   multiaddr,
   noise,
+  peerIdFromString,
+  ping,
   removePrivateAddressesMapper,
   removePublicAddressesMapper,
   toString2 as toString,

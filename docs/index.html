@@ -41,8 +41,10 @@
                   "uint8arrays": "./lib-pubsub.js",
                   "@libp2p/bootstrap": "./lib-pubsub.js",
                   "datastore-idb": "./lib-pubsub.js",
+                  "@libp2p/ping": "./lib-pubsub.js",
                   "libp2p": "./lib-libp2p.js",
-                  "@libp2p/peer-store": "./lib-peer-store.js"
+                  "@libp2p/peer-store": "./lib-peer-store.js",
+                  "@libp2p/peer-id": "./lib-pubsub.js"
                 }
             }
         </script>
@@ -55,6 +57,9 @@
 
       <h4>PeerId</h4>
       <p id="peer-id"></p>
+
+      <h4>DHT mode</h4>
+      <p id="dht-mode"></p>
 
       <h4>Listening Addresses</h4>
       <ul id="listening-addresses">

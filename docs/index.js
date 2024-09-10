@@ -14,6 +14,8 @@ import { bootstrap } from '@libp2p/bootstrap'
 import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { IDBDatastore } from 'datastore-idb'
+import { ping } from '@libp2p/ping'
+import { peerIdFromString } from '@libp2p/peer-id'
 
 const store = new IDBDatastore('/fs', {
   prefix: '/universe',
@@ -31,6 +33,9 @@ const isLanKad = urlParams.has('lanKad')
 
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
+
+
+  dhtMode: () => document.getElementById('dht-mode'),
 
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
 
@@ -180,6 +185,7 @@ const libp2p = await createLibp2p({
     identifyPush: identifyPush(),
     pubsub: gossipsub(),
     dcutr: dcutr(),
+    ping: ping(),
     dht: kadDHT({
       kBucketSize: 4,
       kBucketSplitThreshold: `kBucketSize`,
@@ -202,9 +208,21 @@ const libp2p = await createLibp2p({
     })
   },
   connectionManager: {
-    minConnections: 1
+    minConnections: 20
   }
 })
+
+const intervalId = setInterval( () => {
+  // const ma = multiaddr(isLocalhost
+  //     ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+  //     : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1")
+
+  const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
+
+  libp2p.services.ping.ping(peer)
+}, 1000 * 60 * 13)
+
+DOM.dhtMode().textContent = libp2p.services.dht.getMode()
 
 DOM.peerId().innerText = libp2p.peerId.toString()
 console.log('multiaddress:',libp2p.getMultiaddrs())
