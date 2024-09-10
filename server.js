@@ -24,6 +24,9 @@ import { kadDHT, removePrivateAddressesMapper } from '@libp2p/kad-dht'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
+import { PUBSUB_PEER_DISCOVERY } from './constants.js'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { autoNAT } from '@libp2p/autonat'
 
 // const datastore = new MemoryDatastore()
 let __dirname = process.cwd();
@@ -143,7 +146,7 @@ async function main () {
         <p
             onclick="(function(self) {
                 if ('clipboard' in navigator) {
-                    navigator.clipboard.writeText(self.textContent)
+                    navigator.clipboard.writeText(self.textContent.trim())
                     .then(() => {
                       console.log('Text copied');
                     })
@@ -235,6 +238,7 @@ async function main () {
                 `/ip4/0.0.0.0/tcp/${port}/ws`
             ],
             announce: [
+                `/dns4/localhost/tcp/${port}`,
                 `/dns4/localhost/tcp/${port}/ws`
             ]
         }
@@ -246,7 +250,8 @@ async function main () {
         addresses: addresses,
         transports: [
             webTransport(),
-            webSockets({ server })
+            webSockets({ server }),
+            tcp(),
         ],
         connectionEncryption: [
             noise()
@@ -258,6 +263,8 @@ async function main () {
         services: {
             identify: identify(),
             identifyPush: identifyPush(),
+            pubsub: gossipsub(),
+            autoNat: autoNAT(),
             relay: circuitRelayServer(),
             ping: ping(),
             dht: kadDHT({
@@ -278,6 +285,8 @@ async function main () {
             })
         }
     })
+
+    node.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
     // node.services.dht.setMode('server')
     // console.log('-------------------', node.services.dht.setMode() )
     console.log(`Node started with id ${node.peerId.toString()}`)
@@ -290,9 +299,6 @@ async function main () {
 
     console.log('pid: ', process.pid);
     console.log('listening on http://localhost:' + port);
-
-
-
 
     let clients = [];
     let todoState = [];

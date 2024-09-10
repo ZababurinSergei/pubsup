@@ -177,7 +177,6 @@ const libp2p = await createLibp2p({
       return false
     },
     filterMultiaddrForPeer: async (currentPeerId, multiaddr) => {
-      console.log('################### currentPeerId #####################', currentPeerId.toString())
         return true
     }
   },
