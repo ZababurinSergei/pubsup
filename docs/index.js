@@ -13,9 +13,12 @@ import { fromString, toString } from 'uint8arrays'
 import { bootstrap } from '@libp2p/bootstrap'
 import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
 import { PersistentPeerStore } from '@libp2p/peer-store'
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { IDBDatastore } from 'datastore-idb'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
+
+const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
 
 const store = new IDBDatastore('/fs', {
   prefix: '/universe',
@@ -87,6 +90,10 @@ let boot = []
 console.log('isBootstrap', isBootstrap)
 if(isBootstrap) {
   boot = [
+    pubsubPeerDiscovery({
+      interval: 10_000,
+      topics: [PUBSUB_PEER_DISCOVERY],
+    }),
     bootstrap({
       list: [
         isLocalhost

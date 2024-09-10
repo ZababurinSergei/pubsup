@@ -23545,9 +23545,9 @@ var StopMessage;
   };
 })(StopMessage || (StopMessage = {}));
 var Peer;
-(function(Peer3) {
+(function(Peer4) {
   let _codec;
-  Peer3.codec = () => {
+  Peer4.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w2, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -23597,11 +23597,11 @@ var Peer;
     }
     return _codec;
   };
-  Peer3.encode = (obj) => {
-    return encodeMessage(obj, Peer3.codec());
+  Peer4.encode = (obj) => {
+    return encodeMessage(obj, Peer4.codec());
   };
-  Peer3.decode = (buf, opts) => {
-    return decodeMessage(buf, Peer3.codec(), opts);
+  Peer4.decode = (buf, opts) => {
+    return decodeMessage(buf, Peer4.codec(), opts);
   };
 })(Peer || (Peer = {}));
 var Reservation;
@@ -31061,7 +31061,7 @@ var codes4 = {
 
 // node_modules/@libp2p/peer-store/dist/src/pb/peer.js
 var Peer2;
-(function(Peer3) {
+(function(Peer4) {
   let Peer$metadataEntry;
   (function(Peer$metadataEntry2) {
     let _codec2;
@@ -31113,7 +31113,7 @@ var Peer2;
     Peer$metadataEntry2.decode = (buf) => {
       return decodeMessage(buf, Peer$metadataEntry2.codec());
     };
-  })(Peer$metadataEntry = Peer3.Peer$metadataEntry || (Peer3.Peer$metadataEntry = {}));
+  })(Peer$metadataEntry = Peer4.Peer$metadataEntry || (Peer4.Peer$metadataEntry = {}));
   let Peer$tagsEntry;
   (function(Peer$tagsEntry2) {
     let _codec2;
@@ -31164,9 +31164,9 @@ var Peer2;
     Peer$tagsEntry2.decode = (buf) => {
       return decodeMessage(buf, Peer$tagsEntry2.codec());
     };
-  })(Peer$tagsEntry = Peer3.Peer$tagsEntry || (Peer3.Peer$tagsEntry = {}));
+  })(Peer$tagsEntry = Peer4.Peer$tagsEntry || (Peer4.Peer$tagsEntry = {}));
   let _codec;
-  Peer3.codec = () => {
+  Peer4.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w2, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -31195,13 +31195,13 @@ var Peer2;
         if (obj.metadata != null && obj.metadata.size !== 0) {
           for (const [key, value] of obj.metadata.entries()) {
             w2.uint32(50);
-            Peer3.Peer$metadataEntry.codec().encode({ key, value }, w2);
+            Peer4.Peer$metadataEntry.codec().encode({ key, value }, w2);
           }
         }
         if (obj.tags != null && obj.tags.size !== 0) {
           for (const [key, value] of obj.tags.entries()) {
             w2.uint32(58);
-            Peer3.Peer$tagsEntry.codec().encode({ key, value }, w2);
+            Peer4.Peer$tagsEntry.codec().encode({ key, value }, w2);
           }
         }
         if (opts.lengthDelimited !== false) {
@@ -31231,12 +31231,12 @@ var Peer2;
               obj.peerRecordEnvelope = reader.bytes();
               break;
             case 6: {
-              const entry = Peer3.Peer$metadataEntry.codec().decode(reader, reader.uint32());
+              const entry = Peer4.Peer$metadataEntry.codec().decode(reader, reader.uint32());
               obj.metadata.set(entry.key, entry.value);
               break;
             }
             case 7: {
-              const entry = Peer3.Peer$tagsEntry.codec().decode(reader, reader.uint32());
+              const entry = Peer4.Peer$tagsEntry.codec().decode(reader, reader.uint32());
               obj.tags.set(entry.key, entry.value);
               break;
             }
@@ -31250,11 +31250,11 @@ var Peer2;
     }
     return _codec;
   };
-  Peer3.encode = (obj) => {
-    return encodeMessage(obj, Peer3.codec());
+  Peer4.encode = (obj) => {
+    return encodeMessage(obj, Peer4.codec());
   };
-  Peer3.decode = (buf) => {
-    return decodeMessage(buf, Peer3.codec());
+  Peer4.decode = (buf) => {
+    return decodeMessage(buf, Peer4.codec());
   };
 })(Peer2 || (Peer2 = {}));
 var Address;
@@ -57673,6 +57673,218 @@ function ping(init = {}) {
   return (components) => new PingService(components, init);
 }
 __name(ping, "ping");
+
+// node_modules/@libp2p/pubsub-peer-discovery/node_modules/uint8arrays/dist/src/util/as-uint8array.js
+function asUint8Array2(buf) {
+  if (globalThis.Buffer != null) {
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+  }
+  return buf;
+}
+__name(asUint8Array2, "asUint8Array");
+
+// node_modules/@libp2p/pubsub-peer-discovery/node_modules/uint8arrays/dist/src/alloc.js
+function alloc3(size = 0) {
+  if (globalThis.Buffer?.alloc != null) {
+    return asUint8Array2(globalThis.Buffer.alloc(size));
+  }
+  return new Uint8Array(size);
+}
+__name(alloc3, "alloc");
+
+// node_modules/@libp2p/pubsub-peer-discovery/dist/src/peer.js
+var Peer3;
+(function(Peer4) {
+  let _codec;
+  Peer4.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w2, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w2.fork();
+        }
+        if (obj.publicKey != null && obj.publicKey.byteLength > 0) {
+          w2.uint32(10);
+          w2.bytes(obj.publicKey);
+        }
+        if (obj.addrs != null) {
+          for (const value of obj.addrs) {
+            w2.uint32(18);
+            w2.bytes(value);
+          }
+        }
+        if (opts.lengthDelimited !== false) {
+          w2.ldelim();
+        }
+      }, (reader, length4) => {
+        const obj = {
+          publicKey: alloc3(0),
+          addrs: []
+        };
+        const end = length4 == null ? reader.len : reader.pos + length4;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1: {
+              obj.publicKey = reader.bytes();
+              break;
+            }
+            case 2: {
+              obj.addrs.push(reader.bytes());
+              break;
+            }
+            default: {
+              reader.skipType(tag & 7);
+              break;
+            }
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  Peer4.encode = (obj) => {
+    return encodeMessage(obj, Peer4.codec());
+  };
+  Peer4.decode = (buf) => {
+    return decodeMessage(buf, Peer4.codec());
+  };
+})(Peer3 || (Peer3 = {}));
+
+// node_modules/@libp2p/pubsub-peer-discovery/dist/src/index.js
+var TOPIC = "_peer-discovery._p2p._pubsub";
+var PubSubPeerDiscovery = class extends TypedEventEmitter {
+  static {
+    __name(this, "PubSubPeerDiscovery");
+  }
+  [peerDiscoverySymbol] = true;
+  [Symbol.toStringTag] = "@libp2p/pubsub-peer-discovery";
+  interval;
+  listenOnly;
+  topics;
+  intervalId;
+  components;
+  log;
+  constructor(components, init = {}) {
+    super();
+    const { interval, topics, listenOnly } = init;
+    this.components = components;
+    this.interval = interval ?? 1e4;
+    this.listenOnly = listenOnly ?? false;
+    this.log = components.logger.forComponent("libp2p:discovery:pubsub");
+    if (Array.isArray(topics) && topics.length > 0) {
+      this.topics = topics;
+    } else {
+      this.topics = [TOPIC];
+    }
+    this._onMessage = this._onMessage.bind(this);
+  }
+  isStarted() {
+    return this.intervalId != null;
+  }
+  start() {
+  }
+  /**
+   * Subscribes to the discovery topic on `libp2p.pubsub` and performs a broadcast
+   * immediately, and every `this.interval`
+   */
+  afterStart() {
+    if (this.intervalId != null) {
+      return;
+    }
+    const pubsub = this.components.pubsub;
+    if (pubsub == null) {
+      throw new Error("PubSub not configured");
+    }
+    for (const topic of this.topics) {
+      pubsub.subscribe(topic);
+      pubsub.addEventListener("message", this._onMessage);
+    }
+    if (this.listenOnly) {
+      return;
+    }
+    this._broadcast();
+    this.intervalId = setInterval(() => {
+      this._broadcast();
+    }, this.interval);
+  }
+  beforeStop() {
+    const pubsub = this.components.pubsub;
+    if (pubsub == null) {
+      throw new Error("PubSub not configured");
+    }
+    for (const topic of this.topics) {
+      pubsub.unsubscribe(topic);
+      pubsub.removeEventListener("message", this._onMessage);
+    }
+  }
+  /**
+   * Unsubscribes from the discovery topic
+   */
+  stop() {
+    if (this.intervalId != null) {
+      clearInterval(this.intervalId);
+      this.intervalId = void 0;
+    }
+  }
+  /**
+   * Performs a broadcast via Pubsub publish
+   */
+  _broadcast() {
+    const peerId2 = this.components.peerId;
+    if (peerId2.publicKey == null) {
+      throw new Error("PeerId was missing public key");
+    }
+    const peer = {
+      publicKey: peerId2.publicKey,
+      addrs: this.components.addressManager.getAddresses().map((ma) => ma.bytes)
+    };
+    const encodedPeer = Peer3.encode(peer);
+    const pubsub = this.components.pubsub;
+    if (pubsub == null) {
+      throw new Error("PubSub not configured");
+    }
+    for (const topic of this.topics) {
+      if (pubsub.getSubscribers(topic).length === 0) {
+        this.log("skipping broadcasting our peer data on topic %s because there are no peers present", topic);
+        continue;
+      }
+      this.log("broadcasting our peer data on topic %s", topic);
+      void pubsub.publish(topic, encodedPeer);
+    }
+  }
+  /**
+   * Handles incoming pubsub messages for our discovery topic
+   */
+  _onMessage(event) {
+    if (!this.isStarted()) {
+      return;
+    }
+    const message2 = event.detail;
+    if (!this.topics.includes(message2.topic)) {
+      return;
+    }
+    const peer = Peer3.decode(message2.data);
+    void peerIdFromKeys(peer.publicKey).then((peerId2) => {
+      if (peerId2.equals(this.components.peerId)) {
+        return;
+      }
+      this.log("discovered peer %p on %s", peerId2, message2.topic);
+      this.safeDispatchEvent("peer", {
+        detail: {
+          id: peerId2,
+          multiaddrs: peer.addrs.map((b) => multiaddr(b))
+        }
+      });
+    }).catch((err) => {
+      this.log.error(err);
+    });
+  }
+};
+function pubsubPeerDiscovery(init = {}) {
+  return (components) => new PubSubPeerDiscovery(components, init);
+}
+__name(pubsubPeerDiscovery, "pubsubPeerDiscovery");
 export {
   IDBDatastore,
   MemoryDatastore2 as MemoryDatastore,
@@ -57690,6 +57902,7 @@ export {
   noise,
   peerIdFromString,
   ping,
+  pubsubPeerDiscovery,
   removePrivateAddressesMapper,
   removePublicAddressesMapper,
   toString2 as toString,
