@@ -287,7 +287,6 @@ async function main () {
     })
 
     node.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
-    // node.services.dht.setMode('server')
     // console.log('-------------------', node.services.dht.setMode() )
     console.log(`Node started with id ${node.peerId.toString()}`)
     let pathNode = ''

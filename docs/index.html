@@ -51,6 +51,30 @@
         </script>
   </head>
   <body>
+    <div class="control-params">
+      <button
+            onclick="(function(self) {
+                window.location.href = `${window.location.origin}${window.location.pathname}`
+            })(this)"
+      >
+        empty
+      </button>
+      <button
+            onclick="(function(self) {
+                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap`
+            })(this)"
+      >
+        Bootstrap
+      </button>
+
+      <button
+            onclick="(function(self) {
+                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&pubsubPeerDiscovery`
+            })(this)"
+      >
+        Bootstrap && pubsubPeerDiscovery
+      </button>
+    </div>
     <div>
       <label for="dial-multiaddr-input">Dial MultiAddr</label>
       <input type="text" id="dial-multiaddr-input" placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/123Foo" />

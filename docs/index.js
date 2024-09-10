@@ -33,7 +33,9 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const isBootstrap = urlParams.has('bootstrap')
 const isLanKad = urlParams.has('lanKad')
-
+const isPubsubPeerDiscovery = urlParams.has('pubsubPeerDiscovery')
+console.log('isBootstrap', isBootstrap)
+console.log('isPubsubPeerDiscovery', isPubsubPeerDiscovery)
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
 
@@ -87,21 +89,33 @@ const appendOutput = (line) => {
 const clean = (line) => line.replaceAll('\n', '')
 
 let boot = []
-console.log('isBootstrap', isBootstrap)
+
 if(isBootstrap) {
-  boot = [
-    pubsubPeerDiscovery({
-      interval: 10_000,
-      topics: [PUBSUB_PEER_DISCOVERY],
-    }),
-    bootstrap({
-      list: [
-        isLocalhost
-            ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-            : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-      ]
-    })
-  ]
+  if(isPubsubPeerDiscovery) {
+    boot = [
+      pubsubPeerDiscovery({
+        interval: 10_000,
+        topics: [PUBSUB_PEER_DISCOVERY],
+      }),
+      bootstrap({
+        list: [
+          isLocalhost
+              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+        ]
+      })
+    ]
+  } else {
+    boot = [
+      bootstrap({
+        list: [
+          isLocalhost
+              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+        ]
+      })
+    ]
+  }
 }
 
 if(isLanKad) {
