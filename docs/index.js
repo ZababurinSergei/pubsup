@@ -110,7 +110,7 @@ if(isBootstrap) {
         list: [
           isLocalhost
               ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-              : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
         ]
       })
     ]
@@ -120,7 +120,7 @@ if(isBootstrap) {
         list: [
           isLocalhost
               ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-              : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
         ]
       })
     ]
@@ -162,9 +162,7 @@ const libp2p = await createLibp2p({
   addresses: {
     listen: [
       '/webrtc-direct',
-      '/webrtc',
-      '/wss',
-      '/ws'
+      '/webrtc'
     ]
   },
   transports: [
