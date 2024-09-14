@@ -25,7 +25,7 @@ import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { autoNAT } from '@libp2p/autonat'
+// import { autoNAT } from '@libp2p/autonat'
 
 // const datastore = new MemoryDatastore()
 let __dirname = process.cwd();
@@ -253,15 +253,12 @@ async function main () {
         connectionEncryption: [
             noise()
         ],
-        streamMuxers: [
-            yamux(),
-            mplex()
-        ],
+        streamMuxers: [yamux()],
         services: {
             identify: identify(),
             identifyPush: identifyPush(),
             pubsub: gossipsub(),
-            autoNat: autoNAT(),
+            // autoNat: autoNAT(),
             relay: circuitRelayServer(),
             ping: ping()
         }
