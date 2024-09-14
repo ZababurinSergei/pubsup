@@ -10,7 +10,6 @@ import http from 'http'
 /* eslint-disable no-console */
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
-import { mplex } from '@libp2p/mplex'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import {identify, identifyPush} from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
