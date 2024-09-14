@@ -162,7 +162,9 @@ const libp2p = await createLibp2p({
   addresses: {
     listen: [
       '/webrtc-direct',
-      '/webrtc'
+      '/webrtc',
+      '/wss',
+      '/ws'
     ]
   },
   transports: [
