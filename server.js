@@ -225,7 +225,7 @@ async function main () {
                 `/ip4/0.0.0.0/tcp/${port}/wss`
             ],
             announce: [
-                `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}`
+                `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}`,
                 `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}/wss`
             ]
         }
