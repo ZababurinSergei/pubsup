@@ -50,7 +50,6 @@
     "express-enqueue": "^1.0.0",
     "http-proxy": "^1.18.1",
     "libp2p": "^1.9.4",
-    "libp2p-swarm": "^0.35.1",
     "peer-id": "^0.16.0",
     "uint8arrays": "^5.1.0"
   },
