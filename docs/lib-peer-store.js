@@ -597,7 +597,7 @@ var CodeError = class extends Error {
   }
 };
 
-// node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
 var ed25519_class_exports = {};
 __export(ed25519_class_exports, {
   Ed25519PrivateKey: () => Ed25519PrivateKey,
@@ -1753,9 +1753,13 @@ function parseCIDtoBytes(source, base3) {
       const decoder = base3 ?? base32;
       return [base32.prefix, decoder.decode(source)];
     }
+    case base36.prefix: {
+      const decoder = base3 ?? base36;
+      return [base36.prefix, decoder.decode(source)];
+    }
     default: {
       if (base3 == null) {
-        throw Error("To parse non base32 or base58btc encoded CID multibase decoder must be provided");
+        throw Error("To parse non base32, base36 or base58btc encoded CID multibase decoder must be provided");
       }
       return [source[0], base3.decode(source)];
     }
@@ -1865,7 +1869,7 @@ function fromString2(string2, encoding = "utf8") {
 }
 __name(fromString2, "fromString");
 
-// node_modules/@libp2p/crypto/dist/src/util.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/util.js
 function isPromise(thing) {
   if (thing == null) {
     return false;
@@ -3606,7 +3610,7 @@ var ed25519Defaults = /* @__PURE__ */ (() => ({
 }))();
 var ed25519 = /* @__PURE__ */ (() => twistedEdwards(ed25519Defaults))();
 
-// node_modules/@libp2p/crypto/dist/src/keys/ed25519-browser.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/ed25519-browser.js
 var PUBLIC_KEY_BYTE_LENGTH = 32;
 var PRIVATE_KEY_BYTE_LENGTH = 64;
 var KEYS_BYTE_LENGTH = 32;
@@ -3654,7 +3658,7 @@ function concatKeys(privateKeyRaw, publicKey) {
 }
 __name(concatKeys, "concatKeys");
 
-// node_modules/@libp2p/crypto/dist/src/webcrypto-browser.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/webcrypto-browser.js
 var webcrypto_browser_default = {
   get(win = globalThis) {
     const nativeCrypto = win.crypto;
@@ -3665,7 +3669,7 @@ var webcrypto_browser_default = {
   }
 };
 
-// node_modules/@libp2p/crypto/dist/src/ciphers/aes-gcm.browser.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/ciphers/aes-gcm.browser.js
 var derivedEmptyPasswordKey = { alg: "A128GCM", ext: true, k: "scm9jmO_4BJAgdwWGVulLg", key_ops: ["encrypt", "decrypt"], kty: "oct" };
 function create2(opts) {
   const algorithm = opts?.algorithm ?? "AES-GCM";
@@ -3736,7 +3740,7 @@ function create2(opts) {
 }
 __name(create2, "create");
 
-// node_modules/@libp2p/crypto/dist/src/keys/exporter.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/exporter.js
 async function exporter(privateKey, password) {
   const cipher = create2();
   const encryptedKey = await cipher.encrypt(privateKey, password);
@@ -5087,7 +5091,7 @@ function message(encode6, decode7) {
 }
 __name(message, "message");
 
-// node_modules/@libp2p/crypto/dist/src/keys/keys.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/keys.js
 var KeyType;
 (function(KeyType2) {
   KeyType2["RSA"] = "RSA";
@@ -5204,7 +5208,7 @@ var PrivateKey;
   };
 })(PrivateKey || (PrivateKey = {}));
 
-// node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
 var Ed25519PublicKey = class {
   static {
     __name(this, "Ed25519PublicKey");
@@ -5347,7 +5351,7 @@ function toString2(array, encoding = "utf8") {
 }
 __name(toString2, "toString");
 
-// node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
 var rsa_class_exports = {};
 __export(rsa_class_exports, {
   MAX_RSA_KEY_SIZE: () => MAX_RSA_KEY_SIZE,
@@ -5359,7 +5363,7 @@ __export(rsa_class_exports, {
   unmarshalRsaPublicKey: () => unmarshalRsaPublicKey
 });
 
-// node_modules/@libp2p/crypto/dist/src/random-bytes.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/random-bytes.js
 function randomBytes2(length3) {
   if (isNaN(length3) || length3 <= 0) {
     throw new CodeError("random bytes length must be a Number bigger than 0", "ERR_INVALID_LENGTH");
@@ -5368,7 +5372,7 @@ function randomBytes2(length3) {
 }
 __name(randomBytes2, "randomBytes");
 
-// node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
 var rsa_utils_exports = {};
 __export(rsa_utils_exports, {
   exportToPem: () => exportToPem,
@@ -8440,7 +8444,7 @@ _a = TIME;
 })();
 TIME.NAME = "TIME";
 
-// node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
 function pkcs1ToJwk(bytes2) {
   const { result } = fromBER(bytes2);
   const values = result.valueBlock.value;
@@ -8735,7 +8739,7 @@ function toUint8Array(buf) {
 }
 __name(toUint8Array, "toUint8Array");
 
-// node_modules/@libp2p/crypto/dist/src/keys/rsa-browser.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-browser.js
 async function generateKey2(bits) {
   const pair = await webcrypto_browser_default.get().subtle.generateKey({
     name: "RSASSA-PKCS1-v1_5",
@@ -8818,7 +8822,7 @@ function keySize(jwk) {
 }
 __name(keySize, "keySize");
 
-// node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
 var MAX_RSA_KEY_SIZE = 8192;
 var RsaPublicKey = class {
   static {
@@ -8954,7 +8958,7 @@ async function generateKeyPair2(bits) {
 }
 __name(generateKeyPair2, "generateKeyPair");
 
-// node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
 var secp256k1_class_exports = {};
 __export(secp256k1_class_exports, {
   Secp256k1PrivateKey: () => Secp256k1PrivateKey,
@@ -10099,7 +10103,7 @@ var secp256k1 = createCurve({
 var _0n7 = BigInt(0);
 var Point = secp256k1.ProjectivePoint;
 
-// node_modules/@libp2p/crypto/dist/src/keys/secp256k1-browser.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-browser.js
 function generateKey3() {
   return secp256k1.utils.randomPrivateKey();
 }
@@ -10162,7 +10166,7 @@ function computePublicKey(privateKey) {
 }
 __name(computePublicKey, "computePublicKey");
 
-// node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
 var Secp256k1PublicKey = class {
   static {
     __name(this, "Secp256k1PublicKey");
@@ -10271,7 +10275,7 @@ async function generateKeyPair3() {
 }
 __name(generateKeyPair3, "generateKeyPair");
 
-// node_modules/@libp2p/crypto/dist/src/keys/index.js
+// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/index.js
 var supportedKeys = {
   rsa: rsa_class_exports,
   ed25519: ed25519_class_exports,
@@ -11936,6 +11940,15 @@ var DNS_CODES = [
   getProtocol("dns6").code,
   getProtocol("dnsaddr").code
 ];
+var NoAvailableResolverError = class extends Error {
+  static {
+    __name(this, "NoAvailableResolverError");
+  }
+  constructor(message2 = "No available resolver") {
+    super(message2);
+    this.name = "NoAvailableResolverError";
+  }
+};
 var Multiaddr = class _Multiaddr {
   static {
     __name(this, "Multiaddr");
@@ -12092,7 +12105,7 @@ var Multiaddr = class _Multiaddr {
     }
     const resolver = resolvers.get(resolvableProto.name);
     if (resolver == null) {
-      throw new CodeError(`no available resolver for ${resolvableProto.name}`, "ERR_NO_AVAILABLE_RESOLVER");
+      throw new NoAvailableResolverError(`no available resolver for ${resolvableProto.name}`);
     }
     const result = await resolver(this, options);
     return result.map((str) => multiaddr(str));

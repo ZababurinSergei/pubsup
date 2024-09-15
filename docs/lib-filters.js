@@ -5,21 +5,6 @@ var __export = (target, all2) => {
     __defProp(target, name2, { get: all2[name2], enumerable: true });
 };
 
-// node_modules/@libp2p/interface/dist/src/errors.js
-var CodeError = class extends Error {
-  static {
-    __name(this, "CodeError");
-  }
-  code;
-  props;
-  constructor(message, code2, props) {
-    super(message);
-    this.code = code2;
-    this.name = props?.name ?? "CodeError";
-    this.props = props ?? {};
-  }
-};
-
 // node_modules/multiformats/dist/src/bases/base58.js
 var base58_exports = {};
 __export(base58_exports, {
@@ -472,6 +457,23 @@ var base32z = rfc4648({
   bitsPerChar: 5
 });
 
+// node_modules/multiformats/dist/src/bases/base36.js
+var base36_exports = {};
+__export(base36_exports, {
+  base36: () => base36,
+  base36upper: () => base36upper
+});
+var base36 = baseX({
+  prefix: "k",
+  name: "base36",
+  alphabet: "0123456789abcdefghijklmnopqrstuvwxyz"
+});
+var base36upper = baseX({
+  prefix: "K",
+  name: "base36upper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+});
+
 // node_modules/multiformats/dist/src/vendor/varint.js
 var encode_1 = encode2;
 var MSB = 128;
@@ -891,9 +893,13 @@ function parseCIDtoBytes(source, base4) {
       const decoder = base4 ?? base32;
       return [base32.prefix, decoder.decode(source)];
     }
+    case base36.prefix: {
+      const decoder = base4 ?? base36;
+      return [base36.prefix, decoder.decode(source)];
+    }
     default: {
       if (base4 == null) {
-        throw Error("To parse non base32 or base58btc encoded CID multibase decoder must be provided");
+        throw Error("To parse non base32, base36 or base58btc encoded CID multibase decoder must be provided");
       }
       return [source[0], base4.decode(source)];
     }
@@ -1038,23 +1044,6 @@ var base256emoji = from({
   name: "base256emoji",
   encode: encode3,
   decode: decode5
-});
-
-// node_modules/multiformats/dist/src/bases/base36.js
-var base36_exports = {};
-__export(base36_exports, {
-  base36: () => base36,
-  base36upper: () => base36upper
-});
-var base36 = baseX({
-  prefix: "k",
-  name: "base36",
-  alphabet: "0123456789abcdefghijklmnopqrstuvwxyz"
-});
-var base36upper = baseX({
-  prefix: "K",
-  name: "base36upper",
-  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 });
 
 // node_modules/multiformats/dist/src/bases/base64.js
@@ -2276,6 +2265,15 @@ var DNS_CODES = [
   getProtocol("dns6").code,
   getProtocol("dnsaddr").code
 ];
+var NoAvailableResolverError = class extends Error {
+  static {
+    __name(this, "NoAvailableResolverError");
+  }
+  constructor(message = "No available resolver") {
+    super(message);
+    this.name = "NoAvailableResolverError";
+  }
+};
 var Multiaddr = class _Multiaddr {
   static {
     __name(this, "Multiaddr");
@@ -2432,7 +2430,7 @@ var Multiaddr = class _Multiaddr {
     }
     const resolver = resolvers.get(resolvableProto.name);
     if (resolver == null) {
-      throw new CodeError(`no available resolver for ${resolvableProto.name}`, "ERR_NO_AVAILABLE_RESOLVER");
+      throw new NoAvailableResolverError(`no available resolver for ${resolvableProto.name}`);
     }
     const result = await resolver(this, options);
     return result.map((str) => multiaddr(str));
