@@ -8,7 +8,7 @@ import express from 'express';
 import http from 'http'
 
 /* eslint-disable no-console */
-import { unmarshalPrivateKey, unmarshalPublicKey, generateKeyPair, privateKeyToProtobuf, privateKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { privateKeyFromRaw, generateKeyPair, privateKeyToProtobuf, privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
