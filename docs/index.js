@@ -255,13 +255,13 @@ const libp2p = await createLibp2p({
 })
 
 const intervalId = setInterval( () => {
-  // const ma = multiaddr(isLocalhost
-  //     ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-  //     : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1")
+  const ma = multiaddr(isLocalhost
+      ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+      : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1")
+  //
+  // const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
 
-  const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
-
-  libp2p.services.ping.ping(peer)
+  libp2p.services.ping.ping(ma)
 }, 1000 * 60 * 13)
 
 DOM.dhtMode().textContent = libp2p.services.dht.getMode()
