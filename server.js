@@ -8,6 +8,7 @@ import express from 'express';
 import http from 'http'
 
 /* eslint-disable no-console */
+import { unmarshalPrivateKey, unmarshalPublicKey, generateKeyPair, privateKeyToProtobuf, privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
@@ -30,6 +31,22 @@ import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 let __dirname = process.cwd();
 const buffer = fs.readFileSync(__dirname + '/peerId.proto')
 const peerId =  await createEd25519PeerId.createFromProtobuf(buffer)
+
+//TODO надо вставить
+/*
+const peerId = privateKeyFromProtobuf(buffer)
+// const writePeerId = async (name) => {
+//     let peerId = await generateKeyPair('Ed25519')
+//     fs.writeFileSync(__dirname + name, privateKeyToProtobuf(peerId))
+//     return peerId
+// }
+// const readPeerId = async (name) => {
+//     const buffer = fs.readFileSync(__dirname + name)
+//     return privateKeyFromProtobuf(buffer)
+// }
+// console.log('__dirname + namePeerId', __dirname + namePeerId)
+// const peerId = fs.existsSync(__dirname + namePeerId) && isRead ? await readPeerId(namePeerId) :await writePeerId(namePeerId)
+ */
 
 dotenv.config();
 
