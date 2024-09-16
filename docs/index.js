@@ -23,13 +23,13 @@ import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 
 // const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
 
-const datastore = new IDBDatastore('/fs', {
-  prefix: '/universe',
-  version: 1
-})
+// const datastore = new IDBDatastore('/fs', {
+//   prefix: '/universe',
+//   version: 1
+// })
 
 // await datastore.destroy()
-await datastore.open()
+// await datastore.open()
 
 // console.log('datastore', datastore)
 
@@ -38,6 +38,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const isBootstrap = urlParams.has('bootstrap')
 const isLanKad = urlParams.has('lanKad')
+const isDht = urlParams.has('dht')
 const isPubsubPeerDiscovery = urlParams.has('pubsubPeerDiscovery')
 const isPeerInfoMapper = urlParams.has('peerInfoMapper')
 let publicAddressesMapper = removePublicAddressesMapper
@@ -224,7 +225,7 @@ const libp2p = await createLibp2p({
     pubsub: gossipsub(),
     dcutr: dcutr(),
     ping: ping(),
-    dht: kadDHT({
+    dht: isDht? kadDHT({
       kBucketSize: 4,
       kBucketSplitThreshold: `kBucketSize`,
       prefixLength: 6,
@@ -242,7 +243,7 @@ const libp2p = await createLibp2p({
       maxOutboundStreams: 6,
       // peerInfoMapper: removePrivateAddressesMapper,
       peerInfoMapper: publicAddressesMapper,
-    })
+    }): () => { }
   },
   connectionManager: {
     minConnections: 20
@@ -259,7 +260,11 @@ const intervalId = setInterval( () => {
   libp2p.services.ping.ping(ma)
 }, 1000 * 60 * 13)
 
-DOM.dhtMode().textContent = libp2p.services.dht.getMode()
+if(isDht) {
+  DOM.dhtMode().textContent = libp2p.services.dht.getMode()
+} else {
+  DOM.dhtMode().textContent = 'Disabled'
+}
 
 DOM.peerId().innerText = libp2p.peerId.toString()
 console.log('multiaddress:',libp2p.getMultiaddrs())
