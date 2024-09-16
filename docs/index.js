@@ -15,7 +15,7 @@ import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } fro
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { ping } from '@libp2p/ping'
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
-
+import { FaultTolerance } from '@libp2p/interface-transport'
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { IDBDatastore } from 'datastore-idb'
 
@@ -132,25 +132,23 @@ const libp2p = await createLibp2p({
   },
   transports: [
     webRTCDirect(),
-    // the WebSocket transport lets us dial a local relay
     webSockets({
-      // this allows non-secure WebSocket connections for purposes of the demo
       filter: filters.all
     }),
-    // support dialing/listening on WebRTC addresses
     webRTC(),
-    // support dialing/listening on Circuit Relay addresses
     circuitRelayTransport({
-      // make a reservation on any discovered relays - this will let other
-      // peers use the relay to contact us
       discoverRelays: 4
     })
   ],
   peerDiscovery: boot,
-  // a connection encrypter is necessary to dial the relay
   connectionEncrypters: [noise()],
-  // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
+  connectionManager: {
+    minConnections: 20,
+  },
+  transportManager: {
+    faultTolerance: FaultTolerance.NO_FATAL
+  },
   services: {
     identify: identify(),
     identifyPush: identifyPush(),
@@ -176,9 +174,6 @@ const libp2p = await createLibp2p({
       // peerInfoMapper: removePrivateAddressesMapper,
       peerInfoMapper: publicAddressesMapper,
     }): () => { }
-  },
-  connectionManager: {
-    minConnections: 20
   },
   connectionGater: {
     denyDialPeer: (currentPeerId) => {

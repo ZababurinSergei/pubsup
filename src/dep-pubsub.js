@@ -13,3 +13,4 @@ export { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } fro
 export { MemoryDatastore } from 'datastore-core'
 export { IDBDatastore } from 'datastore-idb'
 export { ping } from '@libp2p/ping'
+export { FaultTolerance } from '@libp2p/interface-transport'

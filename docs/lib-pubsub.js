@@ -1420,9 +1420,9 @@ var require_merge_options = __commonJS({
       }
       if (Object.getOwnPropertySymbols) {
         const symbols = Object.getOwnPropertySymbols(value);
-        for (const symbol3 of symbols) {
-          if (propertyIsEnumerable.call(value, symbol3)) {
-            keys.push(symbol3);
+        for (const symbol4 of symbols) {
+          if (propertyIsEnumerable.call(value, symbol4)) {
+            keys.push(symbol4);
           }
         }
       }
@@ -1768,9 +1768,9 @@ var KEEP_ALIVE = "keep-alive";
 // node_modules/@libp2p/interface/dist/src/transport/index.js
 var transportSymbol = Symbol.for("@libp2p/transport");
 var FaultTolerance;
-(function(FaultTolerance2) {
-  FaultTolerance2[FaultTolerance2["FATAL_ALL"] = 0] = "FATAL_ALL";
-  FaultTolerance2[FaultTolerance2["NO_FATAL"] = 1] = "NO_FATAL";
+(function(FaultTolerance3) {
+  FaultTolerance3[FaultTolerance3["FATAL_ALL"] = 0] = "FATAL_ALL";
+  FaultTolerance3[FaultTolerance3["NO_FATAL"] = 1] = "NO_FATAL";
 })(FaultTolerance || (FaultTolerance = {}));
 
 // node_modules/@libp2p/interface/dist/src/errors.js
@@ -15413,7 +15413,7 @@ var AbstractStream = class {
 
 // node_modules/it-peekable/dist/src/index.js
 function peekable(iterable) {
-  const [iterator, symbol3] = iterable[Symbol.asyncIterator] != null ? [iterable[Symbol.asyncIterator](), Symbol.asyncIterator] : [iterable[Symbol.iterator](), Symbol.iterator];
+  const [iterator, symbol4] = iterable[Symbol.asyncIterator] != null ? [iterable[Symbol.asyncIterator](), Symbol.asyncIterator] : [iterable[Symbol.iterator](), Symbol.iterator];
   const queue = [];
   return {
     peek: /* @__PURE__ */ __name(() => {
@@ -15431,7 +15431,7 @@ function peekable(iterable) {
       }
       return iterator.next();
     }, "next"),
-    [symbol3]() {
+    [symbol4]() {
       return this;
     }
   };
@@ -51406,7 +51406,16 @@ function ping(init = {}) {
   return (components) => new PingService(components, init);
 }
 __name(ping, "ping");
+
+// node_modules/@libp2p/interface-transport/dist/src/index.js
+var symbol3 = Symbol.for("@libp2p/transport");
+var FaultTolerance2;
+(function(FaultTolerance3) {
+  FaultTolerance3[FaultTolerance3["FATAL_ALL"] = 0] = "FATAL_ALL";
+  FaultTolerance3[FaultTolerance3["NO_FATAL"] = 1] = "NO_FATAL";
+})(FaultTolerance2 || (FaultTolerance2 = {}));
 export {
+  FaultTolerance2 as FaultTolerance,
   IDBDatastore,
   MemoryDatastore,
   bootstrap,

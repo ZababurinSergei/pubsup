@@ -277,7 +277,6 @@ async function main () {
         services: {
             identify: identify(),
             identifyPush: identifyPush(),
-            // autoNat: autoNAT(),
             pubsub: gossipsub(),
             relay: circuitRelayServer(),
             ping: ping()

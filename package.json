@@ -35,6 +35,7 @@
     "@libp2p/crypto": "^5.0.1",
     "@libp2p/dcutr": "^2.0.1",
     "@libp2p/identify": "^3.0.1",
+    "@libp2p/interface-transport": "^4.0.3",
     "@libp2p/kad-dht": "^13.0.1",
     "@libp2p/logger": "^5.0.1",
     "@libp2p/peer-id": "^5.0.1",
