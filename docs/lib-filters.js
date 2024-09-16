@@ -220,10 +220,11 @@ var Decoder = class {
   constructor(name2, prefix, baseDecode) {
     this.name = name2;
     this.prefix = prefix;
-    if (prefix.codePointAt(0) === void 0) {
+    const prefixCodePoint = prefix.codePointAt(0);
+    if (prefixCodePoint === void 0) {
       throw new Error("Invalid prefix character");
     }
-    this.prefixCodePoint = prefix.codePointAt(0);
+    this.prefixCodePoint = prefixCodePoint;
     this.baseDecode = baseDecode;
   }
   decode(text) {
@@ -1017,7 +1018,11 @@ var alphabetBytesToChars = alphabet.reduce((p, c, i) => {
   return p;
 }, []);
 var alphabetCharsToBytes = alphabet.reduce((p, c, i) => {
-  p[c.codePointAt(0)] = i;
+  const codePoint = c.codePointAt(0);
+  if (codePoint == null) {
+    throw new Error(`Invalid character: ${c}`);
+  }
+  p[codePoint] = i;
   return p;
 }, []);
 function encode3(data) {
@@ -1030,8 +1035,12 @@ __name(encode3, "encode");
 function decode5(str) {
   const byts = [];
   for (const char of str) {
-    const byt = alphabetCharsToBytes[char.codePointAt(0)];
-    if (byt === void 0) {
+    const codePoint = char.codePointAt(0);
+    if (codePoint == null) {
+      throw new Error(`Invalid character: ${char}`);
+    }
+    const byt = alphabetCharsToBytes[codePoint];
+    if (byt == null) {
       throw new Error(`Non-base256emoji character: ${char}`);
     }
     byts.push(byt);

@@ -18,7 +18,8 @@ import { IDBDatastore } from 'datastore-idb'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
-// const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
+import { FaultTolerance } from '@libp2p/interface-transport'
+
 
 const serverPeerId = '12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1'
 const port = 4839
@@ -193,6 +194,38 @@ const libp2p = await createLibp2p({
   connectionEncryption: [noise()],
   // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
+  services: {
+    identify: identify(),
+    identifyPush: identifyPush(),
+    pubsub: gossipsub(),
+    dcutr: dcutr(),
+    ping: ping(),
+    dht: isDht ? kadDHT({
+      kBucketSize: 4,
+      kBucketSplitThreshold: `kBucketSize`,
+      prefixLength: 6,
+      clientMode: false,
+      querySelfInterval: 5000,
+      initialQuerySelfInterval: 1000,
+      allowQueryWithZeroPeers: false,
+      protocol: DhtProtocol,
+      logPrefix: "libp2p:kad-dht",
+      pingTimeout: 10000,
+      pingConcurrency: 10,
+      // maxInboundStreams: 32,
+      // maxOutboundStreams: 64,
+      maxInboundStreams: 3,
+      maxOutboundStreams: 6,
+      // peerInfoMapper: removePrivateAddressesMapper,
+      peerInfoMapper: publicAddressesMapper,
+    }): () => { }
+  },
+  connectionManager: {
+    minConnections: 20
+  },
+  transportManager: {
+    faultTolerance: FaultTolerance.NO_FATAL
+  },
   connectionGater: {
     denyDialPeer: (currentPeerId) => {
       console.log('-------- denyDialPeer --------', currentPeerId.toString())
@@ -230,35 +263,6 @@ const libp2p = await createLibp2p({
       console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
       return true
     }
-  },
-  services: {
-    identify: identify(),
-    identifyPush: identifyPush(),
-    pubsub: gossipsub(),
-    dcutr: dcutr(),
-    ping: ping(),
-    dht: isDht ? kadDHT({
-      kBucketSize: 4,
-      kBucketSplitThreshold: `kBucketSize`,
-      prefixLength: 6,
-      clientMode: false,
-      querySelfInterval: 5000,
-      initialQuerySelfInterval: 1000,
-      allowQueryWithZeroPeers: false,
-      protocol: DhtProtocol,
-      logPrefix: "libp2p:kad-dht",
-      pingTimeout: 10000,
-      pingConcurrency: 10,
-      // maxInboundStreams: 32,
-      // maxOutboundStreams: 64,
-      maxInboundStreams: 3,
-      maxOutboundStreams: 6,
-      // peerInfoMapper: removePrivateAddressesMapper,
-      peerInfoMapper: publicAddressesMapper,
-    }): () => { }
-  },
-  connectionManager: {
-    minConnections: 20
   }
 })
 
