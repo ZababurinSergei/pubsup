@@ -37,6 +37,7 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const isBootstrap = urlParams.has('bootstrap')
 const isLanKad = urlParams.has('lanKad')
+const isDht = urlParams.has('dht')
 const isPubsubPeerDiscovery = urlParams.has('pubsubPeerDiscovery')
 const isPeerInfoMapper = urlParams.has('peerInfoMapper')
 let publicAddressesMapper = removePublicAddressesMapper
@@ -235,7 +236,7 @@ const libp2p = await createLibp2p({
     pubsub: gossipsub(),
     dcutr: dcutr(),
     ping: ping(),
-    dht: kadDHT({
+    dht: isDht ? kadDHT({
       kBucketSize: 4,
       kBucketSplitThreshold: `kBucketSize`,
       prefixLength: 6,
@@ -253,7 +254,7 @@ const libp2p = await createLibp2p({
       maxOutboundStreams: 6,
       // peerInfoMapper: removePrivateAddressesMapper,
       peerInfoMapper: publicAddressesMapper,
-    })
+    }): () => { }
   },
   connectionManager: {
     minConnections: 20

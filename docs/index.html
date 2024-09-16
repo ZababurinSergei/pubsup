@@ -74,6 +74,14 @@
       </button>
 
       <button
+              onclick="(function(self) {
+                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&dht`
+            })(this)"
+      >
+        Bootstrap && DHT
+      </button>
+
+      <button
             onclick="(function(self) {
                 window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&pubsubPeerDiscovery`
             })(this)"
