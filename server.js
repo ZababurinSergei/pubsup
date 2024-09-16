@@ -23,11 +23,13 @@ import fs from "node:fs";
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
-import { PUBSUB_PEER_DISCOVERY } from './constants.js'
+import { PUBSUB_PEER_DISCOVERY } from './docs/constants.js'
 // import Gossipsub from "@chainsafe/libp2p-gossipsub";
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { autoNAT } from '@libp2p/autonat'
+// import { autoNAT } from '@libp2p/autonat'
+import { enabled } from '@libp2p/logger'
 
+enabled('*')
 // const datastore = new MemoryDatastore()
 
 let __dirname = process.cwd();
@@ -275,7 +277,7 @@ async function main () {
         services: {
             identify: identify(),
             identifyPush: identifyPush(),
-            autoNat: autoNAT(),
+            // autoNat: autoNAT(),
             pubsub: gossipsub(),
             relay: circuitRelayServer(),
             ping: ping()
@@ -360,7 +362,7 @@ async function main () {
         res.json({
             status: true,
             peers: peers,
-            dhtMode:  libp2p.services.dht.getMode(),
+            // dhtMode:  libp2p.services.dht.getMode(),
             MA: libp2p.getMultiaddrs()
         });
     });

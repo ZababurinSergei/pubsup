@@ -12,23 +12,28 @@ import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
 import { bootstrap } from '@libp2p/bootstrap'
 import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
+
 import { PersistentPeerStore } from '@libp2p/peer-store'
-import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { IDBDatastore } from 'datastore-idb'
+
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 
-const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
+// const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
 
-const store = new IDBDatastore('/fs', {
+const datastore = new IDBDatastore('/fs', {
   prefix: '/universe',
   version: 1
 })
 
-await store.open()
+// await datastore.destroy()
+await datastore.open()
+
+// console.log('datastore', datastore)
 
 const isLocalhost = window.location.hostname === 'localhost'
-
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const isBootstrap = urlParams.has('bootstrap')
@@ -38,34 +43,23 @@ const isPeerInfoMapper = urlParams.has('peerInfoMapper')
 let publicAddressesMapper = removePublicAddressesMapper
 
 let DhtProtocol = "/universe/kad/1.0.0"
+
 console.log('isBootstrap', isBootstrap)
 console.log('isPubsubPeerDiscovery', isPubsubPeerDiscovery)
 
 const DOM = {
   peerId: () => document.getElementById('peer-id'),
-
   dhtMode: () => document.getElementById('dht-mode'),
-
   clearButton: () => document.getElementById('clear-button'),
-
   dialMultiaddrInput: () => document.getElementById('dial-multiaddr-input'),
-
   dialMultiaddrButton: () => document.getElementById('dial-multiaddr-button'),
-
   subscribeTopicInput: () => document.getElementById('subscribe-topic-input'),
-
   subscribeTopicButton: () => document.getElementById('subscribe-topic-button'),
-
   sendTopicMessageInput: () => document.getElementById('send-topic-message-input'),
-
   sendTopicMessageButton: () => document.getElementById('send-topic-message-button'),
-
   output: () => document.getElementById('output'),
-
   listeningAddressesList: () => document.getElementById('listening-addresses'),
-
   peerConnectionsList: () => document.getElementById('peer-connections'),
-
   topicPeerList: () => document.getElementById('topic-peers')
 }
 
@@ -156,10 +150,10 @@ if(isLanKad) {
   ]
 }
 
-
+console.log('ddddddddddddddddddddddddd', boot)
 const libp2p = await createLibp2p({
-  peerStore: PersistentPeerStore,
-  datastore: store,
+  // peerStore: PersistentPeerStore,
+  // datastore: datastore,
   addresses: {
     listen: [
       '/webrtc-direct',
@@ -179,23 +173,10 @@ const libp2p = await createLibp2p({
     circuitRelayTransport({
       // make a reservation on any discovered relays - this will let other
       // peers use the relay to contact us
-      discoverRelays: 2
+      discoverRelays: 4
     })
   ],
-  peerDiscovery: [
-    pubsubPeerDiscovery({
-      interval: 10000,
-      topics: [PUBSUB_PEER_DISCOVERY], // defaults to ['_peer-discovery._p2p._pubsub']
-      listenOnly: false
-    }),
-    bootstrap({
-      list: [
-        isLocalhost
-            ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
-            : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
-      ]
-    })
-  ],
+  peerDiscovery: boot,
   // a connection encrypter is necessary to dial the relay
   connectionEncrypters: [noise()],
   // a stream muxer is necessary to dial the relay
@@ -243,25 +224,25 @@ const libp2p = await createLibp2p({
     pubsub: gossipsub(),
     dcutr: dcutr(),
     ping: ping(),
-    // dht: kadDHT({
-    //   kBucketSize: 4,
-    //   kBucketSplitThreshold: `kBucketSize`,
-    //   prefixLength: 6,
-    //   clientMode: false,
-    //   querySelfInterval: 5000,
-    //   initialQuerySelfInterval: 1000,
-    //   allowQueryWithZeroPeers: false,
-    //   protocol: DhtProtocol,
-    //   logPrefix: "libp2p:kad-dht",
-    //   pingTimeout: 10000,
-    //   pingConcurrency: 10,
-    //   // maxInboundStreams: 32,
-    //   // maxOutboundStreams: 64,
-    //   maxInboundStreams: 3,
-    //   maxOutboundStreams: 6,
-    //   // peerInfoMapper: removePrivateAddressesMapper,
-    //   peerInfoMapper: publicAddressesMapper,
-    // })
+    dht: kadDHT({
+      kBucketSize: 4,
+      kBucketSplitThreshold: `kBucketSize`,
+      prefixLength: 6,
+      clientMode: false,
+      querySelfInterval: 5000,
+      initialQuerySelfInterval: 1000,
+      allowQueryWithZeroPeers: false,
+      protocol: DhtProtocol,
+      logPrefix: "libp2p:kad-dht",
+      pingTimeout: 10000,
+      pingConcurrency: 10,
+      // maxInboundStreams: 32,
+      // maxOutboundStreams: 64,
+      maxInboundStreams: 3,
+      maxOutboundStreams: 6,
+      // peerInfoMapper: removePrivateAddressesMapper,
+      peerInfoMapper: publicAddressesMapper,
+    })
   },
   connectionManager: {
     minConnections: 20
@@ -278,7 +259,7 @@ const intervalId = setInterval( () => {
   libp2p.services.ping.ping(ma)
 }, 1000 * 60 * 13)
 
-// DOM.dhtMode().textContent = libp2p.services.dht.getMode()
+DOM.dhtMode().textContent = libp2p.services.dht.getMode()
 
 DOM.peerId().innerText = libp2p.peerId.toString()
 console.log('multiaddress:',libp2p.getMultiaddrs())

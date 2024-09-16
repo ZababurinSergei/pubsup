@@ -8,4 +8,4 @@ export const bootstrapPeers = [
   'QmZa1sAxajnQjVM8WjWXoMbmPd7NsWhfKsPkErzpm9wGkp',
 ]
 
-export const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
+export const PUBSUB_PEER_DISCOVERY = 'discovery'
