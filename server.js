@@ -24,17 +24,19 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
+// import Gossipsub from "@chainsafe/libp2p-gossipsub";
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-// import { autoNAT } from '@libp2p/autonat'
+import { autoNAT } from '@libp2p/autonat'
 
 // const datastore = new MemoryDatastore()
+
 let __dirname = process.cwd();
 const buffer = fs.readFileSync(__dirname + '/peerId.proto')
-const peerId =  await createEd25519PeerId.createFromProtobuf(buffer)
-
+// const peerId =  await createEd25519PeerId.createFromProtobuf(buffer)
+const peerId = privateKeyFromProtobuf(buffer)
 //TODO надо вставить
 /*
-const peerId = privateKeyFromProtobuf(buffer)
+
 // const writePeerId = async (name) => {
 //     let peerId = await generateKeyPair('Ed25519')
 //     fs.writeFileSync(__dirname + name, privateKeyToProtobuf(peerId))
@@ -256,33 +258,36 @@ async function main () {
             ]
         }
 
-    const node = await createLibp2p({
-        peerId,
+    const libp2p = await createLibp2p({
+        peerStore: PersistentPeerStore,
+        MemoryDatastore,
+        privateKey: peerId,
         addresses: addresses,
         transports: [
             webTransport(),
             webSockets({ server }),
             tcp(),
         ],
-        connectionEncryption: [
+        connectionEncrypters: [
             noise()
         ],
         streamMuxers: [yamux()],
         services: {
             identify: identify(),
             identifyPush: identifyPush(),
+            autoNat: autoNAT(),
             pubsub: gossipsub(),
-            // autoNat: autoNAT(),
             relay: circuitRelayServer(),
             ping: ping()
         }
     })
 
-    node.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
-    console.log(`Node started with id ${node.peerId.toString()}`)
+
+    libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
+    console.log(`Node started with id ${libp2p.peerId.toString()}`)
     let pathNode = ''
 
-    node.getMultiaddrs().forEach((ma, index) => {
+    libp2p.getMultiaddrs().forEach((ma, index) => {
         pathNode = ma.toString()
         console.log(`${index}::Listening on:`, pathNode)
     })
@@ -348,15 +353,15 @@ async function main () {
 
     app.get('/peers', (req, res) => {
         let peers = []
-        for(let item of node.getPeers()) {
+        for(let item of libp2p.getPeers()) {
             peers.push(item.toString())
         }
 
         res.json({
             status: true,
             peers: peers,
-            dhtMode:  node.services.dht.getMode(),
-            MA: node.getMultiaddrs()
+            dhtMode:  libp2p.services.dht.getMode(),
+            MA: libp2p.getMultiaddrs()
         });
     });
 

@@ -103,14 +103,15 @@ if(isBootstrap) {
   if(isPubsubPeerDiscovery) {
     boot = [
       pubsubPeerDiscovery({
-        interval: 10_000,
-        topics: [PUBSUB_PEER_DISCOVERY],
+        interval: 10000,
+        topics: [PUBSUB_PEER_DISCOVERY], // defaults to ['_peer-discovery._p2p._pubsub']
+        listenOnly: false
       }),
       bootstrap({
         list: [
           isLocalhost
-              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
+              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
         ]
       })
     ]
@@ -119,8 +120,8 @@ if(isBootstrap) {
       bootstrap({
         list: [
           isLocalhost
-              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
+              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
         ]
       })
     ]
@@ -157,8 +158,8 @@ if(isLanKad) {
 
 
 const libp2p = await createLibp2p({
-  store,
-  PersistentPeerStore,
+  peerStore: PersistentPeerStore,
+  datastore: store,
   addresses: {
     listen: [
       '/webrtc-direct',
@@ -181,9 +182,22 @@ const libp2p = await createLibp2p({
       discoverRelays: 2
     })
   ],
-  peerDiscovery: boot,
+  peerDiscovery: [
+    pubsubPeerDiscovery({
+      interval: 10000,
+      topics: [PUBSUB_PEER_DISCOVERY], // defaults to ['_peer-discovery._p2p._pubsub']
+      listenOnly: false
+    }),
+    bootstrap({
+      list: [
+        isLocalhost
+            ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
+            : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
+      ]
+    })
+  ],
   // a connection encrypter is necessary to dial the relay
-  connectionEncryption: [noise()],
+  connectionEncrypters: [noise()],
   // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
   connectionGater: {
@@ -229,25 +243,25 @@ const libp2p = await createLibp2p({
     pubsub: gossipsub(),
     dcutr: dcutr(),
     ping: ping(),
-    dht: kadDHT({
-      kBucketSize: 4,
-      kBucketSplitThreshold: `kBucketSize`,
-      prefixLength: 6,
-      clientMode: false,
-      querySelfInterval: 5000,
-      initialQuerySelfInterval: 1000,
-      allowQueryWithZeroPeers: false,
-      protocol: DhtProtocol,
-      logPrefix: "libp2p:kad-dht",
-      pingTimeout: 10000,
-      pingConcurrency: 10,
-      // maxInboundStreams: 32,
-      // maxOutboundStreams: 64,
-      maxInboundStreams: 3,
-      maxOutboundStreams: 6,
-      // peerInfoMapper: removePrivateAddressesMapper,
-      peerInfoMapper: publicAddressesMapper,
-    })
+    // dht: kadDHT({
+    //   kBucketSize: 4,
+    //   kBucketSplitThreshold: `kBucketSize`,
+    //   prefixLength: 6,
+    //   clientMode: false,
+    //   querySelfInterval: 5000,
+    //   initialQuerySelfInterval: 1000,
+    //   allowQueryWithZeroPeers: false,
+    //   protocol: DhtProtocol,
+    //   logPrefix: "libp2p:kad-dht",
+    //   pingTimeout: 10000,
+    //   pingConcurrency: 10,
+    //   // maxInboundStreams: 32,
+    //   // maxOutboundStreams: 64,
+    //   maxInboundStreams: 3,
+    //   maxOutboundStreams: 6,
+    //   // peerInfoMapper: removePrivateAddressesMapper,
+    //   peerInfoMapper: publicAddressesMapper,
+    // })
   },
   connectionManager: {
     minConnections: 20
@@ -256,15 +270,15 @@ const libp2p = await createLibp2p({
 
 const intervalId = setInterval( () => {
   const ma = multiaddr(isLocalhost
-      ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-      : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1")
+      ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6"
+      : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAJKSV1yF6XVZRzMnh6YFd5tbXbQQZxwHAMxZXfWyQpm6")
   //
   // const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
 
   libp2p.services.ping.ping(ma)
 }, 1000 * 60 * 13)
 
-DOM.dhtMode().textContent = libp2p.services.dht.getMode()
+// DOM.dhtMode().textContent = libp2p.services.dht.getMode()
 
 DOM.peerId().innerText = libp2p.peerId.toString()
 console.log('multiaddress:',libp2p.getMultiaddrs())
@@ -376,6 +390,7 @@ libp2p.services.pubsub.addEventListener('message', event => {
   const topic = event.detail.topic
   const message = toString(event.detail.data)
 
-  appendOutput(`Message received on topic '${topic}'`)
+  // console.log('------------ MESSAGE ------------', event.detail)
+  // appendOutput(`Message received on topic '${topic}'`)
   appendOutput(message)
 })

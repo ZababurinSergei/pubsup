@@ -408,6 +408,551 @@ var require_build = __commonJS({
   }
 });
 
+// node_modules/netmask/lib/netmask.js
+var require_netmask = __commonJS({
+  "node_modules/netmask/lib/netmask.js"(exports) {
+    (function() {
+      var Netmask2, atob2, chr, chr0, chrA, chra, ip2long, long2ip;
+      long2ip = /* @__PURE__ */ __name(function(long) {
+        var a, b, c, d2;
+        a = (long & 255 << 24) >>> 24;
+        b = (long & 255 << 16) >>> 16;
+        c = (long & 255 << 8) >>> 8;
+        d2 = long & 255;
+        return [a, b, c, d2].join(".");
+      }, "long2ip");
+      ip2long = /* @__PURE__ */ __name(function(ip) {
+        var b, c, i, j, n, ref;
+        b = [];
+        for (i = j = 0; j <= 3; i = ++j) {
+          if (ip.length === 0) {
+            break;
+          }
+          if (i > 0) {
+            if (ip[0] !== ".") {
+              throw new Error("Invalid IP");
+            }
+            ip = ip.substring(1);
+          }
+          ref = atob2(ip), n = ref[0], c = ref[1];
+          ip = ip.substring(c);
+          b.push(n);
+        }
+        if (ip.length !== 0) {
+          throw new Error("Invalid IP");
+        }
+        switch (b.length) {
+          case 1:
+            if (b[0] > 4294967295) {
+              throw new Error("Invalid IP");
+            }
+            return b[0] >>> 0;
+          case 2:
+            if (b[0] > 255 || b[1] > 16777215) {
+              throw new Error("Invalid IP");
+            }
+            return (b[0] << 24 | b[1]) >>> 0;
+          case 3:
+            if (b[0] > 255 || b[1] > 255 || b[2] > 65535) {
+              throw new Error("Invalid IP");
+            }
+            return (b[0] << 24 | b[1] << 16 | b[2]) >>> 0;
+          case 4:
+            if (b[0] > 255 || b[1] > 255 || b[2] > 255 || b[3] > 255) {
+              throw new Error("Invalid IP");
+            }
+            return (b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]) >>> 0;
+          default:
+            throw new Error("Invalid IP");
+        }
+      }, "ip2long");
+      chr = /* @__PURE__ */ __name(function(b) {
+        return b.charCodeAt(0);
+      }, "chr");
+      chr0 = chr("0");
+      chra = chr("a");
+      chrA = chr("A");
+      atob2 = /* @__PURE__ */ __name(function(s2) {
+        var base3, dmax, i, n, start2;
+        n = 0;
+        base3 = 10;
+        dmax = "9";
+        i = 0;
+        if (s2.length > 1 && s2[i] === "0") {
+          if (s2[i + 1] === "x" || s2[i + 1] === "X") {
+            i += 2;
+            base3 = 16;
+          } else if ("0" <= s2[i + 1] && s2[i + 1] <= "9") {
+            i++;
+            base3 = 8;
+            dmax = "7";
+          }
+        }
+        start2 = i;
+        while (i < s2.length) {
+          if ("0" <= s2[i] && s2[i] <= dmax) {
+            n = n * base3 + (chr(s2[i]) - chr0) >>> 0;
+          } else if (base3 === 16) {
+            if ("a" <= s2[i] && s2[i] <= "f") {
+              n = n * base3 + (10 + chr(s2[i]) - chra) >>> 0;
+            } else if ("A" <= s2[i] && s2[i] <= "F") {
+              n = n * base3 + (10 + chr(s2[i]) - chrA) >>> 0;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+          if (n > 4294967295) {
+            throw new Error("too large");
+          }
+          i++;
+        }
+        if (i === start2) {
+          throw new Error("empty octet");
+        }
+        return [n, i];
+      }, "atob");
+      Netmask2 = function() {
+        function Netmask3(net, mask) {
+          var error, i, j, ref;
+          if (typeof net !== "string") {
+            throw new Error("Missing `net' parameter");
+          }
+          if (!mask) {
+            ref = net.split("/", 2), net = ref[0], mask = ref[1];
+          }
+          if (!mask) {
+            mask = 32;
+          }
+          if (typeof mask === "string" && mask.indexOf(".") > -1) {
+            try {
+              this.maskLong = ip2long(mask);
+            } catch (error1) {
+              error = error1;
+              throw new Error("Invalid mask: " + mask);
+            }
+            for (i = j = 32; j >= 0; i = --j) {
+              if (this.maskLong === 4294967295 << 32 - i >>> 0) {
+                this.bitmask = i;
+                break;
+              }
+            }
+          } else if (mask || mask === 0) {
+            this.bitmask = parseInt(mask, 10);
+            this.maskLong = 0;
+            if (this.bitmask > 0) {
+              this.maskLong = 4294967295 << 32 - this.bitmask >>> 0;
+            }
+          } else {
+            throw new Error("Invalid mask: empty");
+          }
+          try {
+            this.netLong = (ip2long(net) & this.maskLong) >>> 0;
+          } catch (error1) {
+            error = error1;
+            throw new Error("Invalid net address: " + net);
+          }
+          if (!(this.bitmask <= 32)) {
+            throw new Error("Invalid mask for ip4: " + mask);
+          }
+          this.size = Math.pow(2, 32 - this.bitmask);
+          this.base = long2ip(this.netLong);
+          this.mask = long2ip(this.maskLong);
+          this.hostmask = long2ip(~this.maskLong);
+          this.first = this.bitmask <= 30 ? long2ip(this.netLong + 1) : this.base;
+          this.last = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 2) : long2ip(this.netLong + this.size - 1);
+          this.broadcast = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 1) : void 0;
+        }
+        __name(Netmask3, "Netmask");
+        Netmask3.prototype.contains = function(ip) {
+          if (typeof ip === "string" && (ip.indexOf("/") > 0 || ip.split(".").length !== 4)) {
+            ip = new Netmask3(ip);
+          }
+          if (ip instanceof Netmask3) {
+            return this.contains(ip.base) && this.contains(ip.broadcast || ip.last);
+          } else {
+            return (ip2long(ip) & this.maskLong) >>> 0 === (this.netLong & this.maskLong) >>> 0;
+          }
+        };
+        Netmask3.prototype.next = function(count) {
+          if (count == null) {
+            count = 1;
+          }
+          return new Netmask3(long2ip(this.netLong + this.size * count), this.mask);
+        };
+        Netmask3.prototype.forEach = function(fn) {
+          var index, lastLong, long;
+          long = ip2long(this.first);
+          lastLong = ip2long(this.last);
+          index = 0;
+          while (long <= lastLong) {
+            fn(long2ip(long), long, index);
+            index++;
+            long++;
+          }
+        };
+        Netmask3.prototype.toString = function() {
+          return this.base + "/" + this.bitmask;
+        };
+        return Netmask3;
+      }();
+      exports.ip2long = ip2long;
+      exports.long2ip = long2ip;
+      exports.Netmask = Netmask2;
+    }).call(exports);
+  }
+});
+
+// node_modules/p-queue/node_modules/eventemitter3/index.js
+var require_eventemitter3 = __commonJS({
+  "node_modules/p-queue/node_modules/eventemitter3/index.js"(exports, module) {
+    "use strict";
+    var has = Object.prototype.hasOwnProperty;
+    var prefix = "~";
+    function Events() {
+    }
+    __name(Events, "Events");
+    if (Object.create) {
+      Events.prototype = /* @__PURE__ */ Object.create(null);
+      if (!new Events().__proto__) prefix = false;
+    }
+    function EE(fn, context, once) {
+      this.fn = fn;
+      this.context = context;
+      this.once = once || false;
+    }
+    __name(EE, "EE");
+    function addListener(emitter, event, fn, context, once) {
+      if (typeof fn !== "function") {
+        throw new TypeError("The listener must be a function");
+      }
+      var listener = new EE(fn, context || emitter, once), evt = prefix ? prefix + event : event;
+      if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
+      else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
+      else emitter._events[evt] = [emitter._events[evt], listener];
+      return emitter;
+    }
+    __name(addListener, "addListener");
+    function clearEvent(emitter, evt) {
+      if (--emitter._eventsCount === 0) emitter._events = new Events();
+      else delete emitter._events[evt];
+    }
+    __name(clearEvent, "clearEvent");
+    function EventEmitter2() {
+      this._events = new Events();
+      this._eventsCount = 0;
+    }
+    __name(EventEmitter2, "EventEmitter");
+    EventEmitter2.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
+      var names2 = [], events2, name3;
+      if (this._eventsCount === 0) return names2;
+      for (name3 in events2 = this._events) {
+        if (has.call(events2, name3)) names2.push(prefix ? name3.slice(1) : name3);
+      }
+      if (Object.getOwnPropertySymbols) {
+        return names2.concat(Object.getOwnPropertySymbols(events2));
+      }
+      return names2;
+    }, "eventNames");
+    EventEmitter2.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
+      var evt = prefix ? prefix + event : event, handlers = this._events[evt];
+      if (!handlers) return [];
+      if (handlers.fn) return [handlers.fn];
+      for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
+        ee[i] = handlers[i].fn;
+      }
+      return ee;
+    }, "listeners");
+    EventEmitter2.prototype.listenerCount = /* @__PURE__ */ __name(function listenerCount(event) {
+      var evt = prefix ? prefix + event : event, listeners = this._events[evt];
+      if (!listeners) return 0;
+      if (listeners.fn) return 1;
+      return listeners.length;
+    }, "listenerCount");
+    EventEmitter2.prototype.emit = /* @__PURE__ */ __name(function emit(event, a1, a2, a3, a4, a5) {
+      var evt = prefix ? prefix + event : event;
+      if (!this._events[evt]) return false;
+      var listeners = this._events[evt], len = arguments.length, args, i;
+      if (listeners.fn) {
+        if (listeners.once) this.removeListener(event, listeners.fn, void 0, true);
+        switch (len) {
+          case 1:
+            return listeners.fn.call(listeners.context), true;
+          case 2:
+            return listeners.fn.call(listeners.context, a1), true;
+          case 3:
+            return listeners.fn.call(listeners.context, a1, a2), true;
+          case 4:
+            return listeners.fn.call(listeners.context, a1, a2, a3), true;
+          case 5:
+            return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+          case 6:
+            return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+        }
+        for (i = 1, args = new Array(len - 1); i < len; i++) {
+          args[i - 1] = arguments[i];
+        }
+        listeners.fn.apply(listeners.context, args);
+      } else {
+        var length3 = listeners.length, j;
+        for (i = 0; i < length3; i++) {
+          if (listeners[i].once) this.removeListener(event, listeners[i].fn, void 0, true);
+          switch (len) {
+            case 1:
+              listeners[i].fn.call(listeners[i].context);
+              break;
+            case 2:
+              listeners[i].fn.call(listeners[i].context, a1);
+              break;
+            case 3:
+              listeners[i].fn.call(listeners[i].context, a1, a2);
+              break;
+            case 4:
+              listeners[i].fn.call(listeners[i].context, a1, a2, a3);
+              break;
+            default:
+              if (!args) for (j = 1, args = new Array(len - 1); j < len; j++) {
+                args[j - 1] = arguments[j];
+              }
+              listeners[i].fn.apply(listeners[i].context, args);
+          }
+        }
+      }
+      return true;
+    }, "emit");
+    EventEmitter2.prototype.on = /* @__PURE__ */ __name(function on(event, fn, context) {
+      return addListener(this, event, fn, context, false);
+    }, "on");
+    EventEmitter2.prototype.once = /* @__PURE__ */ __name(function once(event, fn, context) {
+      return addListener(this, event, fn, context, true);
+    }, "once");
+    EventEmitter2.prototype.removeListener = /* @__PURE__ */ __name(function removeListener(event, fn, context, once) {
+      var evt = prefix ? prefix + event : event;
+      if (!this._events[evt]) return this;
+      if (!fn) {
+        clearEvent(this, evt);
+        return this;
+      }
+      var listeners = this._events[evt];
+      if (listeners.fn) {
+        if (listeners.fn === fn && (!once || listeners.once) && (!context || listeners.context === context)) {
+          clearEvent(this, evt);
+        }
+      } else {
+        for (var i = 0, events2 = [], length3 = listeners.length; i < length3; i++) {
+          if (listeners[i].fn !== fn || once && !listeners[i].once || context && listeners[i].context !== context) {
+            events2.push(listeners[i]);
+          }
+        }
+        if (events2.length) this._events[evt] = events2.length === 1 ? events2[0] : events2;
+        else clearEvent(this, evt);
+      }
+      return this;
+    }, "removeListener");
+    EventEmitter2.prototype.removeAllListeners = /* @__PURE__ */ __name(function removeAllListeners(event) {
+      var evt;
+      if (event) {
+        evt = prefix ? prefix + event : event;
+        if (this._events[evt]) clearEvent(this, evt);
+      } else {
+        this._events = new Events();
+        this._eventsCount = 0;
+      }
+      return this;
+    }, "removeAllListeners");
+    EventEmitter2.prototype.off = EventEmitter2.prototype.removeListener;
+    EventEmitter2.prototype.addListener = EventEmitter2.prototype.on;
+    EventEmitter2.prefixed = prefix;
+    EventEmitter2.EventEmitter = EventEmitter2;
+    if ("undefined" !== typeof module) {
+      module.exports = EventEmitter2;
+    }
+  }
+});
+
+// node_modules/hashlru/index.js
+var require_hashlru = __commonJS({
+  "node_modules/hashlru/index.js"(exports, module) {
+    module.exports = function(max) {
+      if (!max) throw Error("hashlru must have a max value, of type number, greater than 0");
+      var size = 0, cache3 = /* @__PURE__ */ Object.create(null), _cache = /* @__PURE__ */ Object.create(null);
+      function update(key, value) {
+        cache3[key] = value;
+        size++;
+        if (size >= max) {
+          size = 0;
+          _cache = cache3;
+          cache3 = /* @__PURE__ */ Object.create(null);
+        }
+      }
+      __name(update, "update");
+      return {
+        has: /* @__PURE__ */ __name(function(key) {
+          return cache3[key] !== void 0 || _cache[key] !== void 0;
+        }, "has"),
+        remove: /* @__PURE__ */ __name(function(key) {
+          if (cache3[key] !== void 0)
+            cache3[key] = void 0;
+          if (_cache[key] !== void 0)
+            _cache[key] = void 0;
+        }, "remove"),
+        get: /* @__PURE__ */ __name(function(key) {
+          var v = cache3[key];
+          if (v !== void 0) return v;
+          if ((v = _cache[key]) !== void 0) {
+            update(key, v);
+            return v;
+          }
+        }, "get"),
+        set: /* @__PURE__ */ __name(function(key, value) {
+          if (cache3[key] !== void 0) cache3[key] = value;
+          else update(key, value);
+        }, "set"),
+        clear: /* @__PURE__ */ __name(function() {
+          cache3 = /* @__PURE__ */ Object.create(null);
+          _cache = /* @__PURE__ */ Object.create(null);
+        }, "clear")
+      };
+    };
+  }
+});
+
+// node_modules/is-plain-obj/index.js
+var require_is_plain_obj = __commonJS({
+  "node_modules/is-plain-obj/index.js"(exports, module) {
+    "use strict";
+    module.exports = (value) => {
+      if (Object.prototype.toString.call(value) !== "[object Object]") {
+        return false;
+      }
+      const prototype = Object.getPrototypeOf(value);
+      return prototype === null || prototype === Object.prototype;
+    };
+  }
+});
+
+// node_modules/merge-options/index.js
+var require_merge_options = __commonJS({
+  "node_modules/merge-options/index.js"(exports, module) {
+    "use strict";
+    var isOptionObject = require_is_plain_obj();
+    var { hasOwnProperty } = Object.prototype;
+    var { propertyIsEnumerable } = Object;
+    var defineProperty = /* @__PURE__ */ __name((object, name3, value) => Object.defineProperty(object, name3, {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true
+    }), "defineProperty");
+    var globalThis2 = exports;
+    var defaultMergeOptions = {
+      concatArrays: false,
+      ignoreUndefined: false
+    };
+    var getEnumerableOwnPropertyKeys = /* @__PURE__ */ __name((value) => {
+      const keys = [];
+      for (const key in value) {
+        if (hasOwnProperty.call(value, key)) {
+          keys.push(key);
+        }
+      }
+      if (Object.getOwnPropertySymbols) {
+        const symbols = Object.getOwnPropertySymbols(value);
+        for (const symbol3 of symbols) {
+          if (propertyIsEnumerable.call(value, symbol3)) {
+            keys.push(symbol3);
+          }
+        }
+      }
+      return keys;
+    }, "getEnumerableOwnPropertyKeys");
+    function clone(value) {
+      if (Array.isArray(value)) {
+        return cloneArray(value);
+      }
+      if (isOptionObject(value)) {
+        return cloneOptionObject(value);
+      }
+      return value;
+    }
+    __name(clone, "clone");
+    function cloneArray(array) {
+      const result = array.slice(0, 0);
+      getEnumerableOwnPropertyKeys(array).forEach((key) => {
+        defineProperty(result, key, clone(array[key]));
+      });
+      return result;
+    }
+    __name(cloneArray, "cloneArray");
+    function cloneOptionObject(object) {
+      const result = Object.getPrototypeOf(object) === null ? /* @__PURE__ */ Object.create(null) : {};
+      getEnumerableOwnPropertyKeys(object).forEach((key) => {
+        defineProperty(result, key, clone(object[key]));
+      });
+      return result;
+    }
+    __name(cloneOptionObject, "cloneOptionObject");
+    var mergeKeys = /* @__PURE__ */ __name((merged, source, keys, config) => {
+      keys.forEach((key) => {
+        if (typeof source[key] === "undefined" && config.ignoreUndefined) {
+          return;
+        }
+        if (key in merged && merged[key] !== Object.getPrototypeOf(merged)) {
+          defineProperty(merged, key, merge2(merged[key], source[key], config));
+        } else {
+          defineProperty(merged, key, clone(source[key]));
+        }
+      });
+      return merged;
+    }, "mergeKeys");
+    var concatArrays = /* @__PURE__ */ __name((merged, source, config) => {
+      let result = merged.slice(0, 0);
+      let resultIndex = 0;
+      [merged, source].forEach((array) => {
+        const indices = [];
+        for (let k = 0; k < array.length; k++) {
+          if (!hasOwnProperty.call(array, k)) {
+            continue;
+          }
+          indices.push(String(k));
+          if (array === merged) {
+            defineProperty(result, resultIndex++, array[k]);
+          } else {
+            defineProperty(result, resultIndex++, clone(array[k]));
+          }
+        }
+        result = mergeKeys(result, array, getEnumerableOwnPropertyKeys(array).filter((key) => !indices.includes(key)), config);
+      });
+      return result;
+    }, "concatArrays");
+    function merge2(merged, source, config) {
+      if (config.concatArrays && Array.isArray(merged) && Array.isArray(source)) {
+        return concatArrays(merged, source, config);
+      }
+      if (!isOptionObject(source) || !isOptionObject(merged)) {
+        return clone(source);
+      }
+      return mergeKeys(merged, source, getEnumerableOwnPropertyKeys(source), config);
+    }
+    __name(merge2, "merge");
+    module.exports = function(...options) {
+      const config = merge2(clone(defaultMergeOptions), this !== globalThis2 && this || {}, defaultMergeOptions);
+      let merged = { _: {} };
+      for (const option of options) {
+        if (option === void 0) {
+          continue;
+        }
+        if (!isOptionObject(option)) {
+          throw new TypeError("`" + option + "` is not an Option Object");
+        }
+        merged = merge2(merged, { _: option }, config);
+      }
+      return merged._;
+    };
+  }
+});
+
 // node_modules/murmurhash3js-revisited/lib/murmurHash3js.js
 var require_murmurHash3js = __commonJS({
   "node_modules/murmurhash3js-revisited/lib/murmurHash3js.js"(exports, module) {
@@ -806,594 +1351,232 @@ var require_murmurhash3js_revisited = __commonJS({
   }
 });
 
-// node_modules/p-queue/node_modules/eventemitter3/index.js
-var require_eventemitter3 = __commonJS({
-  "node_modules/p-queue/node_modules/eventemitter3/index.js"(exports, module) {
-    "use strict";
-    var has = Object.prototype.hasOwnProperty;
-    var prefix = "~";
-    function Events() {
-    }
-    __name(Events, "Events");
-    if (Object.create) {
-      Events.prototype = /* @__PURE__ */ Object.create(null);
-      if (!new Events().__proto__) prefix = false;
-    }
-    function EE(fn, context, once) {
-      this.fn = fn;
-      this.context = context;
-      this.once = once || false;
-    }
-    __name(EE, "EE");
-    function addListener(emitter, event, fn, context, once) {
-      if (typeof fn !== "function") {
-        throw new TypeError("The listener must be a function");
+// node_modules/retry/lib/retry_operation.js
+var require_retry_operation = __commonJS({
+  "node_modules/retry/lib/retry_operation.js"(exports, module) {
+    function RetryOperation(timeouts, options) {
+      if (typeof options === "boolean") {
+        options = { forever: options };
       }
-      var listener = new EE(fn, context || emitter, once), evt = prefix ? prefix + event : event;
-      if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
-      else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
-      else emitter._events[evt] = [emitter._events[evt], listener];
-      return emitter;
-    }
-    __name(addListener, "addListener");
-    function clearEvent(emitter, evt) {
-      if (--emitter._eventsCount === 0) emitter._events = new Events();
-      else delete emitter._events[evt];
-    }
-    __name(clearEvent, "clearEvent");
-    function EventEmitter2() {
-      this._events = new Events();
-      this._eventsCount = 0;
-    }
-    __name(EventEmitter2, "EventEmitter");
-    EventEmitter2.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
-      var names2 = [], events2, name3;
-      if (this._eventsCount === 0) return names2;
-      for (name3 in events2 = this._events) {
-        if (has.call(events2, name3)) names2.push(prefix ? name3.slice(1) : name3);
-      }
-      if (Object.getOwnPropertySymbols) {
-        return names2.concat(Object.getOwnPropertySymbols(events2));
-      }
-      return names2;
-    }, "eventNames");
-    EventEmitter2.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
-      var evt = prefix ? prefix + event : event, handlers = this._events[evt];
-      if (!handlers) return [];
-      if (handlers.fn) return [handlers.fn];
-      for (var i = 0, l = handlers.length, ee = new Array(l); i < l; i++) {
-        ee[i] = handlers[i].fn;
-      }
-      return ee;
-    }, "listeners");
-    EventEmitter2.prototype.listenerCount = /* @__PURE__ */ __name(function listenerCount(event) {
-      var evt = prefix ? prefix + event : event, listeners = this._events[evt];
-      if (!listeners) return 0;
-      if (listeners.fn) return 1;
-      return listeners.length;
-    }, "listenerCount");
-    EventEmitter2.prototype.emit = /* @__PURE__ */ __name(function emit(event, a1, a2, a3, a4, a5) {
-      var evt = prefix ? prefix + event : event;
-      if (!this._events[evt]) return false;
-      var listeners = this._events[evt], len = arguments.length, args, i;
-      if (listeners.fn) {
-        if (listeners.once) this.removeListener(event, listeners.fn, void 0, true);
-        switch (len) {
-          case 1:
-            return listeners.fn.call(listeners.context), true;
-          case 2:
-            return listeners.fn.call(listeners.context, a1), true;
-          case 3:
-            return listeners.fn.call(listeners.context, a1, a2), true;
-          case 4:
-            return listeners.fn.call(listeners.context, a1, a2, a3), true;
-          case 5:
-            return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-          case 6:
-            return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-        }
-        for (i = 1, args = new Array(len - 1); i < len; i++) {
-          args[i - 1] = arguments[i];
-        }
-        listeners.fn.apply(listeners.context, args);
-      } else {
-        var length3 = listeners.length, j;
-        for (i = 0; i < length3; i++) {
-          if (listeners[i].once) this.removeListener(event, listeners[i].fn, void 0, true);
-          switch (len) {
-            case 1:
-              listeners[i].fn.call(listeners[i].context);
-              break;
-            case 2:
-              listeners[i].fn.call(listeners[i].context, a1);
-              break;
-            case 3:
-              listeners[i].fn.call(listeners[i].context, a1, a2);
-              break;
-            case 4:
-              listeners[i].fn.call(listeners[i].context, a1, a2, a3);
-              break;
-            default:
-              if (!args) for (j = 1, args = new Array(len - 1); j < len; j++) {
-                args[j - 1] = arguments[j];
-              }
-              listeners[i].fn.apply(listeners[i].context, args);
-          }
-        }
-      }
-      return true;
-    }, "emit");
-    EventEmitter2.prototype.on = /* @__PURE__ */ __name(function on(event, fn, context) {
-      return addListener(this, event, fn, context, false);
-    }, "on");
-    EventEmitter2.prototype.once = /* @__PURE__ */ __name(function once(event, fn, context) {
-      return addListener(this, event, fn, context, true);
-    }, "once");
-    EventEmitter2.prototype.removeListener = /* @__PURE__ */ __name(function removeListener(event, fn, context, once) {
-      var evt = prefix ? prefix + event : event;
-      if (!this._events[evt]) return this;
-      if (!fn) {
-        clearEvent(this, evt);
-        return this;
-      }
-      var listeners = this._events[evt];
-      if (listeners.fn) {
-        if (listeners.fn === fn && (!once || listeners.once) && (!context || listeners.context === context)) {
-          clearEvent(this, evt);
-        }
-      } else {
-        for (var i = 0, events2 = [], length3 = listeners.length; i < length3; i++) {
-          if (listeners[i].fn !== fn || once && !listeners[i].once || context && listeners[i].context !== context) {
-            events2.push(listeners[i]);
-          }
-        }
-        if (events2.length) this._events[evt] = events2.length === 1 ? events2[0] : events2;
-        else clearEvent(this, evt);
-      }
-      return this;
-    }, "removeListener");
-    EventEmitter2.prototype.removeAllListeners = /* @__PURE__ */ __name(function removeAllListeners(event) {
-      var evt;
-      if (event) {
-        evt = prefix ? prefix + event : event;
-        if (this._events[evt]) clearEvent(this, evt);
-      } else {
-        this._events = new Events();
-        this._eventsCount = 0;
-      }
-      return this;
-    }, "removeAllListeners");
-    EventEmitter2.prototype.off = EventEmitter2.prototype.removeListener;
-    EventEmitter2.prototype.addListener = EventEmitter2.prototype.on;
-    EventEmitter2.prefixed = prefix;
-    EventEmitter2.EventEmitter = EventEmitter2;
-    if ("undefined" !== typeof module) {
-      module.exports = EventEmitter2;
-    }
-  }
-});
-
-// node_modules/err-code/index.js
-var require_err_code = __commonJS({
-  "node_modules/err-code/index.js"(exports, module) {
-    "use strict";
-    function assign(obj, props) {
-      for (const key in props) {
-        Object.defineProperty(obj, key, {
-          value: props[key],
-          enumerable: true,
-          configurable: true
-        });
-      }
-      return obj;
-    }
-    __name(assign, "assign");
-    function createError(err, code2, props) {
-      if (!err || typeof err === "string") {
-        throw new TypeError("Please pass an Error to err-code");
-      }
-      if (!props) {
-        props = {};
-      }
-      if (typeof code2 === "object") {
-        props = code2;
-        code2 = "";
-      }
-      if (code2) {
-        props.code = code2;
-      }
-      try {
-        return assign(err, props);
-      } catch (_) {
-        props.message = err.message;
-        props.stack = err.stack;
-        const ErrClass = /* @__PURE__ */ __name(function() {
-        }, "ErrClass");
-        ErrClass.prototype = Object.create(Object.getPrototypeOf(err));
-        const output2 = assign(new ErrClass(), props);
-        return output2;
+      this._originalTimeouts = JSON.parse(JSON.stringify(timeouts));
+      this._timeouts = timeouts;
+      this._options = options || {};
+      this._maxRetryTime = options && options.maxRetryTime || Infinity;
+      this._fn = null;
+      this._errors = [];
+      this._attempts = 1;
+      this._operationTimeout = null;
+      this._operationTimeoutCb = null;
+      this._timeout = null;
+      this._operationStart = null;
+      this._timer = null;
+      if (this._options.forever) {
+        this._cachedTimeouts = this._timeouts.slice(0);
       }
     }
-    __name(createError, "createError");
-    module.exports = createError;
-  }
-});
-
-// node_modules/netmask/lib/netmask.js
-var require_netmask = __commonJS({
-  "node_modules/netmask/lib/netmask.js"(exports) {
-    (function() {
-      var Netmask2, atob2, chr, chr0, chrA, chra, ip2long, long2ip;
-      long2ip = /* @__PURE__ */ __name(function(long) {
-        var a, b, c, d2;
-        a = (long & 255 << 24) >>> 24;
-        b = (long & 255 << 16) >>> 16;
-        c = (long & 255 << 8) >>> 8;
-        d2 = long & 255;
-        return [a, b, c, d2].join(".");
-      }, "long2ip");
-      ip2long = /* @__PURE__ */ __name(function(ip) {
-        var b, c, i, j, n, ref;
-        b = [];
-        for (i = j = 0; j <= 3; i = ++j) {
-          if (ip.length === 0) {
-            break;
-          }
-          if (i > 0) {
-            if (ip[0] !== ".") {
-              throw new Error("Invalid IP");
-            }
-            ip = ip.substring(1);
-          }
-          ref = atob2(ip), n = ref[0], c = ref[1];
-          ip = ip.substring(c);
-          b.push(n);
-        }
-        if (ip.length !== 0) {
-          throw new Error("Invalid IP");
-        }
-        switch (b.length) {
-          case 1:
-            if (b[0] > 4294967295) {
-              throw new Error("Invalid IP");
-            }
-            return b[0] >>> 0;
-          case 2:
-            if (b[0] > 255 || b[1] > 16777215) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1]) >>> 0;
-          case 3:
-            if (b[0] > 255 || b[1] > 255 || b[2] > 65535) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1] << 16 | b[2]) >>> 0;
-          case 4:
-            if (b[0] > 255 || b[1] > 255 || b[2] > 255 || b[3] > 255) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]) >>> 0;
-          default:
-            throw new Error("Invalid IP");
-        }
-      }, "ip2long");
-      chr = /* @__PURE__ */ __name(function(b) {
-        return b.charCodeAt(0);
-      }, "chr");
-      chr0 = chr("0");
-      chra = chr("a");
-      chrA = chr("A");
-      atob2 = /* @__PURE__ */ __name(function(s2) {
-        var base3, dmax, i, n, start;
-        n = 0;
-        base3 = 10;
-        dmax = "9";
-        i = 0;
-        if (s2.length > 1 && s2[i] === "0") {
-          if (s2[i + 1] === "x" || s2[i + 1] === "X") {
-            i += 2;
-            base3 = 16;
-          } else if ("0" <= s2[i + 1] && s2[i + 1] <= "9") {
-            i++;
-            base3 = 8;
-            dmax = "7";
-          }
-        }
-        start = i;
-        while (i < s2.length) {
-          if ("0" <= s2[i] && s2[i] <= dmax) {
-            n = n * base3 + (chr(s2[i]) - chr0) >>> 0;
-          } else if (base3 === 16) {
-            if ("a" <= s2[i] && s2[i] <= "f") {
-              n = n * base3 + (10 + chr(s2[i]) - chra) >>> 0;
-            } else if ("A" <= s2[i] && s2[i] <= "F") {
-              n = n * base3 + (10 + chr(s2[i]) - chrA) >>> 0;
-            } else {
-              break;
-            }
-          } else {
-            break;
-          }
-          if (n > 4294967295) {
-            throw new Error("too large");
-          }
-          i++;
-        }
-        if (i === start) {
-          throw new Error("empty octet");
-        }
-        return [n, i];
-      }, "atob");
-      Netmask2 = function() {
-        function Netmask3(net, mask) {
-          var error, i, j, ref;
-          if (typeof net !== "string") {
-            throw new Error("Missing `net' parameter");
-          }
-          if (!mask) {
-            ref = net.split("/", 2), net = ref[0], mask = ref[1];
-          }
-          if (!mask) {
-            mask = 32;
-          }
-          if (typeof mask === "string" && mask.indexOf(".") > -1) {
-            try {
-              this.maskLong = ip2long(mask);
-            } catch (error1) {
-              error = error1;
-              throw new Error("Invalid mask: " + mask);
-            }
-            for (i = j = 32; j >= 0; i = --j) {
-              if (this.maskLong === 4294967295 << 32 - i >>> 0) {
-                this.bitmask = i;
-                break;
-              }
-            }
-          } else if (mask || mask === 0) {
-            this.bitmask = parseInt(mask, 10);
-            this.maskLong = 0;
-            if (this.bitmask > 0) {
-              this.maskLong = 4294967295 << 32 - this.bitmask >>> 0;
-            }
-          } else {
-            throw new Error("Invalid mask: empty");
-          }
-          try {
-            this.netLong = (ip2long(net) & this.maskLong) >>> 0;
-          } catch (error1) {
-            error = error1;
-            throw new Error("Invalid net address: " + net);
-          }
-          if (!(this.bitmask <= 32)) {
-            throw new Error("Invalid mask for ip4: " + mask);
-          }
-          this.size = Math.pow(2, 32 - this.bitmask);
-          this.base = long2ip(this.netLong);
-          this.mask = long2ip(this.maskLong);
-          this.hostmask = long2ip(~this.maskLong);
-          this.first = this.bitmask <= 30 ? long2ip(this.netLong + 1) : this.base;
-          this.last = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 2) : long2ip(this.netLong + this.size - 1);
-          this.broadcast = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 1) : void 0;
-        }
-        __name(Netmask3, "Netmask");
-        Netmask3.prototype.contains = function(ip) {
-          if (typeof ip === "string" && (ip.indexOf("/") > 0 || ip.split(".").length !== 4)) {
-            ip = new Netmask3(ip);
-          }
-          if (ip instanceof Netmask3) {
-            return this.contains(ip.base) && this.contains(ip.broadcast || ip.last);
-          } else {
-            return (ip2long(ip) & this.maskLong) >>> 0 === (this.netLong & this.maskLong) >>> 0;
-          }
-        };
-        Netmask3.prototype.next = function(count) {
-          if (count == null) {
-            count = 1;
-          }
-          return new Netmask3(long2ip(this.netLong + this.size * count), this.mask);
-        };
-        Netmask3.prototype.forEach = function(fn) {
-          var index, lastLong, long;
-          long = ip2long(this.first);
-          lastLong = ip2long(this.last);
-          index = 0;
-          while (long <= lastLong) {
-            fn(long2ip(long), long, index);
-            index++;
-            long++;
-          }
-        };
-        Netmask3.prototype.toString = function() {
-          return this.base + "/" + this.bitmask;
-        };
-        return Netmask3;
-      }();
-      exports.ip2long = ip2long;
-      exports.long2ip = long2ip;
-      exports.Netmask = Netmask2;
-    }).call(exports);
-  }
-});
-
-// node_modules/hashlru/index.js
-var require_hashlru = __commonJS({
-  "node_modules/hashlru/index.js"(exports, module) {
-    module.exports = function(max) {
-      if (!max) throw Error("hashlru must have a max value, of type number, greater than 0");
-      var size = 0, cache3 = /* @__PURE__ */ Object.create(null), _cache = /* @__PURE__ */ Object.create(null);
-      function update(key, value) {
-        cache3[key] = value;
-        size++;
-        if (size >= max) {
-          size = 0;
-          _cache = cache3;
-          cache3 = /* @__PURE__ */ Object.create(null);
-        }
-      }
-      __name(update, "update");
-      return {
-        has: /* @__PURE__ */ __name(function(key) {
-          return cache3[key] !== void 0 || _cache[key] !== void 0;
-        }, "has"),
-        remove: /* @__PURE__ */ __name(function(key) {
-          if (cache3[key] !== void 0)
-            cache3[key] = void 0;
-          if (_cache[key] !== void 0)
-            _cache[key] = void 0;
-        }, "remove"),
-        get: /* @__PURE__ */ __name(function(key) {
-          var v = cache3[key];
-          if (v !== void 0) return v;
-          if ((v = _cache[key]) !== void 0) {
-            update(key, v);
-            return v;
-          }
-        }, "get"),
-        set: /* @__PURE__ */ __name(function(key, value) {
-          if (cache3[key] !== void 0) cache3[key] = value;
-          else update(key, value);
-        }, "set"),
-        clear: /* @__PURE__ */ __name(function() {
-          cache3 = /* @__PURE__ */ Object.create(null);
-          _cache = /* @__PURE__ */ Object.create(null);
-        }, "clear")
-      };
+    __name(RetryOperation, "RetryOperation");
+    module.exports = RetryOperation;
+    RetryOperation.prototype.reset = function() {
+      this._attempts = 1;
+      this._timeouts = this._originalTimeouts.slice(0);
     };
-  }
-});
-
-// node_modules/is-plain-obj/index.js
-var require_is_plain_obj = __commonJS({
-  "node_modules/is-plain-obj/index.js"(exports, module) {
-    "use strict";
-    module.exports = (value) => {
-      if (Object.prototype.toString.call(value) !== "[object Object]") {
+    RetryOperation.prototype.stop = function() {
+      if (this._timeout) {
+        clearTimeout(this._timeout);
+      }
+      if (this._timer) {
+        clearTimeout(this._timer);
+      }
+      this._timeouts = [];
+      this._cachedTimeouts = null;
+    };
+    RetryOperation.prototype.retry = function(err) {
+      if (this._timeout) {
+        clearTimeout(this._timeout);
+      }
+      if (!err) {
         return false;
       }
-      const prototype = Object.getPrototypeOf(value);
-      return prototype === null || prototype === Object.prototype;
+      var currentTime = (/* @__PURE__ */ new Date()).getTime();
+      if (err && currentTime - this._operationStart >= this._maxRetryTime) {
+        this._errors.push(err);
+        this._errors.unshift(new Error("RetryOperation timeout occurred"));
+        return false;
+      }
+      this._errors.push(err);
+      var timeout = this._timeouts.shift();
+      if (timeout === void 0) {
+        if (this._cachedTimeouts) {
+          this._errors.splice(0, this._errors.length - 1);
+          timeout = this._cachedTimeouts.slice(-1);
+        } else {
+          return false;
+        }
+      }
+      var self = this;
+      this._timer = setTimeout(function() {
+        self._attempts++;
+        if (self._operationTimeoutCb) {
+          self._timeout = setTimeout(function() {
+            self._operationTimeoutCb(self._attempts);
+          }, self._operationTimeout);
+          if (self._options.unref) {
+            self._timeout.unref();
+          }
+        }
+        self._fn(self._attempts);
+      }, timeout);
+      if (this._options.unref) {
+        this._timer.unref();
+      }
+      return true;
+    };
+    RetryOperation.prototype.attempt = function(fn, timeoutOps) {
+      this._fn = fn;
+      if (timeoutOps) {
+        if (timeoutOps.timeout) {
+          this._operationTimeout = timeoutOps.timeout;
+        }
+        if (timeoutOps.cb) {
+          this._operationTimeoutCb = timeoutOps.cb;
+        }
+      }
+      var self = this;
+      if (this._operationTimeoutCb) {
+        this._timeout = setTimeout(function() {
+          self._operationTimeoutCb();
+        }, self._operationTimeout);
+      }
+      this._operationStart = (/* @__PURE__ */ new Date()).getTime();
+      this._fn(this._attempts);
+    };
+    RetryOperation.prototype.try = function(fn) {
+      console.log("Using RetryOperation.try() is deprecated");
+      this.attempt(fn);
+    };
+    RetryOperation.prototype.start = function(fn) {
+      console.log("Using RetryOperation.start() is deprecated");
+      this.attempt(fn);
+    };
+    RetryOperation.prototype.start = RetryOperation.prototype.try;
+    RetryOperation.prototype.errors = function() {
+      return this._errors;
+    };
+    RetryOperation.prototype.attempts = function() {
+      return this._attempts;
+    };
+    RetryOperation.prototype.mainError = function() {
+      if (this._errors.length === 0) {
+        return null;
+      }
+      var counts = {};
+      var mainError = null;
+      var mainErrorCount = 0;
+      for (var i = 0; i < this._errors.length; i++) {
+        var error = this._errors[i];
+        var message2 = error.message;
+        var count = (counts[message2] || 0) + 1;
+        counts[message2] = count;
+        if (count >= mainErrorCount) {
+          mainError = error;
+          mainErrorCount = count;
+        }
+      }
+      return mainError;
     };
   }
 });
 
-// node_modules/merge-options/index.js
-var require_merge_options = __commonJS({
-  "node_modules/merge-options/index.js"(exports, module) {
-    "use strict";
-    var isOptionObject = require_is_plain_obj();
-    var { hasOwnProperty } = Object.prototype;
-    var { propertyIsEnumerable } = Object;
-    var defineProperty = /* @__PURE__ */ __name((object, name3, value) => Object.defineProperty(object, name3, {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true
-    }), "defineProperty");
-    var globalThis2 = exports;
-    var defaultMergeOptions = {
-      concatArrays: false,
-      ignoreUndefined: false
+// node_modules/retry/lib/retry.js
+var require_retry = __commonJS({
+  "node_modules/retry/lib/retry.js"(exports) {
+    var RetryOperation = require_retry_operation();
+    exports.operation = function(options) {
+      var timeouts = exports.timeouts(options);
+      return new RetryOperation(timeouts, {
+        forever: options && (options.forever || options.retries === Infinity),
+        unref: options && options.unref,
+        maxRetryTime: options && options.maxRetryTime
+      });
     };
-    var getEnumerableOwnPropertyKeys = /* @__PURE__ */ __name((value) => {
-      const keys = [];
-      for (const key in value) {
-        if (hasOwnProperty.call(value, key)) {
-          keys.push(key);
-        }
+    exports.timeouts = function(options) {
+      if (options instanceof Array) {
+        return [].concat(options);
       }
-      if (Object.getOwnPropertySymbols) {
-        const symbols = Object.getOwnPropertySymbols(value);
-        for (const symbol3 of symbols) {
-          if (propertyIsEnumerable.call(value, symbol3)) {
-            keys.push(symbol3);
-          }
-        }
+      var opts = {
+        retries: 10,
+        factor: 2,
+        minTimeout: 1 * 1e3,
+        maxTimeout: Infinity,
+        randomize: false
+      };
+      for (var key in options) {
+        opts[key] = options[key];
       }
-      return keys;
-    }, "getEnumerableOwnPropertyKeys");
-    function clone(value) {
-      if (Array.isArray(value)) {
-        return cloneArray(value);
+      if (opts.minTimeout > opts.maxTimeout) {
+        throw new Error("minTimeout is greater than maxTimeout");
       }
-      if (isOptionObject(value)) {
-        return cloneOptionObject(value);
+      var timeouts = [];
+      for (var i = 0; i < opts.retries; i++) {
+        timeouts.push(this.createTimeout(i, opts));
       }
-      return value;
-    }
-    __name(clone, "clone");
-    function cloneArray(array) {
-      const result = array.slice(0, 0);
-      getEnumerableOwnPropertyKeys(array).forEach((key) => {
-        defineProperty(result, key, clone(array[key]));
+      if (options && options.forever && !timeouts.length) {
+        timeouts.push(this.createTimeout(i, opts));
+      }
+      timeouts.sort(function(a, b) {
+        return a - b;
       });
-      return result;
-    }
-    __name(cloneArray, "cloneArray");
-    function cloneOptionObject(object) {
-      const result = Object.getPrototypeOf(object) === null ? /* @__PURE__ */ Object.create(null) : {};
-      getEnumerableOwnPropertyKeys(object).forEach((key) => {
-        defineProperty(result, key, clone(object[key]));
-      });
-      return result;
-    }
-    __name(cloneOptionObject, "cloneOptionObject");
-    var mergeKeys = /* @__PURE__ */ __name((merged, source, keys, config) => {
-      keys.forEach((key) => {
-        if (typeof source[key] === "undefined" && config.ignoreUndefined) {
-          return;
-        }
-        if (key in merged && merged[key] !== Object.getPrototypeOf(merged)) {
-          defineProperty(merged, key, merge2(merged[key], source[key], config));
-        } else {
-          defineProperty(merged, key, clone(source[key]));
-        }
-      });
-      return merged;
-    }, "mergeKeys");
-    var concatArrays = /* @__PURE__ */ __name((merged, source, config) => {
-      let result = merged.slice(0, 0);
-      let resultIndex = 0;
-      [merged, source].forEach((array) => {
-        const indices = [];
-        for (let k = 0; k < array.length; k++) {
-          if (!hasOwnProperty.call(array, k)) {
-            continue;
-          }
-          indices.push(String(k));
-          if (array === merged) {
-            defineProperty(result, resultIndex++, array[k]);
-          } else {
-            defineProperty(result, resultIndex++, clone(array[k]));
-          }
-        }
-        result = mergeKeys(result, array, getEnumerableOwnPropertyKeys(array).filter((key) => !indices.includes(key)), config);
-      });
-      return result;
-    }, "concatArrays");
-    function merge2(merged, source, config) {
-      if (config.concatArrays && Array.isArray(merged) && Array.isArray(source)) {
-        return concatArrays(merged, source, config);
-      }
-      if (!isOptionObject(source) || !isOptionObject(merged)) {
-        return clone(source);
-      }
-      return mergeKeys(merged, source, getEnumerableOwnPropertyKeys(source), config);
-    }
-    __name(merge2, "merge");
-    module.exports = function(...options) {
-      const config = merge2(clone(defaultMergeOptions), this !== globalThis2 && this || {}, defaultMergeOptions);
-      let merged = { _: {} };
-      for (const option of options) {
-        if (option === void 0) {
-          continue;
-        }
-        if (!isOptionObject(option)) {
-          throw new TypeError("`" + option + "` is not an Option Object");
-        }
-        merged = merge2(merged, { _: option }, config);
-      }
-      return merged._;
+      return timeouts;
     };
+    exports.createTimeout = function(attempt, opts) {
+      var random = opts.randomize ? Math.random() + 1 : 1;
+      var timeout = Math.round(random * Math.max(opts.minTimeout, 1) * Math.pow(opts.factor, attempt));
+      timeout = Math.min(timeout, opts.maxTimeout);
+      return timeout;
+    };
+    exports.wrap = function(obj, options, methods) {
+      if (options instanceof Array) {
+        methods = options;
+        options = null;
+      }
+      if (!methods) {
+        methods = [];
+        for (var key in obj) {
+          if (typeof obj[key] === "function") {
+            methods.push(key);
+          }
+        }
+      }
+      for (var i = 0; i < methods.length; i++) {
+        var method = methods[i];
+        var original = obj[method];
+        obj[method] = (/* @__PURE__ */ __name(function retryWrapper(original2) {
+          var op = exports.operation(options);
+          var args = Array.prototype.slice.call(arguments, 1);
+          var callback = args.pop();
+          args.push(function(err) {
+            if (op.retry(err)) {
+              return;
+            }
+            if (err) {
+              arguments[0] = op.mainError();
+            }
+            callback.apply(this, arguments);
+          });
+          op.attempt(function() {
+            original2.apply(obj, args);
+          });
+        }, "retryWrapper")).bind(obj, original);
+        obj[method].options = options;
+      }
+    };
+  }
+});
+
+// node_modules/retry/index.js
+var require_retry2 = __commonJS({
+  "node_modules/retry/index.js"(exports, module) {
+    module.exports = require_retry();
   }
 });
 
@@ -1409,7 +1592,7 @@ var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
 // node_modules/@libp2p/interface/dist/src/peer-id/index.js
 var peerIdSymbol = Symbol.for("@libp2p/peer-id");
 function isPeerId(other) {
-  return other != null && Boolean(other[peerIdSymbol]);
+  return Boolean(other?.[peerIdSymbol]);
 }
 __name(isPeerId, "isPeerId");
 
@@ -1428,48 +1611,146 @@ var FaultTolerance;
 })(FaultTolerance || (FaultTolerance = {}));
 
 // node_modules/@libp2p/interface/dist/src/errors.js
-var AbortError = class _AbortError extends Error {
-  static {
-    __name(this, "AbortError");
-  }
-  code;
-  type;
+var AbortError = class extends Error {
+  static name = "AbortError";
   constructor(message2 = "The operation was aborted") {
     super(message2);
     this.name = "AbortError";
-    this.code = _AbortError.code;
-    this.type = _AbortError.type;
   }
-  static code = "ABORT_ERR";
-  static type = "aborted";
 };
-var CodeError = class extends Error {
-  static {
-    __name(this, "CodeError");
-  }
-  code;
-  props;
-  constructor(message2, code2, props) {
+var InvalidParametersError = class extends Error {
+  static name = "InvalidParametersError";
+  constructor(message2 = "Invalid parameters") {
     super(message2);
-    this.code = code2;
-    this.name = props?.name ?? "CodeError";
-    this.props = props ?? {};
+    this.name = "InvalidParametersError";
   }
 };
-var AggregateCodeError = class extends AggregateError {
-  static {
-    __name(this, "AggregateCodeError");
-  }
-  code;
-  props;
-  constructor(errors, message2, code2, props) {
-    super(errors, message2);
-    this.code = code2;
-    this.name = props?.name ?? "AggregateCodeError";
-    this.props = props ?? {};
+var InvalidPublicKeyError = class extends Error {
+  static name = "InvalidPublicKeyError";
+  constructor(message2 = "Invalid public key") {
+    super(message2);
+    this.name = "InvalidPublicKeyError";
   }
 };
-var ERR_TIMEOUT = "ERR_TIMEOUT";
+var InvalidPrivateKeyError = class extends Error {
+  static name = "InvalidPrivateKeyError";
+  constructor(message2 = "Invalid private key") {
+    super(message2);
+    this.name = "InvalidPrivateKeyError";
+  }
+};
+var ConnectionClosingError = class extends Error {
+  static name = "ConnectionClosingError";
+  constructor(message2 = "The connection is closing") {
+    super(message2);
+    this.name = "ConnectionClosingError";
+  }
+};
+var ConnectionClosedError = class extends Error {
+  static name = "ConnectionClosedError";
+  constructor(message2 = "The connection is closed") {
+    super(message2);
+    this.name = "ConnectionClosedError";
+  }
+};
+var NotFoundError = class extends Error {
+  static name = "NotFoundError";
+  constructor(message2 = "Not found") {
+    super(message2);
+    this.name = "NotFoundError";
+  }
+};
+var InvalidPeerIdError = class extends Error {
+  static name = "InvalidPeerIdError";
+  constructor(message2 = "Invalid PeerID") {
+    super(message2);
+    this.name = "InvalidPeerIdError";
+  }
+};
+var InvalidMultiaddrError = class extends Error {
+  static name = "InvalidMultiaddrError";
+  constructor(message2 = "Invalid multiaddr") {
+    super(message2);
+    this.name = "InvalidMultiaddrError";
+  }
+};
+var InvalidCIDError = class extends Error {
+  static name = "InvalidCIDError";
+  constructor(message2 = "Invalid CID") {
+    super(message2);
+    this.name = "InvalidCIDError";
+  }
+};
+var InvalidMultihashError = class extends Error {
+  static name = "InvalidMultihashError";
+  constructor(message2 = "Invalid Multihash") {
+    super(message2);
+    this.name = "InvalidMultihashError";
+  }
+};
+var UnsupportedProtocolError = class extends Error {
+  static name = "UnsupportedProtocolError";
+  constructor(message2 = "Unsupported protocol error") {
+    super(message2);
+    this.name = "UnsupportedProtocolError";
+  }
+};
+var InvalidMessageError = class extends Error {
+  static name = "InvalidMessageError";
+  constructor(message2 = "Invalid message") {
+    super(message2);
+    this.name = "InvalidMessageError";
+  }
+};
+var TimeoutError = class extends Error {
+  static name = "TimeoutError";
+  constructor(message2 = "Timed out") {
+    super(message2);
+    this.name = "TimeoutError";
+  }
+};
+var NotStartedError = class extends Error {
+  static name = "NotStartedError";
+  constructor(message2 = "Not started") {
+    super(message2);
+    this.name = "NotStartedError";
+  }
+};
+var DialError = class extends Error {
+  static name = "DialError";
+  constructor(message2 = "Dial error") {
+    super(message2);
+    this.name = "DialError";
+  }
+};
+var LimitedConnectionError = class extends Error {
+  static name = "LimitedConnectionError";
+  constructor(message2 = "Limited connection") {
+    super(message2);
+    this.name = "LimitedConnectionError";
+  }
+};
+var TooManyInboundProtocolStreamsError = class extends Error {
+  static name = "TooManyInboundProtocolStreamsError";
+  constructor(message2 = "Too many inbound protocol streams") {
+    super(message2);
+    this.name = "TooManyInboundProtocolStreamsError";
+  }
+};
+var TooManyOutboundProtocolStreamsError = class extends Error {
+  static name = "TooManyOutboundProtocolStreamsError";
+  constructor(message2 = "Too many outbound protocol streams") {
+    super(message2);
+    this.name = "TooManyOutboundProtocolStreamsError";
+  }
+};
+var UnsupportedKeyTypeError = class extends Error {
+  static name = "UnsupportedKeyTypeError";
+  constructor(message2 = "Unsupported key type") {
+    super(message2);
+    this.name = "UnsupportedKeyTypeError";
+  }
+};
 
 // node_modules/@libp2p/interface/dist/src/events.browser.js
 function setMaxListeners() {
@@ -1536,28 +1817,60 @@ var TypedEventEmitter = class extends EventTarget {
     return this.dispatchEvent(new CustomEvent(type, detail));
   }
 };
-var CustomEvent = globalThis.CustomEvent;
 
 // node_modules/@libp2p/interface/dist/src/startable.js
 function isStartable(obj) {
   return obj != null && typeof obj.start === "function" && typeof obj.stop === "function";
 }
 __name(isStartable, "isStartable");
+async function start(...objs) {
+  const startables = [];
+  for (const obj of objs) {
+    if (isStartable(obj)) {
+      startables.push(obj);
+    }
+  }
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.beforeStart != null) {
+      await s2.beforeStart();
+    }
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    await s2.start();
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.afterStart != null) {
+      await s2.afterStart();
+    }
+  }));
+}
+__name(start, "start");
+async function stop(...objs) {
+  const startables = [];
+  for (const obj of objs) {
+    if (isStartable(obj)) {
+      startables.push(obj);
+    }
+  }
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.beforeStop != null) {
+      await s2.beforeStop();
+    }
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    await s2.stop();
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.afterStop != null) {
+      await s2.afterStop();
+    }
+  }));
+}
+__name(stop, "stop");
 
 // node_modules/@libp2p/interface/dist/src/index.js
 var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
 var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
-
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
-var ed25519_class_exports = {};
-__export(ed25519_class_exports, {
-  Ed25519PrivateKey: () => Ed25519PrivateKey,
-  Ed25519PublicKey: () => Ed25519PublicKey,
-  generateKeyPair: () => generateKeyPair,
-  generateKeyPairFromSeed: () => generateKeyPairFromSeed,
-  unmarshalEd25519PrivateKey: () => unmarshalEd25519PrivateKey,
-  unmarshalEd25519PublicKey: () => unmarshalEd25519PublicKey
-});
 
 // node_modules/multiformats/dist/src/bases/base58.js
 var base58_exports = {};
@@ -1774,10 +2087,11 @@ var Decoder = class {
   constructor(name3, prefix, baseDecode) {
     this.name = name3;
     this.prefix = prefix;
-    if (prefix.codePointAt(0) === void 0) {
+    const prefixCodePoint = prefix.codePointAt(0);
+    if (prefixCodePoint === void 0) {
       throw new Error("Invalid prefix character");
     }
-    this.prefixCodePoint = prefix.codePointAt(0);
+    this.prefixCodePoint = prefixCodePoint;
     this.baseDecode = baseDecode;
   }
   decode(text) {
@@ -1862,9 +2176,9 @@ function baseX({ name: name3, prefix, alphabet: alphabet2 }) {
 }
 __name(baseX, "baseX");
 function decode(string3, alphabet2, bitsPerChar, name3) {
-  const codes5 = {};
+  const codes2 = {};
   for (let i = 0; i < alphabet2.length; ++i) {
-    codes5[alphabet2[i]] = i;
+    codes2[alphabet2[i]] = i;
   }
   let end = string3.length;
   while (string3[end - 1] === "=") {
@@ -1875,7 +2189,7 @@ function decode(string3, alphabet2, bitsPerChar, name3) {
   let buffer = 0;
   let written = 0;
   for (let i = 0; i < end; ++i) {
-    const value = codes5[string3[i]];
+    const value = codes2[string3[i]];
     if (value === void 0) {
       throw new SyntaxError(`Non-${name3} character`);
     }
@@ -1943,10 +2257,89 @@ var base58flickr = baseX({
   alphabet: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 });
 
-// node_modules/multiformats/dist/src/hashes/identity.js
-var identity_exports = {};
-__export(identity_exports, {
-  identity: () => identity
+// node_modules/multiformats/dist/src/bases/base32.js
+var base32_exports = {};
+__export(base32_exports, {
+  base32: () => base32,
+  base32hex: () => base32hex,
+  base32hexpad: () => base32hexpad,
+  base32hexpadupper: () => base32hexpadupper,
+  base32hexupper: () => base32hexupper,
+  base32pad: () => base32pad,
+  base32padupper: () => base32padupper,
+  base32upper: () => base32upper,
+  base32z: () => base32z
+});
+var base32 = rfc4648({
+  prefix: "b",
+  name: "base32",
+  alphabet: "abcdefghijklmnopqrstuvwxyz234567",
+  bitsPerChar: 5
+});
+var base32upper = rfc4648({
+  prefix: "B",
+  name: "base32upper",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+  bitsPerChar: 5
+});
+var base32pad = rfc4648({
+  prefix: "c",
+  name: "base32pad",
+  alphabet: "abcdefghijklmnopqrstuvwxyz234567=",
+  bitsPerChar: 5
+});
+var base32padupper = rfc4648({
+  prefix: "C",
+  name: "base32padupper",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=",
+  bitsPerChar: 5
+});
+var base32hex = rfc4648({
+  prefix: "v",
+  name: "base32hex",
+  alphabet: "0123456789abcdefghijklmnopqrstuv",
+  bitsPerChar: 5
+});
+var base32hexupper = rfc4648({
+  prefix: "V",
+  name: "base32hexupper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+  bitsPerChar: 5
+});
+var base32hexpad = rfc4648({
+  prefix: "t",
+  name: "base32hexpad",
+  alphabet: "0123456789abcdefghijklmnopqrstuv=",
+  bitsPerChar: 5
+});
+var base32hexpadupper = rfc4648({
+  prefix: "T",
+  name: "base32hexpadupper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV=",
+  bitsPerChar: 5
+});
+var base32z = rfc4648({
+  prefix: "h",
+  name: "base32z",
+  alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
+  bitsPerChar: 5
+});
+
+// node_modules/multiformats/dist/src/bases/base36.js
+var base36_exports = {};
+__export(base36_exports, {
+  base36: () => base36,
+  base36upper: () => base36upper
+});
+var base36 = baseX({
+  prefix: "k",
+  name: "base36",
+  alphabet: "0123456789abcdefghijklmnopqrstuvwxyz"
+});
+var base36upper = baseX({
+  prefix: "K",
+  name: "base36upper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 });
 
 // node_modules/multiformats/dist/src/vendor/varint.js
@@ -2076,342 +2469,6 @@ var Digest = class {
     this.bytes = bytes2;
   }
 };
-
-// node_modules/multiformats/dist/src/hashes/identity.js
-var code = 0;
-var name = "identity";
-var encode3 = coerce;
-function digest(input) {
-  return create(code, encode3(input));
-}
-__name(digest, "digest");
-var identity = { code, name, encode: encode3, digest };
-
-// node_modules/multiformats/dist/src/hashes/sha2-browser.js
-var sha2_browser_exports = {};
-__export(sha2_browser_exports, {
-  sha256: () => sha256,
-  sha512: () => sha512
-});
-
-// node_modules/multiformats/dist/src/hashes/hasher.js
-function from2({ name: name3, code: code2, encode: encode7 }) {
-  return new Hasher(name3, code2, encode7);
-}
-__name(from2, "from");
-var Hasher = class {
-  static {
-    __name(this, "Hasher");
-  }
-  name;
-  code;
-  encode;
-  constructor(name3, code2, encode7) {
-    this.name = name3;
-    this.code = code2;
-    this.encode = encode7;
-  }
-  digest(input) {
-    if (input instanceof Uint8Array) {
-      const result = this.encode(input);
-      return result instanceof Uint8Array ? create(this.code, result) : result.then((digest2) => create(this.code, digest2));
-    } else {
-      throw Error("Unknown type, must be binary type");
-    }
-  }
-};
-
-// node_modules/multiformats/dist/src/hashes/sha2-browser.js
-function sha(name3) {
-  return async (data) => new Uint8Array(await crypto.subtle.digest(name3, data));
-}
-__name(sha, "sha");
-var sha256 = from2({
-  name: "sha2-256",
-  code: 18,
-  encode: sha("SHA-256")
-});
-var sha512 = from2({
-  name: "sha2-512",
-  code: 19,
-  encode: sha("SHA-512")
-});
-
-// node_modules/uint8arrays/dist/src/equals.js
-function equals3(a, b) {
-  if (a === b) {
-    return true;
-  }
-  if (a.byteLength !== b.byteLength) {
-    return false;
-  }
-  for (let i = 0; i < a.byteLength; i++) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-__name(equals3, "equals");
-
-// node_modules/uint8arrays/dist/src/alloc.js
-function alloc(size = 0) {
-  return new Uint8Array(size);
-}
-__name(alloc, "alloc");
-function allocUnsafe(size = 0) {
-  return new Uint8Array(size);
-}
-__name(allocUnsafe, "allocUnsafe");
-
-// node_modules/uint8arrays/dist/src/util/as-uint8array.js
-function asUint8Array(buf) {
-  return buf;
-}
-__name(asUint8Array, "asUint8Array");
-
-// node_modules/uint8arrays/dist/src/concat.js
-function concat(arrays, length3) {
-  if (length3 == null) {
-    length3 = arrays.reduce((acc, curr) => acc + curr.length, 0);
-  }
-  const output2 = allocUnsafe(length3);
-  let offset = 0;
-  for (const arr of arrays) {
-    output2.set(arr, offset);
-    offset += arr.length;
-  }
-  return asUint8Array(output2);
-}
-__name(concat, "concat");
-
-// node_modules/multiformats/dist/src/bases/base10.js
-var base10_exports = {};
-__export(base10_exports, {
-  base10: () => base10
-});
-var base10 = baseX({
-  prefix: "9",
-  name: "base10",
-  alphabet: "0123456789"
-});
-
-// node_modules/multiformats/dist/src/bases/base16.js
-var base16_exports = {};
-__export(base16_exports, {
-  base16: () => base16,
-  base16upper: () => base16upper
-});
-var base16 = rfc4648({
-  prefix: "f",
-  name: "base16",
-  alphabet: "0123456789abcdef",
-  bitsPerChar: 4
-});
-var base16upper = rfc4648({
-  prefix: "F",
-  name: "base16upper",
-  alphabet: "0123456789ABCDEF",
-  bitsPerChar: 4
-});
-
-// node_modules/multiformats/dist/src/bases/base2.js
-var base2_exports = {};
-__export(base2_exports, {
-  base2: () => base2
-});
-var base2 = rfc4648({
-  prefix: "0",
-  name: "base2",
-  alphabet: "01",
-  bitsPerChar: 1
-});
-
-// node_modules/multiformats/dist/src/bases/base256emoji.js
-var base256emoji_exports = {};
-__export(base256emoji_exports, {
-  base256emoji: () => base256emoji
-});
-var alphabet = Array.from("\u{1F680}\u{1FA90}\u2604\u{1F6F0}\u{1F30C}\u{1F311}\u{1F312}\u{1F313}\u{1F314}\u{1F315}\u{1F316}\u{1F317}\u{1F318}\u{1F30D}\u{1F30F}\u{1F30E}\u{1F409}\u2600\u{1F4BB}\u{1F5A5}\u{1F4BE}\u{1F4BF}\u{1F602}\u2764\u{1F60D}\u{1F923}\u{1F60A}\u{1F64F}\u{1F495}\u{1F62D}\u{1F618}\u{1F44D}\u{1F605}\u{1F44F}\u{1F601}\u{1F525}\u{1F970}\u{1F494}\u{1F496}\u{1F499}\u{1F622}\u{1F914}\u{1F606}\u{1F644}\u{1F4AA}\u{1F609}\u263A\u{1F44C}\u{1F917}\u{1F49C}\u{1F614}\u{1F60E}\u{1F607}\u{1F339}\u{1F926}\u{1F389}\u{1F49E}\u270C\u2728\u{1F937}\u{1F631}\u{1F60C}\u{1F338}\u{1F64C}\u{1F60B}\u{1F497}\u{1F49A}\u{1F60F}\u{1F49B}\u{1F642}\u{1F493}\u{1F929}\u{1F604}\u{1F600}\u{1F5A4}\u{1F603}\u{1F4AF}\u{1F648}\u{1F447}\u{1F3B6}\u{1F612}\u{1F92D}\u2763\u{1F61C}\u{1F48B}\u{1F440}\u{1F62A}\u{1F611}\u{1F4A5}\u{1F64B}\u{1F61E}\u{1F629}\u{1F621}\u{1F92A}\u{1F44A}\u{1F973}\u{1F625}\u{1F924}\u{1F449}\u{1F483}\u{1F633}\u270B\u{1F61A}\u{1F61D}\u{1F634}\u{1F31F}\u{1F62C}\u{1F643}\u{1F340}\u{1F337}\u{1F63B}\u{1F613}\u2B50\u2705\u{1F97A}\u{1F308}\u{1F608}\u{1F918}\u{1F4A6}\u2714\u{1F623}\u{1F3C3}\u{1F490}\u2639\u{1F38A}\u{1F498}\u{1F620}\u261D\u{1F615}\u{1F33A}\u{1F382}\u{1F33B}\u{1F610}\u{1F595}\u{1F49D}\u{1F64A}\u{1F639}\u{1F5E3}\u{1F4AB}\u{1F480}\u{1F451}\u{1F3B5}\u{1F91E}\u{1F61B}\u{1F534}\u{1F624}\u{1F33C}\u{1F62B}\u26BD\u{1F919}\u2615\u{1F3C6}\u{1F92B}\u{1F448}\u{1F62E}\u{1F646}\u{1F37B}\u{1F343}\u{1F436}\u{1F481}\u{1F632}\u{1F33F}\u{1F9E1}\u{1F381}\u26A1\u{1F31E}\u{1F388}\u274C\u270A\u{1F44B}\u{1F630}\u{1F928}\u{1F636}\u{1F91D}\u{1F6B6}\u{1F4B0}\u{1F353}\u{1F4A2}\u{1F91F}\u{1F641}\u{1F6A8}\u{1F4A8}\u{1F92C}\u2708\u{1F380}\u{1F37A}\u{1F913}\u{1F619}\u{1F49F}\u{1F331}\u{1F616}\u{1F476}\u{1F974}\u25B6\u27A1\u2753\u{1F48E}\u{1F4B8}\u2B07\u{1F628}\u{1F31A}\u{1F98B}\u{1F637}\u{1F57A}\u26A0\u{1F645}\u{1F61F}\u{1F635}\u{1F44E}\u{1F932}\u{1F920}\u{1F927}\u{1F4CC}\u{1F535}\u{1F485}\u{1F9D0}\u{1F43E}\u{1F352}\u{1F617}\u{1F911}\u{1F30A}\u{1F92F}\u{1F437}\u260E\u{1F4A7}\u{1F62F}\u{1F486}\u{1F446}\u{1F3A4}\u{1F647}\u{1F351}\u2744\u{1F334}\u{1F4A3}\u{1F438}\u{1F48C}\u{1F4CD}\u{1F940}\u{1F922}\u{1F445}\u{1F4A1}\u{1F4A9}\u{1F450}\u{1F4F8}\u{1F47B}\u{1F910}\u{1F92E}\u{1F3BC}\u{1F975}\u{1F6A9}\u{1F34E}\u{1F34A}\u{1F47C}\u{1F48D}\u{1F4E3}\u{1F942}");
-var alphabetBytesToChars = alphabet.reduce((p, c, i) => {
-  p[i] = c;
-  return p;
-}, []);
-var alphabetCharsToBytes = alphabet.reduce((p, c, i) => {
-  p[c.codePointAt(0)] = i;
-  return p;
-}, []);
-function encode4(data) {
-  return data.reduce((p, c) => {
-    p += alphabetBytesToChars[c];
-    return p;
-  }, "");
-}
-__name(encode4, "encode");
-function decode5(str) {
-  const byts = [];
-  for (const char of str) {
-    const byt = alphabetCharsToBytes[char.codePointAt(0)];
-    if (byt === void 0) {
-      throw new Error(`Non-base256emoji character: ${char}`);
-    }
-    byts.push(byt);
-  }
-  return new Uint8Array(byts);
-}
-__name(decode5, "decode");
-var base256emoji = from({
-  prefix: "\u{1F680}",
-  name: "base256emoji",
-  encode: encode4,
-  decode: decode5
-});
-
-// node_modules/multiformats/dist/src/bases/base32.js
-var base32_exports = {};
-__export(base32_exports, {
-  base32: () => base32,
-  base32hex: () => base32hex,
-  base32hexpad: () => base32hexpad,
-  base32hexpadupper: () => base32hexpadupper,
-  base32hexupper: () => base32hexupper,
-  base32pad: () => base32pad,
-  base32padupper: () => base32padupper,
-  base32upper: () => base32upper,
-  base32z: () => base32z
-});
-var base32 = rfc4648({
-  prefix: "b",
-  name: "base32",
-  alphabet: "abcdefghijklmnopqrstuvwxyz234567",
-  bitsPerChar: 5
-});
-var base32upper = rfc4648({
-  prefix: "B",
-  name: "base32upper",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
-  bitsPerChar: 5
-});
-var base32pad = rfc4648({
-  prefix: "c",
-  name: "base32pad",
-  alphabet: "abcdefghijklmnopqrstuvwxyz234567=",
-  bitsPerChar: 5
-});
-var base32padupper = rfc4648({
-  prefix: "C",
-  name: "base32padupper",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=",
-  bitsPerChar: 5
-});
-var base32hex = rfc4648({
-  prefix: "v",
-  name: "base32hex",
-  alphabet: "0123456789abcdefghijklmnopqrstuv",
-  bitsPerChar: 5
-});
-var base32hexupper = rfc4648({
-  prefix: "V",
-  name: "base32hexupper",
-  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
-  bitsPerChar: 5
-});
-var base32hexpad = rfc4648({
-  prefix: "t",
-  name: "base32hexpad",
-  alphabet: "0123456789abcdefghijklmnopqrstuv=",
-  bitsPerChar: 5
-});
-var base32hexpadupper = rfc4648({
-  prefix: "T",
-  name: "base32hexpadupper",
-  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV=",
-  bitsPerChar: 5
-});
-var base32z = rfc4648({
-  prefix: "h",
-  name: "base32z",
-  alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
-  bitsPerChar: 5
-});
-
-// node_modules/multiformats/dist/src/bases/base36.js
-var base36_exports = {};
-__export(base36_exports, {
-  base36: () => base36,
-  base36upper: () => base36upper
-});
-var base36 = baseX({
-  prefix: "k",
-  name: "base36",
-  alphabet: "0123456789abcdefghijklmnopqrstuvwxyz"
-});
-var base36upper = baseX({
-  prefix: "K",
-  name: "base36upper",
-  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-});
-
-// node_modules/multiformats/dist/src/bases/base64.js
-var base64_exports = {};
-__export(base64_exports, {
-  base64: () => base64,
-  base64pad: () => base64pad,
-  base64url: () => base64url,
-  base64urlpad: () => base64urlpad
-});
-var base64 = rfc4648({
-  prefix: "m",
-  name: "base64",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
-  bitsPerChar: 6
-});
-var base64pad = rfc4648({
-  prefix: "M",
-  name: "base64pad",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-  bitsPerChar: 6
-});
-var base64url = rfc4648({
-  prefix: "u",
-  name: "base64url",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
-  bitsPerChar: 6
-});
-var base64urlpad = rfc4648({
-  prefix: "U",
-  name: "base64urlpad",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=",
-  bitsPerChar: 6
-});
-
-// node_modules/multiformats/dist/src/bases/base8.js
-var base8_exports = {};
-__export(base8_exports, {
-  base8: () => base8
-});
-var base8 = rfc4648({
-  prefix: "7",
-  name: "base8",
-  alphabet: "01234567",
-  bitsPerChar: 3
-});
-
-// node_modules/multiformats/dist/src/bases/identity.js
-var identity_exports2 = {};
-__export(identity_exports2, {
-  identity: () => identity2
-});
-var identity2 = from({
-  prefix: "\0",
-  name: "identity",
-  encode: /* @__PURE__ */ __name((buf) => toString(buf), "encode"),
-  decode: /* @__PURE__ */ __name((str) => fromString(str), "decode")
-});
-
-// node_modules/multiformats/dist/src/codecs/json.js
-var textEncoder = new TextEncoder();
-var textDecoder = new TextDecoder();
 
 // node_modules/multiformats/dist/src/cid.js
 function format(link, base3) {
@@ -2758,76 +2815,36 @@ function encodeCID(version2, code2, multihash) {
 __name(encodeCID, "encodeCID");
 var cidSymbol = Symbol.for("@ipld/js-cid/CID");
 
-// node_modules/multiformats/dist/src/basics.js
-var bases = { ...identity_exports2, ...base2_exports, ...base8_exports, ...base10_exports, ...base16_exports, ...base32_exports, ...base36_exports, ...base58_exports, ...base64_exports, ...base256emoji_exports };
-var hashes = { ...sha2_browser_exports, ...identity_exports };
-
-// node_modules/uint8arrays/dist/src/util/bases.js
-function createCodec(name3, prefix, encode7, decode8) {
-  return {
-    name: name3,
-    prefix,
-    encoder: {
-      name: name3,
-      prefix,
-      encode: encode7
-    },
-    decoder: {
-      decode: decode8
-    }
-  };
-}
-__name(createCodec, "createCodec");
-var string = createCodec("utf8", "u", (buf) => {
-  const decoder = new TextDecoder("utf8");
-  return "u" + decoder.decode(buf);
-}, (str) => {
-  const encoder = new TextEncoder();
-  return encoder.encode(str.substring(1));
+// node_modules/multiformats/dist/src/hashes/identity.js
+var identity_exports = {};
+__export(identity_exports, {
+  identity: () => identity
 });
-var ascii = createCodec("ascii", "a", (buf) => {
-  let string3 = "a";
-  for (let i = 0; i < buf.length; i++) {
-    string3 += String.fromCharCode(buf[i]);
-  }
-  return string3;
-}, (str) => {
-  str = str.substring(1);
-  const buf = allocUnsafe(str.length);
-  for (let i = 0; i < str.length; i++) {
-    buf[i] = str.charCodeAt(i);
-  }
-  return buf;
-});
-var BASES = {
-  utf8: string,
-  "utf-8": string,
-  hex: bases.base16,
-  latin1: ascii,
-  ascii,
-  binary: ascii,
-  ...bases
-};
-var bases_default = BASES;
-
-// node_modules/uint8arrays/dist/src/from-string.js
-function fromString2(string3, encoding = "utf8") {
-  const base3 = bases_default[encoding];
-  if (base3 == null) {
-    throw new Error(`Unsupported encoding "${encoding}"`);
-  }
-  return base3.decoder.decode(`${base3.prefix}${string3}`);
+var code = 0;
+var name = "identity";
+var encode3 = coerce;
+function digest(input) {
+  return create(code, encode3(input));
 }
-__name(fromString2, "fromString");
+__name(digest, "digest");
+var identity = { code, name, encode: encode3, digest };
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/util.js
-function isPromise(thing) {
-  if (thing == null) {
+// node_modules/uint8arrays/dist/src/equals.js
+function equals3(a, b) {
+  if (a === b) {
+    return true;
+  }
+  if (a.byteLength !== b.byteLength) {
     return false;
   }
-  return typeof thing.then === "function" && typeof thing.catch === "function" && typeof thing.finally === "function";
+  for (let i = 0; i < a.byteLength; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
 }
-__name(isPromise, "isPromise");
+__name(equals3, "equals");
 
 // node_modules/@noble/hashes/esm/_assert.js
 function number(n) {
@@ -2876,20 +2893,6 @@ var crypto2 = typeof globalThis === "object" && "crypto" in globalThis ? globalT
 var createView = /* @__PURE__ */ __name((arr) => new DataView(arr.buffer, arr.byteOffset, arr.byteLength), "createView");
 var rotr = /* @__PURE__ */ __name((word, shift) => word << 32 - shift | word >>> shift, "rotr");
 var isLE = new Uint8Array(new Uint32Array([287454020]).buffer)[0] === 68;
-var nextTick = /* @__PURE__ */ __name(async () => {
-}, "nextTick");
-async function asyncLoop(iters, tick, cb) {
-  let ts = Date.now();
-  for (let i = 0; i < iters; i++) {
-    cb(i);
-    const diff = Date.now() - ts;
-    if (diff >= 0 && diff < tick)
-      continue;
-    await nextTick();
-    ts += diff;
-  }
-}
-__name(asyncLoop, "asyncLoop");
 function utf8ToBytes(str) {
   if (typeof str !== "string")
     throw new Error(`utf8ToBytes expected string, got ${typeof str}`);
@@ -2929,13 +2932,6 @@ var Hash = class {
   }
 };
 var toStr = {}.toString;
-function checkOpts(defaults, opts) {
-  if (opts !== void 0 && toStr.call(opts) !== "[object Object]")
-    throw new Error("Options should be object or undefined");
-  const merged = Object.assign(defaults, opts);
-  return merged;
-}
-__name(checkOpts, "checkOpts");
 function wrapConstructor(hashCons) {
   const hashC = /* @__PURE__ */ __name((msg) => hashCons().update(toBytes(msg)).digest(), "hashC");
   const tmp = hashCons();
@@ -3331,7 +3327,7 @@ var SHA512 = class extends HashMD {
     this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 };
-var sha5122 = /* @__PURE__ */ wrapConstructor(() => new SHA512());
+var sha512 = /* @__PURE__ */ wrapConstructor(() => new SHA512());
 
 // node_modules/@noble/curves/esm/abstract/utils.js
 var utils_exports = {};
@@ -4102,7 +4098,7 @@ function validateOpts(curve) {
 __name(validateOpts, "validateOpts");
 function twistedEdwards(curveDef) {
   const CURVE = validateOpts(curveDef);
-  const { Fp: Fp3, n: CURVE_ORDER, prehash, hash: cHash, randomBytes: randomBytes5, nByteLength, h: cofactor } = CURVE;
+  const { Fp: Fp3, n: CURVE_ORDER, prehash, hash: cHash, randomBytes: randomBytes3, nByteLength, h: cofactor } = CURVE;
   const MASK = _2n3 << BigInt(nByteLength * 8) - _1n4;
   const modP = Fp3.create;
   const Fn = Field(CURVE.n, CURVE.nBitLength);
@@ -4454,7 +4450,7 @@ function twistedEdwards(curveDef) {
   const utils = {
     getExtendedPublicKey,
     // ed25519 private keys are uniform 32b. No need to check for modulo bias, like in secp256k1.
-    randomPrivateKey: /* @__PURE__ */ __name(() => randomBytes5(Fp3.BYTES), "randomPrivateKey"),
+    randomPrivateKey: /* @__PURE__ */ __name(() => randomBytes3(Fp3.BYTES), "randomPrivateKey"),
     /**
      * We're doing scalar multiplication (used in getPublicKey etc) with precomputed BASE_POINT
      * values. This slows down first getPublicKey() by milliseconds (see Speed section),
@@ -4551,7 +4547,7 @@ var ed25519Defaults = /* @__PURE__ */ (() => ({
   // Base point (x, y) aka generator point
   Gx: BigInt("15112221349535400772501151409588531511454012693041857206046113283949847762202"),
   Gy: BigInt("46316835694926478169428394003475163141307993866256225615783033603165251855960"),
-  hash: sha5122,
+  hash: sha512,
   randomBytes,
   adjustScalarBytes,
   // dom2
@@ -4561,7 +4557,7 @@ var ed25519Defaults = /* @__PURE__ */ (() => ({
 }))();
 var ed25519 = /* @__PURE__ */ (() => twistedEdwards(ed25519Defaults))();
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/ed25519-browser.js
+// node_modules/@libp2p/crypto/dist/src/keys/ed25519/index.browser.js
 var PUBLIC_KEY_BYTE_LENGTH = 32;
 var PRIVATE_KEY_BYTE_LENGTH = 64;
 var KEYS_BYTE_LENGTH = 32;
@@ -4575,21 +4571,6 @@ function generateKey() {
   };
 }
 __name(generateKey, "generateKey");
-function generateKeyFromSeed(seed) {
-  if (seed.length !== KEYS_BYTE_LENGTH) {
-    throw new TypeError('"seed" must be 32 bytes in length.');
-  } else if (!(seed instanceof Uint8Array)) {
-    throw new TypeError('"seed" must be a node.js Buffer, or Uint8Array.');
-  }
-  const privateKeyRaw = seed;
-  const publicKey = ed25519.getPublicKey(privateKeyRaw);
-  const privateKey = concatKeys(privateKeyRaw, publicKey);
-  return {
-    privateKey,
-    publicKey
-  };
-}
-__name(generateKeyFromSeed, "generateKeyFromSeed");
 function hashAndSign(privateKey, msg) {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH);
   return ed25519.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw);
@@ -4609,95 +4590,88 @@ function concatKeys(privateKeyRaw, publicKey) {
 }
 __name(concatKeys, "concatKeys");
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/webcrypto-browser.js
-var webcrypto_browser_default = {
-  get(win = globalThis) {
-    const nativeCrypto = win.crypto;
-    if (nativeCrypto?.subtle == null) {
-      throw Object.assign(new Error("Missing Web Crypto API. The most likely cause of this error is that this page is being accessed from an insecure context (i.e. not HTTPS). For more information and possible resolutions see https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/README.md#web-crypto-api"), { code: "ERR_MISSING_WEB_CRYPTO" });
+// node_modules/@libp2p/crypto/dist/src/keys/ed25519/ed25519.js
+var Ed25519PublicKey = class {
+  static {
+    __name(this, "Ed25519PublicKey");
+  }
+  type = "Ed25519";
+  raw;
+  constructor(key) {
+    this.raw = ensureEd25519Key(key, PUBLIC_KEY_BYTE_LENGTH);
+  }
+  toMultihash() {
+    return identity.digest(publicKeyToProtobuf(this));
+  }
+  toCID() {
+    return CID.createV1(114, this.toMultihash());
+  }
+  toString() {
+    return base58btc.encode(this.toMultihash().bytes).substring(1);
+  }
+  equals(key) {
+    if (key == null || !(key.raw instanceof Uint8Array)) {
+      return false;
     }
-    return nativeCrypto;
+    return equals3(this.raw, key.raw);
+  }
+  verify(data, sig) {
+    return hashAndVerify(this.raw, sig, data);
+  }
+};
+var Ed25519PrivateKey = class {
+  static {
+    __name(this, "Ed25519PrivateKey");
+  }
+  type = "Ed25519";
+  raw;
+  publicKey;
+  // key       - 64 byte Uint8Array containing private key
+  // publicKey - 32 byte Uint8Array containing public key
+  constructor(key, publicKey) {
+    this.raw = ensureEd25519Key(key, PRIVATE_KEY_BYTE_LENGTH);
+    this.publicKey = new Ed25519PublicKey(publicKey);
+  }
+  equals(key) {
+    if (key == null || !(key.raw instanceof Uint8Array)) {
+      return false;
+    }
+    return equals3(this.raw, key.raw);
+  }
+  sign(message2) {
+    return hashAndSign(this.raw, message2);
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/ciphers/aes-gcm.browser.js
-var derivedEmptyPasswordKey = { alg: "A128GCM", ext: true, k: "scm9jmO_4BJAgdwWGVulLg", key_ops: ["encrypt", "decrypt"], kty: "oct" };
-function create2(opts) {
-  const algorithm = opts?.algorithm ?? "AES-GCM";
-  let keyLength = opts?.keyLength ?? 16;
-  const nonceLength = opts?.nonceLength ?? 12;
-  const digest2 = opts?.digest ?? "SHA-256";
-  const saltLength = opts?.saltLength ?? 16;
-  const iterations = opts?.iterations ?? 32767;
-  const crypto3 = webcrypto_browser_default.get();
-  keyLength *= 8;
-  async function encrypt(data, password) {
-    const salt = crypto3.getRandomValues(new Uint8Array(saltLength));
-    const nonce = crypto3.getRandomValues(new Uint8Array(nonceLength));
-    const aesGcm = { name: algorithm, iv: nonce };
-    if (typeof password === "string") {
-      password = fromString2(password);
-    }
-    let cryptoKey;
-    if (password.length === 0) {
-      cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey, { name: "AES-GCM" }, true, ["encrypt"]);
-      try {
-        const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-        const runtimeDerivedEmptyPassword = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-        cryptoKey = await crypto3.subtle.deriveKey(deriveParams, runtimeDerivedEmptyPassword, { name: algorithm, length: keyLength }, true, ["encrypt"]);
-      } catch {
-        cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey, { name: "AES-GCM" }, true, ["encrypt"]);
-      }
-    } else {
-      const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-      const rawKey = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-      cryptoKey = await crypto3.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ["encrypt"]);
-    }
-    const ciphertext = await crypto3.subtle.encrypt(aesGcm, cryptoKey, data);
-    return concat([salt, aesGcm.iv, new Uint8Array(ciphertext)]);
-  }
-  __name(encrypt, "encrypt");
-  async function decrypt(data, password) {
-    const salt = data.subarray(0, saltLength);
-    const nonce = data.subarray(saltLength, saltLength + nonceLength);
-    const ciphertext = data.subarray(saltLength + nonceLength);
-    const aesGcm = { name: algorithm, iv: nonce };
-    if (typeof password === "string") {
-      password = fromString2(password);
-    }
-    let cryptoKey;
-    if (password.length === 0) {
-      try {
-        const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-        const runtimeDerivedEmptyPassword = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-        cryptoKey = await crypto3.subtle.deriveKey(deriveParams, runtimeDerivedEmptyPassword, { name: algorithm, length: keyLength }, true, ["decrypt"]);
-      } catch {
-        cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey, { name: "AES-GCM" }, true, ["decrypt"]);
-      }
-    } else {
-      const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-      const rawKey = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-      cryptoKey = await crypto3.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ["decrypt"]);
-    }
-    const plaintext = await crypto3.subtle.decrypt(aesGcm, cryptoKey, ciphertext);
-    return new Uint8Array(plaintext);
-  }
-  __name(decrypt, "decrypt");
-  const cipher = {
-    encrypt,
-    decrypt
-  };
-  return cipher;
+// node_modules/@libp2p/crypto/dist/src/keys/ed25519/utils.js
+function unmarshalEd25519PublicKey(bytes2) {
+  bytes2 = ensureEd25519Key(bytes2, PUBLIC_KEY_BYTE_LENGTH);
+  return new Ed25519PublicKey(bytes2);
 }
-__name(create2, "create");
+__name(unmarshalEd25519PublicKey, "unmarshalEd25519PublicKey");
+async function generateEd25519KeyPair() {
+  const { privateKey, publicKey } = generateKey();
+  return new Ed25519PrivateKey(privateKey, publicKey);
+}
+__name(generateEd25519KeyPair, "generateEd25519KeyPair");
+function ensureEd25519Key(key, length3) {
+  key = Uint8Array.from(key ?? []);
+  if (key.length !== length3) {
+    throw new InvalidParametersError(`Key must be a Uint8Array of length ${length3}, got ${key.length}`);
+  }
+  return key;
+}
+__name(ensureEd25519Key, "ensureEd25519Key");
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/exporter.js
-async function exporter(privateKey, password) {
-  const cipher = create2();
-  const encryptedKey = await cipher.encrypt(privateKey, password);
-  return base64.encode(encryptedKey);
+// node_modules/uint8arrays/dist/src/alloc.js
+function alloc(size = 0) {
+  return new Uint8Array(size);
 }
-__name(exporter, "exporter");
+__name(alloc, "alloc");
+function allocUnsafe(size = 0) {
+  return new Uint8Array(size);
+}
+__name(allocUnsafe, "allocUnsafe");
 
 // node_modules/uint8-varint/dist/src/index.js
 var N12 = Math.pow(2, 7);
@@ -4909,7 +4883,7 @@ function decodeUint8ArrayList(buf, offset) {
   throw new RangeError("Could not decode varint");
 }
 __name(decodeUint8ArrayList, "decodeUint8ArrayList");
-function encode5(value, buf, offset = 0) {
+function encode4(value, buf, offset = 0) {
   if (buf == null) {
     buf = allocUnsafe(encodingLength2(value));
   }
@@ -4919,15 +4893,15 @@ function encode5(value, buf, offset = 0) {
     return encodeUint8ArrayList(value, buf, offset);
   }
 }
-__name(encode5, "encode");
-function decode6(buf, offset = 0) {
+__name(encode4, "encode");
+function decode5(buf, offset = 0) {
   if (buf instanceof Uint8Array) {
     return decodeUint8Array(buf, offset);
   } else {
     return decodeUint8ArrayList(buf, offset);
   }
 }
-__name(decode6, "decode");
+__name(decode5, "decode");
 
 // node_modules/protons-runtime/dist/src/utils/float.js
 var f32 = new Float32Array([-0]);
@@ -5153,8 +5127,8 @@ function length2(string3) {
   return len;
 }
 __name(length2, "length");
-function read2(buffer, start, end) {
-  const len = end - start;
+function read2(buffer, start2, end) {
+  const len = end - start2;
   if (len < 1) {
     return "";
   }
@@ -5162,18 +5136,18 @@ function read2(buffer, start, end) {
   const chunk = [];
   let i = 0;
   let t;
-  while (start < end) {
-    t = buffer[start++];
+  while (start2 < end) {
+    t = buffer[start2++];
     if (t < 128) {
       chunk[i++] = t;
     } else if (t > 191 && t < 224) {
-      chunk[i++] = (t & 31) << 6 | buffer[start++] & 63;
+      chunk[i++] = (t & 31) << 6 | buffer[start2++] & 63;
     } else if (t > 239 && t < 365) {
-      t = ((t & 7) << 18 | (buffer[start++] & 63) << 12 | (buffer[start++] & 63) << 6 | buffer[start++] & 63) - 65536;
+      t = ((t & 7) << 18 | (buffer[start2++] & 63) << 12 | (buffer[start2++] & 63) << 6 | buffer[start2++] & 63) - 65536;
       chunk[i++] = 55296 + (t >> 10);
       chunk[i++] = 56320 + (t & 1023);
     } else {
-      chunk[i++] = (t & 15) << 12 | (buffer[start++] & 63) << 6 | buffer[start++] & 63;
+      chunk[i++] = (t & 15) << 12 | (buffer[start2++] & 63) << 6 | buffer[start2++] & 63;
     }
     if (i > 8191) {
       (parts ?? (parts = [])).push(String.fromCharCode.apply(String, chunk));
@@ -5190,7 +5164,7 @@ function read2(buffer, start, end) {
 }
 __name(read2, "read");
 function write(string3, buffer, offset) {
-  const start = offset;
+  const start2 = offset;
   let c1;
   let c2;
   for (let i = 0; i < string3.length; ++i) {
@@ -5213,7 +5187,7 @@ function write(string3, buffer, offset) {
       buffer[offset++] = c1 & 63 | 128;
     }
   }
-  return offset - start;
+  return offset - start2;
 }
 __name(write, "write");
 
@@ -5331,13 +5305,13 @@ var Uint8ArrayReader = class {
    */
   bytes() {
     const length3 = this.uint32();
-    const start = this.pos;
+    const start2 = this.pos;
     const end = this.pos + length3;
     if (end > this.len) {
       throw indexOutOfRange(this, length3);
     }
     this.pos += length3;
-    return start === end ? new Uint8Array(0) : this.buf.subarray(start, end);
+    return start2 === end ? new Uint8Array(0) : this.buf.subarray(start2, end);
   }
   /**
    * Reads a string preceded by its byte length as a varint
@@ -5558,6 +5532,269 @@ function decodeMessage(buf, codec, opts) {
   return codec.decode(reader, void 0, opts);
 }
 __name(decodeMessage, "decodeMessage");
+
+// node_modules/multiformats/dist/src/bases/base10.js
+var base10_exports = {};
+__export(base10_exports, {
+  base10: () => base10
+});
+var base10 = baseX({
+  prefix: "9",
+  name: "base10",
+  alphabet: "0123456789"
+});
+
+// node_modules/multiformats/dist/src/bases/base16.js
+var base16_exports = {};
+__export(base16_exports, {
+  base16: () => base16,
+  base16upper: () => base16upper
+});
+var base16 = rfc4648({
+  prefix: "f",
+  name: "base16",
+  alphabet: "0123456789abcdef",
+  bitsPerChar: 4
+});
+var base16upper = rfc4648({
+  prefix: "F",
+  name: "base16upper",
+  alphabet: "0123456789ABCDEF",
+  bitsPerChar: 4
+});
+
+// node_modules/multiformats/dist/src/bases/base2.js
+var base2_exports = {};
+__export(base2_exports, {
+  base2: () => base2
+});
+var base2 = rfc4648({
+  prefix: "0",
+  name: "base2",
+  alphabet: "01",
+  bitsPerChar: 1
+});
+
+// node_modules/multiformats/dist/src/bases/base256emoji.js
+var base256emoji_exports = {};
+__export(base256emoji_exports, {
+  base256emoji: () => base256emoji
+});
+var alphabet = Array.from("\u{1F680}\u{1FA90}\u2604\u{1F6F0}\u{1F30C}\u{1F311}\u{1F312}\u{1F313}\u{1F314}\u{1F315}\u{1F316}\u{1F317}\u{1F318}\u{1F30D}\u{1F30F}\u{1F30E}\u{1F409}\u2600\u{1F4BB}\u{1F5A5}\u{1F4BE}\u{1F4BF}\u{1F602}\u2764\u{1F60D}\u{1F923}\u{1F60A}\u{1F64F}\u{1F495}\u{1F62D}\u{1F618}\u{1F44D}\u{1F605}\u{1F44F}\u{1F601}\u{1F525}\u{1F970}\u{1F494}\u{1F496}\u{1F499}\u{1F622}\u{1F914}\u{1F606}\u{1F644}\u{1F4AA}\u{1F609}\u263A\u{1F44C}\u{1F917}\u{1F49C}\u{1F614}\u{1F60E}\u{1F607}\u{1F339}\u{1F926}\u{1F389}\u{1F49E}\u270C\u2728\u{1F937}\u{1F631}\u{1F60C}\u{1F338}\u{1F64C}\u{1F60B}\u{1F497}\u{1F49A}\u{1F60F}\u{1F49B}\u{1F642}\u{1F493}\u{1F929}\u{1F604}\u{1F600}\u{1F5A4}\u{1F603}\u{1F4AF}\u{1F648}\u{1F447}\u{1F3B6}\u{1F612}\u{1F92D}\u2763\u{1F61C}\u{1F48B}\u{1F440}\u{1F62A}\u{1F611}\u{1F4A5}\u{1F64B}\u{1F61E}\u{1F629}\u{1F621}\u{1F92A}\u{1F44A}\u{1F973}\u{1F625}\u{1F924}\u{1F449}\u{1F483}\u{1F633}\u270B\u{1F61A}\u{1F61D}\u{1F634}\u{1F31F}\u{1F62C}\u{1F643}\u{1F340}\u{1F337}\u{1F63B}\u{1F613}\u2B50\u2705\u{1F97A}\u{1F308}\u{1F608}\u{1F918}\u{1F4A6}\u2714\u{1F623}\u{1F3C3}\u{1F490}\u2639\u{1F38A}\u{1F498}\u{1F620}\u261D\u{1F615}\u{1F33A}\u{1F382}\u{1F33B}\u{1F610}\u{1F595}\u{1F49D}\u{1F64A}\u{1F639}\u{1F5E3}\u{1F4AB}\u{1F480}\u{1F451}\u{1F3B5}\u{1F91E}\u{1F61B}\u{1F534}\u{1F624}\u{1F33C}\u{1F62B}\u26BD\u{1F919}\u2615\u{1F3C6}\u{1F92B}\u{1F448}\u{1F62E}\u{1F646}\u{1F37B}\u{1F343}\u{1F436}\u{1F481}\u{1F632}\u{1F33F}\u{1F9E1}\u{1F381}\u26A1\u{1F31E}\u{1F388}\u274C\u270A\u{1F44B}\u{1F630}\u{1F928}\u{1F636}\u{1F91D}\u{1F6B6}\u{1F4B0}\u{1F353}\u{1F4A2}\u{1F91F}\u{1F641}\u{1F6A8}\u{1F4A8}\u{1F92C}\u2708\u{1F380}\u{1F37A}\u{1F913}\u{1F619}\u{1F49F}\u{1F331}\u{1F616}\u{1F476}\u{1F974}\u25B6\u27A1\u2753\u{1F48E}\u{1F4B8}\u2B07\u{1F628}\u{1F31A}\u{1F98B}\u{1F637}\u{1F57A}\u26A0\u{1F645}\u{1F61F}\u{1F635}\u{1F44E}\u{1F932}\u{1F920}\u{1F927}\u{1F4CC}\u{1F535}\u{1F485}\u{1F9D0}\u{1F43E}\u{1F352}\u{1F617}\u{1F911}\u{1F30A}\u{1F92F}\u{1F437}\u260E\u{1F4A7}\u{1F62F}\u{1F486}\u{1F446}\u{1F3A4}\u{1F647}\u{1F351}\u2744\u{1F334}\u{1F4A3}\u{1F438}\u{1F48C}\u{1F4CD}\u{1F940}\u{1F922}\u{1F445}\u{1F4A1}\u{1F4A9}\u{1F450}\u{1F4F8}\u{1F47B}\u{1F910}\u{1F92E}\u{1F3BC}\u{1F975}\u{1F6A9}\u{1F34E}\u{1F34A}\u{1F47C}\u{1F48D}\u{1F4E3}\u{1F942}");
+var alphabetBytesToChars = alphabet.reduce((p, c, i) => {
+  p[i] = c;
+  return p;
+}, []);
+var alphabetCharsToBytes = alphabet.reduce((p, c, i) => {
+  const codePoint = c.codePointAt(0);
+  if (codePoint == null) {
+    throw new Error(`Invalid character: ${c}`);
+  }
+  p[codePoint] = i;
+  return p;
+}, []);
+function encode5(data) {
+  return data.reduce((p, c) => {
+    p += alphabetBytesToChars[c];
+    return p;
+  }, "");
+}
+__name(encode5, "encode");
+function decode6(str) {
+  const byts = [];
+  for (const char of str) {
+    const codePoint = char.codePointAt(0);
+    if (codePoint == null) {
+      throw new Error(`Invalid character: ${char}`);
+    }
+    const byt = alphabetCharsToBytes[codePoint];
+    if (byt == null) {
+      throw new Error(`Non-base256emoji character: ${char}`);
+    }
+    byts.push(byt);
+  }
+  return new Uint8Array(byts);
+}
+__name(decode6, "decode");
+var base256emoji = from({
+  prefix: "\u{1F680}",
+  name: "base256emoji",
+  encode: encode5,
+  decode: decode6
+});
+
+// node_modules/multiformats/dist/src/bases/base64.js
+var base64_exports = {};
+__export(base64_exports, {
+  base64: () => base64,
+  base64pad: () => base64pad,
+  base64url: () => base64url,
+  base64urlpad: () => base64urlpad
+});
+var base64 = rfc4648({
+  prefix: "m",
+  name: "base64",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+  bitsPerChar: 6
+});
+var base64pad = rfc4648({
+  prefix: "M",
+  name: "base64pad",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+  bitsPerChar: 6
+});
+var base64url = rfc4648({
+  prefix: "u",
+  name: "base64url",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
+  bitsPerChar: 6
+});
+var base64urlpad = rfc4648({
+  prefix: "U",
+  name: "base64urlpad",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=",
+  bitsPerChar: 6
+});
+
+// node_modules/multiformats/dist/src/bases/base8.js
+var base8_exports = {};
+__export(base8_exports, {
+  base8: () => base8
+});
+var base8 = rfc4648({
+  prefix: "7",
+  name: "base8",
+  alphabet: "01234567",
+  bitsPerChar: 3
+});
+
+// node_modules/multiformats/dist/src/bases/identity.js
+var identity_exports2 = {};
+__export(identity_exports2, {
+  identity: () => identity2
+});
+var identity2 = from({
+  prefix: "\0",
+  name: "identity",
+  encode: /* @__PURE__ */ __name((buf) => toString(buf), "encode"),
+  decode: /* @__PURE__ */ __name((str) => fromString(str), "decode")
+});
+
+// node_modules/multiformats/dist/src/codecs/json.js
+var textEncoder = new TextEncoder();
+var textDecoder = new TextDecoder();
+
+// node_modules/multiformats/dist/src/hashes/sha2-browser.js
+var sha2_browser_exports = {};
+__export(sha2_browser_exports, {
+  sha256: () => sha256,
+  sha512: () => sha5122
+});
+
+// node_modules/multiformats/dist/src/hashes/hasher.js
+function from2({ name: name3, code: code2, encode: encode7 }) {
+  return new Hasher(name3, code2, encode7);
+}
+__name(from2, "from");
+var Hasher = class {
+  static {
+    __name(this, "Hasher");
+  }
+  name;
+  code;
+  encode;
+  constructor(name3, code2, encode7) {
+    this.name = name3;
+    this.code = code2;
+    this.encode = encode7;
+  }
+  digest(input) {
+    if (input instanceof Uint8Array) {
+      const result = this.encode(input);
+      return result instanceof Uint8Array ? create(this.code, result) : result.then((digest2) => create(this.code, digest2));
+    } else {
+      throw Error("Unknown type, must be binary type");
+    }
+  }
+};
+
+// node_modules/multiformats/dist/src/hashes/sha2-browser.js
+function sha(name3) {
+  return async (data) => new Uint8Array(await crypto.subtle.digest(name3, data));
+}
+__name(sha, "sha");
+var sha256 = from2({
+  name: "sha2-256",
+  code: 18,
+  encode: sha("SHA-256")
+});
+var sha5122 = from2({
+  name: "sha2-512",
+  code: 19,
+  encode: sha("SHA-512")
+});
+
+// node_modules/multiformats/dist/src/basics.js
+var bases = { ...identity_exports2, ...base2_exports, ...base8_exports, ...base10_exports, ...base16_exports, ...base32_exports, ...base36_exports, ...base58_exports, ...base64_exports, ...base256emoji_exports };
+var hashes = { ...sha2_browser_exports, ...identity_exports };
+
+// node_modules/uint8arrays/dist/src/util/bases.js
+function createCodec(name3, prefix, encode7, decode8) {
+  return {
+    name: name3,
+    prefix,
+    encoder: {
+      name: name3,
+      prefix,
+      encode: encode7
+    },
+    decoder: {
+      decode: decode8
+    }
+  };
+}
+__name(createCodec, "createCodec");
+var string = createCodec("utf8", "u", (buf) => {
+  const decoder = new TextDecoder("utf8");
+  return "u" + decoder.decode(buf);
+}, (str) => {
+  const encoder = new TextEncoder();
+  return encoder.encode(str.substring(1));
+});
+var ascii = createCodec("ascii", "a", (buf) => {
+  let string3 = "a";
+  for (let i = 0; i < buf.length; i++) {
+    string3 += String.fromCharCode(buf[i]);
+  }
+  return string3;
+}, (str) => {
+  str = str.substring(1);
+  const buf = allocUnsafe(str.length);
+  for (let i = 0; i < str.length; i++) {
+    buf[i] = str.charCodeAt(i);
+  }
+  return buf;
+});
+var BASES = {
+  utf8: string,
+  "utf-8": string,
+  hex: bases.base16,
+  latin1: ascii,
+  ascii,
+  binary: ascii,
+  ...bases
+};
+var bases_default = BASES;
+
+// node_modules/uint8arrays/dist/src/from-string.js
+function fromString2(string3, encoding = "utf8") {
+  const base3 = bases_default[encoding];
+  if (base3 == null) {
+    throw new Error(`Unsupported encoding "${encoding}"`);
+  }
+  return base3.decoder.decode(`${base3.prefix}${string3}`);
+}
+__name(fromString2, "fromString");
 
 // node_modules/protons-runtime/dist/src/utils/pool.js
 function pool(size) {
@@ -6042,28 +6279,54 @@ function message(encode7, decode8) {
 }
 __name(message, "message");
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/keys.js
+// node_modules/protons-runtime/dist/src/index.js
+var MaxLengthError = class extends Error {
+  static {
+    __name(this, "MaxLengthError");
+  }
+  /**
+   * This will be removed in a future release
+   *
+   * @deprecated use the `.name` property instead
+   */
+  code = "ERR_MAX_LENGTH";
+  name = "MaxLengthError";
+};
+var MaxSizeError = class extends Error {
+  static {
+    __name(this, "MaxSizeError");
+  }
+  /**
+   * This will be removed in a future release
+   *
+   * @deprecated use the `.name` property instead
+   */
+  code = "ERR_MAX_SIZE";
+  name = "MaxSizeError";
+};
+
+// node_modules/@libp2p/crypto/dist/src/keys/keys.js
 var KeyType;
-(function(KeyType4) {
-  KeyType4["RSA"] = "RSA";
-  KeyType4["Ed25519"] = "Ed25519";
-  KeyType4["Secp256k1"] = "Secp256k1";
+(function(KeyType2) {
+  KeyType2["RSA"] = "RSA";
+  KeyType2["Ed25519"] = "Ed25519";
+  KeyType2["secp256k1"] = "secp256k1";
 })(KeyType || (KeyType = {}));
 var __KeyTypeValues;
-(function(__KeyTypeValues4) {
-  __KeyTypeValues4[__KeyTypeValues4["RSA"] = 0] = "RSA";
-  __KeyTypeValues4[__KeyTypeValues4["Ed25519"] = 1] = "Ed25519";
-  __KeyTypeValues4[__KeyTypeValues4["Secp256k1"] = 2] = "Secp256k1";
+(function(__KeyTypeValues2) {
+  __KeyTypeValues2[__KeyTypeValues2["RSA"] = 0] = "RSA";
+  __KeyTypeValues2[__KeyTypeValues2["Ed25519"] = 1] = "Ed25519";
+  __KeyTypeValues2[__KeyTypeValues2["secp256k1"] = 2] = "secp256k1";
 })(__KeyTypeValues || (__KeyTypeValues = {}));
-(function(KeyType4) {
-  KeyType4.codec = () => {
+(function(KeyType2) {
+  KeyType2.codec = () => {
     return enumeration(__KeyTypeValues);
   };
 })(KeyType || (KeyType = {}));
 var PublicKey;
-(function(PublicKey4) {
+(function(PublicKey2) {
   let _codec;
-  PublicKey4.codec = () => {
+  PublicKey2.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w2, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -6080,21 +6343,24 @@ var PublicKey;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {};
         const end = length3 == null ? reader.len : reader.pos + length3;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.Type = KeyType.codec().decode(reader);
               break;
-            case 2:
+            }
+            case 2: {
               obj.Data = reader.bytes();
               break;
-            default:
+            }
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -6102,17 +6368,17 @@ var PublicKey;
     }
     return _codec;
   };
-  PublicKey4.encode = (obj) => {
-    return encodeMessage(obj, PublicKey4.codec());
+  PublicKey2.encode = (obj) => {
+    return encodeMessage(obj, PublicKey2.codec());
   };
-  PublicKey4.decode = (buf) => {
-    return decodeMessage(buf, PublicKey4.codec());
+  PublicKey2.decode = (buf, opts) => {
+    return decodeMessage(buf, PublicKey2.codec(), opts);
   };
 })(PublicKey || (PublicKey = {}));
 var PrivateKey;
-(function(PrivateKey4) {
+(function(PrivateKey2) {
   let _codec;
-  PrivateKey4.codec = () => {
+  PrivateKey2.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w2, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -6129,21 +6395,24 @@ var PrivateKey;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {};
         const end = length3 == null ? reader.len : reader.pos + length3;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.Type = KeyType.codec().decode(reader);
               break;
-            case 2:
+            }
+            case 2: {
               obj.Data = reader.bytes();
               break;
-            default:
+            }
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -6151,304 +6420,181 @@ var PrivateKey;
     }
     return _codec;
   };
-  PrivateKey4.encode = (obj) => {
-    return encodeMessage(obj, PrivateKey4.codec());
+  PrivateKey2.encode = (obj) => {
+    return encodeMessage(obj, PrivateKey2.codec());
   };
-  PrivateKey4.decode = (buf) => {
-    return decodeMessage(buf, PrivateKey4.codec());
+  PrivateKey2.decode = (buf, opts) => {
+    return decodeMessage(buf, PrivateKey2.codec(), opts);
   };
 })(PrivateKey || (PrivateKey = {}));
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
-var Ed25519PublicKey = class {
-  static {
-    __name(this, "Ed25519PublicKey");
-  }
-  _key;
-  constructor(key) {
-    this._key = ensureKey(key, PUBLIC_KEY_BYTE_LENGTH);
-  }
-  verify(data, sig) {
-    return hashAndVerify(this._key, sig, data);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PublicKey.encode({
-      Type: KeyType.Ed25519,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-};
-var Ed25519PrivateKey = class {
-  static {
-    __name(this, "Ed25519PrivateKey");
-  }
-  _key;
-  _publicKey;
-  // key       - 64 byte Uint8Array containing private key
-  // publicKey - 32 byte Uint8Array containing public key
-  constructor(key, publicKey) {
-    this._key = ensureKey(key, PRIVATE_KEY_BYTE_LENGTH);
-    this._publicKey = ensureKey(publicKey, PUBLIC_KEY_BYTE_LENGTH);
-  }
-  sign(message2) {
-    return hashAndSign(this._key, message2);
-  }
-  get public() {
-    return new Ed25519PublicKey(this._publicKey);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PrivateKey.encode({
-      Type: KeyType.Ed25519,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  async hash() {
-    const p = sha256.digest(this.bytes);
-    let bytes2;
-    if (isPromise(p)) {
-      ({ bytes: bytes2 } = await p);
-    } else {
-      bytes2 = p.bytes;
-    }
-    return bytes2;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the identity multihash containing its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   *
-   * @returns {Promise<string>}
-   */
-  async id() {
-    const encoding = identity.digest(this.public.bytes);
-    return base58btc.encode(encoding.bytes).substring(1);
-  }
-  /**
-   * Exports the key into a password protected `format`
-   */
-  async export(password, format2 = "libp2p-key") {
-    if (format2 === "libp2p-key") {
-      return exporter(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-function unmarshalEd25519PrivateKey(bytes2) {
-  if (bytes2.length > PRIVATE_KEY_BYTE_LENGTH) {
-    bytes2 = ensureKey(bytes2, PRIVATE_KEY_BYTE_LENGTH + PUBLIC_KEY_BYTE_LENGTH);
-    const privateKeyBytes2 = bytes2.subarray(0, PRIVATE_KEY_BYTE_LENGTH);
-    const publicKeyBytes2 = bytes2.subarray(PRIVATE_KEY_BYTE_LENGTH, bytes2.length);
-    return new Ed25519PrivateKey(privateKeyBytes2, publicKeyBytes2);
-  }
-  bytes2 = ensureKey(bytes2, PRIVATE_KEY_BYTE_LENGTH);
-  const privateKeyBytes = bytes2.subarray(0, PRIVATE_KEY_BYTE_LENGTH);
-  const publicKeyBytes = bytes2.subarray(PUBLIC_KEY_BYTE_LENGTH);
-  return new Ed25519PrivateKey(privateKeyBytes, publicKeyBytes);
-}
-__name(unmarshalEd25519PrivateKey, "unmarshalEd25519PrivateKey");
-function unmarshalEd25519PublicKey(bytes2) {
-  bytes2 = ensureKey(bytes2, PUBLIC_KEY_BYTE_LENGTH);
-  return new Ed25519PublicKey(bytes2);
-}
-__name(unmarshalEd25519PublicKey, "unmarshalEd25519PublicKey");
-async function generateKeyPair() {
-  const { privateKey, publicKey } = generateKey();
-  return new Ed25519PrivateKey(privateKey, publicKey);
-}
-__name(generateKeyPair, "generateKeyPair");
-async function generateKeyPairFromSeed(seed) {
-  const { privateKey, publicKey } = generateKeyFromSeed(seed);
-  return new Ed25519PrivateKey(privateKey, publicKey);
-}
-__name(generateKeyPairFromSeed, "generateKeyPairFromSeed");
-function ensureKey(key, length3) {
-  key = Uint8Array.from(key ?? []);
-  if (key.length !== length3) {
-    throw new CodeError(`Key must be a Uint8Array of length ${length3}, got ${key.length}`, "ERR_INVALID_KEY_TYPE");
-  }
-  return key;
-}
-__name(ensureKey, "ensureKey");
-
-// node_modules/uint8arrays/dist/src/to-string.js
-function toString2(array, encoding = "utf8") {
-  const base3 = bases_default[encoding];
-  if (base3 == null) {
-    throw new Error(`Unsupported encoding "${encoding}"`);
-  }
-  return base3.encoder.encode(array).substring(1);
-}
-__name(toString2, "toString");
-
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
-var rsa_class_exports = {};
-__export(rsa_class_exports, {
+// node_modules/@libp2p/crypto/dist/src/keys/rsa/utils.js
+var utils_exports2 = {};
+__export(utils_exports2, {
   MAX_RSA_KEY_SIZE: () => MAX_RSA_KEY_SIZE,
-  RsaPrivateKey: () => RsaPrivateKey,
-  RsaPublicKey: () => RsaPublicKey,
-  fromJwk: () => fromJwk,
-  generateKeyPair: () => generateKeyPair2,
-  unmarshalRsaPrivateKey: () => unmarshalRsaPrivateKey,
-  unmarshalRsaPublicKey: () => unmarshalRsaPublicKey
-});
-
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/random-bytes.js
-function randomBytes2(length3) {
-  if (isNaN(length3) || length3 <= 0) {
-    throw new CodeError("random bytes length must be a Number bigger than 0", "ERR_INVALID_LENGTH");
-  }
-  return randomBytes(length3);
-}
-__name(randomBytes2, "randomBytes");
-
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
-var rsa_utils_exports = {};
-__export(rsa_utils_exports, {
-  exportToPem: () => exportToPem,
-  importFromPem: () => importFromPem,
+  generateRSAKeyPair: () => generateRSAKeyPair,
+  jwkToJWKKeyPair: () => jwkToJWKKeyPair,
   jwkToPkcs1: () => jwkToPkcs1,
   jwkToPkix: () => jwkToPkix,
+  jwkToRSAPrivateKey: () => jwkToRSAPrivateKey,
   pkcs1ToJwk: () => pkcs1ToJwk,
-  pkixToJwk: () => pkixToJwk
+  pkcs1ToRSAPrivateKey: () => pkcs1ToRSAPrivateKey,
+  pkixToJwk: () => pkixToJwk,
+  pkixToRSAPublicKey: () => pkixToRSAPublicKey
 });
 
-// node_modules/@noble/hashes/esm/hmac.js
-var HMAC = class extends Hash {
+// node_modules/@noble/hashes/esm/sha256.js
+var SHA256_K = /* @__PURE__ */ new Uint32Array([
+  1116352408,
+  1899447441,
+  3049323471,
+  3921009573,
+  961987163,
+  1508970993,
+  2453635748,
+  2870763221,
+  3624381080,
+  310598401,
+  607225278,
+  1426881987,
+  1925078388,
+  2162078206,
+  2614888103,
+  3248222580,
+  3835390401,
+  4022224774,
+  264347078,
+  604807628,
+  770255983,
+  1249150122,
+  1555081692,
+  1996064986,
+  2554220882,
+  2821834349,
+  2952996808,
+  3210313671,
+  3336571891,
+  3584528711,
+  113926993,
+  338241895,
+  666307205,
+  773529912,
+  1294757372,
+  1396182291,
+  1695183700,
+  1986661051,
+  2177026350,
+  2456956037,
+  2730485921,
+  2820302411,
+  3259730800,
+  3345764771,
+  3516065817,
+  3600352804,
+  4094571909,
+  275423344,
+  430227734,
+  506948616,
+  659060556,
+  883997877,
+  958139571,
+  1322822218,
+  1537002063,
+  1747873779,
+  1955562222,
+  2024104815,
+  2227730452,
+  2361852424,
+  2428436474,
+  2756734187,
+  3204031479,
+  3329325298
+]);
+var SHA256_IV = /* @__PURE__ */ new Uint32Array([
+  1779033703,
+  3144134277,
+  1013904242,
+  2773480762,
+  1359893119,
+  2600822924,
+  528734635,
+  1541459225
+]);
+var SHA256_W = /* @__PURE__ */ new Uint32Array(64);
+var SHA256 = class extends HashMD {
   static {
-    __name(this, "HMAC");
+    __name(this, "SHA256");
   }
-  constructor(hash2, _key) {
-    super();
-    this.finished = false;
-    this.destroyed = false;
-    hash(hash2);
-    const key = toBytes(_key);
-    this.iHash = hash2.create();
-    if (typeof this.iHash.update !== "function")
-      throw new Error("Expected instance of class which extends utils.Hash");
-    this.blockLen = this.iHash.blockLen;
-    this.outputLen = this.iHash.outputLen;
-    const blockLen = this.blockLen;
-    const pad = new Uint8Array(blockLen);
-    pad.set(key.length > blockLen ? hash2.create().update(key).digest() : key);
-    for (let i = 0; i < pad.length; i++)
-      pad[i] ^= 54;
-    this.iHash.update(pad);
-    this.oHash = hash2.create();
-    for (let i = 0; i < pad.length; i++)
-      pad[i] ^= 54 ^ 92;
-    this.oHash.update(pad);
-    pad.fill(0);
+  constructor() {
+    super(64, 32, 8, false);
+    this.A = SHA256_IV[0] | 0;
+    this.B = SHA256_IV[1] | 0;
+    this.C = SHA256_IV[2] | 0;
+    this.D = SHA256_IV[3] | 0;
+    this.E = SHA256_IV[4] | 0;
+    this.F = SHA256_IV[5] | 0;
+    this.G = SHA256_IV[6] | 0;
+    this.H = SHA256_IV[7] | 0;
   }
-  update(buf) {
-    exists(this);
-    this.iHash.update(buf);
-    return this;
+  get() {
+    const { A, B, C, D, E, F, G, H } = this;
+    return [A, B, C, D, E, F, G, H];
   }
-  digestInto(out) {
-    exists(this);
-    bytes(out, this.outputLen);
-    this.finished = true;
-    this.iHash.digestInto(out);
-    this.oHash.update(out);
-    this.oHash.digestInto(out);
-    this.destroy();
+  // prettier-ignore
+  set(A, B, C, D, E, F, G, H) {
+    this.A = A | 0;
+    this.B = B | 0;
+    this.C = C | 0;
+    this.D = D | 0;
+    this.E = E | 0;
+    this.F = F | 0;
+    this.G = G | 0;
+    this.H = H | 0;
   }
-  digest() {
-    const out = new Uint8Array(this.oHash.outputLen);
-    this.digestInto(out);
-    return out;
+  process(view, offset) {
+    for (let i = 0; i < 16; i++, offset += 4)
+      SHA256_W[i] = view.getUint32(offset, false);
+    for (let i = 16; i < 64; i++) {
+      const W15 = SHA256_W[i - 15];
+      const W2 = SHA256_W[i - 2];
+      const s0 = rotr(W15, 7) ^ rotr(W15, 18) ^ W15 >>> 3;
+      const s1 = rotr(W2, 17) ^ rotr(W2, 19) ^ W2 >>> 10;
+      SHA256_W[i] = s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16] | 0;
+    }
+    let { A, B, C, D, E, F, G, H } = this;
+    for (let i = 0; i < 64; i++) {
+      const sigma1 = rotr(E, 6) ^ rotr(E, 11) ^ rotr(E, 25);
+      const T1 = H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i] | 0;
+      const sigma0 = rotr(A, 2) ^ rotr(A, 13) ^ rotr(A, 22);
+      const T2 = sigma0 + Maj(A, B, C) | 0;
+      H = G;
+      G = F;
+      F = E;
+      E = D + T1 | 0;
+      D = C;
+      C = B;
+      B = A;
+      A = T1 + T2 | 0;
+    }
+    A = A + this.A | 0;
+    B = B + this.B | 0;
+    C = C + this.C | 0;
+    D = D + this.D | 0;
+    E = E + this.E | 0;
+    F = F + this.F | 0;
+    G = G + this.G | 0;
+    H = H + this.H | 0;
+    this.set(A, B, C, D, E, F, G, H);
   }
-  _cloneInto(to) {
-    to || (to = Object.create(Object.getPrototypeOf(this), {}));
-    const { oHash, iHash, finished, destroyed, blockLen, outputLen } = this;
-    to = to;
-    to.finished = finished;
-    to.destroyed = destroyed;
-    to.blockLen = blockLen;
-    to.outputLen = outputLen;
-    to.oHash = oHash._cloneInto(to.oHash);
-    to.iHash = iHash._cloneInto(to.iHash);
-    return to;
+  roundClean() {
+    SHA256_W.fill(0);
   }
   destroy() {
-    this.destroyed = true;
-    this.oHash.destroy();
-    this.iHash.destroy();
+    this.set(0, 0, 0, 0, 0, 0, 0, 0);
+    this.buffer.fill(0);
   }
 };
-var hmac = /* @__PURE__ */ __name((hash2, key, message2) => new HMAC(hash2, key).update(message2).digest(), "hmac");
-hmac.create = (hash2, key) => new HMAC(hash2, key);
-
-// node_modules/@noble/hashes/esm/pbkdf2.js
-function pbkdf2Init(hash2, _password, _salt, _opts) {
-  hash(hash2);
-  const opts = checkOpts({ dkLen: 32, asyncTick: 10 }, _opts);
-  const { c, dkLen, asyncTick } = opts;
-  number(c);
-  number(dkLen);
-  number(asyncTick);
-  if (c < 1)
-    throw new Error("PBKDF2: iterations (c) should be >= 1");
-  const password = toBytes(_password);
-  const salt = toBytes(_salt);
-  const DK = new Uint8Array(dkLen);
-  const PRF = hmac.create(hash2, password);
-  const PRFSalt = PRF._cloneInto().update(salt);
-  return { c, dkLen, asyncTick, DK, PRF, PRFSalt };
-}
-__name(pbkdf2Init, "pbkdf2Init");
-function pbkdf2Output(PRF, PRFSalt, DK, prfW, u) {
-  PRF.destroy();
-  PRFSalt.destroy();
-  if (prfW)
-    prfW.destroy();
-  u.fill(0);
-  return DK;
-}
-__name(pbkdf2Output, "pbkdf2Output");
-async function pbkdf2Async(hash2, password, salt, opts) {
-  const { c, dkLen, asyncTick, DK, PRF, PRFSalt } = pbkdf2Init(hash2, password, salt, opts);
-  let prfW;
-  const arr = new Uint8Array(4);
-  const view = createView(arr);
-  const u = new Uint8Array(PRF.outputLen);
-  for (let ti = 1, pos = 0; pos < dkLen; ti++, pos += PRF.outputLen) {
-    const Ti = DK.subarray(pos, pos + PRF.outputLen);
-    view.setInt32(0, ti, false);
-    (prfW = PRFSalt._cloneInto(prfW)).update(arr).digestInto(u);
-    Ti.set(u.subarray(0, Ti.length));
-    await asyncLoop(c - 1, asyncTick, () => {
-      PRF._cloneInto(prfW).update(u).digestInto(u);
-      for (let i = 0; i < Ti.length; i++)
-        Ti[i] ^= u[i];
-    });
-  }
-  return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
-}
-__name(pbkdf2Async, "pbkdf2Async");
+var sha2562 = /* @__PURE__ */ wrapConstructor(() => new SHA256());
 
 // node_modules/asn1js/build/index.es.js
 var pvtsutils = __toESM(require_build());
@@ -6605,7 +6751,7 @@ function assertBigInt() {
   }
 }
 __name(assertBigInt, "assertBigInt");
-function concat2(buffers) {
+function concat(buffers) {
   let outputLength = 0;
   let prevLength = 0;
   for (let i = 0; i < buffers.length; i++) {
@@ -6620,7 +6766,7 @@ function concat2(buffers) {
   }
   return retView.buffer;
 }
-__name(concat2, "concat");
+__name(concat, "concat");
 function checkBufferParams(baseBlock, inputBuffer, inputOffset, inputLength) {
   if (!(inputBuffer instanceof Uint8Array)) {
     baseBlock.error = "Wrong parameter: inputBuffer must be 'Uint8Array'";
@@ -6656,7 +6802,7 @@ var ViewWriter = class {
     this.items.push(buf);
   }
   final() {
-    return concat2(this.items);
+    return concat(this.items);
   }
 };
 var powers2 = [new Uint8Array([1])];
@@ -8384,7 +8530,7 @@ var LocalObjectIdentifierValueBlock = class extends ValueBlock {
       }
       retBuffers.push(valueBuf);
     }
-    return concat2(retBuffers);
+    return concat(retBuffers);
   }
   fromString(string3) {
     this.value = [];
@@ -8622,7 +8768,7 @@ var LocalRelativeObjectIdentifierValueBlock = class extends ValueBlock {
       }
       retBuffers.push(valueBuf);
     }
-    return concat2(retBuffers);
+    return concat(retBuffers);
   }
   fromString(string3) {
     this.value = [];
@@ -9395,7 +9541,191 @@ _a = TIME;
 })();
 TIME.NAME = "TIME";
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
+// node_modules/uint8arrays/dist/src/to-string.js
+function toString2(array, encoding = "utf8") {
+  const base3 = bases_default[encoding];
+  if (base3 == null) {
+    throw new Error(`Unsupported encoding "${encoding}"`);
+  }
+  return base3.encoder.encode(array).substring(1);
+}
+__name(toString2, "toString");
+
+// node_modules/@libp2p/crypto/dist/src/random-bytes.js
+function randomBytes2(length3) {
+  if (isNaN(length3) || length3 <= 0) {
+    throw new InvalidParametersError("random bytes length must be a Number bigger than 0");
+  }
+  return randomBytes(length3);
+}
+__name(randomBytes2, "randomBytes");
+
+// node_modules/@libp2p/crypto/dist/src/errors.js
+var SigningError = class extends Error {
+  static {
+    __name(this, "SigningError");
+  }
+  constructor(message2 = "An error occurred while signing a message") {
+    super(message2);
+    this.name = "SigningError";
+  }
+};
+var VerificationError = class extends Error {
+  static {
+    __name(this, "VerificationError");
+  }
+  constructor(message2 = "An error occurred while verifying a message") {
+    super(message2);
+    this.name = "VerificationError";
+  }
+};
+var WebCryptoMissingError = class extends Error {
+  static {
+    __name(this, "WebCryptoMissingError");
+  }
+  constructor(message2 = "Missing Web Crypto API") {
+    super(message2);
+    this.name = "WebCryptoMissingError";
+  }
+};
+
+// node_modules/@libp2p/crypto/dist/src/webcrypto/webcrypto.browser.js
+var webcrypto_browser_default = {
+  get(win = globalThis) {
+    const nativeCrypto = win.crypto;
+    if (nativeCrypto?.subtle == null) {
+      throw new WebCryptoMissingError("Missing Web Crypto API. The most likely cause of this error is that this page is being accessed from an insecure context (i.e. not HTTPS). For more information and possible resolutions see https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/README.md#web-crypto-api");
+    }
+    return nativeCrypto;
+  }
+};
+
+// node_modules/@libp2p/crypto/dist/src/webcrypto/index.js
+var webcrypto_default = webcrypto_browser_default;
+
+// node_modules/@libp2p/crypto/dist/src/keys/rsa/index.browser.js
+async function generateRSAKey(bits) {
+  const pair = await webcrypto_default.get().subtle.generateKey({
+    name: "RSASSA-PKCS1-v1_5",
+    modulusLength: bits,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: { name: "SHA-256" }
+  }, true, ["sign", "verify"]);
+  const keys = await exportKey(pair);
+  return {
+    privateKey: keys[0],
+    publicKey: keys[1]
+  };
+}
+__name(generateRSAKey, "generateRSAKey");
+async function hashAndSign2(key, msg) {
+  const privateKey = await webcrypto_default.get().subtle.importKey("jwk", key, {
+    name: "RSASSA-PKCS1-v1_5",
+    hash: { name: "SHA-256" }
+  }, false, ["sign"]);
+  const sig = await webcrypto_default.get().subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, privateKey, msg instanceof Uint8Array ? msg : msg.subarray());
+  return new Uint8Array(sig, 0, sig.byteLength);
+}
+__name(hashAndSign2, "hashAndSign");
+async function hashAndVerify2(key, sig, msg) {
+  const publicKey = await webcrypto_default.get().subtle.importKey("jwk", key, {
+    name: "RSASSA-PKCS1-v1_5",
+    hash: { name: "SHA-256" }
+  }, false, ["verify"]);
+  return webcrypto_default.get().subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, publicKey, sig, msg instanceof Uint8Array ? msg : msg.subarray());
+}
+__name(hashAndVerify2, "hashAndVerify");
+async function exportKey(pair) {
+  if (pair.privateKey == null || pair.publicKey == null) {
+    throw new InvalidParametersError("Private and public key are required");
+  }
+  return Promise.all([
+    webcrypto_default.get().subtle.exportKey("jwk", pair.privateKey),
+    webcrypto_default.get().subtle.exportKey("jwk", pair.publicKey)
+  ]);
+}
+__name(exportKey, "exportKey");
+function rsaKeySize(jwk) {
+  if (jwk.kty !== "RSA") {
+    throw new InvalidParametersError("invalid key type");
+  } else if (jwk.n == null) {
+    throw new InvalidParametersError("invalid key modulus");
+  }
+  const bytes2 = fromString2(jwk.n, "base64url");
+  return bytes2.length * 8;
+}
+__name(rsaKeySize, "rsaKeySize");
+
+// node_modules/@libp2p/crypto/dist/src/keys/rsa/rsa.js
+var RSAPublicKey = class {
+  static {
+    __name(this, "RSAPublicKey");
+  }
+  type = "RSA";
+  _key;
+  _raw;
+  _multihash;
+  constructor(key, digest2) {
+    this._key = key;
+    this._multihash = digest2;
+  }
+  get raw() {
+    if (this._raw == null) {
+      this._raw = utils_exports2.jwkToPkix(this._key);
+    }
+    return this._raw;
+  }
+  toMultihash() {
+    return this._multihash;
+  }
+  toCID() {
+    return CID.createV1(114, this._multihash);
+  }
+  toString() {
+    return base58btc.encode(this.toMultihash().bytes).substring(1);
+  }
+  equals(key) {
+    if (key == null || !(key.raw instanceof Uint8Array)) {
+      return false;
+    }
+    return equals3(this.raw, key.raw);
+  }
+  verify(data, sig) {
+    return hashAndVerify2(this._key, sig, data);
+  }
+};
+var RSAPrivateKey = class {
+  static {
+    __name(this, "RSAPrivateKey");
+  }
+  type = "RSA";
+  _key;
+  _raw;
+  publicKey;
+  constructor(key, publicKey) {
+    this._key = key;
+    this.publicKey = publicKey;
+  }
+  get raw() {
+    if (this._raw == null) {
+      this._raw = utils_exports2.jwkToPkcs1(this._key);
+    }
+    return this._raw;
+  }
+  equals(key) {
+    if (key == null || !(key.raw instanceof Uint8Array)) {
+      return false;
+    }
+    return equals3(this.raw, key.raw);
+  }
+  sign(message2) {
+    return hashAndSign2(this._key, message2);
+  }
+};
+
+// node_modules/@libp2p/crypto/dist/src/keys/rsa/utils.js
+var MAX_RSA_KEY_SIZE = 8192;
+var SHA2_256_CODE = 18;
 function pkcs1ToJwk(bytes2) {
   const { result } = fromBER(bytes2);
   const values = result.valueBlock.value;
@@ -9416,7 +9746,7 @@ function pkcs1ToJwk(bytes2) {
 __name(pkcs1ToJwk, "pkcs1ToJwk");
 function jwkToPkcs1(jwk) {
   if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
-    throw new CodeError("JWK was missing components", "ERR_INVALID_PARAMETERS");
+    throw new InvalidParametersError("JWK was missing components");
   }
   const root = new Sequence({
     value: [
@@ -9447,7 +9777,7 @@ function pkixToJwk(bytes2) {
 __name(pkixToJwk, "pkixToJwk");
 function jwkToPkix(jwk) {
   if (jwk.n == null || jwk.e == null) {
-    throw new CodeError("JWK was missing components", "ERR_INVALID_PARAMETERS");
+    throw new InvalidParametersError("JWK was missing components");
   }
   const root = new Sequence({
     value: [
@@ -9505,572 +9835,132 @@ function bufToBn(u8) {
   return BigInt("0x" + hex.join(""));
 }
 __name(bufToBn, "bufToBn");
-var SALT_LENGTH = 16;
-var KEY_SIZE = 32;
-var ITERATIONS = 1e4;
-async function exportToPem(privateKey, password) {
-  const crypto3 = webcrypto_browser_default.get();
-  const keyWrapper = new Sequence({
-    value: [
-      // version (0)
-      new Integer({ value: 0 }),
-      // privateKeyAlgorithm
-      new Sequence({
-        value: [
-          // rsaEncryption OID
-          new ObjectIdentifier({
-            value: "1.2.840.113549.1.1.1"
-          }),
-          new Null()
-        ]
-      }),
-      // PrivateKey
-      new OctetString({
-        valueHex: privateKey.marshal()
-      })
-    ]
-  });
-  const keyBuf = keyWrapper.toBER();
-  const keyArr = new Uint8Array(keyBuf, 0, keyBuf.byteLength);
-  const salt = randomBytes2(SALT_LENGTH);
-  const encryptionKey = await pbkdf2Async(sha5122, password, salt, {
-    c: ITERATIONS,
-    dkLen: KEY_SIZE
-  });
-  const iv = randomBytes2(16);
-  const cryptoKey = await crypto3.subtle.importKey("raw", encryptionKey, "AES-CBC", false, ["encrypt"]);
-  const encrypted = await crypto3.subtle.encrypt({
-    name: "AES-CBC",
-    iv
-  }, cryptoKey, keyArr);
-  const pbkdf2Params = new Sequence({
-    value: [
-      // salt
-      new OctetString({ valueHex: salt }),
-      // iteration count
-      new Integer({ value: ITERATIONS }),
-      // key length
-      new Integer({ value: KEY_SIZE }),
-      // AlgorithmIdentifier
-      new Sequence({
-        value: [
-          // hmacWithSHA512
-          new ObjectIdentifier({ value: "1.2.840.113549.2.11" }),
-          new Null()
-        ]
-      })
-    ]
-  });
-  const encryptionAlgorithm = new Sequence({
-    value: [
-      // pkcs5PBES2
-      new ObjectIdentifier({
-        value: "1.2.840.113549.1.5.13"
-      }),
-      new Sequence({
-        value: [
-          // keyDerivationFunc
-          new Sequence({
-            value: [
-              // pkcs5PBKDF2
-              new ObjectIdentifier({
-                value: "1.2.840.113549.1.5.12"
-              }),
-              // PBKDF2-params
-              pbkdf2Params
-            ]
-          }),
-          // encryptionScheme
-          new Sequence({
-            value: [
-              // aes256-CBC
-              new ObjectIdentifier({
-                value: "2.16.840.1.101.3.4.1.42"
-              }),
-              // iv
-              new OctetString({
-                valueHex: iv
-              })
-            ]
-          })
-        ]
-      })
-    ]
-  });
-  const finalWrapper = new Sequence({
-    value: [
-      encryptionAlgorithm,
-      new OctetString({ valueHex: encrypted })
-    ]
-  });
-  const finalWrapperBuf = finalWrapper.toBER();
-  const finalWrapperArr = new Uint8Array(finalWrapperBuf, 0, finalWrapperBuf.byteLength);
-  return [
-    "-----BEGIN ENCRYPTED PRIVATE KEY-----",
-    ...toString2(finalWrapperArr, "base64pad").split(/(.{64})/).filter(Boolean),
-    "-----END ENCRYPTED PRIVATE KEY-----"
-  ].join("\n");
+function pkcs1ToRSAPrivateKey(bytes2) {
+  const jwk = pkcs1ToJwk(bytes2);
+  return jwkToRSAPrivateKey(jwk);
 }
-__name(exportToPem, "exportToPem");
-async function importFromPem(pem, password) {
-  const crypto3 = webcrypto_browser_default.get();
-  let plaintext;
-  if (pem.includes("-----BEGIN ENCRYPTED PRIVATE KEY-----")) {
-    const key = fromString2(pem.replace("-----BEGIN ENCRYPTED PRIVATE KEY-----", "").replace("-----END ENCRYPTED PRIVATE KEY-----", "").replace(/\n/g, "").trim(), "base64pad");
-    const { result } = fromBER(key);
-    const { iv, salt, iterations, keySize: keySize4, cipherText } = findEncryptedPEMData(result);
-    const encryptionKey = await pbkdf2Async(sha5122, password, salt, {
-      c: iterations,
-      dkLen: keySize4
-    });
-    const cryptoKey = await crypto3.subtle.importKey("raw", encryptionKey, "AES-CBC", false, ["decrypt"]);
-    const decrypted = toUint8Array(await crypto3.subtle.decrypt({
-      name: "AES-CBC",
-      iv
-    }, cryptoKey, cipherText));
-    const { result: decryptedResult } = fromBER(decrypted);
-    plaintext = findPEMData(decryptedResult);
-  } else if (pem.includes("-----BEGIN PRIVATE KEY-----")) {
-    const key = fromString2(pem.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace(/\n/g, "").trim(), "base64pad");
-    const { result } = fromBER(key);
-    plaintext = findPEMData(result);
-  } else {
-    throw new CodeError("Could not parse private key from PEM data", "ERR_INVALID_PARAMETERS");
+__name(pkcs1ToRSAPrivateKey, "pkcs1ToRSAPrivateKey");
+function pkixToRSAPublicKey(bytes2) {
+  const jwk = pkixToJwk(bytes2);
+  if (rsaKeySize(jwk) > MAX_RSA_KEY_SIZE) {
+    throw new InvalidPublicKeyError("Key size is too large");
   }
-  return unmarshalRsaPrivateKey(plaintext);
+  const hash2 = sha2562(PublicKey.encode({
+    Type: KeyType.RSA,
+    Data: bytes2
+  }));
+  const digest2 = create(SHA2_256_CODE, hash2);
+  return new RSAPublicKey(jwk, digest2);
 }
-__name(importFromPem, "importFromPem");
-function findEncryptedPEMData(root) {
-  const encryptionAlgorithm = root.valueBlock.value[0];
-  const scheme = encryptionAlgorithm.valueBlock.value[0].toString();
-  if (scheme !== "OBJECT IDENTIFIER : 1.2.840.113549.1.5.13") {
-    throw new CodeError("Only pkcs5PBES2 encrypted private keys are supported", "ERR_INVALID_PARAMS");
+__name(pkixToRSAPublicKey, "pkixToRSAPublicKey");
+function jwkToRSAPrivateKey(jwk) {
+  if (rsaKeySize(jwk) > MAX_RSA_KEY_SIZE) {
+    throw new InvalidParametersError("Key size is too large");
   }
-  const keyDerivationFunc = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[0];
-  const keyDerivationFuncName = keyDerivationFunc.valueBlock.value[0].toString();
-  if (keyDerivationFuncName !== "OBJECT IDENTIFIER : 1.2.840.113549.1.5.12") {
-    throw new CodeError("Only pkcs5PBKDF2 key derivation functions are supported", "ERR_INVALID_PARAMS");
-  }
-  const pbkdf2Params = keyDerivationFunc.valueBlock.value[1];
-  const salt = toUint8Array(pbkdf2Params.valueBlock.value[0].getValue());
-  let iterations = ITERATIONS;
-  let keySize4 = KEY_SIZE;
-  if (pbkdf2Params.valueBlock.value.length === 3) {
-    iterations = Number(pbkdf2Params.valueBlock.value[1].toBigInt());
-    keySize4 = Number(pbkdf2Params.valueBlock.value[2].toBigInt());
-  } else if (pbkdf2Params.valueBlock.value.length === 2) {
-    throw new CodeError("Could not derive key size and iterations from PEM file - please use @libp2p/rsa to re-import your key", "ERR_INVALID_PARAMS");
-  }
-  const encryptionScheme = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[1];
-  const encryptionSchemeName = encryptionScheme.valueBlock.value[0].toString();
-  if (encryptionSchemeName === "OBJECT IDENTIFIER : 1.2.840.113549.3.7") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 1.3.14.3.2.7") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.2") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.22") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.42") {
-  } else {
-    throw new CodeError("Only AES-CBC encryption schemes are supported", "ERR_INVALID_PARAMS");
-  }
-  const iv = toUint8Array(encryptionScheme.valueBlock.value[1].getValue());
-  return {
-    cipherText: toUint8Array(root.valueBlock.value[1].getValue()),
-    salt,
-    iterations,
-    keySize: keySize4,
-    iv
-  };
+  const keys = jwkToJWKKeyPair(jwk);
+  const hash2 = sha2562(PublicKey.encode({
+    Type: KeyType.RSA,
+    Data: jwkToPkix(keys.publicKey)
+  }));
+  const digest2 = create(SHA2_256_CODE, hash2);
+  return new RSAPrivateKey(keys.privateKey, new RSAPublicKey(keys.publicKey, digest2));
 }
-__name(findEncryptedPEMData, "findEncryptedPEMData");
-function findPEMData(seq) {
-  return toUint8Array(seq.valueBlock.value[2].getValue());
-}
-__name(findPEMData, "findPEMData");
-function toUint8Array(buf) {
-  return new Uint8Array(buf, 0, buf.byteLength);
-}
-__name(toUint8Array, "toUint8Array");
-
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/rsa-browser.js
-async function generateKey2(bits) {
-  const pair = await webcrypto_browser_default.get().subtle.generateKey({
-    name: "RSASSA-PKCS1-v1_5",
-    modulusLength: bits,
-    publicExponent: new Uint8Array([1, 0, 1]),
-    hash: { name: "SHA-256" }
-  }, true, ["sign", "verify"]);
-  const keys = await exportKey(pair);
-  return {
-    privateKey: keys[0],
-    publicKey: keys[1]
-  };
-}
-__name(generateKey2, "generateKey");
-async function unmarshalPrivateKey(key) {
-  const privateKey = await webcrypto_browser_default.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, true, ["sign"]);
-  const pair = [
-    privateKey,
-    await derivePublicFromPrivate(key)
-  ];
-  const keys = await exportKey({
-    privateKey: pair[0],
-    publicKey: pair[1]
-  });
-  return {
-    privateKey: keys[0],
-    publicKey: keys[1]
-  };
-}
-__name(unmarshalPrivateKey, "unmarshalPrivateKey");
-async function hashAndSign2(key, msg) {
-  const privateKey = await webcrypto_browser_default.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, false, ["sign"]);
-  const sig = await webcrypto_browser_default.get().subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, privateKey, msg instanceof Uint8Array ? msg : msg.subarray());
-  return new Uint8Array(sig, 0, sig.byteLength);
-}
-__name(hashAndSign2, "hashAndSign");
-async function hashAndVerify2(key, sig, msg) {
-  const publicKey = await webcrypto_browser_default.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, false, ["verify"]);
-  return webcrypto_browser_default.get().subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, publicKey, sig, msg instanceof Uint8Array ? msg : msg.subarray());
-}
-__name(hashAndVerify2, "hashAndVerify");
-async function exportKey(pair) {
-  if (pair.privateKey == null || pair.publicKey == null) {
-    throw new CodeError("Private and public key are required", "ERR_INVALID_PARAMETERS");
-  }
-  return Promise.all([
-    webcrypto_browser_default.get().subtle.exportKey("jwk", pair.privateKey),
-    webcrypto_browser_default.get().subtle.exportKey("jwk", pair.publicKey)
-  ]);
-}
-__name(exportKey, "exportKey");
-async function derivePublicFromPrivate(jwKey) {
-  return webcrypto_browser_default.get().subtle.importKey("jwk", {
-    kty: jwKey.kty,
-    n: jwKey.n,
-    e: jwKey.e
-  }, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, true, ["verify"]);
-}
-__name(derivePublicFromPrivate, "derivePublicFromPrivate");
-function keySize(jwk) {
-  if (jwk.kty !== "RSA") {
-    throw new CodeError("invalid key type", "ERR_INVALID_KEY_TYPE");
-  } else if (jwk.n == null) {
-    throw new CodeError("invalid key modulus", "ERR_INVALID_KEY_MODULUS");
-  }
-  const bytes2 = fromString2(jwk.n, "base64url");
-  return bytes2.length * 8;
-}
-__name(keySize, "keySize");
-
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
-var MAX_RSA_KEY_SIZE = 8192;
-var RsaPublicKey = class {
-  static {
-    __name(this, "RsaPublicKey");
-  }
-  _key;
-  constructor(key) {
-    this._key = key;
-  }
-  verify(data, sig) {
-    return hashAndVerify2(this._key, sig, data);
-  }
-  marshal() {
-    return rsa_utils_exports.jwkToPkix(this._key);
-  }
-  get bytes() {
-    return PublicKey.encode({
-      Type: KeyType.RSA,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-};
-var RsaPrivateKey = class {
-  static {
-    __name(this, "RsaPrivateKey");
-  }
-  _key;
-  _publicKey;
-  constructor(key, publicKey) {
-    this._key = key;
-    this._publicKey = publicKey;
-  }
-  genSecret() {
-    return randomBytes2(16);
-  }
-  sign(message2) {
-    return hashAndSign2(this._key, message2);
-  }
-  get public() {
-    if (this._publicKey == null) {
-      throw new CodeError("public key not provided", "ERR_PUBKEY_NOT_PROVIDED");
-    }
-    return new RsaPublicKey(this._publicKey);
-  }
-  marshal() {
-    return rsa_utils_exports.jwkToPkcs1(this._key);
-  }
-  get bytes() {
-    return PrivateKey.encode({
-      Type: KeyType.RSA,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   */
-  async id() {
-    const hash2 = await this.public.hash();
-    return toString2(hash2, "base58btc");
-  }
-  /**
-   * Exports the key as libp2p-key - a aes-gcm encrypted value with the key
-   * derived from the password.
-   *
-   * To export it as a password protected PEM file, please use the `exportPEM`
-   * function from `@libp2p/rsa`.
-   */
-  async export(password, format2 = "pkcs-8") {
-    if (format2 === "pkcs-8") {
-      return rsa_utils_exports.exportToPem(this, password);
-    } else if (format2 === "libp2p-key") {
-      return exporter(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-async function unmarshalRsaPrivateKey(bytes2) {
-  const jwk = rsa_utils_exports.pkcs1ToJwk(bytes2);
-  if (keySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await unmarshalPrivateKey(jwk);
-  return new RsaPrivateKey(keys.privateKey, keys.publicKey);
-}
-__name(unmarshalRsaPrivateKey, "unmarshalRsaPrivateKey");
-function unmarshalRsaPublicKey(bytes2) {
-  const jwk = rsa_utils_exports.pkixToJwk(bytes2);
-  if (keySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  return new RsaPublicKey(jwk);
-}
-__name(unmarshalRsaPublicKey, "unmarshalRsaPublicKey");
-async function fromJwk(jwk) {
-  if (keySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await unmarshalPrivateKey(jwk);
-  return new RsaPrivateKey(keys.privateKey, keys.publicKey);
-}
-__name(fromJwk, "fromJwk");
-async function generateKeyPair2(bits) {
+__name(jwkToRSAPrivateKey, "jwkToRSAPrivateKey");
+async function generateRSAKeyPair(bits) {
   if (bits > MAX_RSA_KEY_SIZE) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
+    throw new InvalidParametersError("Key size is too large");
   }
-  const keys = await generateKey2(bits);
-  return new RsaPrivateKey(keys.privateKey, keys.publicKey);
+  const keys = await generateRSAKey(bits);
+  const hash2 = sha2562(PublicKey.encode({
+    Type: KeyType.RSA,
+    Data: jwkToPkix(keys.publicKey)
+  }));
+  const digest2 = create(SHA2_256_CODE, hash2);
+  return new RSAPrivateKey(keys.privateKey, new RSAPublicKey(keys.publicKey, digest2));
 }
-__name(generateKeyPair2, "generateKeyPair");
+__name(generateRSAKeyPair, "generateRSAKeyPair");
+function jwkToJWKKeyPair(key) {
+  if (key == null) {
+    throw new InvalidParametersError("Missing key parameter");
+  }
+  return {
+    privateKey: key,
+    publicKey: {
+      kty: key.kty,
+      n: key.n,
+      e: key.e
+    }
+  };
+}
+__name(jwkToJWKKeyPair, "jwkToJWKKeyPair");
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
-var secp256k1_class_exports = {};
-__export(secp256k1_class_exports, {
-  Secp256k1PrivateKey: () => Secp256k1PrivateKey,
-  Secp256k1PublicKey: () => Secp256k1PublicKey,
-  generateKeyPair: () => generateKeyPair3,
-  unmarshalSecp256k1PrivateKey: () => unmarshalSecp256k1PrivateKey,
-  unmarshalSecp256k1PublicKey: () => unmarshalSecp256k1PublicKey
-});
-
-// node_modules/@noble/hashes/esm/sha256.js
-var SHA256_K = /* @__PURE__ */ new Uint32Array([
-  1116352408,
-  1899447441,
-  3049323471,
-  3921009573,
-  961987163,
-  1508970993,
-  2453635748,
-  2870763221,
-  3624381080,
-  310598401,
-  607225278,
-  1426881987,
-  1925078388,
-  2162078206,
-  2614888103,
-  3248222580,
-  3835390401,
-  4022224774,
-  264347078,
-  604807628,
-  770255983,
-  1249150122,
-  1555081692,
-  1996064986,
-  2554220882,
-  2821834349,
-  2952996808,
-  3210313671,
-  3336571891,
-  3584528711,
-  113926993,
-  338241895,
-  666307205,
-  773529912,
-  1294757372,
-  1396182291,
-  1695183700,
-  1986661051,
-  2177026350,
-  2456956037,
-  2730485921,
-  2820302411,
-  3259730800,
-  3345764771,
-  3516065817,
-  3600352804,
-  4094571909,
-  275423344,
-  430227734,
-  506948616,
-  659060556,
-  883997877,
-  958139571,
-  1322822218,
-  1537002063,
-  1747873779,
-  1955562222,
-  2024104815,
-  2227730452,
-  2361852424,
-  2428436474,
-  2756734187,
-  3204031479,
-  3329325298
-]);
-var SHA256_IV = /* @__PURE__ */ new Uint32Array([
-  1779033703,
-  3144134277,
-  1013904242,
-  2773480762,
-  1359893119,
-  2600822924,
-  528734635,
-  1541459225
-]);
-var SHA256_W = /* @__PURE__ */ new Uint32Array(64);
-var SHA256 = class extends HashMD {
+// node_modules/@noble/hashes/esm/hmac.js
+var HMAC = class extends Hash {
   static {
-    __name(this, "SHA256");
+    __name(this, "HMAC");
   }
-  constructor() {
-    super(64, 32, 8, false);
-    this.A = SHA256_IV[0] | 0;
-    this.B = SHA256_IV[1] | 0;
-    this.C = SHA256_IV[2] | 0;
-    this.D = SHA256_IV[3] | 0;
-    this.E = SHA256_IV[4] | 0;
-    this.F = SHA256_IV[5] | 0;
-    this.G = SHA256_IV[6] | 0;
-    this.H = SHA256_IV[7] | 0;
+  constructor(hash2, _key) {
+    super();
+    this.finished = false;
+    this.destroyed = false;
+    hash(hash2);
+    const key = toBytes(_key);
+    this.iHash = hash2.create();
+    if (typeof this.iHash.update !== "function")
+      throw new Error("Expected instance of class which extends utils.Hash");
+    this.blockLen = this.iHash.blockLen;
+    this.outputLen = this.iHash.outputLen;
+    const blockLen = this.blockLen;
+    const pad = new Uint8Array(blockLen);
+    pad.set(key.length > blockLen ? hash2.create().update(key).digest() : key);
+    for (let i = 0; i < pad.length; i++)
+      pad[i] ^= 54;
+    this.iHash.update(pad);
+    this.oHash = hash2.create();
+    for (let i = 0; i < pad.length; i++)
+      pad[i] ^= 54 ^ 92;
+    this.oHash.update(pad);
+    pad.fill(0);
   }
-  get() {
-    const { A, B, C, D, E, F, G, H } = this;
-    return [A, B, C, D, E, F, G, H];
+  update(buf) {
+    exists(this);
+    this.iHash.update(buf);
+    return this;
   }
-  // prettier-ignore
-  set(A, B, C, D, E, F, G, H) {
-    this.A = A | 0;
-    this.B = B | 0;
-    this.C = C | 0;
-    this.D = D | 0;
-    this.E = E | 0;
-    this.F = F | 0;
-    this.G = G | 0;
-    this.H = H | 0;
+  digestInto(out) {
+    exists(this);
+    bytes(out, this.outputLen);
+    this.finished = true;
+    this.iHash.digestInto(out);
+    this.oHash.update(out);
+    this.oHash.digestInto(out);
+    this.destroy();
   }
-  process(view, offset) {
-    for (let i = 0; i < 16; i++, offset += 4)
-      SHA256_W[i] = view.getUint32(offset, false);
-    for (let i = 16; i < 64; i++) {
-      const W15 = SHA256_W[i - 15];
-      const W2 = SHA256_W[i - 2];
-      const s0 = rotr(W15, 7) ^ rotr(W15, 18) ^ W15 >>> 3;
-      const s1 = rotr(W2, 17) ^ rotr(W2, 19) ^ W2 >>> 10;
-      SHA256_W[i] = s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16] | 0;
-    }
-    let { A, B, C, D, E, F, G, H } = this;
-    for (let i = 0; i < 64; i++) {
-      const sigma1 = rotr(E, 6) ^ rotr(E, 11) ^ rotr(E, 25);
-      const T1 = H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i] | 0;
-      const sigma0 = rotr(A, 2) ^ rotr(A, 13) ^ rotr(A, 22);
-      const T2 = sigma0 + Maj(A, B, C) | 0;
-      H = G;
-      G = F;
-      F = E;
-      E = D + T1 | 0;
-      D = C;
-      C = B;
-      B = A;
-      A = T1 + T2 | 0;
-    }
-    A = A + this.A | 0;
-    B = B + this.B | 0;
-    C = C + this.C | 0;
-    D = D + this.D | 0;
-    E = E + this.E | 0;
-    F = F + this.F | 0;
-    G = G + this.G | 0;
-    H = H + this.H | 0;
-    this.set(A, B, C, D, E, F, G, H);
+  digest() {
+    const out = new Uint8Array(this.oHash.outputLen);
+    this.digestInto(out);
+    return out;
   }
-  roundClean() {
-    SHA256_W.fill(0);
+  _cloneInto(to) {
+    to || (to = Object.create(Object.getPrototypeOf(this), {}));
+    const { oHash, iHash, finished, destroyed, blockLen, outputLen } = this;
+    to = to;
+    to.finished = finished;
+    to.destroyed = destroyed;
+    to.blockLen = blockLen;
+    to.outputLen = outputLen;
+    to.oHash = oHash._cloneInto(to.oHash);
+    to.iHash = iHash._cloneInto(to.iHash);
+    return to;
   }
   destroy() {
-    this.set(0, 0, 0, 0, 0, 0, 0, 0);
-    this.buffer.fill(0);
+    this.destroyed = true;
+    this.oHash.destroy();
+    this.iHash.destroy();
   }
 };
-var sha2562 = /* @__PURE__ */ wrapConstructor(() => new SHA256());
+var hmac = /* @__PURE__ */ __name((hash2, key, message2) => new HMAC(hash2, key).update(message2).digest(), "hmac");
+hmac.create = (hash2, key) => new HMAC(hash2, key);
 
 // node_modules/@noble/curves/esm/abstract/weierstrass.js
 function validateSigVerOpts(opts) {
@@ -10847,7 +10737,7 @@ function weierstrass(curveDef) {
   function prepSig(msgHash, privateKey, opts = defaultSigOpts) {
     if (["recovered", "canonical"].some((k) => k in opts))
       throw new Error("sign() legacy options not supported");
-    const { hash: hash2, randomBytes: randomBytes5 } = CURVE;
+    const { hash: hash2, randomBytes: randomBytes3 } = CURVE;
     let { lowS, prehash, extraEntropy: ent } = opts;
     if (lowS == null)
       lowS = true;
@@ -10859,7 +10749,7 @@ function weierstrass(curveDef) {
     const d2 = normPrivateKeyToScalar(privateKey);
     const seedArgs = [int2octets(d2), int2octets(h1int)];
     if (ent != null && ent !== false) {
-      const e = ent === true ? randomBytes5(Fp3.BYTES) : ent;
+      const e = ent === true ? randomBytes3(Fp3.BYTES) : ent;
       seedArgs.push(ensureBytes("extraEntropy", e));
     }
     const seed = concatBytes2(...seedArgs);
@@ -10968,8 +10858,8 @@ function getHash(hash2) {
 }
 __name(getHash, "getHash");
 function createCurve(curveDef, defHash) {
-  const create5 = /* @__PURE__ */ __name((hash2) => weierstrass({ ...curveDef, ...getHash(hash2) }), "create");
-  return Object.freeze({ ...create5(defHash), create: create5 });
+  const create2 = /* @__PURE__ */ __name((hash2) => weierstrass({ ...curveDef, ...getHash(hash2) }), "create");
+  return Object.freeze({ ...create2(defHash), create: create2 });
 }
 __name(createCurve, "createCurve");
 
@@ -11054,22 +10944,48 @@ var secp256k1 = createCurve({
 var _0n7 = BigInt(0);
 var Point = secp256k1.ProjectivePoint;
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-browser.js
-function generateKey3() {
-  return secp256k1.utils.randomPrivateKey();
+// node_modules/uint8arrays/dist/src/util/as-uint8array.js
+function asUint8Array(buf) {
+  return buf;
 }
-__name(generateKey3, "generateKey");
+__name(asUint8Array, "asUint8Array");
+
+// node_modules/uint8arrays/dist/src/concat.js
+function concat2(arrays, length3) {
+  if (length3 == null) {
+    length3 = arrays.reduce((acc, curr) => acc + curr.length, 0);
+  }
+  const output2 = allocUnsafe(length3);
+  let offset = 0;
+  for (const arr of arrays) {
+    output2.set(arr, offset);
+    offset += arr.length;
+  }
+  return asUint8Array(output2);
+}
+__name(concat2, "concat");
+
+// node_modules/@libp2p/crypto/dist/src/util.js
+function isPromise(thing) {
+  if (thing == null) {
+    return false;
+  }
+  return typeof thing.then === "function" && typeof thing.catch === "function" && typeof thing.finally === "function";
+}
+__name(isPromise, "isPromise");
+
+// node_modules/@libp2p/crypto/dist/src/keys/secp256k1/index.browser.js
 function hashAndSign3(key, msg) {
   const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
   if (isPromise(p)) {
     return p.then(({ digest: digest2 }) => secp256k1.sign(digest2, key).toDERRawBytes()).catch((err) => {
-      throw new CodeError(String(err), "ERR_INVALID_INPUT");
+      throw new SigningError(String(err));
     });
   }
   try {
     return secp256k1.sign(p.digest, key).toDERRawBytes();
   } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_INPUT");
+    throw new SigningError(String(err));
   }
 }
 __name(hashAndSign3, "hashAndSign");
@@ -11077,196 +10993,2494 @@ function hashAndVerify3(key, sig, msg) {
   const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
   if (isPromise(p)) {
     return p.then(({ digest: digest2 }) => secp256k1.verify(sig, digest2, key)).catch((err) => {
-      throw new CodeError(String(err), "ERR_INVALID_INPUT");
+      throw new VerificationError(String(err));
     });
   }
   try {
     return secp256k1.verify(sig, p.digest, key);
   } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_INPUT");
+    throw new VerificationError(String(err));
   }
 }
 __name(hashAndVerify3, "hashAndVerify");
-function compressPublicKey(key) {
-  const point = secp256k1.ProjectivePoint.fromHex(key).toRawBytes(true);
-  return point;
-}
-__name(compressPublicKey, "compressPublicKey");
-function validatePrivateKey(key) {
-  try {
-    secp256k1.getPublicKey(key, true);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PRIVATE_KEY");
-  }
-}
-__name(validatePrivateKey, "validatePrivateKey");
-function validatePublicKey(key) {
-  try {
-    secp256k1.ProjectivePoint.fromHex(key);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PUBLIC_KEY");
-  }
-}
-__name(validatePublicKey, "validatePublicKey");
-function computePublicKey(privateKey) {
-  try {
-    return secp256k1.getPublicKey(privateKey, true);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PRIVATE_KEY");
-  }
-}
-__name(computePublicKey, "computePublicKey");
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
+// node_modules/@libp2p/crypto/dist/src/keys/secp256k1/secp256k1.js
 var Secp256k1PublicKey = class {
   static {
     __name(this, "Secp256k1PublicKey");
   }
+  type = "secp256k1";
+  raw;
   _key;
   constructor(key) {
-    validatePublicKey(key);
-    this._key = key;
+    this._key = validateSecp256k1PublicKey(key);
+    this.raw = compressSecp256k1PublicKey(this._key);
+  }
+  toMultihash() {
+    return identity.digest(publicKeyToProtobuf(this));
+  }
+  toCID() {
+    return CID.createV1(114, this.toMultihash());
+  }
+  toString() {
+    return base58btc.encode(this.toMultihash().bytes).substring(1);
+  }
+  equals(key) {
+    if (key == null || !(key.raw instanceof Uint8Array)) {
+      return false;
+    }
+    return equals3(this.raw, key.raw);
   }
   verify(data, sig) {
     return hashAndVerify3(this._key, sig, data);
-  }
-  marshal() {
-    return compressPublicKey(this._key);
-  }
-  get bytes() {
-    return PublicKey.encode({
-      Type: KeyType.Secp256k1,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  async hash() {
-    const p = sha256.digest(this.bytes);
-    let bytes2;
-    if (isPromise(p)) {
-      ({ bytes: bytes2 } = await p);
-    } else {
-      bytes2 = p.bytes;
-    }
-    return bytes2;
   }
 };
 var Secp256k1PrivateKey = class {
   static {
     __name(this, "Secp256k1PrivateKey");
   }
-  _key;
-  _publicKey;
+  type = "secp256k1";
+  raw;
+  publicKey;
   constructor(key, publicKey) {
-    this._key = key;
-    this._publicKey = publicKey ?? computePublicKey(key);
-    validatePrivateKey(this._key);
-    validatePublicKey(this._publicKey);
-  }
-  sign(message2) {
-    return hashAndSign3(this._key, message2);
-  }
-  get public() {
-    return new Secp256k1PublicKey(this._publicKey);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PrivateKey.encode({
-      Type: KeyType.Secp256k1,
-      Data: this.marshal()
-    }).subarray();
+    this.raw = validateSecp256k1PrivateKey(key);
+    this.publicKey = new Secp256k1PublicKey(publicKey ?? computeSecp256k1PublicKey(key));
   }
   equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
+    if (key == null || !(key.raw instanceof Uint8Array)) {
+      return false;
     }
-    return p.bytes;
+    return equals3(this.raw, key.raw);
   }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   */
-  async id() {
-    const hash2 = await this.public.hash();
-    return toString2(hash2, "base58btc");
-  }
-  /**
-   * Exports the key into a password protected `format`
-   */
-  async export(password, format2 = "libp2p-key") {
-    if (format2 === "libp2p-key") {
-      return exporter(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
+  sign(message2) {
+    return hashAndSign3(this.raw, message2);
   }
 };
-function unmarshalSecp256k1PrivateKey(bytes2) {
-  return new Secp256k1PrivateKey(bytes2);
-}
-__name(unmarshalSecp256k1PrivateKey, "unmarshalSecp256k1PrivateKey");
+
+// node_modules/@libp2p/crypto/dist/src/keys/secp256k1/utils.js
 function unmarshalSecp256k1PublicKey(bytes2) {
   return new Secp256k1PublicKey(bytes2);
 }
 __name(unmarshalSecp256k1PublicKey, "unmarshalSecp256k1PublicKey");
-async function generateKeyPair3() {
-  const privateKeyBytes = generateKey3();
+async function generateSecp256k1KeyPair() {
+  const privateKeyBytes = generateSecp256k1PrivateKey();
   return new Secp256k1PrivateKey(privateKeyBytes);
 }
-__name(generateKeyPair3, "generateKeyPair");
+__name(generateSecp256k1KeyPair, "generateSecp256k1KeyPair");
+function compressSecp256k1PublicKey(key) {
+  const point = secp256k1.ProjectivePoint.fromHex(key).toRawBytes(true);
+  return point;
+}
+__name(compressSecp256k1PublicKey, "compressSecp256k1PublicKey");
+function validateSecp256k1PrivateKey(key) {
+  try {
+    secp256k1.getPublicKey(key, true);
+    return key;
+  } catch (err) {
+    throw new InvalidPrivateKeyError(String(err));
+  }
+}
+__name(validateSecp256k1PrivateKey, "validateSecp256k1PrivateKey");
+function validateSecp256k1PublicKey(key) {
+  try {
+    secp256k1.ProjectivePoint.fromHex(key);
+    return key;
+  } catch (err) {
+    throw new InvalidPublicKeyError(String(err));
+  }
+}
+__name(validateSecp256k1PublicKey, "validateSecp256k1PublicKey");
+function computeSecp256k1PublicKey(privateKey) {
+  try {
+    return secp256k1.getPublicKey(privateKey, true);
+  } catch (err) {
+    throw new InvalidPrivateKeyError(String(err));
+  }
+}
+__name(computeSecp256k1PublicKey, "computeSecp256k1PublicKey");
+function generateSecp256k1PrivateKey() {
+  return secp256k1.utils.randomPrivateKey();
+}
+__name(generateSecp256k1PrivateKey, "generateSecp256k1PrivateKey");
 
-// node_modules/libp2p/node_modules/@libp2p/crypto/dist/src/keys/index.js
-var supportedKeys = {
-  rsa: rsa_class_exports,
-  ed25519: ed25519_class_exports,
-  secp256k1: secp256k1_class_exports
+// node_modules/@libp2p/crypto/dist/src/keys/index.js
+async function generateKeyPair(type, bits) {
+  if (type === "Ed25519") {
+    return generateEd25519KeyPair();
+  }
+  if (type === "secp256k1") {
+    return generateSecp256k1KeyPair();
+  }
+  if (type === "RSA") {
+    return generateRSAKeyPair(bits ?? 2048);
+  }
+  throw new UnsupportedKeyTypeError();
+}
+__name(generateKeyPair, "generateKeyPair");
+function publicKeyFromProtobuf(buf) {
+  const { Type, Data } = PublicKey.decode(buf);
+  const data = Data ?? new Uint8Array();
+  switch (Type) {
+    case KeyType.RSA:
+      return pkixToRSAPublicKey(data);
+    case KeyType.Ed25519:
+      return unmarshalEd25519PublicKey(data);
+    case KeyType.secp256k1:
+      return unmarshalSecp256k1PublicKey(data);
+    default:
+      throw new UnsupportedKeyTypeError();
+  }
+}
+__name(publicKeyFromProtobuf, "publicKeyFromProtobuf");
+function publicKeyFromMultihash(digest2) {
+  const { Type, Data } = PublicKey.decode(digest2.digest);
+  const data = Data ?? new Uint8Array();
+  switch (Type) {
+    case KeyType.Ed25519:
+      return unmarshalEd25519PublicKey(data);
+    case KeyType.secp256k1:
+      return unmarshalSecp256k1PublicKey(data);
+    default:
+      throw new UnsupportedKeyTypeError();
+  }
+}
+__name(publicKeyFromMultihash, "publicKeyFromMultihash");
+function publicKeyToProtobuf(key) {
+  return PublicKey.encode({
+    Type: KeyType[key.type],
+    Data: key.raw
+  });
+}
+__name(publicKeyToProtobuf, "publicKeyToProtobuf");
+
+// node_modules/@libp2p/peer-id/dist/src/peer-id.js
+var inspect = Symbol.for("nodejs.util.inspect.custom");
+var LIBP2P_KEY_CODE = 114;
+var PeerIdImpl = class {
+  static {
+    __name(this, "PeerIdImpl");
+  }
+  type;
+  multihash;
+  publicKey;
+  string;
+  constructor(init) {
+    this.type = init.type;
+    this.multihash = init.multihash;
+    Object.defineProperty(this, "string", {
+      enumerable: false,
+      writable: true
+    });
+  }
+  get [Symbol.toStringTag]() {
+    return `PeerId(${this.toString()})`;
+  }
+  [peerIdSymbol] = true;
+  toString() {
+    if (this.string == null) {
+      this.string = base58btc.encode(this.multihash.bytes).slice(1);
+    }
+    return this.string;
+  }
+  toMultihash() {
+    return this.multihash;
+  }
+  // return self-describing String representation
+  // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
+  toCID() {
+    return CID.createV1(LIBP2P_KEY_CODE, this.multihash);
+  }
+  toJSON() {
+    return this.toString();
+  }
+  /**
+   * Checks the equality of `this` peer against a given PeerId
+   */
+  equals(id) {
+    if (id == null) {
+      return false;
+    }
+    if (id instanceof Uint8Array) {
+      return equals3(this.multihash.bytes, id);
+    } else if (typeof id === "string") {
+      return this.toString() === id;
+    } else if (id?.toMultihash()?.bytes != null) {
+      return equals3(this.multihash.bytes, id.toMultihash().bytes);
+    } else {
+      throw new Error("not valid Id");
+    }
+  }
+  /**
+   * Returns PeerId as a human-readable string
+   * https://nodejs.org/api/util.html#utilinspectcustom
+   *
+   * @example
+   * ```TypeScript
+   * import { peerIdFromString } from '@libp2p/peer-id'
+   *
+   * console.info(peerIdFromString('QmFoo'))
+   * // 'PeerId(QmFoo)'
+   * ```
+   */
+  [inspect]() {
+    return `PeerId(${this.toString()})`;
+  }
 };
-function unsupportedKey(type) {
-  const supported = Object.keys(supportedKeys).join(" / ");
-  return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, "ERR_UNSUPPORTED_KEY_TYPE");
+var RSAPeerId = class extends PeerIdImpl {
+  static {
+    __name(this, "RSAPeerId");
+  }
+  type = "RSA";
+  publicKey;
+  constructor(init) {
+    super({ ...init, type: "RSA" });
+    this.publicKey = init.publicKey;
+  }
+};
+var Ed25519PeerId = class extends PeerIdImpl {
+  static {
+    __name(this, "Ed25519PeerId");
+  }
+  type = "Ed25519";
+  publicKey;
+  constructor(init) {
+    super({ ...init, type: "Ed25519" });
+    this.publicKey = init.publicKey;
+  }
+};
+var Secp256k1PeerId = class extends PeerIdImpl {
+  static {
+    __name(this, "Secp256k1PeerId");
+  }
+  type = "secp256k1";
+  publicKey;
+  constructor(init) {
+    super({ ...init, type: "secp256k1" });
+    this.publicKey = init.publicKey;
+  }
+};
+var TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 2336;
+var URLPeerId = class {
+  static {
+    __name(this, "URLPeerId");
+  }
+  type = "url";
+  multihash;
+  publicKey;
+  url;
+  constructor(url) {
+    this.url = url.toString();
+    this.multihash = identity.digest(fromString2(this.url));
+  }
+  [inspect]() {
+    return `PeerId(${this.url})`;
+  }
+  [peerIdSymbol] = true;
+  toString() {
+    return this.toCID().toString();
+  }
+  toMultihash() {
+    return this.multihash;
+  }
+  toCID() {
+    return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, this.toMultihash());
+  }
+  toJSON() {
+    return this.toString();
+  }
+  equals(other) {
+    if (other == null) {
+      return false;
+    }
+    if (other instanceof Uint8Array) {
+      other = toString2(other);
+    }
+    return other.toString() === this.toString();
+  }
+};
+
+// node_modules/@libp2p/peer-id/dist/src/index.js
+var LIBP2P_KEY_CODE2 = 114;
+var TRANSPORT_IPFS_GATEWAY_HTTP_CODE2 = 2336;
+function peerIdFromString(str, decoder) {
+  let multihash;
+  if (str.charAt(0) === "1" || str.charAt(0) === "Q") {
+    multihash = decode4(base58btc.decode(`z${str}`));
+  } else {
+    if (decoder == null) {
+      throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
+    }
+    multihash = decode4(decoder.decode(str));
+  }
+  return peerIdFromMultihash(multihash);
 }
-__name(unsupportedKey, "unsupportedKey");
-function unmarshalPublicKey(buf) {
-  const decoded = PublicKey.decode(buf);
-  const data = decoded.Data ?? new Uint8Array();
-  switch (decoded.Type) {
-    case KeyType.RSA:
-      return supportedKeys.rsa.unmarshalRsaPublicKey(data);
-    case KeyType.Ed25519:
-      return supportedKeys.ed25519.unmarshalEd25519PublicKey(data);
-    case KeyType.Secp256k1:
-      return supportedKeys.secp256k1.unmarshalSecp256k1PublicKey(data);
+__name(peerIdFromString, "peerIdFromString");
+function peerIdFromPublicKey(publicKey) {
+  if (publicKey.type === "Ed25519") {
+    return new Ed25519PeerId({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    });
+  } else if (publicKey.type === "secp256k1") {
+    return new Secp256k1PeerId({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    });
+  } else if (publicKey.type === "RSA") {
+    return new RSAPeerId({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    });
+  }
+  throw new UnsupportedKeyTypeError();
+}
+__name(peerIdFromPublicKey, "peerIdFromPublicKey");
+function peerIdFromPrivateKey(privateKey) {
+  return peerIdFromPublicKey(privateKey.publicKey);
+}
+__name(peerIdFromPrivateKey, "peerIdFromPrivateKey");
+function peerIdFromMultihash(multihash) {
+  if (isSha256Multihash(multihash)) {
+    return new RSAPeerId({ multihash });
+  } else if (isIdentityMultihash(multihash)) {
+    try {
+      const publicKey = publicKeyFromMultihash(multihash);
+      if (publicKey.type === "Ed25519") {
+        return new Ed25519PeerId({ multihash, publicKey });
+      } else if (publicKey.type === "secp256k1") {
+        return new Secp256k1PeerId({ multihash, publicKey });
+      }
+    } catch (err) {
+      const url = toString2(multihash.digest);
+      return new URLPeerId(new URL(url));
+    }
+  }
+  throw new InvalidMultihashError("Supplied PeerID Multihash is invalid");
+}
+__name(peerIdFromMultihash, "peerIdFromMultihash");
+function peerIdFromCID(cid) {
+  if (cid?.multihash == null || cid.version == null || cid.version === 1 && cid.code !== LIBP2P_KEY_CODE2 && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE2) {
+    throw new InvalidCIDError("Supplied PeerID CID is invalid");
+  }
+  if (cid.code === TRANSPORT_IPFS_GATEWAY_HTTP_CODE2) {
+    const url = toString2(cid.multihash.digest);
+    return new URLPeerId(new URL(url));
+  }
+  return peerIdFromMultihash(cid.multihash);
+}
+__name(peerIdFromCID, "peerIdFromCID");
+function isIdentityMultihash(multihash) {
+  return multihash.code === identity.code;
+}
+__name(isIdentityMultihash, "isIdentityMultihash");
+function isSha256Multihash(multihash) {
+  return multihash.code === sha256.code;
+}
+__name(isSha256Multihash, "isSha256Multihash");
+
+// node_modules/@chainsafe/is-ip/lib/parser.js
+var Parser = class {
+  static {
+    __name(this, "Parser");
+  }
+  index = 0;
+  input = "";
+  new(input) {
+    this.index = 0;
+    this.input = input;
+    return this;
+  }
+  /** Run a parser, and restore the pre-parse state if it fails. */
+  readAtomically(fn) {
+    const index = this.index;
+    const result = fn();
+    if (result === void 0) {
+      this.index = index;
+    }
+    return result;
+  }
+  /** Run a parser, but fail if the entire input wasn't consumed. Doesn't run atomically. */
+  parseWith(fn) {
+    const result = fn();
+    if (this.index !== this.input.length) {
+      return void 0;
+    }
+    return result;
+  }
+  /** Peek the next character from the input */
+  peekChar() {
+    if (this.index >= this.input.length) {
+      return void 0;
+    }
+    return this.input[this.index];
+  }
+  /** Read the next character from the input */
+  readChar() {
+    if (this.index >= this.input.length) {
+      return void 0;
+    }
+    return this.input[this.index++];
+  }
+  /** Read the next character from the input if it matches the target. */
+  readGivenChar(target) {
+    return this.readAtomically(() => {
+      const char = this.readChar();
+      if (char !== target) {
+        return void 0;
+      }
+      return char;
+    });
+  }
+  /**
+   * Helper for reading separators in an indexed loop. Reads the separator
+   * character iff index > 0, then runs the parser. When used in a loop,
+   * the separator character will only be read on index > 0 (see
+   * readIPv4Addr for an example)
+   */
+  readSeparator(sep, index, inner) {
+    return this.readAtomically(() => {
+      if (index > 0) {
+        if (this.readGivenChar(sep) === void 0) {
+          return void 0;
+        }
+      }
+      return inner();
+    });
+  }
+  /**
+   * Read a number off the front of the input in the given radix, stopping
+   * at the first non-digit character or eof. Fails if the number has more
+   * digits than max_digits or if there is no number.
+   */
+  readNumber(radix, maxDigits, allowZeroPrefix, maxBytes) {
+    return this.readAtomically(() => {
+      let result = 0;
+      let digitCount = 0;
+      const leadingChar = this.peekChar();
+      if (leadingChar === void 0) {
+        return void 0;
+      }
+      const hasLeadingZero = leadingChar === "0";
+      const maxValue = 2 ** (8 * maxBytes) - 1;
+      while (true) {
+        const digit = this.readAtomically(() => {
+          const char = this.readChar();
+          if (char === void 0) {
+            return void 0;
+          }
+          const num = Number.parseInt(char, radix);
+          if (Number.isNaN(num)) {
+            return void 0;
+          }
+          return num;
+        });
+        if (digit === void 0) {
+          break;
+        }
+        result *= radix;
+        result += digit;
+        if (result > maxValue) {
+          return void 0;
+        }
+        digitCount += 1;
+        if (maxDigits !== void 0) {
+          if (digitCount > maxDigits) {
+            return void 0;
+          }
+        }
+      }
+      if (digitCount === 0) {
+        return void 0;
+      } else if (!allowZeroPrefix && hasLeadingZero && digitCount > 1) {
+        return void 0;
+      } else {
+        return result;
+      }
+    });
+  }
+  /** Read an IPv4 address. */
+  readIPv4Addr() {
+    return this.readAtomically(() => {
+      const out = new Uint8Array(4);
+      for (let i = 0; i < out.length; i++) {
+        const ix = this.readSeparator(".", i, () => this.readNumber(10, 3, false, 1));
+        if (ix === void 0) {
+          return void 0;
+        }
+        out[i] = ix;
+      }
+      return out;
+    });
+  }
+  /** Read an IPv6 Address. */
+  readIPv6Addr() {
+    const readGroups = /* @__PURE__ */ __name((groups) => {
+      for (let i = 0; i < groups.length / 2; i++) {
+        const ix = i * 2;
+        if (i < groups.length - 3) {
+          const ipv4 = this.readSeparator(":", i, () => this.readIPv4Addr());
+          if (ipv4 !== void 0) {
+            groups[ix] = ipv4[0];
+            groups[ix + 1] = ipv4[1];
+            groups[ix + 2] = ipv4[2];
+            groups[ix + 3] = ipv4[3];
+            return [ix + 4, true];
+          }
+        }
+        const group = this.readSeparator(":", i, () => this.readNumber(16, 4, true, 2));
+        if (group === void 0) {
+          return [ix, false];
+        }
+        groups[ix] = group >> 8;
+        groups[ix + 1] = group & 255;
+      }
+      return [groups.length, false];
+    }, "readGroups");
+    return this.readAtomically(() => {
+      const head = new Uint8Array(16);
+      const [headSize, headIp4] = readGroups(head);
+      if (headSize === 16) {
+        return head;
+      }
+      if (headIp4) {
+        return void 0;
+      }
+      if (this.readGivenChar(":") === void 0) {
+        return void 0;
+      }
+      if (this.readGivenChar(":") === void 0) {
+        return void 0;
+      }
+      const tail = new Uint8Array(14);
+      const limit = 16 - (headSize + 2);
+      const [tailSize] = readGroups(tail.subarray(0, limit));
+      head.set(tail.subarray(0, tailSize), 16 - tailSize);
+      return head;
+    });
+  }
+  /** Read an IP Address, either IPv4 or IPv6. */
+  readIPAddr() {
+    return this.readIPv4Addr() ?? this.readIPv6Addr();
+  }
+};
+
+// node_modules/@chainsafe/is-ip/lib/parse.js
+var MAX_IPV6_LENGTH = 45;
+var MAX_IPV4_LENGTH = 15;
+var parser = new Parser();
+function parseIPv4(input) {
+  if (input.length > MAX_IPV4_LENGTH) {
+    return void 0;
+  }
+  return parser.new(input).parseWith(() => parser.readIPv4Addr());
+}
+__name(parseIPv4, "parseIPv4");
+function parseIPv6(input) {
+  if (input.includes("%")) {
+    input = input.split("%")[0];
+  }
+  if (input.length > MAX_IPV6_LENGTH) {
+    return void 0;
+  }
+  return parser.new(input).parseWith(() => parser.readIPv6Addr());
+}
+__name(parseIPv6, "parseIPv6");
+function parseIP(input) {
+  if (input.includes("%")) {
+    input = input.split("%")[0];
+  }
+  if (input.length > MAX_IPV6_LENGTH) {
+    return void 0;
+  }
+  return parser.new(input).parseWith(() => parser.readIPAddr());
+}
+__name(parseIP, "parseIP");
+
+// node_modules/@chainsafe/is-ip/lib/is-ip.js
+function isIPv4(input) {
+  return Boolean(parseIPv4(input));
+}
+__name(isIPv4, "isIPv4");
+function isIPv6(input) {
+  return Boolean(parseIPv6(input));
+}
+__name(isIPv6, "isIPv6");
+function isIP(input) {
+  return Boolean(parseIP(input));
+}
+__name(isIP, "isIP");
+
+// node_modules/@chainsafe/netmask/dist/src/ip.js
+var maxIPv6Octet = parseInt("0xFFFF", 16);
+var ipv4Prefix = new Uint8Array([
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  255,
+  255
+]);
+
+// node_modules/@multiformats/multiaddr/dist/src/ip.js
+var isV4 = isIPv4;
+var isV6 = isIPv6;
+var toBytes2 = /* @__PURE__ */ __name(function(ip) {
+  let offset = 0;
+  ip = ip.toString().trim();
+  if (isV4(ip)) {
+    const bytes2 = new Uint8Array(offset + 4);
+    ip.split(/\./g).forEach((byte) => {
+      bytes2[offset++] = parseInt(byte, 10) & 255;
+    });
+    return bytes2;
+  }
+  if (isV6(ip)) {
+    const sections = ip.split(":", 8);
+    let i;
+    for (i = 0; i < sections.length; i++) {
+      const isv4 = isV4(sections[i]);
+      let v4Buffer;
+      if (isv4) {
+        v4Buffer = toBytes2(sections[i]);
+        sections[i] = toString2(v4Buffer.slice(0, 2), "base16");
+      }
+      if (v4Buffer != null && ++i < 8) {
+        sections.splice(i, 0, toString2(v4Buffer.slice(2, 4), "base16"));
+      }
+    }
+    if (sections[0] === "") {
+      while (sections.length < 8)
+        sections.unshift("0");
+    } else if (sections[sections.length - 1] === "") {
+      while (sections.length < 8)
+        sections.push("0");
+    } else if (sections.length < 8) {
+      for (i = 0; i < sections.length && sections[i] !== ""; i++)
+        ;
+      const argv = [i, 1];
+      for (i = 9 - sections.length; i > 0; i--) {
+        argv.push("0");
+      }
+      sections.splice.apply(sections, argv);
+    }
+    const bytes2 = new Uint8Array(offset + 16);
+    for (i = 0; i < sections.length; i++) {
+      const word = parseInt(sections[i], 16);
+      bytes2[offset++] = word >> 8 & 255;
+      bytes2[offset++] = word & 255;
+    }
+    return bytes2;
+  }
+  throw new Error("invalid ip address");
+}, "toBytes");
+var toString3 = /* @__PURE__ */ __name(function(buf, offset = 0, length3) {
+  offset = ~~offset;
+  length3 = length3 ?? buf.length - offset;
+  const view = new DataView(buf.buffer);
+  if (length3 === 4) {
+    const result = [];
+    for (let i = 0; i < length3; i++) {
+      result.push(buf[offset + i]);
+    }
+    return result.join(".");
+  }
+  if (length3 === 16) {
+    const result = [];
+    for (let i = 0; i < length3; i += 2) {
+      result.push(view.getUint16(offset + i).toString(16));
+    }
+    return result.join(":").replace(/(^|:)0(:0)*:0(:|$)/, "$1::$3").replace(/:{3,4}/, "::");
+  }
+  return "";
+}, "toString");
+
+// node_modules/@multiformats/multiaddr/dist/src/protocols-table.js
+var V = -1;
+var names = {};
+var codes = {};
+var table = [
+  [4, 32, "ip4"],
+  [6, 16, "tcp"],
+  [33, 16, "dccp"],
+  [41, 128, "ip6"],
+  [42, V, "ip6zone"],
+  [43, 8, "ipcidr"],
+  [53, V, "dns", true],
+  [54, V, "dns4", true],
+  [55, V, "dns6", true],
+  [56, V, "dnsaddr", true],
+  [132, 16, "sctp"],
+  [273, 16, "udp"],
+  [275, 0, "p2p-webrtc-star"],
+  [276, 0, "p2p-webrtc-direct"],
+  [277, 0, "p2p-stardust"],
+  [280, 0, "webrtc-direct"],
+  [281, 0, "webrtc"],
+  [290, 0, "p2p-circuit"],
+  [301, 0, "udt"],
+  [302, 0, "utp"],
+  [400, V, "unix", false, true],
+  // `ipfs` is added before `p2p` for legacy support.
+  // All text representations will default to `p2p`, but `ipfs` will
+  // still be supported
+  [421, V, "ipfs"],
+  // `p2p` is the preferred name for 421, and is now the default
+  [421, V, "p2p"],
+  [443, 0, "https"],
+  [444, 96, "onion"],
+  [445, 296, "onion3"],
+  [446, V, "garlic64"],
+  [448, 0, "tls"],
+  [449, V, "sni"],
+  [460, 0, "quic"],
+  [461, 0, "quic-v1"],
+  [465, 0, "webtransport"],
+  [466, V, "certhash"],
+  [477, 0, "ws"],
+  [478, 0, "wss"],
+  [479, 0, "p2p-websocket-star"],
+  [480, 0, "http"],
+  [481, V, "http-path"],
+  [777, V, "memory"]
+];
+table.forEach((row) => {
+  const proto = createProtocol(...row);
+  codes[proto.code] = proto;
+  names[proto.name] = proto;
+});
+function createProtocol(code2, size, name3, resolvable, path) {
+  return {
+    code: code2,
+    size,
+    name: name3,
+    resolvable: Boolean(resolvable),
+    path: Boolean(path)
+  };
+}
+__name(createProtocol, "createProtocol");
+function getProtocol(proto) {
+  if (typeof proto === "number") {
+    if (codes[proto] != null) {
+      return codes[proto];
+    }
+    throw new Error(`no protocol with code: ${proto}`);
+  } else if (typeof proto === "string") {
+    if (names[proto] != null) {
+      return names[proto];
+    }
+    throw new Error(`no protocol with name: ${proto}`);
+  }
+  throw new Error(`invalid protocol id type: ${typeof proto}`);
+}
+__name(getProtocol, "getProtocol");
+
+// node_modules/@multiformats/multiaddr/dist/src/convert.js
+var ip4Protocol = getProtocol("ip4");
+var ip6Protocol = getProtocol("ip6");
+var ipcidrProtocol = getProtocol("ipcidr");
+function convertToString(proto, buf) {
+  const protocol = getProtocol(proto);
+  switch (protocol.code) {
+    case 4:
+    // ipv4
+    case 41:
+      return bytes2ip(buf);
+    case 42:
+      return bytes2str(buf);
+    case 6:
+    // tcp
+    case 273:
+    // udp
+    case 33:
+    // dccp
+    case 132:
+      return bytes2port(buf).toString();
+    case 53:
+    // dns
+    case 54:
+    // dns4
+    case 55:
+    // dns6
+    case 56:
+    // dnsaddr
+    case 400:
+    // unix
+    case 449:
+    // sni
+    case 777:
+      return bytes2str(buf);
+    case 421:
+      return bytes2mh(buf);
+    case 444:
+      return bytes2onion(buf);
+    case 445:
+      return bytes2onion(buf);
+    case 466:
+      return bytes2mb(buf);
+    case 481:
+      return globalThis.encodeURIComponent(bytes2str(buf));
     default:
-      throw unsupportedKey(decoded.Type ?? "unknown");
+      return toString2(buf, "base16");
   }
 }
-__name(unmarshalPublicKey, "unmarshalPublicKey");
-async function unmarshalPrivateKey2(buf) {
-  const decoded = PrivateKey.decode(buf);
-  const data = decoded.Data ?? new Uint8Array();
-  switch (decoded.Type) {
-    case KeyType.RSA:
-      return supportedKeys.rsa.unmarshalRsaPrivateKey(data);
-    case KeyType.Ed25519:
-      return supportedKeys.ed25519.unmarshalEd25519PrivateKey(data);
-    case KeyType.Secp256k1:
-      return supportedKeys.secp256k1.unmarshalSecp256k1PrivateKey(data);
+__name(convertToString, "convertToString");
+function convertToBytes(proto, str) {
+  const protocol = getProtocol(proto);
+  switch (protocol.code) {
+    case 4:
+      return ip2bytes(str);
+    case 41:
+      return ip2bytes(str);
+    case 42:
+      return str2bytes(str);
+    case 6:
+    // tcp
+    case 273:
+    // udp
+    case 33:
+    // dccp
+    case 132:
+      return port2bytes(parseInt(str, 10));
+    case 53:
+    // dns
+    case 54:
+    // dns4
+    case 55:
+    // dns6
+    case 56:
+    // dnsaddr
+    case 400:
+    // unix
+    case 449:
+    // sni
+    case 777:
+      return str2bytes(str);
+    case 421:
+      return mh2bytes(str);
+    case 444:
+      return onion2bytes(str);
+    case 445:
+      return onion32bytes(str);
+    case 466:
+      return mb2bytes(str);
+    case 481:
+      return str2bytes(globalThis.decodeURIComponent(str));
     default:
-      throw unsupportedKey(decoded.Type ?? "RSA");
+      return fromString2(str, "base16");
   }
 }
-__name(unmarshalPrivateKey2, "unmarshalPrivateKey");
+__name(convertToBytes, "convertToBytes");
+var decoders = Object.values(bases).map((c) => c.decoder);
+var anybaseDecoder = function() {
+  let acc = decoders[0].or(decoders[1]);
+  decoders.slice(2).forEach((d2) => acc = acc.or(d2));
+  return acc;
+}();
+function ip2bytes(ipString) {
+  if (!isIP(ipString)) {
+    throw new Error("invalid ip address");
+  }
+  return toBytes2(ipString);
+}
+__name(ip2bytes, "ip2bytes");
+function bytes2ip(ipBuff) {
+  const ipString = toString3(ipBuff, 0, ipBuff.length);
+  if (ipString == null) {
+    throw new Error("ipBuff is required");
+  }
+  if (!isIP(ipString)) {
+    throw new Error("invalid ip address");
+  }
+  return ipString;
+}
+__name(bytes2ip, "bytes2ip");
+function port2bytes(port) {
+  const buf = new ArrayBuffer(2);
+  const view = new DataView(buf);
+  view.setUint16(0, port);
+  return new Uint8Array(buf);
+}
+__name(port2bytes, "port2bytes");
+function bytes2port(buf) {
+  const view = new DataView(buf.buffer);
+  return view.getUint16(buf.byteOffset);
+}
+__name(bytes2port, "bytes2port");
+function str2bytes(str) {
+  const buf = fromString2(str);
+  const size = Uint8Array.from(encode4(buf.length));
+  return concat2([size, buf], size.length + buf.length);
+}
+__name(str2bytes, "str2bytes");
+function bytes2str(buf) {
+  const size = decode5(buf);
+  buf = buf.slice(encodingLength2(size));
+  if (buf.length !== size) {
+    throw new Error("inconsistent lengths");
+  }
+  return toString2(buf);
+}
+__name(bytes2str, "bytes2str");
+function mh2bytes(hash2) {
+  let mh;
+  if (hash2[0] === "Q" || hash2[0] === "1") {
+    mh = decode4(base58btc.decode(`z${hash2}`)).bytes;
+  } else {
+    mh = CID.parse(hash2).multihash.bytes;
+  }
+  const size = Uint8Array.from(encode4(mh.length));
+  return concat2([size, mh], size.length + mh.length);
+}
+__name(mh2bytes, "mh2bytes");
+function mb2bytes(mbstr) {
+  const mb = anybaseDecoder.decode(mbstr);
+  const size = Uint8Array.from(encode4(mb.length));
+  return concat2([size, mb], size.length + mb.length);
+}
+__name(mb2bytes, "mb2bytes");
+function bytes2mb(buf) {
+  const size = decode5(buf);
+  const hash2 = buf.slice(encodingLength2(size));
+  if (hash2.length !== size) {
+    throw new Error("inconsistent lengths");
+  }
+  return "u" + toString2(hash2, "base64url");
+}
+__name(bytes2mb, "bytes2mb");
+function bytes2mh(buf) {
+  const size = decode5(buf);
+  const address = buf.slice(encodingLength2(size));
+  if (address.length !== size) {
+    throw new Error("inconsistent lengths");
+  }
+  return toString2(address, "base58btc");
+}
+__name(bytes2mh, "bytes2mh");
+function onion2bytes(str) {
+  const addr = str.split(":");
+  if (addr.length !== 2) {
+    throw new Error(`failed to parse onion addr: ["'${addr.join('", "')}'"]' does not contain a port number`);
+  }
+  if (addr[0].length !== 16) {
+    throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion address.`);
+  }
+  const buf = base32.decode("b" + addr[0]);
+  const port = parseInt(addr[1], 10);
+  if (port < 1 || port > 65536) {
+    throw new Error("Port number is not in range(1, 65536)");
+  }
+  const portBuf = port2bytes(port);
+  return concat2([buf, portBuf], buf.length + portBuf.length);
+}
+__name(onion2bytes, "onion2bytes");
+function onion32bytes(str) {
+  const addr = str.split(":");
+  if (addr.length !== 2) {
+    throw new Error(`failed to parse onion addr: ["'${addr.join('", "')}'"]' does not contain a port number`);
+  }
+  if (addr[0].length !== 56) {
+    throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion3 address.`);
+  }
+  const buf = base32.decode(`b${addr[0]}`);
+  const port = parseInt(addr[1], 10);
+  if (port < 1 || port > 65536) {
+    throw new Error("Port number is not in range(1, 65536)");
+  }
+  const portBuf = port2bytes(port);
+  return concat2([buf, portBuf], buf.length + portBuf.length);
+}
+__name(onion32bytes, "onion32bytes");
+function bytes2onion(buf) {
+  const addrBytes = buf.slice(0, buf.length - 2);
+  const portBytes = buf.slice(buf.length - 2);
+  const addr = toString2(addrBytes, "base32");
+  const port = bytes2port(portBytes);
+  return `${addr}:${port}`;
+}
+__name(bytes2onion, "bytes2onion");
+
+// node_modules/@multiformats/multiaddr/dist/src/codec.js
+function stringToMultiaddrParts(str) {
+  str = cleanPath(str);
+  const tuples = [];
+  const stringTuples = [];
+  let path = null;
+  const parts = str.split("/").slice(1);
+  if (parts.length === 1 && parts[0] === "") {
+    return {
+      bytes: new Uint8Array(),
+      string: "/",
+      tuples: [],
+      stringTuples: [],
+      path: null
+    };
+  }
+  for (let p = 0; p < parts.length; p++) {
+    const part = parts[p];
+    const proto = getProtocol(part);
+    if (proto.size === 0) {
+      tuples.push([proto.code]);
+      stringTuples.push([proto.code]);
+      continue;
+    }
+    p++;
+    if (p >= parts.length) {
+      throw ParseError("invalid address: " + str);
+    }
+    if (proto.path === true) {
+      path = cleanPath(parts.slice(p).join("/"));
+      tuples.push([proto.code, convertToBytes(proto.code, path)]);
+      stringTuples.push([proto.code, path]);
+      break;
+    }
+    const bytes2 = convertToBytes(proto.code, parts[p]);
+    tuples.push([proto.code, bytes2]);
+    stringTuples.push([proto.code, convertToString(proto.code, bytes2)]);
+  }
+  return {
+    string: stringTuplesToString(stringTuples),
+    bytes: tuplesToBytes(tuples),
+    tuples,
+    stringTuples,
+    path
+  };
+}
+__name(stringToMultiaddrParts, "stringToMultiaddrParts");
+function bytesToMultiaddrParts(bytes2) {
+  const tuples = [];
+  const stringTuples = [];
+  let path = null;
+  let i = 0;
+  while (i < bytes2.length) {
+    const code2 = decode5(bytes2, i);
+    const n = encodingLength2(code2);
+    const p = getProtocol(code2);
+    const size = sizeForAddr(p, bytes2.slice(i + n));
+    if (size === 0) {
+      tuples.push([code2]);
+      stringTuples.push([code2]);
+      i += n;
+      continue;
+    }
+    const addr = bytes2.slice(i + n, i + n + size);
+    i += size + n;
+    if (i > bytes2.length) {
+      throw ParseError("Invalid address Uint8Array: " + toString2(bytes2, "base16"));
+    }
+    tuples.push([code2, addr]);
+    const stringAddr = convertToString(code2, addr);
+    stringTuples.push([code2, stringAddr]);
+    if (p.path === true) {
+      path = stringAddr;
+      break;
+    }
+  }
+  return {
+    bytes: Uint8Array.from(bytes2),
+    string: stringTuplesToString(stringTuples),
+    tuples,
+    stringTuples,
+    path
+  };
+}
+__name(bytesToMultiaddrParts, "bytesToMultiaddrParts");
+function stringTuplesToString(tuples) {
+  const parts = [];
+  tuples.map((tup) => {
+    const proto = getProtocol(tup[0]);
+    parts.push(proto.name);
+    if (tup.length > 1 && tup[1] != null) {
+      parts.push(tup[1]);
+    }
+    return null;
+  });
+  return cleanPath(parts.join("/"));
+}
+__name(stringTuplesToString, "stringTuplesToString");
+function tuplesToBytes(tuples) {
+  return concat2(tuples.map((tup) => {
+    const proto = getProtocol(tup[0]);
+    let buf = Uint8Array.from(encode4(proto.code));
+    if (tup.length > 1 && tup[1] != null) {
+      buf = concat2([buf, tup[1]]);
+    }
+    return buf;
+  }));
+}
+__name(tuplesToBytes, "tuplesToBytes");
+function sizeForAddr(p, addr) {
+  if (p.size > 0) {
+    return p.size / 8;
+  } else if (p.size === 0) {
+    return 0;
+  } else {
+    const size = decode5(addr instanceof Uint8Array ? addr : Uint8Array.from(addr));
+    return size + encodingLength2(size);
+  }
+}
+__name(sizeForAddr, "sizeForAddr");
+function cleanPath(str) {
+  return "/" + str.trim().split("/").filter((a) => a).join("/");
+}
+__name(cleanPath, "cleanPath");
+function ParseError(str) {
+  return new Error("Error parsing address: " + str);
+}
+__name(ParseError, "ParseError");
+
+// node_modules/@multiformats/multiaddr/dist/src/multiaddr.js
+var inspect2 = Symbol.for("nodejs.util.inspect.custom");
+var symbol = Symbol.for("@multiformats/js-multiaddr/multiaddr");
+var DNS_CODES = [
+  getProtocol("dns").code,
+  getProtocol("dns4").code,
+  getProtocol("dns6").code,
+  getProtocol("dnsaddr").code
+];
+var NoAvailableResolverError = class extends Error {
+  static {
+    __name(this, "NoAvailableResolverError");
+  }
+  constructor(message2 = "No available resolver") {
+    super(message2);
+    this.name = "NoAvailableResolverError";
+  }
+};
+var Multiaddr = class _Multiaddr {
+  static {
+    __name(this, "Multiaddr");
+  }
+  bytes;
+  #string;
+  #tuples;
+  #stringTuples;
+  #path;
+  [symbol] = true;
+  constructor(addr) {
+    if (addr == null) {
+      addr = "";
+    }
+    let parts;
+    if (addr instanceof Uint8Array) {
+      parts = bytesToMultiaddrParts(addr);
+    } else if (typeof addr === "string") {
+      if (addr.length > 0 && addr.charAt(0) !== "/") {
+        throw new Error(`multiaddr "${addr}" must start with a "/"`);
+      }
+      parts = stringToMultiaddrParts(addr);
+    } else if (isMultiaddr(addr)) {
+      parts = bytesToMultiaddrParts(addr.bytes);
+    } else {
+      throw new Error("addr must be a string, Buffer, or another Multiaddr");
+    }
+    this.bytes = parts.bytes;
+    this.#string = parts.string;
+    this.#tuples = parts.tuples;
+    this.#stringTuples = parts.stringTuples;
+    this.#path = parts.path;
+  }
+  toString() {
+    return this.#string;
+  }
+  toJSON() {
+    return this.toString();
+  }
+  toOptions() {
+    let family;
+    let transport;
+    let host;
+    let port;
+    let zone = "";
+    const tcp = getProtocol("tcp");
+    const udp = getProtocol("udp");
+    const ip4 = getProtocol("ip4");
+    const ip6 = getProtocol("ip6");
+    const dns6 = getProtocol("dns6");
+    const ip6zone = getProtocol("ip6zone");
+    for (const [code2, value] of this.stringTuples()) {
+      if (code2 === ip6zone.code) {
+        zone = `%${value ?? ""}`;
+      }
+      if (DNS_CODES.includes(code2)) {
+        transport = tcp.name;
+        port = 443;
+        host = `${value ?? ""}${zone}`;
+        family = code2 === dns6.code ? 6 : 4;
+      }
+      if (code2 === tcp.code || code2 === udp.code) {
+        transport = getProtocol(code2).name;
+        port = parseInt(value ?? "");
+      }
+      if (code2 === ip4.code || code2 === ip6.code) {
+        transport = getProtocol(code2).name;
+        host = `${value ?? ""}${zone}`;
+        family = code2 === ip6.code ? 6 : 4;
+      }
+    }
+    if (family == null || transport == null || host == null || port == null) {
+      throw new Error('multiaddr must have a valid format: "/{ip4, ip6, dns4, dns6, dnsaddr}/{address}/{tcp, udp}/{port}".');
+    }
+    const opts = {
+      family,
+      host,
+      transport,
+      port
+    };
+    return opts;
+  }
+  protos() {
+    return this.#tuples.map(([code2]) => Object.assign({}, getProtocol(code2)));
+  }
+  protoCodes() {
+    return this.#tuples.map(([code2]) => code2);
+  }
+  protoNames() {
+    return this.#tuples.map(([code2]) => getProtocol(code2).name);
+  }
+  tuples() {
+    return this.#tuples;
+  }
+  stringTuples() {
+    return this.#stringTuples;
+  }
+  encapsulate(addr) {
+    addr = new _Multiaddr(addr);
+    return new _Multiaddr(this.toString() + addr.toString());
+  }
+  decapsulate(addr) {
+    const addrString = addr.toString();
+    const s2 = this.toString();
+    const i = s2.lastIndexOf(addrString);
+    if (i < 0) {
+      throw new Error(`Address ${this.toString()} does not contain subaddress: ${addr.toString()}`);
+    }
+    return new _Multiaddr(s2.slice(0, i));
+  }
+  decapsulateCode(code2) {
+    const tuples = this.tuples();
+    for (let i = tuples.length - 1; i >= 0; i--) {
+      if (tuples[i][0] === code2) {
+        return new _Multiaddr(tuplesToBytes(tuples.slice(0, i)));
+      }
+    }
+    return this;
+  }
+  getPeerId() {
+    try {
+      let tuples = [];
+      this.stringTuples().forEach(([code2, name3]) => {
+        if (code2 === names.p2p.code) {
+          tuples.push([code2, name3]);
+        }
+        if (code2 === names["p2p-circuit"].code) {
+          tuples = [];
+        }
+      });
+      const tuple = tuples.pop();
+      if (tuple?.[1] != null) {
+        const peerIdStr = tuple[1];
+        if (peerIdStr[0] === "Q" || peerIdStr[0] === "1") {
+          return toString2(base58btc.decode(`z${peerIdStr}`), "base58btc");
+        }
+        return toString2(CID.parse(peerIdStr).multihash.bytes, "base58btc");
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+  getPath() {
+    return this.#path;
+  }
+  equals(addr) {
+    return equals3(this.bytes, addr.bytes);
+  }
+  async resolve(options) {
+    const resolvableProto = this.protos().find((p) => p.resolvable);
+    if (resolvableProto == null) {
+      return [this];
+    }
+    const resolver = resolvers.get(resolvableProto.name);
+    if (resolver == null) {
+      throw new NoAvailableResolverError(`no available resolver for ${resolvableProto.name}`);
+    }
+    const result = await resolver(this, options);
+    return result.map((str) => multiaddr(str));
+  }
+  nodeAddress() {
+    const options = this.toOptions();
+    if (options.transport !== "tcp" && options.transport !== "udp") {
+      throw new Error(`multiaddr must have a valid format - no protocol with name: "${options.transport}". Must have a valid transport protocol: "{tcp, udp}"`);
+    }
+    return {
+      family: options.family,
+      address: options.host,
+      port: options.port
+    };
+  }
+  isThinWaistAddress(addr) {
+    const protos = (addr ?? this).protos();
+    if (protos.length !== 2) {
+      return false;
+    }
+    if (protos[0].code !== 4 && protos[0].code !== 41) {
+      return false;
+    }
+    if (protos[1].code !== 6 && protos[1].code !== 273) {
+      return false;
+    }
+    return true;
+  }
+  /**
+   * Returns Multiaddr as a human-readable string
+   * https://nodejs.org/api/util.html#utilinspectcustom
+   *
+   * @example
+   * ```js
+   * import { multiaddr } from '@multiformats/multiaddr'
+   *
+   * console.info(multiaddr('/ip4/127.0.0.1/tcp/4001'))
+   * // 'Multiaddr(/ip4/127.0.0.1/tcp/4001)'
+   * ```
+   */
+  [inspect2]() {
+    return `Multiaddr(${this.#string})`;
+  }
+};
+
+// node_modules/@multiformats/multiaddr/dist/src/index.js
+var resolvers = /* @__PURE__ */ new Map();
+function isMultiaddr(value) {
+  return Boolean(value?.[symbol]);
+}
+__name(isMultiaddr, "isMultiaddr");
+function multiaddr(addr) {
+  return new Multiaddr(addr);
+}
+__name(multiaddr, "multiaddr");
+
+// node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
+var toParts = /* @__PURE__ */ __name((ma) => {
+  return ma.toString().split("/").slice(1);
+}, "toParts");
+var func = /* @__PURE__ */ __name((fn) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      if (vals.length < 1) {
+        return false;
+      }
+      if (fn(vals[0])) {
+        return vals.slice(1);
+      }
+      return false;
+    }, "match"),
+    pattern: "fn"
+  };
+}, "func");
+var literal = /* @__PURE__ */ __name((str) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => func((val) => val === str).match(vals), "match"),
+    pattern: str
+  };
+}, "literal");
+var string2 = /* @__PURE__ */ __name(() => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => func((val) => typeof val === "string").match(vals), "match"),
+    pattern: "{string}"
+  };
+}, "string");
+var number2 = /* @__PURE__ */ __name(() => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => func((val) => !isNaN(parseInt(val))).match(vals), "match"),
+    pattern: "{number}"
+  };
+}, "number");
+var peerId = /* @__PURE__ */ __name(() => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      if (vals.length < 2) {
+        return false;
+      }
+      if (vals[0] !== "p2p" && vals[0] !== "ipfs") {
+        return false;
+      }
+      if (vals[1].startsWith("Q") || vals[1].startsWith("1")) {
+        try {
+          base58btc.decode(`z${vals[1]}`);
+        } catch (err) {
+          return false;
+        }
+      } else {
+        return false;
+      }
+      return vals.slice(2);
+    }, "match"),
+    pattern: "/p2p/{peerid}"
+  };
+}, "peerId");
+var certhash = /* @__PURE__ */ __name(() => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      if (vals.length < 2) {
+        return false;
+      }
+      if (vals[0] !== "certhash") {
+        return false;
+      }
+      try {
+        base64url.decode(vals[1]);
+      } catch {
+        return false;
+      }
+      return vals.slice(2);
+    }, "match"),
+    pattern: "/certhash/{certhash}"
+  };
+}, "certhash");
+var optional = /* @__PURE__ */ __name((matcher) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      const result = matcher.match(vals);
+      if (result === false) {
+        return vals;
+      }
+      return result;
+    }, "match"),
+    pattern: `optional(${matcher.pattern})`
+  };
+}, "optional");
+var or2 = /* @__PURE__ */ __name((...matchers) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      let matches;
+      for (const matcher of matchers) {
+        const result = matcher.match(vals);
+        if (result === false) {
+          continue;
+        }
+        if (matches == null || result.length < matches.length) {
+          matches = result;
+        }
+      }
+      if (matches == null) {
+        return false;
+      }
+      return matches;
+    }, "match"),
+    pattern: `or(${matchers.map((m2) => m2.pattern).join(", ")})`
+  };
+}, "or");
+var and = /* @__PURE__ */ __name((...matchers) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      for (const matcher of matchers) {
+        const result = matcher.match(vals);
+        if (result === false) {
+          return false;
+        }
+        vals = result;
+      }
+      return vals;
+    }, "match"),
+    pattern: `and(${matchers.map((m2) => m2.pattern).join(", ")})`
+  };
+}, "and");
+function fmt(...matchers) {
+  function match(ma) {
+    let parts = toParts(ma);
+    for (const matcher of matchers) {
+      const result = matcher.match(parts);
+      if (result === false) {
+        return false;
+      }
+      parts = result;
+    }
+    return parts;
+  }
+  __name(match, "match");
+  function matches(ma) {
+    const result = match(ma);
+    return result !== false;
+  }
+  __name(matches, "matches");
+  function exactMatch(ma) {
+    const result = match(ma);
+    if (result === false) {
+      return false;
+    }
+    return result.length === 0;
+  }
+  __name(exactMatch, "exactMatch");
+  return {
+    matches,
+    exactMatch
+  };
+}
+__name(fmt, "fmt");
+var _DNS4 = and(literal("dns4"), string2());
+var _DNS6 = and(literal("dns6"), string2());
+var _DNSADDR = and(literal("dnsaddr"), string2());
+var _DNS = and(literal("dns"), string2());
+var DNS4 = fmt(_DNS4);
+var DNS6 = fmt(_DNS6);
+var DNSADDR = fmt(_DNSADDR);
+var DNS = fmt(or2(_DNS, _DNSADDR, _DNS4, _DNS6));
+var _IP4 = and(literal("ip4"), func(isIPv4));
+var _IP6 = and(literal("ip6"), func(isIPv6));
+var _IP = or2(_IP4, _IP6);
+var _IP_OR_DOMAIN = or2(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
+var IP_OR_DOMAIN = fmt(_IP_OR_DOMAIN);
+var IP4 = fmt(_IP4);
+var IP6 = fmt(_IP6);
+var IP = fmt(_IP);
+var _TCP = and(_IP_OR_DOMAIN, literal("tcp"), number2());
+var _UDP = and(_IP_OR_DOMAIN, literal("udp"), number2());
+var TCP = fmt(_TCP);
+var UDP = fmt(_UDP);
+var _QUIC = and(_UDP, literal("quic"));
+var _QUICV1 = and(_UDP, literal("quic-v1"));
+var QUIC_V0_OR_V1 = or2(_QUIC, _QUICV1);
+var QUIC = fmt(_QUIC);
+var QUICV1 = fmt(_QUICV1);
+var _WEB = or2(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUICV1);
+var _WebSockets = or2(and(_WEB, literal("ws"), optional(peerId())));
+var WebSockets = fmt(_WebSockets);
+var _WebSocketsSecure = or2(and(_WEB, literal("wss"), optional(peerId())), and(_WEB, literal("tls"), literal("ws"), optional(peerId())));
+var WebSocketsSecure = fmt(_WebSocketsSecure);
+var _WebRTCDirect = and(_UDP, literal("webrtc-direct"), optional(certhash()), optional(certhash()), optional(peerId()));
+var WebRTCDirect = fmt(_WebRTCDirect);
+var _WebTransport = and(_QUICV1, literal("webtransport"), optional(certhash()), optional(certhash()), optional(peerId()));
+var WebTransport = fmt(_WebTransport);
+var _P2P = or2(_WebSockets, _WebSocketsSecure, and(_TCP, optional(peerId())), and(QUIC_V0_OR_V1, optional(peerId())), and(_IP_OR_DOMAIN, optional(peerId())), _WebRTCDirect, _WebTransport, peerId());
+var P2P = fmt(_P2P);
+var _Circuit = and(_P2P, literal("p2p-circuit"), peerId());
+var Circuit = fmt(_Circuit);
+var _WebRTC = or2(and(_P2P, literal("p2p-circuit"), literal("webrtc"), optional(peerId())), and(_P2P, literal("webrtc"), optional(peerId())), literal("webrtc"));
+var WebRTC = fmt(_WebRTC);
+var _HTTP = or2(and(_IP_OR_DOMAIN, literal("tcp"), number2(), literal("http"), optional(peerId())), and(_IP_OR_DOMAIN, literal("http"), optional(peerId())));
+var HTTP = fmt(_HTTP);
+var _HTTPS = or2(and(_IP_OR_DOMAIN, literal("tcp"), or2(and(literal("443"), literal("http")), and(number2(), literal("https"))), optional(peerId())), and(_IP_OR_DOMAIN, literal("tls"), literal("http"), optional(peerId())), and(_IP_OR_DOMAIN, literal("https"), optional(peerId())));
+var HTTPS = fmt(_HTTPS);
+
+// node_modules/@libp2p/utils/dist/src/private-ip.js
+var import_netmask2 = __toESM(require_netmask(), 1);
+var PRIVATE_IP_RANGES = [
+  "0.0.0.0/8",
+  "10.0.0.0/8",
+  "100.64.0.0/10",
+  "127.0.0.0/8",
+  "169.254.0.0/16",
+  "172.16.0.0/12",
+  "192.0.0.0/24",
+  "192.0.0.0/29",
+  "192.0.0.8/32",
+  "192.0.0.9/32",
+  "192.0.0.10/32",
+  "192.0.0.170/32",
+  "192.0.0.171/32",
+  "192.0.2.0/24",
+  "192.31.196.0/24",
+  "192.52.193.0/24",
+  "192.88.99.0/24",
+  "192.168.0.0/16",
+  "192.175.48.0/24",
+  "198.18.0.0/15",
+  "198.51.100.0/24",
+  "203.0.113.0/24",
+  "240.0.0.0/4",
+  "255.255.255.255/32"
+];
+var NETMASK_RANGES = PRIVATE_IP_RANGES.map((ipRange) => new import_netmask2.Netmask(ipRange));
+function ipv4Check(ipAddr) {
+  for (const r of NETMASK_RANGES) {
+    if (r.contains(ipAddr))
+      return true;
+  }
+  return false;
+}
+__name(ipv4Check, "ipv4Check");
+function isIpv4MappedIpv6(ipAddr) {
+  return /^::ffff:([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,4})$/.test(ipAddr);
+}
+__name(isIpv4MappedIpv6, "isIpv4MappedIpv6");
+function ipv4MappedIpv6Check(ipAddr) {
+  const parts = ipAddr.split(":");
+  if (parts.length < 2) {
+    return false;
+  }
+  const octet34 = parts[parts.length - 1].padStart(4, "0");
+  const octet12 = parts[parts.length - 2].padStart(4, "0");
+  const ip4 = `${parseInt(octet12.substring(0, 2), 16)}.${parseInt(octet12.substring(2), 16)}.${parseInt(octet34.substring(0, 2), 16)}.${parseInt(octet34.substring(2), 16)}`;
+  return ipv4Check(ip4);
+}
+__name(ipv4MappedIpv6Check, "ipv4MappedIpv6Check");
+function isIpv4EmbeddedIpv6(ipAddr) {
+  return /^::ffff:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr);
+}
+__name(isIpv4EmbeddedIpv6, "isIpv4EmbeddedIpv6");
+function ipv4EmbeddedIpv6Check(ipAddr) {
+  const parts = ipAddr.split(":");
+  const ip4 = parts[parts.length - 1];
+  return ipv4Check(ip4);
+}
+__name(ipv4EmbeddedIpv6Check, "ipv4EmbeddedIpv6Check");
+function ipv6Check(ipAddr) {
+  return /^::$/.test(ipAddr) || /^::1$/.test(ipAddr) || /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) || /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ipAddr) || /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ipAddr) || /^ff([0-9a-fA-F]{2,2}):/i.test(ipAddr);
+}
+__name(ipv6Check, "ipv6Check");
+function isPrivateIp(ip) {
+  if (isIPv4(ip))
+    return ipv4Check(ip);
+  else if (isIpv4MappedIpv6(ip))
+    return ipv4MappedIpv6Check(ip);
+  else if (isIpv4EmbeddedIpv6(ip))
+    return ipv4EmbeddedIpv6Check(ip);
+  else if (isIPv6(ip))
+    return ipv6Check(ip);
+  else
+    return void 0;
+}
+__name(isPrivateIp, "isPrivateIp");
+
+// node_modules/@libp2p/utils/dist/src/multiaddr/is-private.js
+function isPrivate(ma) {
+  try {
+    const { address } = ma.nodeAddress();
+    return Boolean(isPrivateIp(address));
+  } catch {
+    return true;
+  }
+}
+__name(isPrivate, "isPrivate");
+
+// node_modules/@libp2p/utils/dist/src/address-sort.js
+function publicAddressesFirst(a, b) {
+  const isAPrivate = isPrivate(a.multiaddr);
+  const isBPrivate = isPrivate(b.multiaddr);
+  if (isAPrivate && !isBPrivate) {
+    return 1;
+  } else if (!isAPrivate && isBPrivate) {
+    return -1;
+  }
+  return 0;
+}
+__name(publicAddressesFirst, "publicAddressesFirst");
+function certifiedAddressesFirst(a, b) {
+  if (a.isCertified && !b.isCertified) {
+    return -1;
+  } else if (!a.isCertified && b.isCertified) {
+    return 1;
+  }
+  return 0;
+}
+__name(certifiedAddressesFirst, "certifiedAddressesFirst");
+function circuitRelayAddressesLast(a, b) {
+  const isACircuit = Circuit.exactMatch(a.multiaddr);
+  const isBCircuit = Circuit.exactMatch(b.multiaddr);
+  if (isACircuit && !isBCircuit) {
+    return 1;
+  } else if (!isACircuit && isBCircuit) {
+    return -1;
+  }
+  return 0;
+}
+__name(circuitRelayAddressesLast, "circuitRelayAddressesLast");
+function defaultAddressSort(a, b) {
+  const publicResult = publicAddressesFirst(a, b);
+  if (publicResult !== 0) {
+    return publicResult;
+  }
+  const relayResult = circuitRelayAddressesLast(a, b);
+  if (relayResult !== 0) {
+    return relayResult;
+  }
+  const certifiedResult = certifiedAddressesFirst(a, b);
+  return certifiedResult;
+}
+__name(defaultAddressSort, "defaultAddressSort");
+
+// node_modules/progress-events/dist/src/index.js
+var CustomProgressEvent = class extends Event {
+  static {
+    __name(this, "CustomProgressEvent");
+  }
+  type;
+  detail;
+  constructor(type, detail) {
+    super(type);
+    this.type = type;
+    this.detail = detail;
+  }
+};
+
+// node_modules/p-queue/node_modules/eventemitter3/index.mjs
+var import_index6 = __toESM(require_eventemitter3(), 1);
+
+// node_modules/p-timeout/index.js
+var TimeoutError2 = class extends Error {
+  static {
+    __name(this, "TimeoutError");
+  }
+  constructor(message2) {
+    super(message2);
+    this.name = "TimeoutError";
+  }
+};
+var AbortError2 = class extends Error {
+  static {
+    __name(this, "AbortError");
+  }
+  constructor(message2) {
+    super();
+    this.name = "AbortError";
+    this.message = message2;
+  }
+};
+var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError2(errorMessage) : new DOMException(errorMessage), "getDOMException");
+var getAbortedReason = /* @__PURE__ */ __name((signal) => {
+  const reason = signal.reason === void 0 ? getDOMException("This operation was aborted.") : signal.reason;
+  return reason instanceof Error ? reason : getDOMException(reason);
+}, "getAbortedReason");
+function pTimeout(promise, options) {
+  const {
+    milliseconds,
+    fallback,
+    message: message2,
+    customTimers = { setTimeout, clearTimeout }
+  } = options;
+  let timer;
+  const wrappedPromise = new Promise((resolve, reject) => {
+    if (typeof milliseconds !== "number" || Math.sign(milliseconds) !== 1) {
+      throw new TypeError(`Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``);
+    }
+    if (options.signal) {
+      const { signal } = options;
+      if (signal.aborted) {
+        reject(getAbortedReason(signal));
+      }
+      signal.addEventListener("abort", () => {
+        reject(getAbortedReason(signal));
+      });
+    }
+    if (milliseconds === Number.POSITIVE_INFINITY) {
+      promise.then(resolve, reject);
+      return;
+    }
+    const timeoutError = new TimeoutError2();
+    timer = customTimers.setTimeout.call(void 0, () => {
+      if (fallback) {
+        try {
+          resolve(fallback());
+        } catch (error) {
+          reject(error);
+        }
+        return;
+      }
+      if (typeof promise.cancel === "function") {
+        promise.cancel();
+      }
+      if (message2 === false) {
+        resolve();
+      } else if (message2 instanceof Error) {
+        reject(message2);
+      } else {
+        timeoutError.message = message2 ?? `Promise timed out after ${milliseconds} milliseconds`;
+        reject(timeoutError);
+      }
+    }, milliseconds);
+    (async () => {
+      try {
+        resolve(await promise);
+      } catch (error) {
+        reject(error);
+      }
+    })();
+  });
+  const cancelablePromise = wrappedPromise.finally(() => {
+    cancelablePromise.clear();
+  });
+  cancelablePromise.clear = () => {
+    customTimers.clearTimeout.call(void 0, timer);
+    timer = void 0;
+  };
+  return cancelablePromise;
+}
+__name(pTimeout, "pTimeout");
+
+// node_modules/p-queue/dist/lower-bound.js
+function lowerBound(array, value, comparator) {
+  let first = 0;
+  let count = array.length;
+  while (count > 0) {
+    const step = Math.trunc(count / 2);
+    let it = first + step;
+    if (comparator(array[it], value) <= 0) {
+      first = ++it;
+      count -= step + 1;
+    } else {
+      count = step;
+    }
+  }
+  return first;
+}
+__name(lowerBound, "lowerBound");
+
+// node_modules/p-queue/dist/priority-queue.js
+var PriorityQueue = class {
+  static {
+    __name(this, "PriorityQueue");
+  }
+  #queue = [];
+  enqueue(run, options) {
+    options = {
+      priority: 0,
+      ...options
+    };
+    const element = {
+      priority: options.priority,
+      run
+    };
+    if (this.size && this.#queue[this.size - 1].priority >= options.priority) {
+      this.#queue.push(element);
+      return;
+    }
+    const index = lowerBound(this.#queue, element, (a, b) => b.priority - a.priority);
+    this.#queue.splice(index, 0, element);
+  }
+  dequeue() {
+    const item = this.#queue.shift();
+    return item?.run;
+  }
+  filter(options) {
+    return this.#queue.filter((element) => element.priority === options.priority).map((element) => element.run);
+  }
+  get size() {
+    return this.#queue.length;
+  }
+};
+
+// node_modules/p-queue/dist/index.js
+var PQueue = class extends import_index6.default {
+  static {
+    __name(this, "PQueue");
+  }
+  #carryoverConcurrencyCount;
+  #isIntervalIgnored;
+  #intervalCount = 0;
+  #intervalCap;
+  #interval;
+  #intervalEnd = 0;
+  #intervalId;
+  #timeoutId;
+  #queue;
+  #queueClass;
+  #pending = 0;
+  // The `!` is needed because of https://github.com/microsoft/TypeScript/issues/32194
+  #concurrency;
+  #isPaused;
+  #throwOnTimeout;
+  /**
+      Per-operation timeout in milliseconds. Operations fulfill once `timeout` elapses if they haven't already.
+  
+      Applies to each future operation.
+      */
+  timeout;
+  // TODO: The `throwOnTimeout` option should affect the return types of `add()` and `addAll()`
+  constructor(options) {
+    super();
+    options = {
+      carryoverConcurrencyCount: false,
+      intervalCap: Number.POSITIVE_INFINITY,
+      interval: 0,
+      concurrency: Number.POSITIVE_INFINITY,
+      autoStart: true,
+      queueClass: PriorityQueue,
+      ...options
+    };
+    if (!(typeof options.intervalCap === "number" && options.intervalCap >= 1)) {
+      throw new TypeError(`Expected \`intervalCap\` to be a number from 1 and up, got \`${options.intervalCap?.toString() ?? ""}\` (${typeof options.intervalCap})`);
+    }
+    if (options.interval === void 0 || !(Number.isFinite(options.interval) && options.interval >= 0)) {
+      throw new TypeError(`Expected \`interval\` to be a finite number >= 0, got \`${options.interval?.toString() ?? ""}\` (${typeof options.interval})`);
+    }
+    this.#carryoverConcurrencyCount = options.carryoverConcurrencyCount;
+    this.#isIntervalIgnored = options.intervalCap === Number.POSITIVE_INFINITY || options.interval === 0;
+    this.#intervalCap = options.intervalCap;
+    this.#interval = options.interval;
+    this.#queue = new options.queueClass();
+    this.#queueClass = options.queueClass;
+    this.concurrency = options.concurrency;
+    this.timeout = options.timeout;
+    this.#throwOnTimeout = options.throwOnTimeout === true;
+    this.#isPaused = options.autoStart === false;
+  }
+  get #doesIntervalAllowAnother() {
+    return this.#isIntervalIgnored || this.#intervalCount < this.#intervalCap;
+  }
+  get #doesConcurrentAllowAnother() {
+    return this.#pending < this.#concurrency;
+  }
+  #next() {
+    this.#pending--;
+    this.#tryToStartAnother();
+    this.emit("next");
+  }
+  #onResumeInterval() {
+    this.#onInterval();
+    this.#initializeIntervalIfNeeded();
+    this.#timeoutId = void 0;
+  }
+  get #isIntervalPaused() {
+    const now = Date.now();
+    if (this.#intervalId === void 0) {
+      const delay2 = this.#intervalEnd - now;
+      if (delay2 < 0) {
+        this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
+      } else {
+        if (this.#timeoutId === void 0) {
+          this.#timeoutId = setTimeout(() => {
+            this.#onResumeInterval();
+          }, delay2);
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+  #tryToStartAnother() {
+    if (this.#queue.size === 0) {
+      if (this.#intervalId) {
+        clearInterval(this.#intervalId);
+      }
+      this.#intervalId = void 0;
+      this.emit("empty");
+      if (this.#pending === 0) {
+        this.emit("idle");
+      }
+      return false;
+    }
+    if (!this.#isPaused) {
+      const canInitializeInterval = !this.#isIntervalPaused;
+      if (this.#doesIntervalAllowAnother && this.#doesConcurrentAllowAnother) {
+        const job = this.#queue.dequeue();
+        if (!job) {
+          return false;
+        }
+        this.emit("active");
+        job();
+        if (canInitializeInterval) {
+          this.#initializeIntervalIfNeeded();
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+  #initializeIntervalIfNeeded() {
+    if (this.#isIntervalIgnored || this.#intervalId !== void 0) {
+      return;
+    }
+    this.#intervalId = setInterval(() => {
+      this.#onInterval();
+    }, this.#interval);
+    this.#intervalEnd = Date.now() + this.#interval;
+  }
+  #onInterval() {
+    if (this.#intervalCount === 0 && this.#pending === 0 && this.#intervalId) {
+      clearInterval(this.#intervalId);
+      this.#intervalId = void 0;
+    }
+    this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
+    this.#processQueue();
+  }
+  /**
+  Executes all queued functions until it reaches the limit.
+  */
+  #processQueue() {
+    while (this.#tryToStartAnother()) {
+    }
+  }
+  get concurrency() {
+    return this.#concurrency;
+  }
+  set concurrency(newConcurrency) {
+    if (!(typeof newConcurrency === "number" && newConcurrency >= 1)) {
+      throw new TypeError(`Expected \`concurrency\` to be a number from 1 and up, got \`${newConcurrency}\` (${typeof newConcurrency})`);
+    }
+    this.#concurrency = newConcurrency;
+    this.#processQueue();
+  }
+  async #throwOnAbort(signal) {
+    return new Promise((_resolve, reject) => {
+      signal.addEventListener("abort", () => {
+        reject(signal.reason);
+      }, { once: true });
+    });
+  }
+  async add(function_, options = {}) {
+    options = {
+      timeout: this.timeout,
+      throwOnTimeout: this.#throwOnTimeout,
+      ...options
+    };
+    return new Promise((resolve, reject) => {
+      this.#queue.enqueue(async () => {
+        this.#pending++;
+        this.#intervalCount++;
+        try {
+          options.signal?.throwIfAborted();
+          let operation = function_({ signal: options.signal });
+          if (options.timeout) {
+            operation = pTimeout(Promise.resolve(operation), { milliseconds: options.timeout });
+          }
+          if (options.signal) {
+            operation = Promise.race([operation, this.#throwOnAbort(options.signal)]);
+          }
+          const result = await operation;
+          resolve(result);
+          this.emit("completed", result);
+        } catch (error) {
+          if (error instanceof TimeoutError2 && !options.throwOnTimeout) {
+            resolve();
+            return;
+          }
+          reject(error);
+          this.emit("error", error);
+        } finally {
+          this.#next();
+        }
+      }, options);
+      this.emit("add");
+      this.#tryToStartAnother();
+    });
+  }
+  async addAll(functions, options) {
+    return Promise.all(functions.map(async (function_) => this.add(function_, options)));
+  }
+  /**
+  Start (or resume) executing enqueued tasks within concurrency limit. No need to call this if queue is not paused (via `options.autoStart = false` or by `.pause()` method.)
+  */
+  start() {
+    if (!this.#isPaused) {
+      return this;
+    }
+    this.#isPaused = false;
+    this.#processQueue();
+    return this;
+  }
+  /**
+  Put queue execution on hold.
+  */
+  pause() {
+    this.#isPaused = true;
+  }
+  /**
+  Clear the queue.
+  */
+  clear() {
+    this.#queue = new this.#queueClass();
+  }
+  /**
+      Can be called multiple times. Useful if you for example add additional items at a later time.
+  
+      @returns A promise that settles when the queue becomes empty.
+      */
+  async onEmpty() {
+    if (this.#queue.size === 0) {
+      return;
+    }
+    await this.#onEvent("empty");
+  }
+  /**
+      @returns A promise that settles when the queue size is less than the given limit: `queue.size < limit`.
+  
+      If you want to avoid having the queue grow beyond a certain size you can `await queue.onSizeLessThan()` before adding a new item.
+  
+      Note that this only limits the number of items waiting to start. There could still be up to `concurrency` jobs already running that this call does not include in its calculation.
+      */
+  async onSizeLessThan(limit) {
+    if (this.#queue.size < limit) {
+      return;
+    }
+    await this.#onEvent("next", () => this.#queue.size < limit);
+  }
+  /**
+      The difference with `.onEmpty` is that `.onIdle` guarantees that all work from the queue has finished. `.onEmpty` merely signals that the queue is empty, but it could mean that some promises haven't completed yet.
+  
+      @returns A promise that settles when the queue becomes empty, and all promises have completed; `queue.size === 0 && queue.pending === 0`.
+      */
+  async onIdle() {
+    if (this.#pending === 0 && this.#queue.size === 0) {
+      return;
+    }
+    await this.#onEvent("idle");
+  }
+  async #onEvent(event, filter2) {
+    return new Promise((resolve) => {
+      const listener = /* @__PURE__ */ __name(() => {
+        if (filter2 && !filter2()) {
+          return;
+        }
+        this.off(event, listener);
+        resolve();
+      }, "listener");
+      this.on(event, listener);
+    });
+  }
+  /**
+  Size of the queue, the number of queued items waiting to run.
+  */
+  get size() {
+    return this.#queue.size;
+  }
+  /**
+      Size of the queue, filtered by the given options.
+  
+      For example, this can be used to find the number of items remaining in the queue with a specific priority level.
+      */
+  sizeBy(options) {
+    return this.#queue.filter(options).length;
+  }
+  /**
+  Number of running items (no longer in the queue).
+  */
+  get pending() {
+    return this.#pending;
+  }
+  /**
+  Whether the queue is currently paused.
+  */
+  get isPaused() {
+    return this.#isPaused;
+  }
+};
+
+// node_modules/@multiformats/dns/dist/src/utils/get-types.js
+function getTypes(types) {
+  const DEFAULT_TYPES = [
+    RecordType.A
+  ];
+  if (types == null) {
+    return DEFAULT_TYPES;
+  }
+  if (Array.isArray(types)) {
+    if (types.length === 0) {
+      return DEFAULT_TYPES;
+    }
+    return types;
+  }
+  return [
+    types
+  ];
+}
+__name(getTypes, "getTypes");
+
+// node_modules/@multiformats/dns/dist/src/utils/to-dns-response.js
+var DEFAULT_TTL = 60;
+function toDNSResponse(obj) {
+  return {
+    Status: obj.Status ?? 0,
+    TC: obj.TC ?? obj.flag_tc ?? false,
+    RD: obj.RD ?? obj.flag_rd ?? false,
+    RA: obj.RA ?? obj.flag_ra ?? false,
+    AD: obj.AD ?? obj.flag_ad ?? false,
+    CD: obj.CD ?? obj.flag_cd ?? false,
+    Question: (obj.Question ?? obj.questions ?? []).map((question) => {
+      return {
+        name: question.name,
+        type: RecordType[question.type]
+      };
+    }),
+    Answer: (obj.Answer ?? obj.answers ?? []).map((answer) => {
+      return {
+        name: answer.name,
+        type: RecordType[answer.type],
+        TTL: answer.TTL ?? answer.ttl ?? DEFAULT_TTL,
+        data: answer.data instanceof Uint8Array ? toString2(answer.data) : answer.data
+      };
+    })
+  };
+}
+__name(toDNSResponse, "toDNSResponse");
+
+// node_modules/@multiformats/dns/dist/src/resolvers/dns-json-over-https.js
+var DEFAULT_QUERY_CONCURRENCY = 4;
+function dnsJsonOverHttps(url, init = {}) {
+  const httpQueue = new PQueue({
+    concurrency: init.queryConcurrency ?? DEFAULT_QUERY_CONCURRENCY
+  });
+  return async (fqdn, options = {}) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("name", fqdn);
+    getTypes(options.types).forEach((type) => {
+      searchParams.append("type", RecordType[type]);
+    });
+    options.onProgress?.(new CustomProgressEvent("dns:query", { detail: fqdn }));
+    const response = await httpQueue.add(async () => {
+      const res = await fetch(`${url}?${searchParams}`, {
+        headers: {
+          accept: "application/dns-json"
+        },
+        signal: options?.signal
+      });
+      if (res.status !== 200) {
+        throw new Error(`Unexpected HTTP status: ${res.status} - ${res.statusText}`);
+      }
+      const response2 = toDNSResponse(await res.json());
+      options.onProgress?.(new CustomProgressEvent("dns:response", { detail: response2 }));
+      return response2;
+    }, {
+      signal: options.signal
+    });
+    if (response == null) {
+      throw new Error("No DNS response received");
+    }
+    return response;
+  };
+}
+__name(dnsJsonOverHttps, "dnsJsonOverHttps");
+
+// node_modules/@multiformats/dns/dist/src/resolvers/default.browser.js
+function defaultResolver() {
+  return [
+    dnsJsonOverHttps("https://cloudflare-dns.com/dns-query"),
+    dnsJsonOverHttps("https://dns.google/resolve")
+  ];
+}
+__name(defaultResolver, "defaultResolver");
+
+// node_modules/@multiformats/dns/dist/src/utils/cache.js
+var import_hashlru = __toESM(require_hashlru(), 1);
+var CachedAnswers = class {
+  static {
+    __name(this, "CachedAnswers");
+  }
+  lru;
+  constructor(maxSize) {
+    this.lru = (0, import_hashlru.default)(maxSize);
+  }
+  get(fqdn, types) {
+    let foundAllAnswers = true;
+    const answers = [];
+    for (const type of types) {
+      const cached = this.getAnswers(fqdn, type);
+      if (cached.length === 0) {
+        foundAllAnswers = false;
+        break;
+      }
+      answers.push(...cached);
+    }
+    if (foundAllAnswers) {
+      return toDNSResponse({ answers });
+    }
+  }
+  getAnswers(domain, type) {
+    const key = `${domain.toLowerCase()}-${type}`;
+    const answers = this.lru.get(key);
+    if (answers != null) {
+      const cachedAnswers = answers.filter((entry) => {
+        return entry.expires > Date.now();
+      }).map(({ expires, value }) => ({
+        ...value,
+        TTL: Math.round((expires - Date.now()) / 1e3),
+        type: RecordType[value.type]
+      }));
+      if (cachedAnswers.length === 0) {
+        this.lru.remove(key);
+      }
+      return cachedAnswers;
+    }
+    return [];
+  }
+  add(domain, answer) {
+    const key = `${domain.toLowerCase()}-${answer.type}`;
+    const answers = this.lru.get(key) ?? [];
+    answers.push({
+      expires: Date.now() + (answer.TTL ?? DEFAULT_TTL) * 1e3,
+      value: answer
+    });
+    this.lru.set(key, answers);
+  }
+  remove(domain, type) {
+    const key = `${domain.toLowerCase()}-${type}`;
+    this.lru.remove(key);
+  }
+  clear() {
+    this.lru.clear();
+  }
+};
+function cache2(size) {
+  return new CachedAnswers(size);
+}
+__name(cache2, "cache");
+
+// node_modules/@multiformats/dns/dist/src/dns.js
+var DEFAULT_ANSWER_CACHE_SIZE = 1e3;
+var DNS2 = class {
+  static {
+    __name(this, "DNS");
+  }
+  resolvers;
+  cache;
+  constructor(init) {
+    this.resolvers = {};
+    this.cache = cache2(init.cacheSize ?? DEFAULT_ANSWER_CACHE_SIZE);
+    Object.entries(init.resolvers ?? {}).forEach(([tld, resolver]) => {
+      if (!Array.isArray(resolver)) {
+        resolver = [resolver];
+      }
+      if (!tld.endsWith(".")) {
+        tld = `${tld}.`;
+      }
+      this.resolvers[tld] = resolver;
+    });
+    if (this.resolvers["."] == null) {
+      this.resolvers["."] = defaultResolver();
+    }
+  }
+  /**
+   * Queries DNS resolvers for the passed record types for the passed domain.
+   *
+   * If cached records exist for all desired types they will be returned
+   * instead.
+   *
+   * Any new responses will be added to the cache for subsequent requests.
+   */
+  async query(domain, options = {}) {
+    const types = getTypes(options.types);
+    const cached = options.cached !== false ? this.cache.get(domain, types) : void 0;
+    if (cached != null) {
+      options.onProgress?.(new CustomProgressEvent("dns:cache", { detail: cached }));
+      return cached;
+    }
+    const tld = `${domain.split(".").pop()}.`;
+    const resolvers2 = (this.resolvers[tld] ?? this.resolvers["."]).sort(() => {
+      return Math.random() > 0.5 ? -1 : 1;
+    });
+    const errors = [];
+    for (const resolver of resolvers2) {
+      if (options.signal?.aborted === true) {
+        break;
+      }
+      try {
+        const result = await resolver(domain, {
+          ...options,
+          types
+        });
+        for (const answer of result.Answer) {
+          this.cache.add(domain, answer);
+        }
+        return result;
+      } catch (err) {
+        errors.push(err);
+        options.onProgress?.(new CustomProgressEvent("dns:error", { detail: err }));
+      }
+    }
+    if (errors.length === 1) {
+      throw errors[0];
+    }
+    throw new AggregateError(errors, `DNS lookup of ${domain} ${types} failed`);
+  }
+};
+
+// node_modules/@multiformats/dns/dist/src/index.js
+var RecordType;
+(function(RecordType2) {
+  RecordType2[RecordType2["A"] = 1] = "A";
+  RecordType2[RecordType2["CNAME"] = 5] = "CNAME";
+  RecordType2[RecordType2["TXT"] = 16] = "TXT";
+  RecordType2[RecordType2["AAAA"] = 28] = "AAAA";
+})(RecordType || (RecordType = {}));
+function dns(init = {}) {
+  return new DNS2(init);
+}
+__name(dns, "dns");
+
+// node_modules/@multiformats/multiaddr/dist/src/resolvers/dnsaddr.js
+var MAX_RECURSIVE_DEPTH = 32;
+var { code: dnsaddrCode } = getProtocol("dnsaddr");
+var RecursionLimitError = class extends Error {
+  static {
+    __name(this, "RecursionLimitError");
+  }
+  constructor(message2 = "Max recursive depth reached") {
+    super(message2);
+    this.name = "RecursionLimitError";
+  }
+};
+var dnsaddrResolver = /* @__PURE__ */ __name(async function dnsaddrResolver2(ma, options = {}) {
+  const recursionLimit = options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH;
+  if (recursionLimit === 0) {
+    throw new RecursionLimitError("Max recursive depth reached");
+  }
+  const [, hostname] = ma.stringTuples().find(([proto]) => proto === dnsaddrCode) ?? [];
+  const resolver = options?.dns ?? dns();
+  const result = await resolver.query(`_dnsaddr.${hostname}`, {
+    signal: options?.signal,
+    types: [
+      RecordType.TXT
+    ]
+  });
+  const peerId2 = ma.getPeerId();
+  const output2 = [];
+  for (const answer of result.Answer) {
+    const addr = answer.data.replace(/["']/g, "").trim().split("=")[1];
+    if (addr == null) {
+      continue;
+    }
+    if (peerId2 != null && !addr.includes(peerId2)) {
+      continue;
+    }
+    const ma2 = multiaddr(addr);
+    if (addr.startsWith("/dnsaddr")) {
+      const resolved = await ma2.resolve({
+        ...options,
+        maxRecursiveDepth: recursionLimit - 1
+      });
+      output2.push(...resolved.map((ma3) => ma3.toString()));
+    } else {
+      output2.push(ma2.toString());
+    }
+  }
+  return output2;
+}, "dnsaddrResolver");
+
+// node_modules/merge-options/index.mjs
+var import_index7 = __toESM(require_merge_options(), 1);
+var merge_options_default = import_index7.default;
+
+// node_modules/libp2p/dist/src/config.js
+var DefaultConfig = {
+  addresses: {
+    listen: [],
+    announce: [],
+    noAnnounce: [],
+    announceFilter: /* @__PURE__ */ __name((multiaddrs) => multiaddrs, "announceFilter")
+  },
+  connectionManager: {
+    resolvers: {
+      dnsaddr: dnsaddrResolver
+    },
+    addressSorter: defaultAddressSort
+  },
+  transportManager: {
+    faultTolerance: FaultTolerance.FATAL_ALL
+  }
+};
+async function validateConfig(opts) {
+  const resultingOptions = merge_options_default(DefaultConfig, opts);
+  if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
+    throw new InvalidParametersError("Private network is enforced, but no protector was provided");
+  }
+  return resultingOptions;
+}
+__name(validateConfig, "validateConfig");
 
 // node_modules/weald/node_modules/ms/dist/index.mjs
 var s = 1e3;
@@ -11778,236 +13992,6 @@ function logger(name3) {
 }
 __name(logger, "logger");
 
-// node_modules/@libp2p/peer-id/dist/src/index.js
-var inspect = Symbol.for("nodejs.util.inspect.custom");
-var baseDecoder = Object.values(bases).map((codec) => codec.decoder).reduce((acc, curr) => acc.or(curr), bases.identity.decoder);
-var LIBP2P_KEY_CODE = 114;
-var MARSHALLED_ED225519_PUBLIC_KEY_LENGTH = 36;
-var MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH = 37;
-var PeerIdImpl = class {
-  static {
-    __name(this, "PeerIdImpl");
-  }
-  type;
-  multihash;
-  privateKey;
-  publicKey;
-  string;
-  constructor(init) {
-    this.type = init.type;
-    this.multihash = init.multihash;
-    this.privateKey = init.privateKey;
-    Object.defineProperty(this, "string", {
-      enumerable: false,
-      writable: true
-    });
-  }
-  get [Symbol.toStringTag]() {
-    return `PeerId(${this.toString()})`;
-  }
-  [peerIdSymbol] = true;
-  toString() {
-    if (this.string == null) {
-      this.string = base58btc.encode(this.multihash.bytes).slice(1);
-    }
-    return this.string;
-  }
-  // return self-describing String representation
-  // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
-  toCID() {
-    return CID.createV1(LIBP2P_KEY_CODE, this.multihash);
-  }
-  toBytes() {
-    return this.multihash.bytes;
-  }
-  /**
-   * Returns Multiaddr as a JSON string
-   */
-  toJSON() {
-    return this.toString();
-  }
-  /**
-   * Checks the equality of `this` peer against a given PeerId
-   */
-  equals(id) {
-    if (id == null) {
-      return false;
-    }
-    if (id instanceof Uint8Array) {
-      return equals3(this.multihash.bytes, id);
-    } else if (typeof id === "string") {
-      return peerIdFromString(id).equals(this);
-    } else if (id?.multihash?.bytes != null) {
-      return equals3(this.multihash.bytes, id.multihash.bytes);
-    } else {
-      throw new Error("not valid Id");
-    }
-  }
-  /**
-   * Returns PeerId as a human-readable string
-   * https://nodejs.org/api/util.html#utilinspectcustom
-   *
-   * @example
-   * ```TypeScript
-   * import { peerIdFromString } from '@libp2p/peer-id'
-   *
-   * console.info(peerIdFromString('QmFoo'))
-   * // 'PeerId(QmFoo)'
-   * ```
-   */
-  [inspect]() {
-    return `PeerId(${this.toString()})`;
-  }
-};
-var RSAPeerIdImpl = class extends PeerIdImpl {
-  static {
-    __name(this, "RSAPeerIdImpl");
-  }
-  type = "RSA";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "RSA" });
-    this.publicKey = init.publicKey;
-  }
-};
-var Ed25519PeerIdImpl = class extends PeerIdImpl {
-  static {
-    __name(this, "Ed25519PeerIdImpl");
-  }
-  type = "Ed25519";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "Ed25519" });
-    this.publicKey = init.multihash.digest;
-  }
-};
-var Secp256k1PeerIdImpl = class extends PeerIdImpl {
-  static {
-    __name(this, "Secp256k1PeerIdImpl");
-  }
-  type = "secp256k1";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "secp256k1" });
-    this.publicKey = init.multihash.digest;
-  }
-};
-var TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 2336;
-var URLPeerIdImpl = class {
-  static {
-    __name(this, "URLPeerIdImpl");
-  }
-  type = "url";
-  multihash;
-  privateKey;
-  publicKey;
-  url;
-  constructor(url) {
-    this.url = url.toString();
-    this.multihash = identity.digest(fromString2(this.url));
-  }
-  [inspect]() {
-    return `PeerId(${this.url})`;
-  }
-  [peerIdSymbol] = true;
-  toString() {
-    return this.toCID().toString();
-  }
-  toCID() {
-    return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, this.multihash);
-  }
-  toBytes() {
-    return this.toCID().bytes;
-  }
-  equals(other) {
-    if (other == null) {
-      return false;
-    }
-    if (other instanceof Uint8Array) {
-      other = toString2(other);
-    }
-    return other.toString() === this.toString();
-  }
-};
-function peerIdFromPeerId(other) {
-  if (other.type === "RSA") {
-    return new RSAPeerIdImpl(other);
-  }
-  if (other.type === "Ed25519") {
-    return new Ed25519PeerIdImpl(other);
-  }
-  if (other.type === "secp256k1") {
-    return new Secp256k1PeerIdImpl(other);
-  }
-  throw new CodeError("Not a PeerId", "ERR_INVALID_PARAMETERS");
-}
-__name(peerIdFromPeerId, "peerIdFromPeerId");
-function peerIdFromString(str, decoder) {
-  decoder = decoder ?? baseDecoder;
-  if (str.charAt(0) === "1" || str.charAt(0) === "Q") {
-    const multihash = decode4(base58btc.decode(`z${str}`));
-    if (str.startsWith("12D")) {
-      return new Ed25519PeerIdImpl({ multihash });
-    } else if (str.startsWith("16U")) {
-      return new Secp256k1PeerIdImpl({ multihash });
-    } else {
-      return new RSAPeerIdImpl({ multihash });
-    }
-  }
-  return peerIdFromBytes(baseDecoder.decode(str));
-}
-__name(peerIdFromString, "peerIdFromString");
-function peerIdFromBytes(buf) {
-  try {
-    const multihash = decode4(buf);
-    if (multihash.code === identity.code) {
-      if (multihash.digest.length === MARSHALLED_ED225519_PUBLIC_KEY_LENGTH) {
-        return new Ed25519PeerIdImpl({ multihash });
-      } else if (multihash.digest.length === MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH) {
-        return new Secp256k1PeerIdImpl({ multihash });
-      }
-    }
-    if (multihash.code === sha256.code) {
-      return new RSAPeerIdImpl({ multihash });
-    }
-  } catch {
-    return peerIdFromCID(CID.decode(buf));
-  }
-  throw new Error("Supplied PeerID CID is invalid");
-}
-__name(peerIdFromBytes, "peerIdFromBytes");
-function peerIdFromCID(cid) {
-  if (cid?.multihash == null || cid.version == null || cid.version === 1 && cid.code !== LIBP2P_KEY_CODE && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE) {
-    throw new Error("Supplied PeerID CID is invalid");
-  }
-  if (cid.code === TRANSPORT_IPFS_GATEWAY_HTTP_CODE) {
-    const url = toString2(cid.multihash.digest);
-    return new URLPeerIdImpl(new URL(url));
-  }
-  const multihash = cid.multihash;
-  if (multihash.code === sha256.code) {
-    return new RSAPeerIdImpl({ multihash: cid.multihash });
-  } else if (multihash.code === identity.code) {
-    if (multihash.digest.length === MARSHALLED_ED225519_PUBLIC_KEY_LENGTH) {
-      return new Ed25519PeerIdImpl({ multihash: cid.multihash });
-    } else if (multihash.digest.length === MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH) {
-      return new Secp256k1PeerIdImpl({ multihash: cid.multihash });
-    }
-  }
-  throw new Error("Supplied PeerID CID is invalid");
-}
-__name(peerIdFromCID, "peerIdFromCID");
-async function peerIdFromKeys(publicKey, privateKey) {
-  if (publicKey.length === MARSHALLED_ED225519_PUBLIC_KEY_LENGTH) {
-    return new Ed25519PeerIdImpl({ multihash: create(identity.code, publicKey), privateKey });
-  }
-  if (publicKey.length === MARSHALLED_SECP256K1_PUBLIC_KEY_LENGTH) {
-    return new Secp256k1PeerIdImpl({ multihash: create(identity.code, publicKey), privateKey });
-  }
-  return new RSAPeerIdImpl({ multihash: await sha256.digest(publicKey), publicKey, privateKey });
-}
-__name(peerIdFromKeys, "peerIdFromKeys");
-
 // node_modules/@libp2p/peer-collections/dist/src/util.js
 function mapIterable(iter, map) {
   const iterator = {
@@ -12033,6 +14017,11 @@ function mapIterable(iter, map) {
   return iterator;
 }
 __name(mapIterable, "mapIterable");
+function peerIdFromString2(str) {
+  const multihash = decode4(base58btc.decode(`z${str}`));
+  return peerIdFromMultihash(multihash);
+}
+__name(peerIdFromString2, "peerIdFromString");
 
 // node_modules/@libp2p/peer-collections/dist/src/map.js
 var PeerMap = class {
@@ -12044,7 +14033,7 @@ var PeerMap = class {
     this.map = /* @__PURE__ */ new Map();
     if (map != null) {
       for (const [key, value] of map.entries()) {
-        this.map.set(key.toString(), value);
+        this.map.set(key.toString(), { key, value });
       }
     }
   }
@@ -12059,30 +14048,30 @@ var PeerMap = class {
   }
   entries() {
     return mapIterable(this.map.entries(), (val) => {
-      return [peerIdFromString(val[0]), val[1]];
+      return [val[1].key, val[1].value];
     });
   }
   forEach(fn) {
     this.map.forEach((value, key) => {
-      fn(value, peerIdFromString(key), this);
+      fn(value.value, value.key, this);
     });
   }
   get(peer) {
-    return this.map.get(peer.toString());
+    return this.map.get(peer.toString())?.value;
   }
   has(peer) {
     return this.map.has(peer.toString());
   }
   set(peer, value) {
-    this.map.set(peer.toString(), value);
+    this.map.set(peer.toString(), { key: peer, value });
   }
   keys() {
-    return mapIterable(this.map.keys(), (val) => {
-      return peerIdFromString(val);
+    return mapIterable(this.map.values(), (val) => {
+      return val.key;
     });
   }
   values() {
-    return this.map.values();
+    return mapIterable(this.map.values(), (val) => val.value);
   }
   get size() {
     return this.map.size;
@@ -12120,14 +14109,14 @@ var PeerSet = class _PeerSet {
   }
   entries() {
     return mapIterable(this.set.entries(), (val) => {
-      const peerId2 = peerIdFromString(val[0]);
+      const peerId2 = peerIdFromString2(val[0]);
       return [peerId2, peerId2];
     });
   }
   forEach(predicate) {
     this.set.forEach((str) => {
-      const id = peerIdFromString(str);
-      predicate(id, id, this);
+      const peerId2 = peerIdFromString2(str);
+      predicate(peerId2, peerId2, this);
     });
   }
   has(peer) {
@@ -12135,7 +14124,7 @@ var PeerSet = class _PeerSet {
   }
   values() {
     return mapIterable(this.set.values(), (val) => {
-      return peerIdFromString(val);
+      return peerIdFromString2(val);
     });
   }
   intersection(other) {
@@ -12169,7 +14158,7 @@ var PeerSet = class _PeerSet {
 };
 
 // node_modules/uint8arraylist/dist/src/index.js
-var symbol = Symbol.for("@achingbrain/uint8arraylist");
+var symbol2 = Symbol.for("@achingbrain/uint8arraylist");
 function findBufAndOffset(bufs, index) {
   if (index == null || index < 0) {
     throw new RangeError("index is out of bounds");
@@ -12189,7 +14178,7 @@ function findBufAndOffset(bufs, index) {
 }
 __name(findBufAndOffset, "findBufAndOffset");
 function isUint8ArrayList(value) {
-  return Boolean(value?.[symbol]);
+  return Boolean(value?.[symbol2]);
 }
 __name(isUint8ArrayList, "isUint8ArrayList");
 var Uint8ArrayList = class _Uint8ArrayList {
@@ -12198,7 +14187,7 @@ var Uint8ArrayList = class _Uint8ArrayList {
   }
   bufs;
   length;
-  [symbol] = true;
+  [symbol2] = true;
   constructor(...data) {
     this.bufs = [];
     this.length = 0;
@@ -12323,7 +14312,7 @@ var Uint8ArrayList = class _Uint8ArrayList {
    */
   slice(beginInclusive, endExclusive) {
     const { bufs, length: length3 } = this._subList(beginInclusive, endExclusive);
-    return concat(bufs, length3);
+    return concat2(bufs, length3);
   }
   /**
    * Returns a alloc from the given start and end element index.
@@ -12336,7 +14325,7 @@ var Uint8ArrayList = class _Uint8ArrayList {
     if (bufs.length === 1) {
       return bufs[0];
     }
-    return concat(bufs, length3);
+    return concat2(bufs, length3);
   }
   /**
    * Returns a allocList from the given start and end element index.
@@ -12385,8 +14374,8 @@ var Uint8ArrayList = class _Uint8ArrayList {
           bufs.push(buf);
           break;
         }
-        const start = beginInclusive - bufStart;
-        bufs.push(buf.subarray(start, start + (endExclusive - beginInclusive)));
+        const start2 = beginInclusive - bufStart;
+        bufs.push(buf.subarray(start2, start2 + (endExclusive - beginInclusive)));
         break;
       }
       if (sliceStartInBuf) {
@@ -12991,2371 +14980,6 @@ function createScalableCuckooFilter(maxItems, errorRate = 1e-3, options) {
 }
 __name(createScalableCuckooFilter, "createScalableCuckooFilter");
 
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
-var ed25519_class_exports2 = {};
-__export(ed25519_class_exports2, {
-  Ed25519PrivateKey: () => Ed25519PrivateKey2,
-  Ed25519PublicKey: () => Ed25519PublicKey2,
-  generateKeyPair: () => generateKeyPair4,
-  generateKeyPairFromSeed: () => generateKeyPairFromSeed2,
-  unmarshalEd25519PrivateKey: () => unmarshalEd25519PrivateKey2,
-  unmarshalEd25519PublicKey: () => unmarshalEd25519PublicKey2
-});
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/util.js
-function isPromise2(thing) {
-  if (thing == null) {
-    return false;
-  }
-  return typeof thing.then === "function" && typeof thing.catch === "function" && typeof thing.finally === "function";
-}
-__name(isPromise2, "isPromise");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/ed25519-browser.js
-var PUBLIC_KEY_BYTE_LENGTH2 = 32;
-var PRIVATE_KEY_BYTE_LENGTH2 = 64;
-var KEYS_BYTE_LENGTH2 = 32;
-function generateKey4() {
-  const privateKeyRaw = ed25519.utils.randomPrivateKey();
-  const publicKey = ed25519.getPublicKey(privateKeyRaw);
-  const privateKey = concatKeys2(privateKeyRaw, publicKey);
-  return {
-    privateKey,
-    publicKey
-  };
-}
-__name(generateKey4, "generateKey");
-function generateKeyFromSeed2(seed) {
-  if (seed.length !== KEYS_BYTE_LENGTH2) {
-    throw new TypeError('"seed" must be 32 bytes in length.');
-  } else if (!(seed instanceof Uint8Array)) {
-    throw new TypeError('"seed" must be a node.js Buffer, or Uint8Array.');
-  }
-  const privateKeyRaw = seed;
-  const publicKey = ed25519.getPublicKey(privateKeyRaw);
-  const privateKey = concatKeys2(privateKeyRaw, publicKey);
-  return {
-    privateKey,
-    publicKey
-  };
-}
-__name(generateKeyFromSeed2, "generateKeyFromSeed");
-function hashAndSign4(privateKey, msg) {
-  const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH2);
-  return ed25519.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw);
-}
-__name(hashAndSign4, "hashAndSign");
-function hashAndVerify4(publicKey, sig, msg) {
-  return ed25519.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey);
-}
-__name(hashAndVerify4, "hashAndVerify");
-function concatKeys2(privateKeyRaw, publicKey) {
-  const privateKey = new Uint8Array(PRIVATE_KEY_BYTE_LENGTH2);
-  for (let i = 0; i < KEYS_BYTE_LENGTH2; i++) {
-    privateKey[i] = privateKeyRaw[i];
-    privateKey[KEYS_BYTE_LENGTH2 + i] = publicKey[i];
-  }
-  return privateKey;
-}
-__name(concatKeys2, "concatKeys");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/webcrypto-browser.js
-var webcrypto_browser_default2 = {
-  get(win = globalThis) {
-    const nativeCrypto = win.crypto;
-    if (nativeCrypto?.subtle == null) {
-      throw Object.assign(new Error("Missing Web Crypto API. The most likely cause of this error is that this page is being accessed from an insecure context (i.e. not HTTPS). For more information and possible resolutions see https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/README.md#web-crypto-api"), { code: "ERR_MISSING_WEB_CRYPTO" });
-    }
-    return nativeCrypto;
-  }
-};
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/ciphers/aes-gcm.browser.js
-var derivedEmptyPasswordKey2 = { alg: "A128GCM", ext: true, k: "scm9jmO_4BJAgdwWGVulLg", key_ops: ["encrypt", "decrypt"], kty: "oct" };
-function create3(opts) {
-  const algorithm = opts?.algorithm ?? "AES-GCM";
-  let keyLength = opts?.keyLength ?? 16;
-  const nonceLength = opts?.nonceLength ?? 12;
-  const digest2 = opts?.digest ?? "SHA-256";
-  const saltLength = opts?.saltLength ?? 16;
-  const iterations = opts?.iterations ?? 32767;
-  const crypto3 = webcrypto_browser_default2.get();
-  keyLength *= 8;
-  async function encrypt(data, password) {
-    const salt = crypto3.getRandomValues(new Uint8Array(saltLength));
-    const nonce = crypto3.getRandomValues(new Uint8Array(nonceLength));
-    const aesGcm = { name: algorithm, iv: nonce };
-    if (typeof password === "string") {
-      password = fromString2(password);
-    }
-    let cryptoKey;
-    if (password.length === 0) {
-      cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey2, { name: "AES-GCM" }, true, ["encrypt"]);
-      try {
-        const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-        const runtimeDerivedEmptyPassword = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-        cryptoKey = await crypto3.subtle.deriveKey(deriveParams, runtimeDerivedEmptyPassword, { name: algorithm, length: keyLength }, true, ["encrypt"]);
-      } catch {
-        cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey2, { name: "AES-GCM" }, true, ["encrypt"]);
-      }
-    } else {
-      const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-      const rawKey = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-      cryptoKey = await crypto3.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ["encrypt"]);
-    }
-    const ciphertext = await crypto3.subtle.encrypt(aesGcm, cryptoKey, data);
-    return concat([salt, aesGcm.iv, new Uint8Array(ciphertext)]);
-  }
-  __name(encrypt, "encrypt");
-  async function decrypt(data, password) {
-    const salt = data.subarray(0, saltLength);
-    const nonce = data.subarray(saltLength, saltLength + nonceLength);
-    const ciphertext = data.subarray(saltLength + nonceLength);
-    const aesGcm = { name: algorithm, iv: nonce };
-    if (typeof password === "string") {
-      password = fromString2(password);
-    }
-    let cryptoKey;
-    if (password.length === 0) {
-      try {
-        const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-        const runtimeDerivedEmptyPassword = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-        cryptoKey = await crypto3.subtle.deriveKey(deriveParams, runtimeDerivedEmptyPassword, { name: algorithm, length: keyLength }, true, ["decrypt"]);
-      } catch {
-        cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey2, { name: "AES-GCM" }, true, ["decrypt"]);
-      }
-    } else {
-      const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-      const rawKey = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-      cryptoKey = await crypto3.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ["decrypt"]);
-    }
-    const plaintext = await crypto3.subtle.decrypt(aesGcm, cryptoKey, ciphertext);
-    return new Uint8Array(plaintext);
-  }
-  __name(decrypt, "decrypt");
-  const cipher = {
-    encrypt,
-    decrypt
-  };
-  return cipher;
-}
-__name(create3, "create");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/exporter.js
-async function exporter2(privateKey, password) {
-  const cipher = create3();
-  const encryptedKey = await cipher.encrypt(privateKey, password);
-  return base64.encode(encryptedKey);
-}
-__name(exporter2, "exporter");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/keys.js
-var KeyType2;
-(function(KeyType4) {
-  KeyType4["RSA"] = "RSA";
-  KeyType4["Ed25519"] = "Ed25519";
-  KeyType4["Secp256k1"] = "Secp256k1";
-})(KeyType2 || (KeyType2 = {}));
-var __KeyTypeValues2;
-(function(__KeyTypeValues4) {
-  __KeyTypeValues4[__KeyTypeValues4["RSA"] = 0] = "RSA";
-  __KeyTypeValues4[__KeyTypeValues4["Ed25519"] = 1] = "Ed25519";
-  __KeyTypeValues4[__KeyTypeValues4["Secp256k1"] = 2] = "Secp256k1";
-})(__KeyTypeValues2 || (__KeyTypeValues2 = {}));
-(function(KeyType4) {
-  KeyType4.codec = () => {
-    return enumeration(__KeyTypeValues2);
-  };
-})(KeyType2 || (KeyType2 = {}));
-var PublicKey2;
-(function(PublicKey4) {
-  let _codec;
-  PublicKey4.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w2.fork();
-        }
-        if (obj.Type != null) {
-          w2.uint32(8);
-          KeyType2.codec().encode(obj.Type, w2);
-        }
-        if (obj.Data != null) {
-          w2.uint32(18);
-          w2.bytes(obj.Data);
-        }
-        if (opts.lengthDelimited !== false) {
-          w2.ldelim();
-        }
-      }, (reader, length3) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1:
-              obj.Type = KeyType2.codec().decode(reader);
-              break;
-            case 2:
-              obj.Data = reader.bytes();
-              break;
-            default:
-              reader.skipType(tag & 7);
-              break;
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  PublicKey4.encode = (obj) => {
-    return encodeMessage(obj, PublicKey4.codec());
-  };
-  PublicKey4.decode = (buf) => {
-    return decodeMessage(buf, PublicKey4.codec());
-  };
-})(PublicKey2 || (PublicKey2 = {}));
-var PrivateKey2;
-(function(PrivateKey4) {
-  let _codec;
-  PrivateKey4.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w2.fork();
-        }
-        if (obj.Type != null) {
-          w2.uint32(8);
-          KeyType2.codec().encode(obj.Type, w2);
-        }
-        if (obj.Data != null) {
-          w2.uint32(18);
-          w2.bytes(obj.Data);
-        }
-        if (opts.lengthDelimited !== false) {
-          w2.ldelim();
-        }
-      }, (reader, length3) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1:
-              obj.Type = KeyType2.codec().decode(reader);
-              break;
-            case 2:
-              obj.Data = reader.bytes();
-              break;
-            default:
-              reader.skipType(tag & 7);
-              break;
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  PrivateKey4.encode = (obj) => {
-    return encodeMessage(obj, PrivateKey4.codec());
-  };
-  PrivateKey4.decode = (buf) => {
-    return decodeMessage(buf, PrivateKey4.codec());
-  };
-})(PrivateKey2 || (PrivateKey2 = {}));
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
-var Ed25519PublicKey2 = class {
-  static {
-    __name(this, "Ed25519PublicKey");
-  }
-  _key;
-  constructor(key) {
-    this._key = ensureKey2(key, PUBLIC_KEY_BYTE_LENGTH2);
-  }
-  verify(data, sig) {
-    return hashAndVerify4(this._key, sig, data);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PublicKey2.encode({
-      Type: KeyType2.Ed25519,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise2(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-};
-var Ed25519PrivateKey2 = class {
-  static {
-    __name(this, "Ed25519PrivateKey");
-  }
-  _key;
-  _publicKey;
-  // key       - 64 byte Uint8Array containing private key
-  // publicKey - 32 byte Uint8Array containing public key
-  constructor(key, publicKey) {
-    this._key = ensureKey2(key, PRIVATE_KEY_BYTE_LENGTH2);
-    this._publicKey = ensureKey2(publicKey, PUBLIC_KEY_BYTE_LENGTH2);
-  }
-  sign(message2) {
-    return hashAndSign4(this._key, message2);
-  }
-  get public() {
-    return new Ed25519PublicKey2(this._publicKey);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PrivateKey2.encode({
-      Type: KeyType2.Ed25519,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  async hash() {
-    const p = sha256.digest(this.bytes);
-    let bytes2;
-    if (isPromise2(p)) {
-      ({ bytes: bytes2 } = await p);
-    } else {
-      bytes2 = p.bytes;
-    }
-    return bytes2;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the identity multihash containing its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   *
-   * @returns {Promise<string>}
-   */
-  async id() {
-    const encoding = identity.digest(this.public.bytes);
-    return base58btc.encode(encoding.bytes).substring(1);
-  }
-  /**
-   * Exports the key into a password protected `format`
-   */
-  async export(password, format2 = "libp2p-key") {
-    if (format2 === "libp2p-key") {
-      return exporter2(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-function unmarshalEd25519PrivateKey2(bytes2) {
-  if (bytes2.length > PRIVATE_KEY_BYTE_LENGTH2) {
-    bytes2 = ensureKey2(bytes2, PRIVATE_KEY_BYTE_LENGTH2 + PUBLIC_KEY_BYTE_LENGTH2);
-    const privateKeyBytes2 = bytes2.subarray(0, PRIVATE_KEY_BYTE_LENGTH2);
-    const publicKeyBytes2 = bytes2.subarray(PRIVATE_KEY_BYTE_LENGTH2, bytes2.length);
-    return new Ed25519PrivateKey2(privateKeyBytes2, publicKeyBytes2);
-  }
-  bytes2 = ensureKey2(bytes2, PRIVATE_KEY_BYTE_LENGTH2);
-  const privateKeyBytes = bytes2.subarray(0, PRIVATE_KEY_BYTE_LENGTH2);
-  const publicKeyBytes = bytes2.subarray(PUBLIC_KEY_BYTE_LENGTH2);
-  return new Ed25519PrivateKey2(privateKeyBytes, publicKeyBytes);
-}
-__name(unmarshalEd25519PrivateKey2, "unmarshalEd25519PrivateKey");
-function unmarshalEd25519PublicKey2(bytes2) {
-  bytes2 = ensureKey2(bytes2, PUBLIC_KEY_BYTE_LENGTH2);
-  return new Ed25519PublicKey2(bytes2);
-}
-__name(unmarshalEd25519PublicKey2, "unmarshalEd25519PublicKey");
-async function generateKeyPair4() {
-  const { privateKey, publicKey } = generateKey4();
-  return new Ed25519PrivateKey2(privateKey, publicKey);
-}
-__name(generateKeyPair4, "generateKeyPair");
-async function generateKeyPairFromSeed2(seed) {
-  const { privateKey, publicKey } = generateKeyFromSeed2(seed);
-  return new Ed25519PrivateKey2(privateKey, publicKey);
-}
-__name(generateKeyPairFromSeed2, "generateKeyPairFromSeed");
-function ensureKey2(key, length3) {
-  key = Uint8Array.from(key ?? []);
-  if (key.length !== length3) {
-    throw new CodeError(`Key must be a Uint8Array of length ${length3}, got ${key.length}`, "ERR_INVALID_KEY_TYPE");
-  }
-  return key;
-}
-__name(ensureKey2, "ensureKey");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
-var rsa_class_exports2 = {};
-__export(rsa_class_exports2, {
-  MAX_RSA_KEY_SIZE: () => MAX_RSA_KEY_SIZE2,
-  RsaPrivateKey: () => RsaPrivateKey2,
-  RsaPublicKey: () => RsaPublicKey2,
-  fromJwk: () => fromJwk2,
-  generateKeyPair: () => generateKeyPair5,
-  unmarshalRsaPrivateKey: () => unmarshalRsaPrivateKey2,
-  unmarshalRsaPublicKey: () => unmarshalRsaPublicKey2
-});
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/random-bytes.js
-function randomBytes3(length3) {
-  if (isNaN(length3) || length3 <= 0) {
-    throw new CodeError("random bytes length must be a Number bigger than 0", "ERR_INVALID_LENGTH");
-  }
-  return randomBytes(length3);
-}
-__name(randomBytes3, "randomBytes");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
-var rsa_utils_exports2 = {};
-__export(rsa_utils_exports2, {
-  exportToPem: () => exportToPem2,
-  importFromPem: () => importFromPem2,
-  jwkToPkcs1: () => jwkToPkcs12,
-  jwkToPkix: () => jwkToPkix2,
-  pkcs1ToJwk: () => pkcs1ToJwk2,
-  pkixToJwk: () => pkixToJwk2
-});
-function pkcs1ToJwk2(bytes2) {
-  const { result } = fromBER(bytes2);
-  const values = result.valueBlock.value;
-  const key = {
-    n: toString2(bnToBuf2(values[1].toBigInt()), "base64url"),
-    e: toString2(bnToBuf2(values[2].toBigInt()), "base64url"),
-    d: toString2(bnToBuf2(values[3].toBigInt()), "base64url"),
-    p: toString2(bnToBuf2(values[4].toBigInt()), "base64url"),
-    q: toString2(bnToBuf2(values[5].toBigInt()), "base64url"),
-    dp: toString2(bnToBuf2(values[6].toBigInt()), "base64url"),
-    dq: toString2(bnToBuf2(values[7].toBigInt()), "base64url"),
-    qi: toString2(bnToBuf2(values[8].toBigInt()), "base64url"),
-    kty: "RSA",
-    alg: "RS256"
-  };
-  return key;
-}
-__name(pkcs1ToJwk2, "pkcs1ToJwk");
-function jwkToPkcs12(jwk) {
-  if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
-    throw new CodeError("JWK was missing components", "ERR_INVALID_PARAMETERS");
-  }
-  const root = new Sequence({
-    value: [
-      new Integer({ value: 0 }),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.n, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.e, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.d, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.p, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.q, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.dp, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.dq, "base64url"))),
-      Integer.fromBigInt(bufToBn2(fromString2(jwk.qi, "base64url")))
-    ]
-  });
-  const der = root.toBER();
-  return new Uint8Array(der, 0, der.byteLength);
-}
-__name(jwkToPkcs12, "jwkToPkcs1");
-function pkixToJwk2(bytes2) {
-  const { result } = fromBER(bytes2);
-  const values = result.valueBlock.value[1].valueBlock.value[0].valueBlock.value;
-  return {
-    kty: "RSA",
-    n: toString2(bnToBuf2(values[0].toBigInt()), "base64url"),
-    e: toString2(bnToBuf2(values[1].toBigInt()), "base64url")
-  };
-}
-__name(pkixToJwk2, "pkixToJwk");
-function jwkToPkix2(jwk) {
-  if (jwk.n == null || jwk.e == null) {
-    throw new CodeError("JWK was missing components", "ERR_INVALID_PARAMETERS");
-  }
-  const root = new Sequence({
-    value: [
-      new Sequence({
-        value: [
-          // rsaEncryption
-          new ObjectIdentifier({
-            value: "1.2.840.113549.1.1.1"
-          }),
-          new Null()
-        ]
-      }),
-      // this appears to be a bug in asn1js.js - this should really be a Sequence
-      // and not a BitString but it generates the same bytes as node-forge so 🤷‍♂️
-      new BitString({
-        valueHex: new Sequence({
-          value: [
-            Integer.fromBigInt(bufToBn2(fromString2(jwk.n, "base64url"))),
-            Integer.fromBigInt(bufToBn2(fromString2(jwk.e, "base64url")))
-          ]
-        }).toBER()
-      })
-    ]
-  });
-  const der = root.toBER();
-  return new Uint8Array(der, 0, der.byteLength);
-}
-__name(jwkToPkix2, "jwkToPkix");
-function bnToBuf2(bn) {
-  let hex = bn.toString(16);
-  if (hex.length % 2 > 0) {
-    hex = `0${hex}`;
-  }
-  const len = hex.length / 2;
-  const u8 = new Uint8Array(len);
-  let i = 0;
-  let j = 0;
-  while (i < len) {
-    u8[i] = parseInt(hex.slice(j, j + 2), 16);
-    i += 1;
-    j += 2;
-  }
-  return u8;
-}
-__name(bnToBuf2, "bnToBuf");
-function bufToBn2(u8) {
-  const hex = [];
-  u8.forEach(function(i) {
-    let h2 = i.toString(16);
-    if (h2.length % 2 > 0) {
-      h2 = `0${h2}`;
-    }
-    hex.push(h2);
-  });
-  return BigInt("0x" + hex.join(""));
-}
-__name(bufToBn2, "bufToBn");
-var SALT_LENGTH2 = 16;
-var KEY_SIZE2 = 32;
-var ITERATIONS2 = 1e4;
-async function exportToPem2(privateKey, password) {
-  const crypto3 = webcrypto_browser_default2.get();
-  const keyWrapper = new Sequence({
-    value: [
-      // version (0)
-      new Integer({ value: 0 }),
-      // privateKeyAlgorithm
-      new Sequence({
-        value: [
-          // rsaEncryption OID
-          new ObjectIdentifier({
-            value: "1.2.840.113549.1.1.1"
-          }),
-          new Null()
-        ]
-      }),
-      // PrivateKey
-      new OctetString({
-        valueHex: privateKey.marshal()
-      })
-    ]
-  });
-  const keyBuf = keyWrapper.toBER();
-  const keyArr = new Uint8Array(keyBuf, 0, keyBuf.byteLength);
-  const salt = randomBytes3(SALT_LENGTH2);
-  const encryptionKey = await pbkdf2Async(sha5122, password, salt, {
-    c: ITERATIONS2,
-    dkLen: KEY_SIZE2
-  });
-  const iv = randomBytes3(16);
-  const cryptoKey = await crypto3.subtle.importKey("raw", encryptionKey, "AES-CBC", false, ["encrypt"]);
-  const encrypted = await crypto3.subtle.encrypt({
-    name: "AES-CBC",
-    iv
-  }, cryptoKey, keyArr);
-  const pbkdf2Params = new Sequence({
-    value: [
-      // salt
-      new OctetString({ valueHex: salt }),
-      // iteration count
-      new Integer({ value: ITERATIONS2 }),
-      // key length
-      new Integer({ value: KEY_SIZE2 }),
-      // AlgorithmIdentifier
-      new Sequence({
-        value: [
-          // hmacWithSHA512
-          new ObjectIdentifier({ value: "1.2.840.113549.2.11" }),
-          new Null()
-        ]
-      })
-    ]
-  });
-  const encryptionAlgorithm = new Sequence({
-    value: [
-      // pkcs5PBES2
-      new ObjectIdentifier({
-        value: "1.2.840.113549.1.5.13"
-      }),
-      new Sequence({
-        value: [
-          // keyDerivationFunc
-          new Sequence({
-            value: [
-              // pkcs5PBKDF2
-              new ObjectIdentifier({
-                value: "1.2.840.113549.1.5.12"
-              }),
-              // PBKDF2-params
-              pbkdf2Params
-            ]
-          }),
-          // encryptionScheme
-          new Sequence({
-            value: [
-              // aes256-CBC
-              new ObjectIdentifier({
-                value: "2.16.840.1.101.3.4.1.42"
-              }),
-              // iv
-              new OctetString({
-                valueHex: iv
-              })
-            ]
-          })
-        ]
-      })
-    ]
-  });
-  const finalWrapper = new Sequence({
-    value: [
-      encryptionAlgorithm,
-      new OctetString({ valueHex: encrypted })
-    ]
-  });
-  const finalWrapperBuf = finalWrapper.toBER();
-  const finalWrapperArr = new Uint8Array(finalWrapperBuf, 0, finalWrapperBuf.byteLength);
-  return [
-    "-----BEGIN ENCRYPTED PRIVATE KEY-----",
-    ...toString2(finalWrapperArr, "base64pad").split(/(.{64})/).filter(Boolean),
-    "-----END ENCRYPTED PRIVATE KEY-----"
-  ].join("\n");
-}
-__name(exportToPem2, "exportToPem");
-async function importFromPem2(pem, password) {
-  const crypto3 = webcrypto_browser_default2.get();
-  let plaintext;
-  if (pem.includes("-----BEGIN ENCRYPTED PRIVATE KEY-----")) {
-    const key = fromString2(pem.replace("-----BEGIN ENCRYPTED PRIVATE KEY-----", "").replace("-----END ENCRYPTED PRIVATE KEY-----", "").replace(/\n/g, "").trim(), "base64pad");
-    const { result } = fromBER(key);
-    const { iv, salt, iterations, keySize: keySize4, cipherText } = findEncryptedPEMData2(result);
-    const encryptionKey = await pbkdf2Async(sha5122, password, salt, {
-      c: iterations,
-      dkLen: keySize4
-    });
-    const cryptoKey = await crypto3.subtle.importKey("raw", encryptionKey, "AES-CBC", false, ["decrypt"]);
-    const decrypted = toUint8Array2(await crypto3.subtle.decrypt({
-      name: "AES-CBC",
-      iv
-    }, cryptoKey, cipherText));
-    const { result: decryptedResult } = fromBER(decrypted);
-    plaintext = findPEMData2(decryptedResult);
-  } else if (pem.includes("-----BEGIN PRIVATE KEY-----")) {
-    const key = fromString2(pem.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace(/\n/g, "").trim(), "base64pad");
-    const { result } = fromBER(key);
-    plaintext = findPEMData2(result);
-  } else {
-    throw new CodeError("Could not parse private key from PEM data", "ERR_INVALID_PARAMETERS");
-  }
-  return unmarshalRsaPrivateKey2(plaintext);
-}
-__name(importFromPem2, "importFromPem");
-function findEncryptedPEMData2(root) {
-  const encryptionAlgorithm = root.valueBlock.value[0];
-  const scheme = encryptionAlgorithm.valueBlock.value[0].toString();
-  if (scheme !== "OBJECT IDENTIFIER : 1.2.840.113549.1.5.13") {
-    throw new CodeError("Only pkcs5PBES2 encrypted private keys are supported", "ERR_INVALID_PARAMS");
-  }
-  const keyDerivationFunc = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[0];
-  const keyDerivationFuncName = keyDerivationFunc.valueBlock.value[0].toString();
-  if (keyDerivationFuncName !== "OBJECT IDENTIFIER : 1.2.840.113549.1.5.12") {
-    throw new CodeError("Only pkcs5PBKDF2 key derivation functions are supported", "ERR_INVALID_PARAMS");
-  }
-  const pbkdf2Params = keyDerivationFunc.valueBlock.value[1];
-  const salt = toUint8Array2(pbkdf2Params.valueBlock.value[0].getValue());
-  let iterations = ITERATIONS2;
-  let keySize4 = KEY_SIZE2;
-  if (pbkdf2Params.valueBlock.value.length === 3) {
-    iterations = Number(pbkdf2Params.valueBlock.value[1].toBigInt());
-    keySize4 = Number(pbkdf2Params.valueBlock.value[2].toBigInt());
-  } else if (pbkdf2Params.valueBlock.value.length === 2) {
-    throw new CodeError("Could not derive key size and iterations from PEM file - please use @libp2p/rsa to re-import your key", "ERR_INVALID_PARAMS");
-  }
-  const encryptionScheme = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[1];
-  const encryptionSchemeName = encryptionScheme.valueBlock.value[0].toString();
-  if (encryptionSchemeName === "OBJECT IDENTIFIER : 1.2.840.113549.3.7") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 1.3.14.3.2.7") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.2") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.22") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.42") {
-  } else {
-    throw new CodeError("Only AES-CBC encryption schemes are supported", "ERR_INVALID_PARAMS");
-  }
-  const iv = toUint8Array2(encryptionScheme.valueBlock.value[1].getValue());
-  return {
-    cipherText: toUint8Array2(root.valueBlock.value[1].getValue()),
-    salt,
-    iterations,
-    keySize: keySize4,
-    iv
-  };
-}
-__name(findEncryptedPEMData2, "findEncryptedPEMData");
-function findPEMData2(seq) {
-  return toUint8Array2(seq.valueBlock.value[2].getValue());
-}
-__name(findPEMData2, "findPEMData");
-function toUint8Array2(buf) {
-  return new Uint8Array(buf, 0, buf.byteLength);
-}
-__name(toUint8Array2, "toUint8Array");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/rsa-browser.js
-async function generateKey5(bits) {
-  const pair = await webcrypto_browser_default2.get().subtle.generateKey({
-    name: "RSASSA-PKCS1-v1_5",
-    modulusLength: bits,
-    publicExponent: new Uint8Array([1, 0, 1]),
-    hash: { name: "SHA-256" }
-  }, true, ["sign", "verify"]);
-  const keys = await exportKey2(pair);
-  return {
-    privateKey: keys[0],
-    publicKey: keys[1]
-  };
-}
-__name(generateKey5, "generateKey");
-async function unmarshalPrivateKey3(key) {
-  const privateKey = await webcrypto_browser_default2.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, true, ["sign"]);
-  const pair = [
-    privateKey,
-    await derivePublicFromPrivate2(key)
-  ];
-  const keys = await exportKey2({
-    privateKey: pair[0],
-    publicKey: pair[1]
-  });
-  return {
-    privateKey: keys[0],
-    publicKey: keys[1]
-  };
-}
-__name(unmarshalPrivateKey3, "unmarshalPrivateKey");
-async function hashAndSign5(key, msg) {
-  const privateKey = await webcrypto_browser_default2.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, false, ["sign"]);
-  const sig = await webcrypto_browser_default2.get().subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, privateKey, msg instanceof Uint8Array ? msg : msg.subarray());
-  return new Uint8Array(sig, 0, sig.byteLength);
-}
-__name(hashAndSign5, "hashAndSign");
-async function hashAndVerify5(key, sig, msg) {
-  const publicKey = await webcrypto_browser_default2.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, false, ["verify"]);
-  return webcrypto_browser_default2.get().subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, publicKey, sig, msg instanceof Uint8Array ? msg : msg.subarray());
-}
-__name(hashAndVerify5, "hashAndVerify");
-async function exportKey2(pair) {
-  if (pair.privateKey == null || pair.publicKey == null) {
-    throw new CodeError("Private and public key are required", "ERR_INVALID_PARAMETERS");
-  }
-  return Promise.all([
-    webcrypto_browser_default2.get().subtle.exportKey("jwk", pair.privateKey),
-    webcrypto_browser_default2.get().subtle.exportKey("jwk", pair.publicKey)
-  ]);
-}
-__name(exportKey2, "exportKey");
-async function derivePublicFromPrivate2(jwKey) {
-  return webcrypto_browser_default2.get().subtle.importKey("jwk", {
-    kty: jwKey.kty,
-    n: jwKey.n,
-    e: jwKey.e
-  }, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, true, ["verify"]);
-}
-__name(derivePublicFromPrivate2, "derivePublicFromPrivate");
-function keySize2(jwk) {
-  if (jwk.kty !== "RSA") {
-    throw new CodeError("invalid key type", "ERR_INVALID_KEY_TYPE");
-  } else if (jwk.n == null) {
-    throw new CodeError("invalid key modulus", "ERR_INVALID_KEY_MODULUS");
-  }
-  const bytes2 = fromString2(jwk.n, "base64url");
-  return bytes2.length * 8;
-}
-__name(keySize2, "keySize");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
-var MAX_RSA_KEY_SIZE2 = 8192;
-var RsaPublicKey2 = class {
-  static {
-    __name(this, "RsaPublicKey");
-  }
-  _key;
-  constructor(key) {
-    this._key = key;
-  }
-  verify(data, sig) {
-    return hashAndVerify5(this._key, sig, data);
-  }
-  marshal() {
-    return rsa_utils_exports2.jwkToPkix(this._key);
-  }
-  get bytes() {
-    return PublicKey2.encode({
-      Type: KeyType2.RSA,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise2(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-};
-var RsaPrivateKey2 = class {
-  static {
-    __name(this, "RsaPrivateKey");
-  }
-  _key;
-  _publicKey;
-  constructor(key, publicKey) {
-    this._key = key;
-    this._publicKey = publicKey;
-  }
-  genSecret() {
-    return randomBytes3(16);
-  }
-  sign(message2) {
-    return hashAndSign5(this._key, message2);
-  }
-  get public() {
-    if (this._publicKey == null) {
-      throw new CodeError("public key not provided", "ERR_PUBKEY_NOT_PROVIDED");
-    }
-    return new RsaPublicKey2(this._publicKey);
-  }
-  marshal() {
-    return rsa_utils_exports2.jwkToPkcs1(this._key);
-  }
-  get bytes() {
-    return PrivateKey2.encode({
-      Type: KeyType2.RSA,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise2(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   */
-  async id() {
-    const hash2 = await this.public.hash();
-    return toString2(hash2, "base58btc");
-  }
-  /**
-   * Exports the key as libp2p-key - a aes-gcm encrypted value with the key
-   * derived from the password.
-   *
-   * To export it as a password protected PEM file, please use the `exportPEM`
-   * function from `@libp2p/rsa`.
-   */
-  async export(password, format2 = "pkcs-8") {
-    if (format2 === "pkcs-8") {
-      return rsa_utils_exports2.exportToPem(this, password);
-    } else if (format2 === "libp2p-key") {
-      return exporter2(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-async function unmarshalRsaPrivateKey2(bytes2) {
-  const jwk = rsa_utils_exports2.pkcs1ToJwk(bytes2);
-  if (keySize2(jwk) > MAX_RSA_KEY_SIZE2) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await unmarshalPrivateKey3(jwk);
-  return new RsaPrivateKey2(keys.privateKey, keys.publicKey);
-}
-__name(unmarshalRsaPrivateKey2, "unmarshalRsaPrivateKey");
-function unmarshalRsaPublicKey2(bytes2) {
-  const jwk = rsa_utils_exports2.pkixToJwk(bytes2);
-  if (keySize2(jwk) > MAX_RSA_KEY_SIZE2) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  return new RsaPublicKey2(jwk);
-}
-__name(unmarshalRsaPublicKey2, "unmarshalRsaPublicKey");
-async function fromJwk2(jwk) {
-  if (keySize2(jwk) > MAX_RSA_KEY_SIZE2) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await unmarshalPrivateKey3(jwk);
-  return new RsaPrivateKey2(keys.privateKey, keys.publicKey);
-}
-__name(fromJwk2, "fromJwk");
-async function generateKeyPair5(bits) {
-  if (bits > MAX_RSA_KEY_SIZE2) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await generateKey5(bits);
-  return new RsaPrivateKey2(keys.privateKey, keys.publicKey);
-}
-__name(generateKeyPair5, "generateKeyPair");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
-var secp256k1_class_exports2 = {};
-__export(secp256k1_class_exports2, {
-  Secp256k1PrivateKey: () => Secp256k1PrivateKey2,
-  Secp256k1PublicKey: () => Secp256k1PublicKey2,
-  generateKeyPair: () => generateKeyPair6,
-  unmarshalSecp256k1PrivateKey: () => unmarshalSecp256k1PrivateKey2,
-  unmarshalSecp256k1PublicKey: () => unmarshalSecp256k1PublicKey2
-});
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-browser.js
-function generateKey6() {
-  return secp256k1.utils.randomPrivateKey();
-}
-__name(generateKey6, "generateKey");
-function hashAndSign6(key, msg) {
-  const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
-  if (isPromise2(p)) {
-    return p.then(({ digest: digest2 }) => secp256k1.sign(digest2, key).toDERRawBytes()).catch((err) => {
-      throw new CodeError(String(err), "ERR_INVALID_INPUT");
-    });
-  }
-  try {
-    return secp256k1.sign(p.digest, key).toDERRawBytes();
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_INPUT");
-  }
-}
-__name(hashAndSign6, "hashAndSign");
-function hashAndVerify6(key, sig, msg) {
-  const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
-  if (isPromise2(p)) {
-    return p.then(({ digest: digest2 }) => secp256k1.verify(sig, digest2, key)).catch((err) => {
-      throw new CodeError(String(err), "ERR_INVALID_INPUT");
-    });
-  }
-  try {
-    return secp256k1.verify(sig, p.digest, key);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_INPUT");
-  }
-}
-__name(hashAndVerify6, "hashAndVerify");
-function compressPublicKey2(key) {
-  const point = secp256k1.ProjectivePoint.fromHex(key).toRawBytes(true);
-  return point;
-}
-__name(compressPublicKey2, "compressPublicKey");
-function validatePrivateKey2(key) {
-  try {
-    secp256k1.getPublicKey(key, true);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PRIVATE_KEY");
-  }
-}
-__name(validatePrivateKey2, "validatePrivateKey");
-function validatePublicKey2(key) {
-  try {
-    secp256k1.ProjectivePoint.fromHex(key);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PUBLIC_KEY");
-  }
-}
-__name(validatePublicKey2, "validatePublicKey");
-function computePublicKey2(privateKey) {
-  try {
-    return secp256k1.getPublicKey(privateKey, true);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PRIVATE_KEY");
-  }
-}
-__name(computePublicKey2, "computePublicKey");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
-var Secp256k1PublicKey2 = class {
-  static {
-    __name(this, "Secp256k1PublicKey");
-  }
-  _key;
-  constructor(key) {
-    validatePublicKey2(key);
-    this._key = key;
-  }
-  verify(data, sig) {
-    return hashAndVerify6(this._key, sig, data);
-  }
-  marshal() {
-    return compressPublicKey2(this._key);
-  }
-  get bytes() {
-    return PublicKey2.encode({
-      Type: KeyType2.Secp256k1,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  async hash() {
-    const p = sha256.digest(this.bytes);
-    let bytes2;
-    if (isPromise2(p)) {
-      ({ bytes: bytes2 } = await p);
-    } else {
-      bytes2 = p.bytes;
-    }
-    return bytes2;
-  }
-};
-var Secp256k1PrivateKey2 = class {
-  static {
-    __name(this, "Secp256k1PrivateKey");
-  }
-  _key;
-  _publicKey;
-  constructor(key, publicKey) {
-    this._key = key;
-    this._publicKey = publicKey ?? computePublicKey2(key);
-    validatePrivateKey2(this._key);
-    validatePublicKey2(this._publicKey);
-  }
-  sign(message2) {
-    return hashAndSign6(this._key, message2);
-  }
-  get public() {
-    return new Secp256k1PublicKey2(this._publicKey);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PrivateKey2.encode({
-      Type: KeyType2.Secp256k1,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise2(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   */
-  async id() {
-    const hash2 = await this.public.hash();
-    return toString2(hash2, "base58btc");
-  }
-  /**
-   * Exports the key into a password protected `format`
-   */
-  async export(password, format2 = "libp2p-key") {
-    if (format2 === "libp2p-key") {
-      return exporter2(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-function unmarshalSecp256k1PrivateKey2(bytes2) {
-  return new Secp256k1PrivateKey2(bytes2);
-}
-__name(unmarshalSecp256k1PrivateKey2, "unmarshalSecp256k1PrivateKey");
-function unmarshalSecp256k1PublicKey2(bytes2) {
-  return new Secp256k1PublicKey2(bytes2);
-}
-__name(unmarshalSecp256k1PublicKey2, "unmarshalSecp256k1PublicKey");
-async function generateKeyPair6() {
-  const privateKeyBytes = generateKey6();
-  return new Secp256k1PrivateKey2(privateKeyBytes);
-}
-__name(generateKeyPair6, "generateKeyPair");
-
-// node_modules/@libp2p/peer-id-factory/node_modules/@libp2p/crypto/dist/src/keys/index.js
-var supportedKeys2 = {
-  rsa: rsa_class_exports2,
-  ed25519: ed25519_class_exports2,
-  secp256k1: secp256k1_class_exports2
-};
-function unsupportedKey2(type) {
-  const supported = Object.keys(supportedKeys2).join(" / ");
-  return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, "ERR_UNSUPPORTED_KEY_TYPE");
-}
-__name(unsupportedKey2, "unsupportedKey");
-function typeToKey(type) {
-  type = type.toLowerCase();
-  if (type === "rsa" || type === "ed25519" || type === "secp256k1") {
-    return supportedKeys2[type];
-  }
-  throw unsupportedKey2(type);
-}
-__name(typeToKey, "typeToKey");
-async function generateKeyPair7(type, bits) {
-  return typeToKey(type).generateKeyPair(bits ?? 2048);
-}
-__name(generateKeyPair7, "generateKeyPair");
-function marshalPublicKey(key, type) {
-  type = (type ?? "rsa").toLowerCase();
-  typeToKey(type);
-  return key.bytes;
-}
-__name(marshalPublicKey, "marshalPublicKey");
-function marshalPrivateKey(key, type) {
-  type = (type ?? "rsa").toLowerCase();
-  typeToKey(type);
-  return key.bytes;
-}
-__name(marshalPrivateKey, "marshalPrivateKey");
-
-// node_modules/@libp2p/peer-id-factory/dist/src/index.js
-var createEd25519PeerId = /* @__PURE__ */ __name(async () => {
-  const key = await generateKeyPair7("Ed25519");
-  const id = await createFromPrivKey(key);
-  if (id.type === "Ed25519") {
-    return id;
-  }
-  throw new Error(`Generated unexpected PeerId type "${id.type}"`);
-}, "createEd25519PeerId");
-async function createFromPrivKey(privateKey) {
-  return peerIdFromKeys(marshalPublicKey(privateKey.public), marshalPrivateKey(privateKey));
-}
-__name(createFromPrivKey, "createFromPrivKey");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
-var ed25519_class_exports3 = {};
-__export(ed25519_class_exports3, {
-  Ed25519PrivateKey: () => Ed25519PrivateKey3,
-  Ed25519PublicKey: () => Ed25519PublicKey3,
-  generateKeyPair: () => generateKeyPair8,
-  generateKeyPairFromSeed: () => generateKeyPairFromSeed3,
-  unmarshalEd25519PrivateKey: () => unmarshalEd25519PrivateKey3,
-  unmarshalEd25519PublicKey: () => unmarshalEd25519PublicKey3
-});
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/util.js
-function isPromise3(thing) {
-  if (thing == null) {
-    return false;
-  }
-  return typeof thing.then === "function" && typeof thing.catch === "function" && typeof thing.finally === "function";
-}
-__name(isPromise3, "isPromise");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/ed25519-browser.js
-var PUBLIC_KEY_BYTE_LENGTH3 = 32;
-var PRIVATE_KEY_BYTE_LENGTH3 = 64;
-var KEYS_BYTE_LENGTH3 = 32;
-function generateKey7() {
-  const privateKeyRaw = ed25519.utils.randomPrivateKey();
-  const publicKey = ed25519.getPublicKey(privateKeyRaw);
-  const privateKey = concatKeys3(privateKeyRaw, publicKey);
-  return {
-    privateKey,
-    publicKey
-  };
-}
-__name(generateKey7, "generateKey");
-function generateKeyFromSeed3(seed) {
-  if (seed.length !== KEYS_BYTE_LENGTH3) {
-    throw new TypeError('"seed" must be 32 bytes in length.');
-  } else if (!(seed instanceof Uint8Array)) {
-    throw new TypeError('"seed" must be a node.js Buffer, or Uint8Array.');
-  }
-  const privateKeyRaw = seed;
-  const publicKey = ed25519.getPublicKey(privateKeyRaw);
-  const privateKey = concatKeys3(privateKeyRaw, publicKey);
-  return {
-    privateKey,
-    publicKey
-  };
-}
-__name(generateKeyFromSeed3, "generateKeyFromSeed");
-function hashAndSign7(privateKey, msg) {
-  const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH3);
-  return ed25519.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw);
-}
-__name(hashAndSign7, "hashAndSign");
-function hashAndVerify7(publicKey, sig, msg) {
-  return ed25519.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey);
-}
-__name(hashAndVerify7, "hashAndVerify");
-function concatKeys3(privateKeyRaw, publicKey) {
-  const privateKey = new Uint8Array(PRIVATE_KEY_BYTE_LENGTH3);
-  for (let i = 0; i < KEYS_BYTE_LENGTH3; i++) {
-    privateKey[i] = privateKeyRaw[i];
-    privateKey[KEYS_BYTE_LENGTH3 + i] = publicKey[i];
-  }
-  return privateKey;
-}
-__name(concatKeys3, "concatKeys");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/webcrypto-browser.js
-var webcrypto_browser_default3 = {
-  get(win = globalThis) {
-    const nativeCrypto = win.crypto;
-    if (nativeCrypto?.subtle == null) {
-      throw Object.assign(new Error("Missing Web Crypto API. The most likely cause of this error is that this page is being accessed from an insecure context (i.e. not HTTPS). For more information and possible resolutions see https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/README.md#web-crypto-api"), { code: "ERR_MISSING_WEB_CRYPTO" });
-    }
-    return nativeCrypto;
-  }
-};
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/ciphers/aes-gcm.browser.js
-var derivedEmptyPasswordKey3 = { alg: "A128GCM", ext: true, k: "scm9jmO_4BJAgdwWGVulLg", key_ops: ["encrypt", "decrypt"], kty: "oct" };
-function create4(opts) {
-  const algorithm = opts?.algorithm ?? "AES-GCM";
-  let keyLength = opts?.keyLength ?? 16;
-  const nonceLength = opts?.nonceLength ?? 12;
-  const digest2 = opts?.digest ?? "SHA-256";
-  const saltLength = opts?.saltLength ?? 16;
-  const iterations = opts?.iterations ?? 32767;
-  const crypto3 = webcrypto_browser_default3.get();
-  keyLength *= 8;
-  async function encrypt(data, password) {
-    const salt = crypto3.getRandomValues(new Uint8Array(saltLength));
-    const nonce = crypto3.getRandomValues(new Uint8Array(nonceLength));
-    const aesGcm = { name: algorithm, iv: nonce };
-    if (typeof password === "string") {
-      password = fromString2(password);
-    }
-    let cryptoKey;
-    if (password.length === 0) {
-      cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey3, { name: "AES-GCM" }, true, ["encrypt"]);
-      try {
-        const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-        const runtimeDerivedEmptyPassword = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-        cryptoKey = await crypto3.subtle.deriveKey(deriveParams, runtimeDerivedEmptyPassword, { name: algorithm, length: keyLength }, true, ["encrypt"]);
-      } catch {
-        cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey3, { name: "AES-GCM" }, true, ["encrypt"]);
-      }
-    } else {
-      const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-      const rawKey = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-      cryptoKey = await crypto3.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ["encrypt"]);
-    }
-    const ciphertext = await crypto3.subtle.encrypt(aesGcm, cryptoKey, data);
-    return concat([salt, aesGcm.iv, new Uint8Array(ciphertext)]);
-  }
-  __name(encrypt, "encrypt");
-  async function decrypt(data, password) {
-    const salt = data.subarray(0, saltLength);
-    const nonce = data.subarray(saltLength, saltLength + nonceLength);
-    const ciphertext = data.subarray(saltLength + nonceLength);
-    const aesGcm = { name: algorithm, iv: nonce };
-    if (typeof password === "string") {
-      password = fromString2(password);
-    }
-    let cryptoKey;
-    if (password.length === 0) {
-      try {
-        const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-        const runtimeDerivedEmptyPassword = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-        cryptoKey = await crypto3.subtle.deriveKey(deriveParams, runtimeDerivedEmptyPassword, { name: algorithm, length: keyLength }, true, ["decrypt"]);
-      } catch {
-        cryptoKey = await crypto3.subtle.importKey("jwk", derivedEmptyPasswordKey3, { name: "AES-GCM" }, true, ["decrypt"]);
-      }
-    } else {
-      const deriveParams = { name: "PBKDF2", salt, iterations, hash: { name: digest2 } };
-      const rawKey = await crypto3.subtle.importKey("raw", password, { name: "PBKDF2" }, false, ["deriveKey"]);
-      cryptoKey = await crypto3.subtle.deriveKey(deriveParams, rawKey, { name: algorithm, length: keyLength }, true, ["decrypt"]);
-    }
-    const plaintext = await crypto3.subtle.decrypt(aesGcm, cryptoKey, ciphertext);
-    return new Uint8Array(plaintext);
-  }
-  __name(decrypt, "decrypt");
-  const cipher = {
-    encrypt,
-    decrypt
-  };
-  return cipher;
-}
-__name(create4, "create");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/exporter.js
-async function exporter3(privateKey, password) {
-  const cipher = create4();
-  const encryptedKey = await cipher.encrypt(privateKey, password);
-  return base64.encode(encryptedKey);
-}
-__name(exporter3, "exporter");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/keys.js
-var KeyType3;
-(function(KeyType4) {
-  KeyType4["RSA"] = "RSA";
-  KeyType4["Ed25519"] = "Ed25519";
-  KeyType4["Secp256k1"] = "Secp256k1";
-})(KeyType3 || (KeyType3 = {}));
-var __KeyTypeValues3;
-(function(__KeyTypeValues4) {
-  __KeyTypeValues4[__KeyTypeValues4["RSA"] = 0] = "RSA";
-  __KeyTypeValues4[__KeyTypeValues4["Ed25519"] = 1] = "Ed25519";
-  __KeyTypeValues4[__KeyTypeValues4["Secp256k1"] = 2] = "Secp256k1";
-})(__KeyTypeValues3 || (__KeyTypeValues3 = {}));
-(function(KeyType4) {
-  KeyType4.codec = () => {
-    return enumeration(__KeyTypeValues3);
-  };
-})(KeyType3 || (KeyType3 = {}));
-var PublicKey3;
-(function(PublicKey4) {
-  let _codec;
-  PublicKey4.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w2.fork();
-        }
-        if (obj.Type != null) {
-          w2.uint32(8);
-          KeyType3.codec().encode(obj.Type, w2);
-        }
-        if (obj.Data != null) {
-          w2.uint32(18);
-          w2.bytes(obj.Data);
-        }
-        if (opts.lengthDelimited !== false) {
-          w2.ldelim();
-        }
-      }, (reader, length3) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1:
-              obj.Type = KeyType3.codec().decode(reader);
-              break;
-            case 2:
-              obj.Data = reader.bytes();
-              break;
-            default:
-              reader.skipType(tag & 7);
-              break;
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  PublicKey4.encode = (obj) => {
-    return encodeMessage(obj, PublicKey4.codec());
-  };
-  PublicKey4.decode = (buf) => {
-    return decodeMessage(buf, PublicKey4.codec());
-  };
-})(PublicKey3 || (PublicKey3 = {}));
-var PrivateKey3;
-(function(PrivateKey4) {
-  let _codec;
-  PrivateKey4.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w2.fork();
-        }
-        if (obj.Type != null) {
-          w2.uint32(8);
-          KeyType3.codec().encode(obj.Type, w2);
-        }
-        if (obj.Data != null) {
-          w2.uint32(18);
-          w2.bytes(obj.Data);
-        }
-        if (opts.lengthDelimited !== false) {
-          w2.ldelim();
-        }
-      }, (reader, length3) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1:
-              obj.Type = KeyType3.codec().decode(reader);
-              break;
-            case 2:
-              obj.Data = reader.bytes();
-              break;
-            default:
-              reader.skipType(tag & 7);
-              break;
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  PrivateKey4.encode = (obj) => {
-    return encodeMessage(obj, PrivateKey4.codec());
-  };
-  PrivateKey4.decode = (buf) => {
-    return decodeMessage(buf, PrivateKey4.codec());
-  };
-})(PrivateKey3 || (PrivateKey3 = {}));
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/ed25519-class.js
-var Ed25519PublicKey3 = class {
-  static {
-    __name(this, "Ed25519PublicKey");
-  }
-  _key;
-  constructor(key) {
-    this._key = ensureKey3(key, PUBLIC_KEY_BYTE_LENGTH3);
-  }
-  verify(data, sig) {
-    return hashAndVerify7(this._key, sig, data);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PublicKey3.encode({
-      Type: KeyType3.Ed25519,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise3(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-};
-var Ed25519PrivateKey3 = class {
-  static {
-    __name(this, "Ed25519PrivateKey");
-  }
-  _key;
-  _publicKey;
-  // key       - 64 byte Uint8Array containing private key
-  // publicKey - 32 byte Uint8Array containing public key
-  constructor(key, publicKey) {
-    this._key = ensureKey3(key, PRIVATE_KEY_BYTE_LENGTH3);
-    this._publicKey = ensureKey3(publicKey, PUBLIC_KEY_BYTE_LENGTH3);
-  }
-  sign(message2) {
-    return hashAndSign7(this._key, message2);
-  }
-  get public() {
-    return new Ed25519PublicKey3(this._publicKey);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PrivateKey3.encode({
-      Type: KeyType3.Ed25519,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  async hash() {
-    const p = sha256.digest(this.bytes);
-    let bytes2;
-    if (isPromise3(p)) {
-      ({ bytes: bytes2 } = await p);
-    } else {
-      bytes2 = p.bytes;
-    }
-    return bytes2;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the identity multihash containing its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   *
-   * @returns {Promise<string>}
-   */
-  async id() {
-    const encoding = identity.digest(this.public.bytes);
-    return base58btc.encode(encoding.bytes).substring(1);
-  }
-  /**
-   * Exports the key into a password protected `format`
-   */
-  async export(password, format2 = "libp2p-key") {
-    if (format2 === "libp2p-key") {
-      return exporter3(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-function unmarshalEd25519PrivateKey3(bytes2) {
-  if (bytes2.length > PRIVATE_KEY_BYTE_LENGTH3) {
-    bytes2 = ensureKey3(bytes2, PRIVATE_KEY_BYTE_LENGTH3 + PUBLIC_KEY_BYTE_LENGTH3);
-    const privateKeyBytes2 = bytes2.subarray(0, PRIVATE_KEY_BYTE_LENGTH3);
-    const publicKeyBytes2 = bytes2.subarray(PRIVATE_KEY_BYTE_LENGTH3, bytes2.length);
-    return new Ed25519PrivateKey3(privateKeyBytes2, publicKeyBytes2);
-  }
-  bytes2 = ensureKey3(bytes2, PRIVATE_KEY_BYTE_LENGTH3);
-  const privateKeyBytes = bytes2.subarray(0, PRIVATE_KEY_BYTE_LENGTH3);
-  const publicKeyBytes = bytes2.subarray(PUBLIC_KEY_BYTE_LENGTH3);
-  return new Ed25519PrivateKey3(privateKeyBytes, publicKeyBytes);
-}
-__name(unmarshalEd25519PrivateKey3, "unmarshalEd25519PrivateKey");
-function unmarshalEd25519PublicKey3(bytes2) {
-  bytes2 = ensureKey3(bytes2, PUBLIC_KEY_BYTE_LENGTH3);
-  return new Ed25519PublicKey3(bytes2);
-}
-__name(unmarshalEd25519PublicKey3, "unmarshalEd25519PublicKey");
-async function generateKeyPair8() {
-  const { privateKey, publicKey } = generateKey7();
-  return new Ed25519PrivateKey3(privateKey, publicKey);
-}
-__name(generateKeyPair8, "generateKeyPair");
-async function generateKeyPairFromSeed3(seed) {
-  const { privateKey, publicKey } = generateKeyFromSeed3(seed);
-  return new Ed25519PrivateKey3(privateKey, publicKey);
-}
-__name(generateKeyPairFromSeed3, "generateKeyPairFromSeed");
-function ensureKey3(key, length3) {
-  key = Uint8Array.from(key ?? []);
-  if (key.length !== length3) {
-    throw new CodeError(`Key must be a Uint8Array of length ${length3}, got ${key.length}`, "ERR_INVALID_KEY_TYPE");
-  }
-  return key;
-}
-__name(ensureKey3, "ensureKey");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
-var rsa_class_exports3 = {};
-__export(rsa_class_exports3, {
-  MAX_RSA_KEY_SIZE: () => MAX_RSA_KEY_SIZE3,
-  RsaPrivateKey: () => RsaPrivateKey3,
-  RsaPublicKey: () => RsaPublicKey3,
-  fromJwk: () => fromJwk3,
-  generateKeyPair: () => generateKeyPair9,
-  unmarshalRsaPrivateKey: () => unmarshalRsaPrivateKey3,
-  unmarshalRsaPublicKey: () => unmarshalRsaPublicKey3
-});
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/random-bytes.js
-function randomBytes4(length3) {
-  if (isNaN(length3) || length3 <= 0) {
-    throw new CodeError("random bytes length must be a Number bigger than 0", "ERR_INVALID_LENGTH");
-  }
-  return randomBytes(length3);
-}
-__name(randomBytes4, "randomBytes");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-utils.js
-var rsa_utils_exports3 = {};
-__export(rsa_utils_exports3, {
-  exportToPem: () => exportToPem3,
-  importFromPem: () => importFromPem3,
-  jwkToPkcs1: () => jwkToPkcs13,
-  jwkToPkix: () => jwkToPkix3,
-  pkcs1ToJwk: () => pkcs1ToJwk3,
-  pkixToJwk: () => pkixToJwk3
-});
-function pkcs1ToJwk3(bytes2) {
-  const { result } = fromBER(bytes2);
-  const values = result.valueBlock.value;
-  const key = {
-    n: toString2(bnToBuf3(values[1].toBigInt()), "base64url"),
-    e: toString2(bnToBuf3(values[2].toBigInt()), "base64url"),
-    d: toString2(bnToBuf3(values[3].toBigInt()), "base64url"),
-    p: toString2(bnToBuf3(values[4].toBigInt()), "base64url"),
-    q: toString2(bnToBuf3(values[5].toBigInt()), "base64url"),
-    dp: toString2(bnToBuf3(values[6].toBigInt()), "base64url"),
-    dq: toString2(bnToBuf3(values[7].toBigInt()), "base64url"),
-    qi: toString2(bnToBuf3(values[8].toBigInt()), "base64url"),
-    kty: "RSA",
-    alg: "RS256"
-  };
-  return key;
-}
-__name(pkcs1ToJwk3, "pkcs1ToJwk");
-function jwkToPkcs13(jwk) {
-  if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
-    throw new CodeError("JWK was missing components", "ERR_INVALID_PARAMETERS");
-  }
-  const root = new Sequence({
-    value: [
-      new Integer({ value: 0 }),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.n, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.e, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.d, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.p, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.q, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.dp, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.dq, "base64url"))),
-      Integer.fromBigInt(bufToBn3(fromString2(jwk.qi, "base64url")))
-    ]
-  });
-  const der = root.toBER();
-  return new Uint8Array(der, 0, der.byteLength);
-}
-__name(jwkToPkcs13, "jwkToPkcs1");
-function pkixToJwk3(bytes2) {
-  const { result } = fromBER(bytes2);
-  const values = result.valueBlock.value[1].valueBlock.value[0].valueBlock.value;
-  return {
-    kty: "RSA",
-    n: toString2(bnToBuf3(values[0].toBigInt()), "base64url"),
-    e: toString2(bnToBuf3(values[1].toBigInt()), "base64url")
-  };
-}
-__name(pkixToJwk3, "pkixToJwk");
-function jwkToPkix3(jwk) {
-  if (jwk.n == null || jwk.e == null) {
-    throw new CodeError("JWK was missing components", "ERR_INVALID_PARAMETERS");
-  }
-  const root = new Sequence({
-    value: [
-      new Sequence({
-        value: [
-          // rsaEncryption
-          new ObjectIdentifier({
-            value: "1.2.840.113549.1.1.1"
-          }),
-          new Null()
-        ]
-      }),
-      // this appears to be a bug in asn1js.js - this should really be a Sequence
-      // and not a BitString but it generates the same bytes as node-forge so 🤷‍♂️
-      new BitString({
-        valueHex: new Sequence({
-          value: [
-            Integer.fromBigInt(bufToBn3(fromString2(jwk.n, "base64url"))),
-            Integer.fromBigInt(bufToBn3(fromString2(jwk.e, "base64url")))
-          ]
-        }).toBER()
-      })
-    ]
-  });
-  const der = root.toBER();
-  return new Uint8Array(der, 0, der.byteLength);
-}
-__name(jwkToPkix3, "jwkToPkix");
-function bnToBuf3(bn) {
-  let hex = bn.toString(16);
-  if (hex.length % 2 > 0) {
-    hex = `0${hex}`;
-  }
-  const len = hex.length / 2;
-  const u8 = new Uint8Array(len);
-  let i = 0;
-  let j = 0;
-  while (i < len) {
-    u8[i] = parseInt(hex.slice(j, j + 2), 16);
-    i += 1;
-    j += 2;
-  }
-  return u8;
-}
-__name(bnToBuf3, "bnToBuf");
-function bufToBn3(u8) {
-  const hex = [];
-  u8.forEach(function(i) {
-    let h2 = i.toString(16);
-    if (h2.length % 2 > 0) {
-      h2 = `0${h2}`;
-    }
-    hex.push(h2);
-  });
-  return BigInt("0x" + hex.join(""));
-}
-__name(bufToBn3, "bufToBn");
-var SALT_LENGTH3 = 16;
-var KEY_SIZE3 = 32;
-var ITERATIONS3 = 1e4;
-async function exportToPem3(privateKey, password) {
-  const crypto3 = webcrypto_browser_default3.get();
-  const keyWrapper = new Sequence({
-    value: [
-      // version (0)
-      new Integer({ value: 0 }),
-      // privateKeyAlgorithm
-      new Sequence({
-        value: [
-          // rsaEncryption OID
-          new ObjectIdentifier({
-            value: "1.2.840.113549.1.1.1"
-          }),
-          new Null()
-        ]
-      }),
-      // PrivateKey
-      new OctetString({
-        valueHex: privateKey.marshal()
-      })
-    ]
-  });
-  const keyBuf = keyWrapper.toBER();
-  const keyArr = new Uint8Array(keyBuf, 0, keyBuf.byteLength);
-  const salt = randomBytes4(SALT_LENGTH3);
-  const encryptionKey = await pbkdf2Async(sha5122, password, salt, {
-    c: ITERATIONS3,
-    dkLen: KEY_SIZE3
-  });
-  const iv = randomBytes4(16);
-  const cryptoKey = await crypto3.subtle.importKey("raw", encryptionKey, "AES-CBC", false, ["encrypt"]);
-  const encrypted = await crypto3.subtle.encrypt({
-    name: "AES-CBC",
-    iv
-  }, cryptoKey, keyArr);
-  const pbkdf2Params = new Sequence({
-    value: [
-      // salt
-      new OctetString({ valueHex: salt }),
-      // iteration count
-      new Integer({ value: ITERATIONS3 }),
-      // key length
-      new Integer({ value: KEY_SIZE3 }),
-      // AlgorithmIdentifier
-      new Sequence({
-        value: [
-          // hmacWithSHA512
-          new ObjectIdentifier({ value: "1.2.840.113549.2.11" }),
-          new Null()
-        ]
-      })
-    ]
-  });
-  const encryptionAlgorithm = new Sequence({
-    value: [
-      // pkcs5PBES2
-      new ObjectIdentifier({
-        value: "1.2.840.113549.1.5.13"
-      }),
-      new Sequence({
-        value: [
-          // keyDerivationFunc
-          new Sequence({
-            value: [
-              // pkcs5PBKDF2
-              new ObjectIdentifier({
-                value: "1.2.840.113549.1.5.12"
-              }),
-              // PBKDF2-params
-              pbkdf2Params
-            ]
-          }),
-          // encryptionScheme
-          new Sequence({
-            value: [
-              // aes256-CBC
-              new ObjectIdentifier({
-                value: "2.16.840.1.101.3.4.1.42"
-              }),
-              // iv
-              new OctetString({
-                valueHex: iv
-              })
-            ]
-          })
-        ]
-      })
-    ]
-  });
-  const finalWrapper = new Sequence({
-    value: [
-      encryptionAlgorithm,
-      new OctetString({ valueHex: encrypted })
-    ]
-  });
-  const finalWrapperBuf = finalWrapper.toBER();
-  const finalWrapperArr = new Uint8Array(finalWrapperBuf, 0, finalWrapperBuf.byteLength);
-  return [
-    "-----BEGIN ENCRYPTED PRIVATE KEY-----",
-    ...toString2(finalWrapperArr, "base64pad").split(/(.{64})/).filter(Boolean),
-    "-----END ENCRYPTED PRIVATE KEY-----"
-  ].join("\n");
-}
-__name(exportToPem3, "exportToPem");
-async function importFromPem3(pem, password) {
-  const crypto3 = webcrypto_browser_default3.get();
-  let plaintext;
-  if (pem.includes("-----BEGIN ENCRYPTED PRIVATE KEY-----")) {
-    const key = fromString2(pem.replace("-----BEGIN ENCRYPTED PRIVATE KEY-----", "").replace("-----END ENCRYPTED PRIVATE KEY-----", "").replace(/\n/g, "").trim(), "base64pad");
-    const { result } = fromBER(key);
-    const { iv, salt, iterations, keySize: keySize4, cipherText } = findEncryptedPEMData3(result);
-    const encryptionKey = await pbkdf2Async(sha5122, password, salt, {
-      c: iterations,
-      dkLen: keySize4
-    });
-    const cryptoKey = await crypto3.subtle.importKey("raw", encryptionKey, "AES-CBC", false, ["decrypt"]);
-    const decrypted = toUint8Array3(await crypto3.subtle.decrypt({
-      name: "AES-CBC",
-      iv
-    }, cryptoKey, cipherText));
-    const { result: decryptedResult } = fromBER(decrypted);
-    plaintext = findPEMData3(decryptedResult);
-  } else if (pem.includes("-----BEGIN PRIVATE KEY-----")) {
-    const key = fromString2(pem.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace(/\n/g, "").trim(), "base64pad");
-    const { result } = fromBER(key);
-    plaintext = findPEMData3(result);
-  } else {
-    throw new CodeError("Could not parse private key from PEM data", "ERR_INVALID_PARAMETERS");
-  }
-  return unmarshalRsaPrivateKey3(plaintext);
-}
-__name(importFromPem3, "importFromPem");
-function findEncryptedPEMData3(root) {
-  const encryptionAlgorithm = root.valueBlock.value[0];
-  const scheme = encryptionAlgorithm.valueBlock.value[0].toString();
-  if (scheme !== "OBJECT IDENTIFIER : 1.2.840.113549.1.5.13") {
-    throw new CodeError("Only pkcs5PBES2 encrypted private keys are supported", "ERR_INVALID_PARAMS");
-  }
-  const keyDerivationFunc = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[0];
-  const keyDerivationFuncName = keyDerivationFunc.valueBlock.value[0].toString();
-  if (keyDerivationFuncName !== "OBJECT IDENTIFIER : 1.2.840.113549.1.5.12") {
-    throw new CodeError("Only pkcs5PBKDF2 key derivation functions are supported", "ERR_INVALID_PARAMS");
-  }
-  const pbkdf2Params = keyDerivationFunc.valueBlock.value[1];
-  const salt = toUint8Array3(pbkdf2Params.valueBlock.value[0].getValue());
-  let iterations = ITERATIONS3;
-  let keySize4 = KEY_SIZE3;
-  if (pbkdf2Params.valueBlock.value.length === 3) {
-    iterations = Number(pbkdf2Params.valueBlock.value[1].toBigInt());
-    keySize4 = Number(pbkdf2Params.valueBlock.value[2].toBigInt());
-  } else if (pbkdf2Params.valueBlock.value.length === 2) {
-    throw new CodeError("Could not derive key size and iterations from PEM file - please use @libp2p/rsa to re-import your key", "ERR_INVALID_PARAMS");
-  }
-  const encryptionScheme = encryptionAlgorithm.valueBlock.value[1].valueBlock.value[1];
-  const encryptionSchemeName = encryptionScheme.valueBlock.value[0].toString();
-  if (encryptionSchemeName === "OBJECT IDENTIFIER : 1.2.840.113549.3.7") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 1.3.14.3.2.7") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.2") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.22") {
-  } else if (encryptionSchemeName === "OBJECT IDENTIFIER : 2.16.840.1.101.3.4.1.42") {
-  } else {
-    throw new CodeError("Only AES-CBC encryption schemes are supported", "ERR_INVALID_PARAMS");
-  }
-  const iv = toUint8Array3(encryptionScheme.valueBlock.value[1].getValue());
-  return {
-    cipherText: toUint8Array3(root.valueBlock.value[1].getValue()),
-    salt,
-    iterations,
-    keySize: keySize4,
-    iv
-  };
-}
-__name(findEncryptedPEMData3, "findEncryptedPEMData");
-function findPEMData3(seq) {
-  return toUint8Array3(seq.valueBlock.value[2].getValue());
-}
-__name(findPEMData3, "findPEMData");
-function toUint8Array3(buf) {
-  return new Uint8Array(buf, 0, buf.byteLength);
-}
-__name(toUint8Array3, "toUint8Array");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-browser.js
-async function generateKey8(bits) {
-  const pair = await webcrypto_browser_default3.get().subtle.generateKey({
-    name: "RSASSA-PKCS1-v1_5",
-    modulusLength: bits,
-    publicExponent: new Uint8Array([1, 0, 1]),
-    hash: { name: "SHA-256" }
-  }, true, ["sign", "verify"]);
-  const keys = await exportKey3(pair);
-  return {
-    privateKey: keys[0],
-    publicKey: keys[1]
-  };
-}
-__name(generateKey8, "generateKey");
-async function unmarshalPrivateKey5(key) {
-  const privateKey = await webcrypto_browser_default3.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, true, ["sign"]);
-  const pair = [
-    privateKey,
-    await derivePublicFromPrivate3(key)
-  ];
-  const keys = await exportKey3({
-    privateKey: pair[0],
-    publicKey: pair[1]
-  });
-  return {
-    privateKey: keys[0],
-    publicKey: keys[1]
-  };
-}
-__name(unmarshalPrivateKey5, "unmarshalPrivateKey");
-async function hashAndSign8(key, msg) {
-  const privateKey = await webcrypto_browser_default3.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, false, ["sign"]);
-  const sig = await webcrypto_browser_default3.get().subtle.sign({ name: "RSASSA-PKCS1-v1_5" }, privateKey, msg instanceof Uint8Array ? msg : msg.subarray());
-  return new Uint8Array(sig, 0, sig.byteLength);
-}
-__name(hashAndSign8, "hashAndSign");
-async function hashAndVerify8(key, sig, msg) {
-  const publicKey = await webcrypto_browser_default3.get().subtle.importKey("jwk", key, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, false, ["verify"]);
-  return webcrypto_browser_default3.get().subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, publicKey, sig, msg instanceof Uint8Array ? msg : msg.subarray());
-}
-__name(hashAndVerify8, "hashAndVerify");
-async function exportKey3(pair) {
-  if (pair.privateKey == null || pair.publicKey == null) {
-    throw new CodeError("Private and public key are required", "ERR_INVALID_PARAMETERS");
-  }
-  return Promise.all([
-    webcrypto_browser_default3.get().subtle.exportKey("jwk", pair.privateKey),
-    webcrypto_browser_default3.get().subtle.exportKey("jwk", pair.publicKey)
-  ]);
-}
-__name(exportKey3, "exportKey");
-async function derivePublicFromPrivate3(jwKey) {
-  return webcrypto_browser_default3.get().subtle.importKey("jwk", {
-    kty: jwKey.kty,
-    n: jwKey.n,
-    e: jwKey.e
-  }, {
-    name: "RSASSA-PKCS1-v1_5",
-    hash: { name: "SHA-256" }
-  }, true, ["verify"]);
-}
-__name(derivePublicFromPrivate3, "derivePublicFromPrivate");
-function keySize3(jwk) {
-  if (jwk.kty !== "RSA") {
-    throw new CodeError("invalid key type", "ERR_INVALID_KEY_TYPE");
-  } else if (jwk.n == null) {
-    throw new CodeError("invalid key modulus", "ERR_INVALID_KEY_MODULUS");
-  }
-  const bytes2 = fromString2(jwk.n, "base64url");
-  return bytes2.length * 8;
-}
-__name(keySize3, "keySize");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/rsa-class.js
-var MAX_RSA_KEY_SIZE3 = 8192;
-var RsaPublicKey3 = class {
-  static {
-    __name(this, "RsaPublicKey");
-  }
-  _key;
-  constructor(key) {
-    this._key = key;
-  }
-  verify(data, sig) {
-    return hashAndVerify8(this._key, sig, data);
-  }
-  marshal() {
-    return rsa_utils_exports3.jwkToPkix(this._key);
-  }
-  get bytes() {
-    return PublicKey3.encode({
-      Type: KeyType3.RSA,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise3(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-};
-var RsaPrivateKey3 = class {
-  static {
-    __name(this, "RsaPrivateKey");
-  }
-  _key;
-  _publicKey;
-  constructor(key, publicKey) {
-    this._key = key;
-    this._publicKey = publicKey;
-  }
-  genSecret() {
-    return randomBytes4(16);
-  }
-  sign(message2) {
-    return hashAndSign8(this._key, message2);
-  }
-  get public() {
-    if (this._publicKey == null) {
-      throw new CodeError("public key not provided", "ERR_PUBKEY_NOT_PROVIDED");
-    }
-    return new RsaPublicKey3(this._publicKey);
-  }
-  marshal() {
-    return rsa_utils_exports3.jwkToPkcs1(this._key);
-  }
-  get bytes() {
-    return PrivateKey3.encode({
-      Type: KeyType3.RSA,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise3(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   */
-  async id() {
-    const hash2 = await this.public.hash();
-    return toString2(hash2, "base58btc");
-  }
-  /**
-   * Exports the key as libp2p-key - a aes-gcm encrypted value with the key
-   * derived from the password.
-   *
-   * To export it as a password protected PEM file, please use the `exportPEM`
-   * function from `@libp2p/rsa`.
-   */
-  async export(password, format2 = "pkcs-8") {
-    if (format2 === "pkcs-8") {
-      return rsa_utils_exports3.exportToPem(this, password);
-    } else if (format2 === "libp2p-key") {
-      return exporter3(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-async function unmarshalRsaPrivateKey3(bytes2) {
-  const jwk = rsa_utils_exports3.pkcs1ToJwk(bytes2);
-  if (keySize3(jwk) > MAX_RSA_KEY_SIZE3) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await unmarshalPrivateKey5(jwk);
-  return new RsaPrivateKey3(keys.privateKey, keys.publicKey);
-}
-__name(unmarshalRsaPrivateKey3, "unmarshalRsaPrivateKey");
-function unmarshalRsaPublicKey3(bytes2) {
-  const jwk = rsa_utils_exports3.pkixToJwk(bytes2);
-  if (keySize3(jwk) > MAX_RSA_KEY_SIZE3) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  return new RsaPublicKey3(jwk);
-}
-__name(unmarshalRsaPublicKey3, "unmarshalRsaPublicKey");
-async function fromJwk3(jwk) {
-  if (keySize3(jwk) > MAX_RSA_KEY_SIZE3) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await unmarshalPrivateKey5(jwk);
-  return new RsaPrivateKey3(keys.privateKey, keys.publicKey);
-}
-__name(fromJwk3, "fromJwk");
-async function generateKeyPair9(bits) {
-  if (bits > MAX_RSA_KEY_SIZE3) {
-    throw new CodeError("key size is too large", "ERR_KEY_SIZE_TOO_LARGE");
-  }
-  const keys = await generateKey8(bits);
-  return new RsaPrivateKey3(keys.privateKey, keys.publicKey);
-}
-__name(generateKeyPair9, "generateKeyPair");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
-var secp256k1_class_exports3 = {};
-__export(secp256k1_class_exports3, {
-  Secp256k1PrivateKey: () => Secp256k1PrivateKey3,
-  Secp256k1PublicKey: () => Secp256k1PublicKey3,
-  generateKeyPair: () => generateKeyPair10,
-  unmarshalSecp256k1PrivateKey: () => unmarshalSecp256k1PrivateKey3,
-  unmarshalSecp256k1PublicKey: () => unmarshalSecp256k1PublicKey3
-});
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-browser.js
-function generateKey9() {
-  return secp256k1.utils.randomPrivateKey();
-}
-__name(generateKey9, "generateKey");
-function hashAndSign9(key, msg) {
-  const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
-  if (isPromise3(p)) {
-    return p.then(({ digest: digest2 }) => secp256k1.sign(digest2, key).toDERRawBytes()).catch((err) => {
-      throw new CodeError(String(err), "ERR_INVALID_INPUT");
-    });
-  }
-  try {
-    return secp256k1.sign(p.digest, key).toDERRawBytes();
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_INPUT");
-  }
-}
-__name(hashAndSign9, "hashAndSign");
-function hashAndVerify9(key, sig, msg) {
-  const p = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
-  if (isPromise3(p)) {
-    return p.then(({ digest: digest2 }) => secp256k1.verify(sig, digest2, key)).catch((err) => {
-      throw new CodeError(String(err), "ERR_INVALID_INPUT");
-    });
-  }
-  try {
-    return secp256k1.verify(sig, p.digest, key);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_INPUT");
-  }
-}
-__name(hashAndVerify9, "hashAndVerify");
-function compressPublicKey3(key) {
-  const point = secp256k1.ProjectivePoint.fromHex(key).toRawBytes(true);
-  return point;
-}
-__name(compressPublicKey3, "compressPublicKey");
-function validatePrivateKey3(key) {
-  try {
-    secp256k1.getPublicKey(key, true);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PRIVATE_KEY");
-  }
-}
-__name(validatePrivateKey3, "validatePrivateKey");
-function validatePublicKey3(key) {
-  try {
-    secp256k1.ProjectivePoint.fromHex(key);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PUBLIC_KEY");
-  }
-}
-__name(validatePublicKey3, "validatePublicKey");
-function computePublicKey3(privateKey) {
-  try {
-    return secp256k1.getPublicKey(privateKey, true);
-  } catch (err) {
-    throw new CodeError(String(err), "ERR_INVALID_PRIVATE_KEY");
-  }
-}
-__name(computePublicKey3, "computePublicKey");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/secp256k1-class.js
-var Secp256k1PublicKey3 = class {
-  static {
-    __name(this, "Secp256k1PublicKey");
-  }
-  _key;
-  constructor(key) {
-    validatePublicKey3(key);
-    this._key = key;
-  }
-  verify(data, sig) {
-    return hashAndVerify9(this._key, sig, data);
-  }
-  marshal() {
-    return compressPublicKey3(this._key);
-  }
-  get bytes() {
-    return PublicKey3.encode({
-      Type: KeyType3.Secp256k1,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  async hash() {
-    const p = sha256.digest(this.bytes);
-    let bytes2;
-    if (isPromise3(p)) {
-      ({ bytes: bytes2 } = await p);
-    } else {
-      bytes2 = p.bytes;
-    }
-    return bytes2;
-  }
-};
-var Secp256k1PrivateKey3 = class {
-  static {
-    __name(this, "Secp256k1PrivateKey");
-  }
-  _key;
-  _publicKey;
-  constructor(key, publicKey) {
-    this._key = key;
-    this._publicKey = publicKey ?? computePublicKey3(key);
-    validatePrivateKey3(this._key);
-    validatePublicKey3(this._publicKey);
-  }
-  sign(message2) {
-    return hashAndSign9(this._key, message2);
-  }
-  get public() {
-    return new Secp256k1PublicKey3(this._publicKey);
-  }
-  marshal() {
-    return this._key;
-  }
-  get bytes() {
-    return PrivateKey3.encode({
-      Type: KeyType3.Secp256k1,
-      Data: this.marshal()
-    }).subarray();
-  }
-  equals(key) {
-    return equals3(this.bytes, key.bytes);
-  }
-  hash() {
-    const p = sha256.digest(this.bytes);
-    if (isPromise3(p)) {
-      return p.then(({ bytes: bytes2 }) => bytes2);
-    }
-    return p.bytes;
-  }
-  /**
-   * Gets the ID of the key.
-   *
-   * The key id is the base58 encoding of the SHA-256 multihash of its public key.
-   * The public key is a protobuf encoding containing a type and the DER encoding
-   * of the PKCS SubjectPublicKeyInfo.
-   */
-  async id() {
-    const hash2 = await this.public.hash();
-    return toString2(hash2, "base58btc");
-  }
-  /**
-   * Exports the key into a password protected `format`
-   */
-  async export(password, format2 = "libp2p-key") {
-    if (format2 === "libp2p-key") {
-      return exporter3(this.bytes, password);
-    } else {
-      throw new CodeError(`export format '${format2}' is not supported`, "ERR_INVALID_EXPORT_FORMAT");
-    }
-  }
-};
-function unmarshalSecp256k1PrivateKey3(bytes2) {
-  return new Secp256k1PrivateKey3(bytes2);
-}
-__name(unmarshalSecp256k1PrivateKey3, "unmarshalSecp256k1PrivateKey");
-function unmarshalSecp256k1PublicKey3(bytes2) {
-  return new Secp256k1PublicKey3(bytes2);
-}
-__name(unmarshalSecp256k1PublicKey3, "unmarshalSecp256k1PublicKey");
-async function generateKeyPair10() {
-  const privateKeyBytes = generateKey9();
-  return new Secp256k1PrivateKey3(privateKeyBytes);
-}
-__name(generateKeyPair10, "generateKeyPair");
-
-// node_modules/@libp2p/peer-record/node_modules/@libp2p/crypto/dist/src/keys/index.js
-var supportedKeys3 = {
-  rsa: rsa_class_exports3,
-  ed25519: ed25519_class_exports3,
-  secp256k1: secp256k1_class_exports3
-};
-function unsupportedKey3(type) {
-  const supported = Object.keys(supportedKeys3).join(" / ");
-  return new CodeError(`invalid or unsupported key type ${type}. Must be ${supported}`, "ERR_UNSUPPORTED_KEY_TYPE");
-}
-__name(unsupportedKey3, "unsupportedKey");
-function unmarshalPublicKey3(buf) {
-  const decoded = PublicKey3.decode(buf);
-  const data = decoded.Data ?? new Uint8Array();
-  switch (decoded.Type) {
-    case KeyType3.RSA:
-      return supportedKeys3.rsa.unmarshalRsaPublicKey(data);
-    case KeyType3.Ed25519:
-      return supportedKeys3.ed25519.unmarshalEd25519PublicKey(data);
-    case KeyType3.Secp256k1:
-      return supportedKeys3.secp256k1.unmarshalSecp256k1PublicKey(data);
-    default:
-      throw unsupportedKey3(decoded.Type ?? "unknown");
-  }
-}
-__name(unmarshalPublicKey3, "unmarshalPublicKey");
-async function unmarshalPrivateKey6(buf) {
-  const decoded = PrivateKey3.decode(buf);
-  const data = decoded.Data ?? new Uint8Array();
-  switch (decoded.Type) {
-    case KeyType3.RSA:
-      return supportedKeys3.rsa.unmarshalRsaPrivateKey(data);
-    case KeyType3.Ed25519:
-      return supportedKeys3.ed25519.unmarshalEd25519PrivateKey(data);
-    case KeyType3.Secp256k1:
-      return supportedKeys3.secp256k1.unmarshalSecp256k1PrivateKey(data);
-    default:
-      throw unsupportedKey3(decoded.Type ?? "RSA");
-  }
-}
-__name(unmarshalPrivateKey6, "unmarshalPrivateKey");
-
-// node_modules/@libp2p/peer-record/dist/src/errors.js
-var codes = {
-  ERR_SIGNATURE_NOT_VALID: "ERR_SIGNATURE_NOT_VALID"
-};
-
 // node_modules/@libp2p/peer-record/dist/src/envelope/envelope.js
 var Envelope;
 (function(Envelope2) {
@@ -15385,32 +15009,37 @@ var Envelope;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {
-          publicKey: new Uint8Array(0),
-          payloadType: new Uint8Array(0),
-          payload: new Uint8Array(0),
-          signature: new Uint8Array(0)
+          publicKey: alloc(0),
+          payloadType: alloc(0),
+          payload: alloc(0),
+          signature: alloc(0)
         };
         const end = length3 == null ? reader.len : reader.pos + length3;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.publicKey = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               obj.payloadType = reader.bytes();
               break;
-            case 3:
+            }
+            case 3: {
               obj.payload = reader.bytes();
               break;
-            case 5:
+            }
+            case 5: {
               obj.signature = reader.bytes();
               break;
-            default:
+            }
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -15421,10 +15050,21 @@ var Envelope;
   Envelope2.encode = (obj) => {
     return encodeMessage(obj, Envelope2.codec());
   };
-  Envelope2.decode = (buf) => {
-    return decodeMessage(buf, Envelope2.codec());
+  Envelope2.decode = (buf, opts) => {
+    return decodeMessage(buf, Envelope2.codec(), opts);
   };
 })(Envelope || (Envelope = {}));
+
+// node_modules/@libp2p/peer-record/dist/src/envelope/errors.js
+var InvalidSignatureError = class extends Error {
+  static {
+    __name(this, "InvalidSignatureError");
+  }
+  constructor(message2 = "Invalid signature") {
+    super(message2);
+    this.name = "InvalidSignatureError";
+  }
+};
 
 // node_modules/@libp2p/peer-record/dist/src/envelope/index.js
 var RecordEnvelope = class _RecordEnvelope {
@@ -15436,9 +15076,9 @@ var RecordEnvelope = class _RecordEnvelope {
    */
   static createFromProtobuf = /* @__PURE__ */ __name(async (data) => {
     const envelopeData = Envelope.decode(data);
-    const peerId2 = await peerIdFromKeys(envelopeData.publicKey);
+    const publicKey = publicKeyFromProtobuf(envelopeData.publicKey);
     return new _RecordEnvelope({
-      peerId: peerId2,
+      publicKey,
       payloadType: envelopeData.payloadType,
       payload: envelopeData.payload,
       signature: envelopeData.signature
@@ -15448,18 +15088,17 @@ var RecordEnvelope = class _RecordEnvelope {
    * Seal marshals the given Record, places the marshaled bytes inside an Envelope
    * and signs it with the given peerId's private key
    */
-  static seal = /* @__PURE__ */ __name(async (record, peerId2) => {
-    if (peerId2.privateKey == null) {
+  static seal = /* @__PURE__ */ __name(async (record, privateKey) => {
+    if (privateKey == null) {
       throw new Error("Missing private key");
     }
     const domain = record.domain;
     const payloadType = record.codec;
     const payload = record.marshal();
     const signData = formatSignaturePayload(domain, payloadType, payload);
-    const key = await unmarshalPrivateKey6(peerId2.privateKey);
-    const signature = await key.sign(signData.subarray());
+    const signature = await privateKey.sign(signData.subarray());
     return new _RecordEnvelope({
-      peerId: peerId2,
+      publicKey: privateKey.publicKey,
       payloadType,
       payload,
       signature
@@ -15473,11 +15112,11 @@ var RecordEnvelope = class _RecordEnvelope {
     const envelope = await _RecordEnvelope.createFromProtobuf(data);
     const valid = await envelope.validate(domain);
     if (!valid) {
-      throw new CodeError("envelope signature is not valid for the given domain", codes.ERR_SIGNATURE_NOT_VALID);
+      throw new InvalidSignatureError("Envelope signature is not valid for the given domain");
     }
     return envelope;
   }, "openAndCertify");
-  peerId;
+  publicKey;
   payloadType;
   payload;
   signature;
@@ -15487,8 +15126,8 @@ var RecordEnvelope = class _RecordEnvelope {
    * by a libp2p peer.
    */
   constructor(init) {
-    const { peerId: peerId2, payloadType, payload, signature } = init;
-    this.peerId = peerId2;
+    const { publicKey, payloadType, payload, signature } = init;
+    this.publicKey = publicKey;
     this.payloadType = payloadType;
     this.payload = payload;
     this.signature = signature;
@@ -15497,12 +15136,9 @@ var RecordEnvelope = class _RecordEnvelope {
    * Marshal the envelope content
    */
   marshal() {
-    if (this.peerId.publicKey == null) {
-      throw new Error("Missing public key");
-    }
     if (this.marshaled == null) {
       this.marshaled = Envelope.encode({
-        publicKey: this.peerId.publicKey,
+        publicKey: publicKeyToProtobuf(this.publicKey),
         payloadType: this.payloadType,
         payload: this.payload.subarray(),
         signature: this.signature
@@ -15521,18 +15157,14 @@ var RecordEnvelope = class _RecordEnvelope {
    */
   async validate(domain) {
     const signData = formatSignaturePayload(domain, this.payloadType, this.payload);
-    if (this.peerId.publicKey == null) {
-      throw new Error("Missing public key");
-    }
-    const key = unmarshalPublicKey3(this.peerId.publicKey);
-    return key.verify(signData.subarray(), this.signature);
+    return this.publicKey.verify(signData.subarray(), this.signature);
   }
 };
 var formatSignaturePayload = /* @__PURE__ */ __name((domain, payloadType, payload) => {
   const domainUint8Array = fromString2(domain);
-  const domainLength = encode5(domainUint8Array.byteLength);
-  const payloadTypeLength = encode5(payloadType.length);
-  const payloadLength = encode5(payload.length);
+  const domainLength = encode4(domainUint8Array.byteLength);
+  const payloadTypeLength = encode4(payloadType.length);
+  const payloadLength = encode4(payload.length);
   return new Uint8ArrayList(domainLength, domainUint8Array, payloadTypeLength, payloadType, payloadLength, payload);
 }, "formatSignaturePayload");
 
@@ -15546,993 +15178,6 @@ function arrayEquals(a, b) {
   return a.sort(sort2).every((item, index) => b[index].equals(item));
 }
 __name(arrayEquals, "arrayEquals");
-
-// node_modules/@chainsafe/is-ip/lib/parser.js
-var Parser = class {
-  static {
-    __name(this, "Parser");
-  }
-  index = 0;
-  input = "";
-  new(input) {
-    this.index = 0;
-    this.input = input;
-    return this;
-  }
-  /** Run a parser, and restore the pre-parse state if it fails. */
-  readAtomically(fn) {
-    const index = this.index;
-    const result = fn();
-    if (result === void 0) {
-      this.index = index;
-    }
-    return result;
-  }
-  /** Run a parser, but fail if the entire input wasn't consumed. Doesn't run atomically. */
-  parseWith(fn) {
-    const result = fn();
-    if (this.index !== this.input.length) {
-      return void 0;
-    }
-    return result;
-  }
-  /** Peek the next character from the input */
-  peekChar() {
-    if (this.index >= this.input.length) {
-      return void 0;
-    }
-    return this.input[this.index];
-  }
-  /** Read the next character from the input */
-  readChar() {
-    if (this.index >= this.input.length) {
-      return void 0;
-    }
-    return this.input[this.index++];
-  }
-  /** Read the next character from the input if it matches the target. */
-  readGivenChar(target) {
-    return this.readAtomically(() => {
-      const char = this.readChar();
-      if (char !== target) {
-        return void 0;
-      }
-      return char;
-    });
-  }
-  /**
-   * Helper for reading separators in an indexed loop. Reads the separator
-   * character iff index > 0, then runs the parser. When used in a loop,
-   * the separator character will only be read on index > 0 (see
-   * readIPv4Addr for an example)
-   */
-  readSeparator(sep, index, inner) {
-    return this.readAtomically(() => {
-      if (index > 0) {
-        if (this.readGivenChar(sep) === void 0) {
-          return void 0;
-        }
-      }
-      return inner();
-    });
-  }
-  /**
-   * Read a number off the front of the input in the given radix, stopping
-   * at the first non-digit character or eof. Fails if the number has more
-   * digits than max_digits or if there is no number.
-   */
-  readNumber(radix, maxDigits, allowZeroPrefix, maxBytes) {
-    return this.readAtomically(() => {
-      let result = 0;
-      let digitCount = 0;
-      const leadingChar = this.peekChar();
-      if (leadingChar === void 0) {
-        return void 0;
-      }
-      const hasLeadingZero = leadingChar === "0";
-      const maxValue = 2 ** (8 * maxBytes) - 1;
-      while (true) {
-        const digit = this.readAtomically(() => {
-          const char = this.readChar();
-          if (char === void 0) {
-            return void 0;
-          }
-          const num = Number.parseInt(char, radix);
-          if (Number.isNaN(num)) {
-            return void 0;
-          }
-          return num;
-        });
-        if (digit === void 0) {
-          break;
-        }
-        result *= radix;
-        result += digit;
-        if (result > maxValue) {
-          return void 0;
-        }
-        digitCount += 1;
-        if (maxDigits !== void 0) {
-          if (digitCount > maxDigits) {
-            return void 0;
-          }
-        }
-      }
-      if (digitCount === 0) {
-        return void 0;
-      } else if (!allowZeroPrefix && hasLeadingZero && digitCount > 1) {
-        return void 0;
-      } else {
-        return result;
-      }
-    });
-  }
-  /** Read an IPv4 address. */
-  readIPv4Addr() {
-    return this.readAtomically(() => {
-      const out = new Uint8Array(4);
-      for (let i = 0; i < out.length; i++) {
-        const ix = this.readSeparator(".", i, () => this.readNumber(10, 3, false, 1));
-        if (ix === void 0) {
-          return void 0;
-        }
-        out[i] = ix;
-      }
-      return out;
-    });
-  }
-  /** Read an IPv6 Address. */
-  readIPv6Addr() {
-    const readGroups = /* @__PURE__ */ __name((groups) => {
-      for (let i = 0; i < groups.length / 2; i++) {
-        const ix = i * 2;
-        if (i < groups.length - 3) {
-          const ipv4 = this.readSeparator(":", i, () => this.readIPv4Addr());
-          if (ipv4 !== void 0) {
-            groups[ix] = ipv4[0];
-            groups[ix + 1] = ipv4[1];
-            groups[ix + 2] = ipv4[2];
-            groups[ix + 3] = ipv4[3];
-            return [ix + 4, true];
-          }
-        }
-        const group = this.readSeparator(":", i, () => this.readNumber(16, 4, true, 2));
-        if (group === void 0) {
-          return [ix, false];
-        }
-        groups[ix] = group >> 8;
-        groups[ix + 1] = group & 255;
-      }
-      return [groups.length, false];
-    }, "readGroups");
-    return this.readAtomically(() => {
-      const head = new Uint8Array(16);
-      const [headSize, headIp4] = readGroups(head);
-      if (headSize === 16) {
-        return head;
-      }
-      if (headIp4) {
-        return void 0;
-      }
-      if (this.readGivenChar(":") === void 0) {
-        return void 0;
-      }
-      if (this.readGivenChar(":") === void 0) {
-        return void 0;
-      }
-      const tail = new Uint8Array(14);
-      const limit = 16 - (headSize + 2);
-      const [tailSize] = readGroups(tail.subarray(0, limit));
-      head.set(tail.subarray(0, tailSize), 16 - tailSize);
-      return head;
-    });
-  }
-  /** Read an IP Address, either IPv4 or IPv6. */
-  readIPAddr() {
-    return this.readIPv4Addr() ?? this.readIPv6Addr();
-  }
-};
-
-// node_modules/@chainsafe/is-ip/lib/parse.js
-var MAX_IPV6_LENGTH = 45;
-var MAX_IPV4_LENGTH = 15;
-var parser = new Parser();
-function parseIPv4(input) {
-  if (input.length > MAX_IPV4_LENGTH) {
-    return void 0;
-  }
-  return parser.new(input).parseWith(() => parser.readIPv4Addr());
-}
-__name(parseIPv4, "parseIPv4");
-function parseIPv6(input) {
-  if (input.includes("%")) {
-    input = input.split("%")[0];
-  }
-  if (input.length > MAX_IPV6_LENGTH) {
-    return void 0;
-  }
-  return parser.new(input).parseWith(() => parser.readIPv6Addr());
-}
-__name(parseIPv6, "parseIPv6");
-function parseIP(input) {
-  if (input.includes("%")) {
-    input = input.split("%")[0];
-  }
-  if (input.length > MAX_IPV6_LENGTH) {
-    return void 0;
-  }
-  return parser.new(input).parseWith(() => parser.readIPAddr());
-}
-__name(parseIP, "parseIP");
-
-// node_modules/@chainsafe/netmask/dist/src/ip.js
-var maxIPv6Octet = parseInt("0xFFFF", 16);
-var ipv4Prefix = new Uint8Array([
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  255,
-  255
-]);
-
-// node_modules/@chainsafe/is-ip/lib/is-ip.js
-function isIPv4(input) {
-  return Boolean(parseIPv4(input));
-}
-__name(isIPv4, "isIPv4");
-function isIPv6(input) {
-  return Boolean(parseIPv6(input));
-}
-__name(isIPv6, "isIPv6");
-function isIP(input) {
-  return Boolean(parseIP(input));
-}
-__name(isIP, "isIP");
-
-// node_modules/@multiformats/multiaddr/dist/src/ip.js
-var isV4 = isIPv4;
-var isV6 = isIPv6;
-var toBytes2 = /* @__PURE__ */ __name(function(ip) {
-  let offset = 0;
-  ip = ip.toString().trim();
-  if (isV4(ip)) {
-    const bytes2 = new Uint8Array(offset + 4);
-    ip.split(/\./g).forEach((byte) => {
-      bytes2[offset++] = parseInt(byte, 10) & 255;
-    });
-    return bytes2;
-  }
-  if (isV6(ip)) {
-    const sections = ip.split(":", 8);
-    let i;
-    for (i = 0; i < sections.length; i++) {
-      const isv4 = isV4(sections[i]);
-      let v4Buffer;
-      if (isv4) {
-        v4Buffer = toBytes2(sections[i]);
-        sections[i] = toString2(v4Buffer.slice(0, 2), "base16");
-      }
-      if (v4Buffer != null && ++i < 8) {
-        sections.splice(i, 0, toString2(v4Buffer.slice(2, 4), "base16"));
-      }
-    }
-    if (sections[0] === "") {
-      while (sections.length < 8)
-        sections.unshift("0");
-    } else if (sections[sections.length - 1] === "") {
-      while (sections.length < 8)
-        sections.push("0");
-    } else if (sections.length < 8) {
-      for (i = 0; i < sections.length && sections[i] !== ""; i++)
-        ;
-      const argv = [i, 1];
-      for (i = 9 - sections.length; i > 0; i--) {
-        argv.push("0");
-      }
-      sections.splice.apply(sections, argv);
-    }
-    const bytes2 = new Uint8Array(offset + 16);
-    for (i = 0; i < sections.length; i++) {
-      const word = parseInt(sections[i], 16);
-      bytes2[offset++] = word >> 8 & 255;
-      bytes2[offset++] = word & 255;
-    }
-    return bytes2;
-  }
-  throw new Error("invalid ip address");
-}, "toBytes");
-var toString3 = /* @__PURE__ */ __name(function(buf, offset = 0, length3) {
-  offset = ~~offset;
-  length3 = length3 ?? buf.length - offset;
-  const view = new DataView(buf.buffer);
-  if (length3 === 4) {
-    const result = [];
-    for (let i = 0; i < length3; i++) {
-      result.push(buf[offset + i]);
-    }
-    return result.join(".");
-  }
-  if (length3 === 16) {
-    const result = [];
-    for (let i = 0; i < length3; i += 2) {
-      result.push(view.getUint16(offset + i).toString(16));
-    }
-    return result.join(":").replace(/(^|:)0(:0)*:0(:|$)/, "$1::$3").replace(/:{3,4}/, "::");
-  }
-  return "";
-}, "toString");
-
-// node_modules/@multiformats/multiaddr/dist/src/protocols-table.js
-var V = -1;
-var names = {};
-var codes2 = {};
-var table = [
-  [4, 32, "ip4"],
-  [6, 16, "tcp"],
-  [33, 16, "dccp"],
-  [41, 128, "ip6"],
-  [42, V, "ip6zone"],
-  [43, 8, "ipcidr"],
-  [53, V, "dns", true],
-  [54, V, "dns4", true],
-  [55, V, "dns6", true],
-  [56, V, "dnsaddr", true],
-  [132, 16, "sctp"],
-  [273, 16, "udp"],
-  [275, 0, "p2p-webrtc-star"],
-  [276, 0, "p2p-webrtc-direct"],
-  [277, 0, "p2p-stardust"],
-  [280, 0, "webrtc-direct"],
-  [281, 0, "webrtc"],
-  [290, 0, "p2p-circuit"],
-  [301, 0, "udt"],
-  [302, 0, "utp"],
-  [400, V, "unix", false, true],
-  // `ipfs` is added before `p2p` for legacy support.
-  // All text representations will default to `p2p`, but `ipfs` will
-  // still be supported
-  [421, V, "ipfs"],
-  // `p2p` is the preferred name for 421, and is now the default
-  [421, V, "p2p"],
-  [443, 0, "https"],
-  [444, 96, "onion"],
-  [445, 296, "onion3"],
-  [446, V, "garlic64"],
-  [448, 0, "tls"],
-  [449, V, "sni"],
-  [460, 0, "quic"],
-  [461, 0, "quic-v1"],
-  [465, 0, "webtransport"],
-  [466, V, "certhash"],
-  [477, 0, "ws"],
-  [478, 0, "wss"],
-  [479, 0, "p2p-websocket-star"],
-  [480, 0, "http"],
-  [481, V, "http-path"],
-  [777, V, "memory"]
-];
-table.forEach((row) => {
-  const proto = createProtocol(...row);
-  codes2[proto.code] = proto;
-  names[proto.name] = proto;
-});
-function createProtocol(code2, size, name3, resolvable, path) {
-  return {
-    code: code2,
-    size,
-    name: name3,
-    resolvable: Boolean(resolvable),
-    path: Boolean(path)
-  };
-}
-__name(createProtocol, "createProtocol");
-function getProtocol(proto) {
-  if (typeof proto === "number") {
-    if (codes2[proto] != null) {
-      return codes2[proto];
-    }
-    throw new Error(`no protocol with code: ${proto}`);
-  } else if (typeof proto === "string") {
-    if (names[proto] != null) {
-      return names[proto];
-    }
-    throw new Error(`no protocol with name: ${proto}`);
-  }
-  throw new Error(`invalid protocol id type: ${typeof proto}`);
-}
-__name(getProtocol, "getProtocol");
-
-// node_modules/@multiformats/multiaddr/dist/src/convert.js
-var ip4Protocol = getProtocol("ip4");
-var ip6Protocol = getProtocol("ip6");
-var ipcidrProtocol = getProtocol("ipcidr");
-function convertToString(proto, buf) {
-  const protocol = getProtocol(proto);
-  switch (protocol.code) {
-    case 4:
-    // ipv4
-    case 41:
-      return bytes2ip(buf);
-    case 42:
-      return bytes2str(buf);
-    case 6:
-    // tcp
-    case 273:
-    // udp
-    case 33:
-    // dccp
-    case 132:
-      return bytes2port(buf).toString();
-    case 53:
-    // dns
-    case 54:
-    // dns4
-    case 55:
-    // dns6
-    case 56:
-    // dnsaddr
-    case 400:
-    // unix
-    case 449:
-    // sni
-    case 777:
-      return bytes2str(buf);
-    case 421:
-      return bytes2mh(buf);
-    case 444:
-      return bytes2onion(buf);
-    case 445:
-      return bytes2onion(buf);
-    case 466:
-      return bytes2mb(buf);
-    case 481:
-      return globalThis.encodeURIComponent(bytes2str(buf));
-    default:
-      return toString2(buf, "base16");
-  }
-}
-__name(convertToString, "convertToString");
-function convertToBytes(proto, str) {
-  const protocol = getProtocol(proto);
-  switch (protocol.code) {
-    case 4:
-      return ip2bytes(str);
-    case 41:
-      return ip2bytes(str);
-    case 42:
-      return str2bytes(str);
-    case 6:
-    // tcp
-    case 273:
-    // udp
-    case 33:
-    // dccp
-    case 132:
-      return port2bytes(parseInt(str, 10));
-    case 53:
-    // dns
-    case 54:
-    // dns4
-    case 55:
-    // dns6
-    case 56:
-    // dnsaddr
-    case 400:
-    // unix
-    case 449:
-    // sni
-    case 777:
-      return str2bytes(str);
-    case 421:
-      return mh2bytes(str);
-    case 444:
-      return onion2bytes(str);
-    case 445:
-      return onion32bytes(str);
-    case 466:
-      return mb2bytes(str);
-    case 481:
-      return str2bytes(globalThis.decodeURIComponent(str));
-    default:
-      return fromString2(str, "base16");
-  }
-}
-__name(convertToBytes, "convertToBytes");
-var decoders = Object.values(bases).map((c) => c.decoder);
-var anybaseDecoder = function() {
-  let acc = decoders[0].or(decoders[1]);
-  decoders.slice(2).forEach((d2) => acc = acc.or(d2));
-  return acc;
-}();
-function ip2bytes(ipString) {
-  if (!isIP(ipString)) {
-    throw new Error("invalid ip address");
-  }
-  return toBytes2(ipString);
-}
-__name(ip2bytes, "ip2bytes");
-function bytes2ip(ipBuff) {
-  const ipString = toString3(ipBuff, 0, ipBuff.length);
-  if (ipString == null) {
-    throw new Error("ipBuff is required");
-  }
-  if (!isIP(ipString)) {
-    throw new Error("invalid ip address");
-  }
-  return ipString;
-}
-__name(bytes2ip, "bytes2ip");
-function port2bytes(port) {
-  const buf = new ArrayBuffer(2);
-  const view = new DataView(buf);
-  view.setUint16(0, port);
-  return new Uint8Array(buf);
-}
-__name(port2bytes, "port2bytes");
-function bytes2port(buf) {
-  const view = new DataView(buf.buffer);
-  return view.getUint16(buf.byteOffset);
-}
-__name(bytes2port, "bytes2port");
-function str2bytes(str) {
-  const buf = fromString2(str);
-  const size = Uint8Array.from(encode5(buf.length));
-  return concat([size, buf], size.length + buf.length);
-}
-__name(str2bytes, "str2bytes");
-function bytes2str(buf) {
-  const size = decode6(buf);
-  buf = buf.slice(encodingLength2(size));
-  if (buf.length !== size) {
-    throw new Error("inconsistent lengths");
-  }
-  return toString2(buf);
-}
-__name(bytes2str, "bytes2str");
-function mh2bytes(hash2) {
-  let mh;
-  if (hash2[0] === "Q" || hash2[0] === "1") {
-    mh = decode4(base58btc.decode(`z${hash2}`)).bytes;
-  } else {
-    mh = CID.parse(hash2).multihash.bytes;
-  }
-  const size = Uint8Array.from(encode5(mh.length));
-  return concat([size, mh], size.length + mh.length);
-}
-__name(mh2bytes, "mh2bytes");
-function mb2bytes(mbstr) {
-  const mb = anybaseDecoder.decode(mbstr);
-  const size = Uint8Array.from(encode5(mb.length));
-  return concat([size, mb], size.length + mb.length);
-}
-__name(mb2bytes, "mb2bytes");
-function bytes2mb(buf) {
-  const size = decode6(buf);
-  const hash2 = buf.slice(encodingLength2(size));
-  if (hash2.length !== size) {
-    throw new Error("inconsistent lengths");
-  }
-  return "u" + toString2(hash2, "base64url");
-}
-__name(bytes2mb, "bytes2mb");
-function bytes2mh(buf) {
-  const size = decode6(buf);
-  const address = buf.slice(encodingLength2(size));
-  if (address.length !== size) {
-    throw new Error("inconsistent lengths");
-  }
-  return toString2(address, "base58btc");
-}
-__name(bytes2mh, "bytes2mh");
-function onion2bytes(str) {
-  const addr = str.split(":");
-  if (addr.length !== 2) {
-    throw new Error(`failed to parse onion addr: ["'${addr.join('", "')}'"]' does not contain a port number`);
-  }
-  if (addr[0].length !== 16) {
-    throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion address.`);
-  }
-  const buf = base32.decode("b" + addr[0]);
-  const port = parseInt(addr[1], 10);
-  if (port < 1 || port > 65536) {
-    throw new Error("Port number is not in range(1, 65536)");
-  }
-  const portBuf = port2bytes(port);
-  return concat([buf, portBuf], buf.length + portBuf.length);
-}
-__name(onion2bytes, "onion2bytes");
-function onion32bytes(str) {
-  const addr = str.split(":");
-  if (addr.length !== 2) {
-    throw new Error(`failed to parse onion addr: ["'${addr.join('", "')}'"]' does not contain a port number`);
-  }
-  if (addr[0].length !== 56) {
-    throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion3 address.`);
-  }
-  const buf = base32.decode(`b${addr[0]}`);
-  const port = parseInt(addr[1], 10);
-  if (port < 1 || port > 65536) {
-    throw new Error("Port number is not in range(1, 65536)");
-  }
-  const portBuf = port2bytes(port);
-  return concat([buf, portBuf], buf.length + portBuf.length);
-}
-__name(onion32bytes, "onion32bytes");
-function bytes2onion(buf) {
-  const addrBytes = buf.slice(0, buf.length - 2);
-  const portBytes = buf.slice(buf.length - 2);
-  const addr = toString2(addrBytes, "base32");
-  const port = bytes2port(portBytes);
-  return `${addr}:${port}`;
-}
-__name(bytes2onion, "bytes2onion");
-
-// node_modules/@multiformats/multiaddr/dist/src/codec.js
-function stringToMultiaddrParts(str) {
-  str = cleanPath(str);
-  const tuples = [];
-  const stringTuples = [];
-  let path = null;
-  const parts = str.split("/").slice(1);
-  if (parts.length === 1 && parts[0] === "") {
-    return {
-      bytes: new Uint8Array(),
-      string: "/",
-      tuples: [],
-      stringTuples: [],
-      path: null
-    };
-  }
-  for (let p = 0; p < parts.length; p++) {
-    const part = parts[p];
-    const proto = getProtocol(part);
-    if (proto.size === 0) {
-      tuples.push([proto.code]);
-      stringTuples.push([proto.code]);
-      continue;
-    }
-    p++;
-    if (p >= parts.length) {
-      throw ParseError("invalid address: " + str);
-    }
-    if (proto.path === true) {
-      path = cleanPath(parts.slice(p).join("/"));
-      tuples.push([proto.code, convertToBytes(proto.code, path)]);
-      stringTuples.push([proto.code, path]);
-      break;
-    }
-    const bytes2 = convertToBytes(proto.code, parts[p]);
-    tuples.push([proto.code, bytes2]);
-    stringTuples.push([proto.code, convertToString(proto.code, bytes2)]);
-  }
-  return {
-    string: stringTuplesToString(stringTuples),
-    bytes: tuplesToBytes(tuples),
-    tuples,
-    stringTuples,
-    path
-  };
-}
-__name(stringToMultiaddrParts, "stringToMultiaddrParts");
-function bytesToMultiaddrParts(bytes2) {
-  const tuples = [];
-  const stringTuples = [];
-  let path = null;
-  let i = 0;
-  while (i < bytes2.length) {
-    const code2 = decode6(bytes2, i);
-    const n = encodingLength2(code2);
-    const p = getProtocol(code2);
-    const size = sizeForAddr(p, bytes2.slice(i + n));
-    if (size === 0) {
-      tuples.push([code2]);
-      stringTuples.push([code2]);
-      i += n;
-      continue;
-    }
-    const addr = bytes2.slice(i + n, i + n + size);
-    i += size + n;
-    if (i > bytes2.length) {
-      throw ParseError("Invalid address Uint8Array: " + toString2(bytes2, "base16"));
-    }
-    tuples.push([code2, addr]);
-    const stringAddr = convertToString(code2, addr);
-    stringTuples.push([code2, stringAddr]);
-    if (p.path === true) {
-      path = stringAddr;
-      break;
-    }
-  }
-  return {
-    bytes: Uint8Array.from(bytes2),
-    string: stringTuplesToString(stringTuples),
-    tuples,
-    stringTuples,
-    path
-  };
-}
-__name(bytesToMultiaddrParts, "bytesToMultiaddrParts");
-function stringTuplesToString(tuples) {
-  const parts = [];
-  tuples.map((tup) => {
-    const proto = getProtocol(tup[0]);
-    parts.push(proto.name);
-    if (tup.length > 1 && tup[1] != null) {
-      parts.push(tup[1]);
-    }
-    return null;
-  });
-  return cleanPath(parts.join("/"));
-}
-__name(stringTuplesToString, "stringTuplesToString");
-function tuplesToBytes(tuples) {
-  return concat(tuples.map((tup) => {
-    const proto = getProtocol(tup[0]);
-    let buf = Uint8Array.from(encode5(proto.code));
-    if (tup.length > 1 && tup[1] != null) {
-      buf = concat([buf, tup[1]]);
-    }
-    return buf;
-  }));
-}
-__name(tuplesToBytes, "tuplesToBytes");
-function sizeForAddr(p, addr) {
-  if (p.size > 0) {
-    return p.size / 8;
-  } else if (p.size === 0) {
-    return 0;
-  } else {
-    const size = decode6(addr instanceof Uint8Array ? addr : Uint8Array.from(addr));
-    return size + encodingLength2(size);
-  }
-}
-__name(sizeForAddr, "sizeForAddr");
-function cleanPath(str) {
-  return "/" + str.trim().split("/").filter((a) => a).join("/");
-}
-__name(cleanPath, "cleanPath");
-function ParseError(str) {
-  return new Error("Error parsing address: " + str);
-}
-__name(ParseError, "ParseError");
-
-// node_modules/@multiformats/multiaddr/dist/src/multiaddr.js
-var inspect2 = Symbol.for("nodejs.util.inspect.custom");
-var symbol2 = Symbol.for("@multiformats/js-multiaddr/multiaddr");
-var DNS_CODES = [
-  getProtocol("dns").code,
-  getProtocol("dns4").code,
-  getProtocol("dns6").code,
-  getProtocol("dnsaddr").code
-];
-var NoAvailableResolverError = class extends Error {
-  static {
-    __name(this, "NoAvailableResolverError");
-  }
-  constructor(message2 = "No available resolver") {
-    super(message2);
-    this.name = "NoAvailableResolverError";
-  }
-};
-var Multiaddr = class _Multiaddr {
-  static {
-    __name(this, "Multiaddr");
-  }
-  bytes;
-  #string;
-  #tuples;
-  #stringTuples;
-  #path;
-  [symbol2] = true;
-  constructor(addr) {
-    if (addr == null) {
-      addr = "";
-    }
-    let parts;
-    if (addr instanceof Uint8Array) {
-      parts = bytesToMultiaddrParts(addr);
-    } else if (typeof addr === "string") {
-      if (addr.length > 0 && addr.charAt(0) !== "/") {
-        throw new Error(`multiaddr "${addr}" must start with a "/"`);
-      }
-      parts = stringToMultiaddrParts(addr);
-    } else if (isMultiaddr(addr)) {
-      parts = bytesToMultiaddrParts(addr.bytes);
-    } else {
-      throw new Error("addr must be a string, Buffer, or another Multiaddr");
-    }
-    this.bytes = parts.bytes;
-    this.#string = parts.string;
-    this.#tuples = parts.tuples;
-    this.#stringTuples = parts.stringTuples;
-    this.#path = parts.path;
-  }
-  toString() {
-    return this.#string;
-  }
-  toJSON() {
-    return this.toString();
-  }
-  toOptions() {
-    let family;
-    let transport;
-    let host;
-    let port;
-    let zone = "";
-    const tcp = getProtocol("tcp");
-    const udp = getProtocol("udp");
-    const ip4 = getProtocol("ip4");
-    const ip6 = getProtocol("ip6");
-    const dns6 = getProtocol("dns6");
-    const ip6zone = getProtocol("ip6zone");
-    for (const [code2, value] of this.stringTuples()) {
-      if (code2 === ip6zone.code) {
-        zone = `%${value ?? ""}`;
-      }
-      if (DNS_CODES.includes(code2)) {
-        transport = tcp.name;
-        port = 443;
-        host = `${value ?? ""}${zone}`;
-        family = code2 === dns6.code ? 6 : 4;
-      }
-      if (code2 === tcp.code || code2 === udp.code) {
-        transport = getProtocol(code2).name;
-        port = parseInt(value ?? "");
-      }
-      if (code2 === ip4.code || code2 === ip6.code) {
-        transport = getProtocol(code2).name;
-        host = `${value ?? ""}${zone}`;
-        family = code2 === ip6.code ? 6 : 4;
-      }
-    }
-    if (family == null || transport == null || host == null || port == null) {
-      throw new Error('multiaddr must have a valid format: "/{ip4, ip6, dns4, dns6, dnsaddr}/{address}/{tcp, udp}/{port}".');
-    }
-    const opts = {
-      family,
-      host,
-      transport,
-      port
-    };
-    return opts;
-  }
-  protos() {
-    return this.#tuples.map(([code2]) => Object.assign({}, getProtocol(code2)));
-  }
-  protoCodes() {
-    return this.#tuples.map(([code2]) => code2);
-  }
-  protoNames() {
-    return this.#tuples.map(([code2]) => getProtocol(code2).name);
-  }
-  tuples() {
-    return this.#tuples;
-  }
-  stringTuples() {
-    return this.#stringTuples;
-  }
-  encapsulate(addr) {
-    addr = new _Multiaddr(addr);
-    return new _Multiaddr(this.toString() + addr.toString());
-  }
-  decapsulate(addr) {
-    const addrString = addr.toString();
-    const s2 = this.toString();
-    const i = s2.lastIndexOf(addrString);
-    if (i < 0) {
-      throw new Error(`Address ${this.toString()} does not contain subaddress: ${addr.toString()}`);
-    }
-    return new _Multiaddr(s2.slice(0, i));
-  }
-  decapsulateCode(code2) {
-    const tuples = this.tuples();
-    for (let i = tuples.length - 1; i >= 0; i--) {
-      if (tuples[i][0] === code2) {
-        return new _Multiaddr(tuplesToBytes(tuples.slice(0, i)));
-      }
-    }
-    return this;
-  }
-  getPeerId() {
-    try {
-      let tuples = [];
-      this.stringTuples().forEach(([code2, name3]) => {
-        if (code2 === names.p2p.code) {
-          tuples.push([code2, name3]);
-        }
-        if (code2 === names["p2p-circuit"].code) {
-          tuples = [];
-        }
-      });
-      const tuple = tuples.pop();
-      if (tuple?.[1] != null) {
-        const peerIdStr = tuple[1];
-        if (peerIdStr[0] === "Q" || peerIdStr[0] === "1") {
-          return toString2(base58btc.decode(`z${peerIdStr}`), "base58btc");
-        }
-        return toString2(CID.parse(peerIdStr).multihash.bytes, "base58btc");
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-  getPath() {
-    return this.#path;
-  }
-  equals(addr) {
-    return equals3(this.bytes, addr.bytes);
-  }
-  async resolve(options) {
-    const resolvableProto = this.protos().find((p) => p.resolvable);
-    if (resolvableProto == null) {
-      return [this];
-    }
-    const resolver = resolvers.get(resolvableProto.name);
-    if (resolver == null) {
-      throw new NoAvailableResolverError(`no available resolver for ${resolvableProto.name}`);
-    }
-    const result = await resolver(this, options);
-    return result.map((str) => multiaddr(str));
-  }
-  nodeAddress() {
-    const options = this.toOptions();
-    if (options.transport !== "tcp" && options.transport !== "udp") {
-      throw new Error(`multiaddr must have a valid format - no protocol with name: "${options.transport}". Must have a valid transport protocol: "{tcp, udp}"`);
-    }
-    return {
-      family: options.family,
-      address: options.host,
-      port: options.port
-    };
-  }
-  isThinWaistAddress(addr) {
-    const protos = (addr ?? this).protos();
-    if (protos.length !== 2) {
-      return false;
-    }
-    if (protos[0].code !== 4 && protos[0].code !== 41) {
-      return false;
-    }
-    if (protos[1].code !== 6 && protos[1].code !== 273) {
-      return false;
-    }
-    return true;
-  }
-  /**
-   * Returns Multiaddr as a human-readable string
-   * https://nodejs.org/api/util.html#utilinspectcustom
-   *
-   * @example
-   * ```js
-   * import { multiaddr } from '@multiformats/multiaddr'
-   *
-   * console.info(multiaddr('/ip4/127.0.0.1/tcp/4001'))
-   * // 'Multiaddr(/ip4/127.0.0.1/tcp/4001)'
-   * ```
-   */
-  [inspect2]() {
-    return `Multiaddr(${this.#string})`;
-  }
-};
-
-// node_modules/@multiformats/multiaddr/dist/src/index.js
-var resolvers = /* @__PURE__ */ new Map();
-function isMultiaddr(value) {
-  return Boolean(value?.[symbol2]);
-}
-__name(isMultiaddr, "isMultiaddr");
-function multiaddr(addr) {
-  return new Multiaddr(addr);
-}
-__name(multiaddr, "multiaddr");
 
 // node_modules/@libp2p/peer-record/dist/src/peer-record/consts.js
 var ENVELOPE_DOMAIN_PEER_RECORD = "libp2p-peer-record";
@@ -16557,20 +15202,22 @@ var PeerRecord;
           if (opts.lengthDelimited !== false) {
             w2.ldelim();
           }
-        }, (reader, length3) => {
+        }, (reader, length3, opts = {}) => {
           const obj = {
-            multiaddr: new Uint8Array(0)
+            multiaddr: alloc(0)
           };
           const end = length3 == null ? reader.len : reader.pos + length3;
           while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.multiaddr = reader.bytes();
                 break;
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7);
                 break;
+              }
             }
           }
           return obj;
@@ -16581,8 +15228,8 @@ var PeerRecord;
     AddressInfo2.encode = (obj) => {
       return encodeMessage(obj, AddressInfo2.codec());
     };
-    AddressInfo2.decode = (buf) => {
-      return decodeMessage(buf, AddressInfo2.codec());
+    AddressInfo2.decode = (buf, opts) => {
+      return decodeMessage(buf, AddressInfo2.codec(), opts);
     };
   })(AddressInfo = PeerRecord3.AddressInfo || (PeerRecord3.AddressInfo = {}));
   let _codec;
@@ -16609,9 +15256,9 @@ var PeerRecord;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {
-          peerId: new Uint8Array(0),
+          peerId: alloc(0),
           seq: 0n,
           addresses: []
         };
@@ -16619,18 +15266,27 @@ var PeerRecord;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.peerId = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               obj.seq = reader.uint64();
               break;
-            case 3:
-              obj.addresses.push(PeerRecord3.AddressInfo.codec().decode(reader, reader.uint32()));
+            }
+            case 3: {
+              if (opts.limits?.addresses != null && obj.addresses.length === opts.limits.addresses) {
+                throw new MaxLengthError('Decode error - map field "addresses" had too many elements');
+              }
+              obj.addresses.push(PeerRecord3.AddressInfo.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.addresses$
+              }));
               break;
-            default:
+            }
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -16641,8 +15297,8 @@ var PeerRecord;
   PeerRecord3.encode = (obj) => {
     return encodeMessage(obj, PeerRecord3.codec());
   };
-  PeerRecord3.decode = (buf) => {
-    return decodeMessage(buf, PeerRecord3.codec());
+  PeerRecord3.decode = (buf, opts) => {
+    return decodeMessage(buf, PeerRecord3.codec(), opts);
   };
 })(PeerRecord || (PeerRecord = {}));
 
@@ -16656,7 +15312,7 @@ var PeerRecord2 = class _PeerRecord {
    */
   static createFromProtobuf = /* @__PURE__ */ __name((buf) => {
     const peerRecord = PeerRecord.decode(buf);
-    const peerId2 = peerIdFromBytes(peerRecord.peerId);
+    const peerId2 = peerIdFromMultihash(decode4(peerRecord.peerId));
     const multiaddrs = (peerRecord.addresses ?? []).map((a) => multiaddr(a.multiaddr));
     const seqNumber = peerRecord.seq;
     return new _PeerRecord({ peerId: peerId2, multiaddrs, seqNumber });
@@ -16681,7 +15337,7 @@ var PeerRecord2 = class _PeerRecord {
   marshal() {
     if (this.marshaled == null) {
       this.marshaled = PeerRecord.encode({
-        peerId: this.peerId.toBytes(),
+        peerId: this.peerId.toMultihash().bytes,
         seq: BigInt(this.seqNumber),
         addresses: this.multiaddrs.map((m2) => ({
           multiaddr: m2.bytes
@@ -16733,448 +15389,6 @@ function all(source) {
 }
 __name(all, "all");
 var src_default2 = all;
-
-// node_modules/p-queue/node_modules/eventemitter3/index.mjs
-var import_index3 = __toESM(require_eventemitter3(), 1);
-
-// node_modules/p-timeout/index.js
-var TimeoutError = class extends Error {
-  static {
-    __name(this, "TimeoutError");
-  }
-  constructor(message2) {
-    super(message2);
-    this.name = "TimeoutError";
-  }
-};
-var AbortError2 = class extends Error {
-  static {
-    __name(this, "AbortError");
-  }
-  constructor(message2) {
-    super();
-    this.name = "AbortError";
-    this.message = message2;
-  }
-};
-var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError2(errorMessage) : new DOMException(errorMessage), "getDOMException");
-var getAbortedReason = /* @__PURE__ */ __name((signal) => {
-  const reason = signal.reason === void 0 ? getDOMException("This operation was aborted.") : signal.reason;
-  return reason instanceof Error ? reason : getDOMException(reason);
-}, "getAbortedReason");
-function pTimeout(promise, options) {
-  const {
-    milliseconds,
-    fallback,
-    message: message2,
-    customTimers = { setTimeout, clearTimeout }
-  } = options;
-  let timer;
-  const wrappedPromise = new Promise((resolve, reject) => {
-    if (typeof milliseconds !== "number" || Math.sign(milliseconds) !== 1) {
-      throw new TypeError(`Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``);
-    }
-    if (options.signal) {
-      const { signal } = options;
-      if (signal.aborted) {
-        reject(getAbortedReason(signal));
-      }
-      signal.addEventListener("abort", () => {
-        reject(getAbortedReason(signal));
-      });
-    }
-    if (milliseconds === Number.POSITIVE_INFINITY) {
-      promise.then(resolve, reject);
-      return;
-    }
-    const timeoutError = new TimeoutError();
-    timer = customTimers.setTimeout.call(void 0, () => {
-      if (fallback) {
-        try {
-          resolve(fallback());
-        } catch (error) {
-          reject(error);
-        }
-        return;
-      }
-      if (typeof promise.cancel === "function") {
-        promise.cancel();
-      }
-      if (message2 === false) {
-        resolve();
-      } else if (message2 instanceof Error) {
-        reject(message2);
-      } else {
-        timeoutError.message = message2 ?? `Promise timed out after ${milliseconds} milliseconds`;
-        reject(timeoutError);
-      }
-    }, milliseconds);
-    (async () => {
-      try {
-        resolve(await promise);
-      } catch (error) {
-        reject(error);
-      }
-    })();
-  });
-  const cancelablePromise = wrappedPromise.finally(() => {
-    cancelablePromise.clear();
-  });
-  cancelablePromise.clear = () => {
-    customTimers.clearTimeout.call(void 0, timer);
-    timer = void 0;
-  };
-  return cancelablePromise;
-}
-__name(pTimeout, "pTimeout");
-
-// node_modules/p-queue/dist/lower-bound.js
-function lowerBound(array, value, comparator) {
-  let first = 0;
-  let count = array.length;
-  while (count > 0) {
-    const step = Math.trunc(count / 2);
-    let it = first + step;
-    if (comparator(array[it], value) <= 0) {
-      first = ++it;
-      count -= step + 1;
-    } else {
-      count = step;
-    }
-  }
-  return first;
-}
-__name(lowerBound, "lowerBound");
-
-// node_modules/p-queue/dist/priority-queue.js
-var PriorityQueue = class {
-  static {
-    __name(this, "PriorityQueue");
-  }
-  #queue = [];
-  enqueue(run, options) {
-    options = {
-      priority: 0,
-      ...options
-    };
-    const element = {
-      priority: options.priority,
-      run
-    };
-    if (this.size && this.#queue[this.size - 1].priority >= options.priority) {
-      this.#queue.push(element);
-      return;
-    }
-    const index = lowerBound(this.#queue, element, (a, b) => b.priority - a.priority);
-    this.#queue.splice(index, 0, element);
-  }
-  dequeue() {
-    const item = this.#queue.shift();
-    return item?.run;
-  }
-  filter(options) {
-    return this.#queue.filter((element) => element.priority === options.priority).map((element) => element.run);
-  }
-  get size() {
-    return this.#queue.length;
-  }
-};
-
-// node_modules/p-queue/dist/index.js
-var PQueue = class extends import_index3.default {
-  static {
-    __name(this, "PQueue");
-  }
-  #carryoverConcurrencyCount;
-  #isIntervalIgnored;
-  #intervalCount = 0;
-  #intervalCap;
-  #interval;
-  #intervalEnd = 0;
-  #intervalId;
-  #timeoutId;
-  #queue;
-  #queueClass;
-  #pending = 0;
-  // The `!` is needed because of https://github.com/microsoft/TypeScript/issues/32194
-  #concurrency;
-  #isPaused;
-  #throwOnTimeout;
-  /**
-      Per-operation timeout in milliseconds. Operations fulfill once `timeout` elapses if they haven't already.
-  
-      Applies to each future operation.
-      */
-  timeout;
-  // TODO: The `throwOnTimeout` option should affect the return types of `add()` and `addAll()`
-  constructor(options) {
-    super();
-    options = {
-      carryoverConcurrencyCount: false,
-      intervalCap: Number.POSITIVE_INFINITY,
-      interval: 0,
-      concurrency: Number.POSITIVE_INFINITY,
-      autoStart: true,
-      queueClass: PriorityQueue,
-      ...options
-    };
-    if (!(typeof options.intervalCap === "number" && options.intervalCap >= 1)) {
-      throw new TypeError(`Expected \`intervalCap\` to be a number from 1 and up, got \`${options.intervalCap?.toString() ?? ""}\` (${typeof options.intervalCap})`);
-    }
-    if (options.interval === void 0 || !(Number.isFinite(options.interval) && options.interval >= 0)) {
-      throw new TypeError(`Expected \`interval\` to be a finite number >= 0, got \`${options.interval?.toString() ?? ""}\` (${typeof options.interval})`);
-    }
-    this.#carryoverConcurrencyCount = options.carryoverConcurrencyCount;
-    this.#isIntervalIgnored = options.intervalCap === Number.POSITIVE_INFINITY || options.interval === 0;
-    this.#intervalCap = options.intervalCap;
-    this.#interval = options.interval;
-    this.#queue = new options.queueClass();
-    this.#queueClass = options.queueClass;
-    this.concurrency = options.concurrency;
-    this.timeout = options.timeout;
-    this.#throwOnTimeout = options.throwOnTimeout === true;
-    this.#isPaused = options.autoStart === false;
-  }
-  get #doesIntervalAllowAnother() {
-    return this.#isIntervalIgnored || this.#intervalCount < this.#intervalCap;
-  }
-  get #doesConcurrentAllowAnother() {
-    return this.#pending < this.#concurrency;
-  }
-  #next() {
-    this.#pending--;
-    this.#tryToStartAnother();
-    this.emit("next");
-  }
-  #onResumeInterval() {
-    this.#onInterval();
-    this.#initializeIntervalIfNeeded();
-    this.#timeoutId = void 0;
-  }
-  get #isIntervalPaused() {
-    const now = Date.now();
-    if (this.#intervalId === void 0) {
-      const delay2 = this.#intervalEnd - now;
-      if (delay2 < 0) {
-        this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
-      } else {
-        if (this.#timeoutId === void 0) {
-          this.#timeoutId = setTimeout(() => {
-            this.#onResumeInterval();
-          }, delay2);
-        }
-        return true;
-      }
-    }
-    return false;
-  }
-  #tryToStartAnother() {
-    if (this.#queue.size === 0) {
-      if (this.#intervalId) {
-        clearInterval(this.#intervalId);
-      }
-      this.#intervalId = void 0;
-      this.emit("empty");
-      if (this.#pending === 0) {
-        this.emit("idle");
-      }
-      return false;
-    }
-    if (!this.#isPaused) {
-      const canInitializeInterval = !this.#isIntervalPaused;
-      if (this.#doesIntervalAllowAnother && this.#doesConcurrentAllowAnother) {
-        const job = this.#queue.dequeue();
-        if (!job) {
-          return false;
-        }
-        this.emit("active");
-        job();
-        if (canInitializeInterval) {
-          this.#initializeIntervalIfNeeded();
-        }
-        return true;
-      }
-    }
-    return false;
-  }
-  #initializeIntervalIfNeeded() {
-    if (this.#isIntervalIgnored || this.#intervalId !== void 0) {
-      return;
-    }
-    this.#intervalId = setInterval(() => {
-      this.#onInterval();
-    }, this.#interval);
-    this.#intervalEnd = Date.now() + this.#interval;
-  }
-  #onInterval() {
-    if (this.#intervalCount === 0 && this.#pending === 0 && this.#intervalId) {
-      clearInterval(this.#intervalId);
-      this.#intervalId = void 0;
-    }
-    this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
-    this.#processQueue();
-  }
-  /**
-  Executes all queued functions until it reaches the limit.
-  */
-  #processQueue() {
-    while (this.#tryToStartAnother()) {
-    }
-  }
-  get concurrency() {
-    return this.#concurrency;
-  }
-  set concurrency(newConcurrency) {
-    if (!(typeof newConcurrency === "number" && newConcurrency >= 1)) {
-      throw new TypeError(`Expected \`concurrency\` to be a number from 1 and up, got \`${newConcurrency}\` (${typeof newConcurrency})`);
-    }
-    this.#concurrency = newConcurrency;
-    this.#processQueue();
-  }
-  async #throwOnAbort(signal) {
-    return new Promise((_resolve, reject) => {
-      signal.addEventListener("abort", () => {
-        reject(signal.reason);
-      }, { once: true });
-    });
-  }
-  async add(function_, options = {}) {
-    options = {
-      timeout: this.timeout,
-      throwOnTimeout: this.#throwOnTimeout,
-      ...options
-    };
-    return new Promise((resolve, reject) => {
-      this.#queue.enqueue(async () => {
-        this.#pending++;
-        this.#intervalCount++;
-        try {
-          options.signal?.throwIfAborted();
-          let operation = function_({ signal: options.signal });
-          if (options.timeout) {
-            operation = pTimeout(Promise.resolve(operation), { milliseconds: options.timeout });
-          }
-          if (options.signal) {
-            operation = Promise.race([operation, this.#throwOnAbort(options.signal)]);
-          }
-          const result = await operation;
-          resolve(result);
-          this.emit("completed", result);
-        } catch (error) {
-          if (error instanceof TimeoutError && !options.throwOnTimeout) {
-            resolve();
-            return;
-          }
-          reject(error);
-          this.emit("error", error);
-        } finally {
-          this.#next();
-        }
-      }, options);
-      this.emit("add");
-      this.#tryToStartAnother();
-    });
-  }
-  async addAll(functions, options) {
-    return Promise.all(functions.map(async (function_) => this.add(function_, options)));
-  }
-  /**
-  Start (or resume) executing enqueued tasks within concurrency limit. No need to call this if queue is not paused (via `options.autoStart = false` or by `.pause()` method.)
-  */
-  start() {
-    if (!this.#isPaused) {
-      return this;
-    }
-    this.#isPaused = false;
-    this.#processQueue();
-    return this;
-  }
-  /**
-  Put queue execution on hold.
-  */
-  pause() {
-    this.#isPaused = true;
-  }
-  /**
-  Clear the queue.
-  */
-  clear() {
-    this.#queue = new this.#queueClass();
-  }
-  /**
-      Can be called multiple times. Useful if you for example add additional items at a later time.
-  
-      @returns A promise that settles when the queue becomes empty.
-      */
-  async onEmpty() {
-    if (this.#queue.size === 0) {
-      return;
-    }
-    await this.#onEvent("empty");
-  }
-  /**
-      @returns A promise that settles when the queue size is less than the given limit: `queue.size < limit`.
-  
-      If you want to avoid having the queue grow beyond a certain size you can `await queue.onSizeLessThan()` before adding a new item.
-  
-      Note that this only limits the number of items waiting to start. There could still be up to `concurrency` jobs already running that this call does not include in its calculation.
-      */
-  async onSizeLessThan(limit) {
-    if (this.#queue.size < limit) {
-      return;
-    }
-    await this.#onEvent("next", () => this.#queue.size < limit);
-  }
-  /**
-      The difference with `.onEmpty` is that `.onIdle` guarantees that all work from the queue has finished. `.onEmpty` merely signals that the queue is empty, but it could mean that some promises haven't completed yet.
-  
-      @returns A promise that settles when the queue becomes empty, and all promises have completed; `queue.size === 0 && queue.pending === 0`.
-      */
-  async onIdle() {
-    if (this.#pending === 0 && this.#queue.size === 0) {
-      return;
-    }
-    await this.#onEvent("idle");
-  }
-  async #onEvent(event, filter2) {
-    return new Promise((resolve) => {
-      const listener = /* @__PURE__ */ __name(() => {
-        if (filter2 && !filter2()) {
-          return;
-        }
-        this.off(event, listener);
-        resolve();
-      }, "listener");
-      this.on(event, listener);
-    });
-  }
-  /**
-  Size of the queue, the number of queued items waiting to run.
-  */
-  get size() {
-    return this.#queue.size;
-  }
-  /**
-      Size of the queue, filtered by the given options.
-  
-      For example, this can be used to find the number of items remaining in the queue with a specific priority level.
-      */
-  sizeBy(options) {
-    return this.#queue.filter(options).length;
-  }
-  /**
-  Number of running items (no longer in the queue).
-  */
-  get pending() {
-    return this.#pending;
-  }
-  /**
-  Whether the queue is currently paused.
-  */
-  get isPaused() {
-    return this.#isPaused;
-  }
-};
 
 // node_modules/observable-webworkers/dist/src/index.js
 var events = {};
@@ -17406,11 +15620,6 @@ function createMortice(options) {
 }
 __name(createMortice, "createMortice");
 
-// node_modules/@libp2p/peer-store/dist/src/errors.js
-var codes3 = {
-  ERR_INVALID_PARAMETERS: "ERR_INVALID_PARAMETERS"
-};
-
 // node_modules/@libp2p/peer-store/dist/src/pb/peer.js
 var Peer;
 (function(Peer2) {
@@ -17434,24 +15643,27 @@ var Peer;
           if (opts.lengthDelimited !== false) {
             w2.ldelim();
           }
-        }, (reader, length3) => {
+        }, (reader, length3, opts = {}) => {
           const obj = {
             key: "",
-            value: new Uint8Array(0)
+            value: alloc(0)
           };
           const end = length3 == null ? reader.len : reader.pos + length3;
           while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.key = reader.string();
                 break;
-              case 2:
+              }
+              case 2: {
                 obj.value = reader.bytes();
                 break;
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7);
                 break;
+              }
             }
           }
           return obj;
@@ -17462,8 +15674,8 @@ var Peer;
     Peer$metadataEntry2.encode = (obj) => {
       return encodeMessage(obj, Peer$metadataEntry2.codec());
     };
-    Peer$metadataEntry2.decode = (buf) => {
-      return decodeMessage(buf, Peer$metadataEntry2.codec());
+    Peer$metadataEntry2.decode = (buf, opts) => {
+      return decodeMessage(buf, Peer$metadataEntry2.codec(), opts);
     };
   })(Peer$metadataEntry = Peer2.Peer$metadataEntry || (Peer2.Peer$metadataEntry = {}));
   let Peer$tagsEntry;
@@ -17486,7 +15698,7 @@ var Peer;
           if (opts.lengthDelimited !== false) {
             w2.ldelim();
           }
-        }, (reader, length3) => {
+        }, (reader, length3, opts = {}) => {
           const obj = {
             key: ""
           };
@@ -17494,15 +15706,20 @@ var Peer;
           while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
-              case 1:
+              case 1: {
                 obj.key = reader.string();
                 break;
-              case 2:
-                obj.value = Tag.codec().decode(reader, reader.uint32());
+              }
+              case 2: {
+                obj.value = Tag.codec().decode(reader, reader.uint32(), {
+                  limits: opts.limits?.value
+                });
                 break;
-              default:
+              }
+              default: {
                 reader.skipType(tag & 7);
                 break;
+              }
             }
           }
           return obj;
@@ -17513,8 +15730,8 @@ var Peer;
     Peer$tagsEntry2.encode = (obj) => {
       return encodeMessage(obj, Peer$tagsEntry2.codec());
     };
-    Peer$tagsEntry2.decode = (buf) => {
-      return decodeMessage(buf, Peer$tagsEntry2.codec());
+    Peer$tagsEntry2.decode = (buf, opts) => {
+      return decodeMessage(buf, Peer$tagsEntry2.codec(), opts);
     };
   })(Peer$tagsEntry = Peer2.Peer$tagsEntry || (Peer2.Peer$tagsEntry = {}));
   let _codec;
@@ -17559,7 +15776,7 @@ var Peer;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {
           addresses: [],
           protocols: [],
@@ -17570,31 +15787,54 @@ var Peer;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
-              obj.addresses.push(Address.codec().decode(reader, reader.uint32()));
+            case 1: {
+              if (opts.limits?.addresses != null && obj.addresses.length === opts.limits.addresses) {
+                throw new MaxLengthError('Decode error - map field "addresses" had too many elements');
+              }
+              obj.addresses.push(Address.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.addresses$
+              }));
               break;
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.protocols != null && obj.protocols.length === opts.limits.protocols) {
+                throw new MaxLengthError('Decode error - map field "protocols" had too many elements');
+              }
               obj.protocols.push(reader.string());
               break;
-            case 4:
+            }
+            case 4: {
               obj.publicKey = reader.bytes();
               break;
-            case 5:
+            }
+            case 5: {
               obj.peerRecordEnvelope = reader.bytes();
               break;
+            }
             case 6: {
+              if (opts.limits?.metadata != null && obj.metadata.size === opts.limits.metadata) {
+                throw new MaxSizeError('Decode error - map field "metadata" had too many elements');
+              }
               const entry = Peer2.Peer$metadataEntry.codec().decode(reader, reader.uint32());
               obj.metadata.set(entry.key, entry.value);
               break;
             }
             case 7: {
-              const entry = Peer2.Peer$tagsEntry.codec().decode(reader, reader.uint32());
+              if (opts.limits?.tags != null && obj.tags.size === opts.limits.tags) {
+                throw new MaxSizeError('Decode error - map field "tags" had too many elements');
+              }
+              const entry = Peer2.Peer$tagsEntry.codec().decode(reader, reader.uint32(), {
+                limits: {
+                  value: opts.limits?.tags$value
+                }
+              });
               obj.tags.set(entry.key, entry.value);
               break;
             }
-            default:
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -17605,8 +15845,8 @@ var Peer;
   Peer2.encode = (obj) => {
     return encodeMessage(obj, Peer2.codec());
   };
-  Peer2.decode = (buf) => {
-    return decodeMessage(buf, Peer2.codec());
+  Peer2.decode = (buf, opts) => {
+    return decodeMessage(buf, Peer2.codec(), opts);
   };
 })(Peer || (Peer = {}));
 var Address;
@@ -17629,23 +15869,26 @@ var Address;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {
-          multiaddr: new Uint8Array(0)
+          multiaddr: alloc(0)
         };
         const end = length3 == null ? reader.len : reader.pos + length3;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.multiaddr = reader.bytes();
               break;
-            case 2:
+            }
+            case 2: {
               obj.isCertified = reader.bool();
               break;
-            default:
+            }
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -17656,8 +15899,8 @@ var Address;
   Address2.encode = (obj) => {
     return encodeMessage(obj, Address2.codec());
   };
-  Address2.decode = (buf) => {
-    return decodeMessage(buf, Address2.codec());
+  Address2.decode = (buf, opts) => {
+    return decodeMessage(buf, Address2.codec(), opts);
   };
 })(Address || (Address = {}));
 var Tag;
@@ -17680,7 +15923,7 @@ var Tag;
         if (opts.lengthDelimited !== false) {
           w2.ldelim();
         }
-      }, (reader, length3) => {
+      }, (reader, length3, opts = {}) => {
         const obj = {
           value: 0
         };
@@ -17688,15 +15931,18 @@ var Tag;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.value = reader.uint32();
               break;
-            case 2:
+            }
+            case 2: {
               obj.expiry = reader.uint64();
               break;
-            default:
+            }
+            default: {
               reader.skipType(tag & 7);
               break;
+            }
           }
         }
         return obj;
@@ -17707,8 +15953,8 @@ var Tag;
   Tag2.encode = (obj) => {
     return encodeMessage(obj, Tag2.codec());
   };
-  Tag2.decode = (buf) => {
-    return decodeMessage(buf, Tag2.codec());
+  Tag2.decode = (buf, opts) => {
+    return decodeMessage(buf, Tag2.codec(), opts);
   };
 })(Tag || (Tag = {}));
 
@@ -17716,10 +15962,8 @@ var Tag;
 function bytesToPeer(peerId2, buf) {
   const peer = Peer.decode(buf);
   if (peer.publicKey != null && peerId2.publicKey == null) {
-    peerId2 = peerIdFromPeerId({
-      ...peerId2,
-      publicKey: peerId2.publicKey
-    });
+    const publicKey = publicKeyFromProtobuf(peer.publicKey);
+    peerId2 = peerIdFromPublicKey(publicKey);
   }
   const tags = /* @__PURE__ */ new Map();
   const now = BigInt(Date.now());
@@ -18110,7 +16354,7 @@ __name(flatten, "flatten");
 var NAMESPACE_COMMON = "/peers/";
 function peerIdToDatastoreKey(peerId2) {
   if (!isPeerId(peerId2) || peerId2.type == null) {
-    throw new CodeError("Invalid PeerId", codes3.ERR_INVALID_PARAMETERS);
+    throw new InvalidParametersError("Invalid PeerId");
   }
   const b32key = peerId2.toCID().toString();
   return new Key(`${NAMESPACE_COMMON}${b32key}`);
@@ -18128,7 +16372,7 @@ async function dedupeFilterAndSortAddresses(peerId2, filter2, addresses) {
       addr.multiaddr = multiaddr(addr.multiaddr);
     }
     if (!isMultiaddr(addr.multiaddr)) {
-      throw new CodeError("Multiaddr was invalid", codes3.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("Multiaddr was invalid");
     }
     if (!await filter2(peerId2, addr.multiaddr)) {
       continue;
@@ -18157,14 +16401,14 @@ __name(dedupeFilterAndSortAddresses, "dedupeFilterAndSortAddresses");
 // node_modules/@libp2p/peer-store/dist/src/utils/to-peer-pb.js
 async function toPeerPB(peerId2, data, strategy, options) {
   if (data == null) {
-    throw new CodeError("Invalid PeerData", codes3.ERR_INVALID_PARAMETERS);
+    throw new InvalidParametersError("Invalid PeerData");
   }
-  if (data.publicKey != null && peerId2.publicKey != null && !equals3(data.publicKey, peerId2.publicKey)) {
-    throw new CodeError("publicKey bytes do not match peer id publicKey bytes", codes3.ERR_INVALID_PARAMETERS);
+  if (data.publicKey != null && peerId2.publicKey != null && !data.publicKey.equals(peerId2.publicKey)) {
+    throw new InvalidParametersError("publicKey bytes do not match peer id publicKey bytes");
   }
   const existingPeer = options.existingPeer;
   if (existingPeer != null && !peerId2.equals(existingPeer.id)) {
-    throw new CodeError("peer id did not match existing peer id", codes3.ERR_INVALID_PARAMETERS);
+    throw new InvalidParametersError("peer id did not match existing peer id");
   }
   let addresses = existingPeer?.addresses ?? [];
   let protocols = new Set(existingPeer?.protocols ?? []);
@@ -18249,6 +16493,14 @@ async function toPeerPB(peerId2, data, strategy, options) {
       peerRecordEnvelope = data.peerRecordEnvelope;
     }
   }
+  let publicKey;
+  if (existingPeer?.id.publicKey != null) {
+    publicKey = publicKeyToProtobuf(existingPeer.id.publicKey);
+  } else if (data.publicKey != null) {
+    publicKey = publicKeyToProtobuf(data.publicKey);
+  } else if (peerId2.publicKey != null) {
+    publicKey = publicKeyToProtobuf(peerId2.publicKey);
+  }
   const output2 = {
     addresses: await dedupeFilterAndSortAddresses(peerId2, options.addressFilter ?? (async () => true), addresses),
     protocols: [...protocols.values()].sort((a, b) => {
@@ -18256,7 +16508,7 @@ async function toPeerPB(peerId2, data, strategy, options) {
     }),
     metadata,
     tags,
-    publicKey: existingPeer?.id.publicKey ?? data.publicKey ?? peerId2.publicKey,
+    publicKey,
     peerRecordEnvelope
   };
   if (peerId2.type !== "RSA") {
@@ -18285,31 +16537,31 @@ function createSortedMap(entries, options) {
 __name(createSortedMap, "createSortedMap");
 function validateMetadata(key, value) {
   if (typeof key !== "string") {
-    throw new CodeError("Metadata key must be a string", codes3.ERR_INVALID_PARAMETERS);
+    throw new InvalidParametersError("Metadata key must be a string");
   }
   if (!(value instanceof Uint8Array)) {
-    throw new CodeError("Metadata value must be a Uint8Array", codes3.ERR_INVALID_PARAMETERS);
+    throw new InvalidParametersError("Metadata value must be a Uint8Array");
   }
 }
 __name(validateMetadata, "validateMetadata");
 function validateTag(key, tag) {
   if (typeof key !== "string") {
-    throw new CodeError("Tag name must be a string", codes3.ERR_INVALID_PARAMETERS);
+    throw new InvalidParametersError("Tag name must be a string");
   }
   if (tag.value != null) {
     if (parseInt(`${tag.value}`, 10) !== tag.value) {
-      throw new CodeError("Tag value must be an integer", codes3.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("Tag value must be an integer");
     }
     if (tag.value < 0 || tag.value > 100) {
-      throw new CodeError("Tag value must be between 0-100", codes3.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("Tag value must be between 0-100");
     }
   }
   if (tag.ttl != null) {
     if (parseInt(`${tag.ttl}`, 10) !== tag.ttl) {
-      throw new CodeError("Tag ttl must be an integer", codes3.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("Tag ttl must be an integer");
     }
     if (tag.ttl < 0) {
-      throw new CodeError("Tag ttl must be between greater than 0", codes3.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("Tag ttl must be between greater than 0");
     }
   }
 }
@@ -18332,8 +16584,8 @@ __name(mapTag, "mapTag");
 // node_modules/@libp2p/peer-store/dist/src/store.js
 function decodePeer(key, value, cache3) {
   const base32Str = key.toString().split("/")[2];
-  const buf = base32.decode(base32Str);
-  const peerId2 = peerIdFromBytes(buf);
+  const buf = CID.parse(base32Str, base32);
+  const peerId2 = peerIdFromCID(buf);
   const cached = cache3.get(peerId2);
   if (cached != null) {
     return cached;
@@ -18380,7 +16632,7 @@ var PersistentStore = class {
   }
   async delete(peerId2) {
     if (this.peerId.equals(peerId2)) {
-      throw new CodeError("Cannot delete self peer", codes3.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("Cannot delete self peer");
     }
     await this.datastore.delete(peerIdToDatastoreKey(peerId2));
   }
@@ -18430,7 +16682,7 @@ var PersistentStore = class {
         existingPeer
       };
     } catch (err) {
-      if (err.code !== "ERR_NOT_FOUND") {
+      if (err.name !== "NotFoundError") {
         throw err;
       }
     }
@@ -18568,16 +16820,17 @@ var PersistentPeerStore = class {
   }
   async consumePeerRecord(buf, expectedPeer) {
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord2.DOMAIN);
-    if (expectedPeer?.equals(envelope.peerId) === false) {
-      this.log("envelope peer id was not the expected peer id - expected: %p received: %p", expectedPeer, envelope.peerId);
+    const peerId2 = peerIdFromCID(envelope.publicKey.toCID());
+    if (expectedPeer?.equals(peerId2) === false) {
+      this.log("envelope peer id was not the expected peer id - expected: %p received: %p", expectedPeer, peerId2);
       return false;
     }
     const peerRecord = PeerRecord2.createFromProtobuf(envelope.payload);
     let peer;
     try {
-      peer = await this.get(envelope.peerId);
+      peer = await this.get(peerId2);
     } catch (err) {
-      if (err.code !== "ERR_NOT_FOUND") {
+      if (err.name !== "NotFoundError") {
         throw err;
       }
     }
@@ -18607,6 +16860,17 @@ var PersistentPeerStore = class {
     } else {
       this.events.safeDispatchEvent("peer:update", { detail: result });
     }
+  }
+};
+
+// node_modules/interface-store/dist/src/errors.js
+var NotFoundError2 = class _NotFoundError extends Error {
+  static name = "NotFoundError";
+  static code = "ERR_NOT_FOUND";
+  name = _NotFoundError.name;
+  code = _NotFoundError.code;
+  constructor(message2 = "Not Found") {
+    super(message2);
   }
 };
 
@@ -18765,7 +17029,7 @@ function take(source, limit) {
 __name(take, "take");
 var src_default8 = take;
 
-// node_modules/libp2p/node_modules/datastore-core/dist/src/base.js
+// node_modules/datastore-core/dist/src/base.js
 var BaseDatastore = class {
   static {
     __name(this, "BaseDatastore");
@@ -18880,15 +17144,7 @@ var BaseDatastore = class {
   }
 };
 
-// node_modules/libp2p/node_modules/datastore-core/dist/src/errors.js
-var import_err_code = __toESM(require_err_code(), 1);
-function notFoundError(err) {
-  err = err ?? new Error("Not Found");
-  return (0, import_err_code.default)(err, "ERR_NOT_FOUND");
-}
-__name(notFoundError, "notFoundError");
-
-// node_modules/libp2p/node_modules/datastore-core/dist/src/memory.js
+// node_modules/datastore-core/dist/src/memory.js
 var MemoryDatastore = class extends BaseDatastore {
   static {
     __name(this, "MemoryDatastore");
@@ -18905,7 +17161,7 @@ var MemoryDatastore = class extends BaseDatastore {
   get(key) {
     const result = this.data.get(key.toString());
     if (result == null) {
-      throw notFoundError();
+      throw new NotFoundError2();
     }
     return result;
   }
@@ -19070,6 +17326,139 @@ var DefaultAddressManager = class {
   }
 };
 
+// node_modules/libp2p/dist/src/errors.js
+var messages;
+(function(messages2) {
+  messages2["NOT_STARTED_YET"] = "The libp2p node is not started yet";
+  messages2["NOT_FOUND"] = "Not found";
+})(messages || (messages = {}));
+var MissingServiceError = class extends Error {
+  static {
+    __name(this, "MissingServiceError");
+  }
+  constructor(message2 = "Missing service") {
+    super(message2);
+    this.name = "MissingServiceError";
+  }
+};
+var UnmetServiceDependenciesError = class extends Error {
+  static {
+    __name(this, "UnmetServiceDependenciesError");
+  }
+  constructor(message2 = "Unmet service dependencies") {
+    super(message2);
+    this.name = "UnmetServiceDependenciesError";
+  }
+};
+var NoContentRoutersError = class extends Error {
+  static {
+    __name(this, "NoContentRoutersError");
+  }
+  constructor(message2 = "No content routers available") {
+    super(message2);
+    this.name = "NoContentRoutersError";
+  }
+};
+var NoPeerRoutersError = class extends Error {
+  static {
+    __name(this, "NoPeerRoutersError");
+  }
+  constructor(message2 = "No peer routers available") {
+    super(message2);
+    this.name = "NoPeerRoutersError";
+  }
+};
+var QueriedForSelfError = class extends Error {
+  static {
+    __name(this, "QueriedForSelfError");
+  }
+  constructor(message2 = "Should not try to find self") {
+    super(message2);
+    this.name = "QueriedForSelfError";
+  }
+};
+var UnhandledProtocolError = class extends Error {
+  static {
+    __name(this, "UnhandledProtocolError");
+  }
+  constructor(message2 = "Unhandled protocol error") {
+    super(message2);
+    this.name = "UnhandledProtocolError";
+  }
+};
+var DuplicateProtocolHandlerError = class extends Error {
+  static {
+    __name(this, "DuplicateProtocolHandlerError");
+  }
+  constructor(message2 = "Duplicate protocol handler error") {
+    super(message2);
+    this.name = "DuplicateProtocolHandlerError";
+  }
+};
+var DialDeniedError = class extends Error {
+  static {
+    __name(this, "DialDeniedError");
+  }
+  constructor(message2 = "Dial denied error") {
+    super(message2);
+    this.name = "DialDeniedError";
+  }
+};
+var NoValidAddressesError = class extends Error {
+  static {
+    __name(this, "NoValidAddressesError");
+  }
+  constructor(message2 = "No valid addresses") {
+    super(message2);
+    this.name = "NoValidAddressesError";
+  }
+};
+var ConnectionInterceptedError = class extends Error {
+  static {
+    __name(this, "ConnectionInterceptedError");
+  }
+  constructor(message2 = "Connection intercepted") {
+    super(message2);
+    this.name = "ConnectionInterceptedError";
+  }
+};
+var ConnectionDeniedError = class extends Error {
+  static {
+    __name(this, "ConnectionDeniedError");
+  }
+  constructor(message2 = "Connection denied") {
+    super(message2);
+    this.name = "ConnectionDeniedError";
+  }
+};
+var MuxerUnavailableError = class extends Error {
+  static {
+    __name(this, "MuxerUnavailableError");
+  }
+  constructor(message2 = "Stream is not multiplexed") {
+    super(message2);
+    this.name = "MuxerUnavailableError";
+  }
+};
+var EncryptionFailedError = class extends Error {
+  static {
+    __name(this, "EncryptionFailedError");
+  }
+  constructor(message2 = "Encryption failed") {
+    super(message2);
+    this.name = "EncryptionFailedError";
+  }
+};
+var TransportUnavailableError = class extends Error {
+  static {
+    __name(this, "TransportUnavailableError");
+  }
+  constructor(message2 = "Transport unavailable") {
+    super(message2);
+    this.name = "TransportUnavailableError";
+  }
+};
+
 // node_modules/libp2p/dist/src/components.js
 var DefaultComponents = class {
   static {
@@ -19139,7 +17528,7 @@ function defaultComponents(init = {}) {
       if (typeof prop === "string" && !NON_SERVICE_PROPERTIES.includes(prop)) {
         const service = components.components[prop];
         if (service == null && !OPTIONAL_SERVICES.includes(prop)) {
-          throw new CodeError(`${prop} not set`, "ERR_SERVICE_MISSING");
+          throw new MissingServiceError(`${prop} not set`);
         }
         return service;
       }
@@ -19167,7 +17556,7 @@ function checkServiceDependencies(components) {
   for (const service of Object.values(components.components)) {
     for (const capability of getServiceDependencies(service)) {
       if (serviceCapabilities2[capability] !== true) {
-        throw new CodeError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`, "ERR_UNMET_SERVICE_DEPENDENCIES");
+        throw new UnmetServiceDependenciesError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`);
       }
     }
   }
@@ -19192,86 +17581,6 @@ function getServiceName(service) {
 }
 __name(getServiceName, "getServiceName");
 
-// node_modules/@libp2p/utils/dist/src/private-ip.js
-var import_netmask2 = __toESM(require_netmask(), 1);
-var PRIVATE_IP_RANGES = [
-  "0.0.0.0/8",
-  "10.0.0.0/8",
-  "100.64.0.0/10",
-  "127.0.0.0/8",
-  "169.254.0.0/16",
-  "172.16.0.0/12",
-  "192.0.0.0/24",
-  "192.0.0.0/29",
-  "192.0.0.8/32",
-  "192.0.0.9/32",
-  "192.0.0.10/32",
-  "192.0.0.170/32",
-  "192.0.0.171/32",
-  "192.0.2.0/24",
-  "192.31.196.0/24",
-  "192.52.193.0/24",
-  "192.88.99.0/24",
-  "192.168.0.0/16",
-  "192.175.48.0/24",
-  "198.18.0.0/15",
-  "198.51.100.0/24",
-  "203.0.113.0/24",
-  "240.0.0.0/4",
-  "255.255.255.255/32"
-];
-var NETMASK_RANGES = PRIVATE_IP_RANGES.map((ipRange) => new import_netmask2.Netmask(ipRange));
-function ipv4Check(ipAddr) {
-  for (const r of NETMASK_RANGES) {
-    if (r.contains(ipAddr))
-      return true;
-  }
-  return false;
-}
-__name(ipv4Check, "ipv4Check");
-function isIpv4MappedIpv6(ipAddr) {
-  return /^::ffff:([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,4})$/.test(ipAddr);
-}
-__name(isIpv4MappedIpv6, "isIpv4MappedIpv6");
-function ipv4MappedIpv6Check(ipAddr) {
-  const parts = ipAddr.split(":");
-  if (parts.length < 2) {
-    return false;
-  }
-  const octet34 = parts[parts.length - 1].padStart(4, "0");
-  const octet12 = parts[parts.length - 2].padStart(4, "0");
-  const ip4 = `${parseInt(octet12.substring(0, 2), 16)}.${parseInt(octet12.substring(2), 16)}.${parseInt(octet34.substring(0, 2), 16)}.${parseInt(octet34.substring(2), 16)}`;
-  return ipv4Check(ip4);
-}
-__name(ipv4MappedIpv6Check, "ipv4MappedIpv6Check");
-function isIpv4EmbeddedIpv6(ipAddr) {
-  return /^::ffff:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr);
-}
-__name(isIpv4EmbeddedIpv6, "isIpv4EmbeddedIpv6");
-function ipv4EmbeddedIpv6Check(ipAddr) {
-  const parts = ipAddr.split(":");
-  const ip4 = parts[parts.length - 1];
-  return ipv4Check(ip4);
-}
-__name(ipv4EmbeddedIpv6Check, "ipv4EmbeddedIpv6Check");
-function ipv6Check(ipAddr) {
-  return /^::$/.test(ipAddr) || /^::1$/.test(ipAddr) || /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) || /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) || /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ipAddr) || /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ipAddr) || /^ff([0-9a-fA-F]{2,2}):/i.test(ipAddr);
-}
-__name(ipv6Check, "ipv6Check");
-function isPrivateIp(ip) {
-  if (isIPv4(ip))
-    return ipv4Check(ip);
-  else if (isIpv4MappedIpv6(ip))
-    return ipv4MappedIpv6Check(ip);
-  else if (isIpv4EmbeddedIpv6(ip))
-    return ipv4EmbeddedIpv6Check(ip);
-  else if (isIPv6(ip))
-    return ipv6Check(ip);
-  else
-    return void 0;
-}
-__name(isPrivateIp, "isPrivateIp");
-
 // node_modules/libp2p/dist/src/config/connection-gater.browser.js
 function connectionGater(gater = {}) {
   return {
@@ -19294,674 +17603,6 @@ function connectionGater(gater = {}) {
   };
 }
 __name(connectionGater, "connectionGater");
-
-// node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
-var toParts = /* @__PURE__ */ __name((ma) => {
-  return ma.toString().split("/").slice(1);
-}, "toParts");
-var func = /* @__PURE__ */ __name((fn) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      if (vals.length < 1) {
-        return false;
-      }
-      if (fn(vals[0])) {
-        return vals.slice(1);
-      }
-      return false;
-    }, "match"),
-    pattern: "fn"
-  };
-}, "func");
-var literal = /* @__PURE__ */ __name((str) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => func((val) => val === str).match(vals), "match"),
-    pattern: str
-  };
-}, "literal");
-var string2 = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => func((val) => typeof val === "string").match(vals), "match"),
-    pattern: "{string}"
-  };
-}, "string");
-var number2 = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => func((val) => !isNaN(parseInt(val))).match(vals), "match"),
-    pattern: "{number}"
-  };
-}, "number");
-var peerId = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      if (vals.length < 2) {
-        return false;
-      }
-      if (vals[0] !== "p2p" && vals[0] !== "ipfs") {
-        return false;
-      }
-      if (vals[1].startsWith("Q") || vals[1].startsWith("1")) {
-        try {
-          base58btc.decode(`z${vals[1]}`);
-        } catch (err) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-      return vals.slice(2);
-    }, "match"),
-    pattern: "/p2p/{peerid}"
-  };
-}, "peerId");
-var certhash = /* @__PURE__ */ __name(() => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      if (vals.length < 2) {
-        return false;
-      }
-      if (vals[0] !== "certhash") {
-        return false;
-      }
-      try {
-        base64url.decode(vals[1]);
-      } catch {
-        return false;
-      }
-      return vals.slice(2);
-    }, "match"),
-    pattern: "/certhash/{certhash}"
-  };
-}, "certhash");
-var optional = /* @__PURE__ */ __name((matcher) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      const result = matcher.match(vals);
-      if (result === false) {
-        return vals;
-      }
-      return result;
-    }, "match"),
-    pattern: `optional(${matcher.pattern})`
-  };
-}, "optional");
-var or2 = /* @__PURE__ */ __name((...matchers) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      let matches;
-      for (const matcher of matchers) {
-        const result = matcher.match(vals);
-        if (result === false) {
-          continue;
-        }
-        if (matches == null || result.length < matches.length) {
-          matches = result;
-        }
-      }
-      if (matches == null) {
-        return false;
-      }
-      return matches;
-    }, "match"),
-    pattern: `or(${matchers.map((m2) => m2.pattern).join(", ")})`
-  };
-}, "or");
-var and = /* @__PURE__ */ __name((...matchers) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      for (const matcher of matchers) {
-        const result = matcher.match(vals);
-        if (result === false) {
-          return false;
-        }
-        vals = result;
-      }
-      return vals;
-    }, "match"),
-    pattern: `and(${matchers.map((m2) => m2.pattern).join(", ")})`
-  };
-}, "and");
-function fmt(...matchers) {
-  function match(ma) {
-    let parts = toParts(ma);
-    for (const matcher of matchers) {
-      const result = matcher.match(parts);
-      if (result === false) {
-        return false;
-      }
-      parts = result;
-    }
-    return parts;
-  }
-  __name(match, "match");
-  function matches(ma) {
-    const result = match(ma);
-    return result !== false;
-  }
-  __name(matches, "matches");
-  function exactMatch(ma) {
-    const result = match(ma);
-    if (result === false) {
-      return false;
-    }
-    return result.length === 0;
-  }
-  __name(exactMatch, "exactMatch");
-  return {
-    matches,
-    exactMatch
-  };
-}
-__name(fmt, "fmt");
-var _DNS4 = and(literal("dns4"), string2());
-var _DNS6 = and(literal("dns6"), string2());
-var _DNSADDR = and(literal("dnsaddr"), string2());
-var _DNS = and(literal("dns"), string2());
-var DNS4 = fmt(_DNS4);
-var DNS6 = fmt(_DNS6);
-var DNSADDR = fmt(_DNSADDR);
-var DNS = fmt(or2(_DNS, _DNSADDR, _DNS4, _DNS6));
-var _IP4 = and(literal("ip4"), func(isIPv4));
-var _IP6 = and(literal("ip6"), func(isIPv6));
-var _IP = or2(_IP4, _IP6);
-var _IP_OR_DOMAIN = or2(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
-var IP_OR_DOMAIN = fmt(_IP_OR_DOMAIN);
-var IP4 = fmt(_IP4);
-var IP6 = fmt(_IP6);
-var IP = fmt(_IP);
-var _TCP = and(_IP_OR_DOMAIN, literal("tcp"), number2());
-var _UDP = and(_IP_OR_DOMAIN, literal("udp"), number2());
-var TCP = fmt(_TCP);
-var UDP = fmt(_UDP);
-var _QUIC = and(_UDP, literal("quic"));
-var _QUICV1 = and(_UDP, literal("quic-v1"));
-var QUIC_V0_OR_V1 = or2(_QUIC, _QUICV1);
-var QUIC = fmt(_QUIC);
-var QUICV1 = fmt(_QUICV1);
-var _WEB = or2(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUICV1);
-var _WebSockets = or2(and(_WEB, literal("ws"), optional(peerId())));
-var WebSockets = fmt(_WebSockets);
-var _WebSocketsSecure = or2(and(_WEB, literal("wss"), optional(peerId())), and(_WEB, literal("tls"), literal("ws"), optional(peerId())));
-var WebSocketsSecure = fmt(_WebSocketsSecure);
-var _WebRTCDirect = and(_UDP, literal("webrtc-direct"), optional(certhash()), optional(certhash()), optional(peerId()));
-var WebRTCDirect = fmt(_WebRTCDirect);
-var _WebTransport = and(_QUICV1, literal("webtransport"), optional(certhash()), optional(certhash()), optional(peerId()));
-var WebTransport = fmt(_WebTransport);
-var _P2P = or2(_WebSockets, _WebSocketsSecure, and(_TCP, optional(peerId())), and(QUIC_V0_OR_V1, optional(peerId())), and(_IP_OR_DOMAIN, optional(peerId())), _WebRTCDirect, _WebTransport, peerId());
-var P2P = fmt(_P2P);
-var _Circuit = and(_P2P, literal("p2p-circuit"), peerId());
-var Circuit = fmt(_Circuit);
-var _WebRTC = or2(and(_P2P, literal("p2p-circuit"), literal("webrtc"), optional(peerId())), and(_P2P, literal("webrtc"), optional(peerId())), literal("webrtc"));
-var WebRTC = fmt(_WebRTC);
-var _HTTP = or2(and(_IP_OR_DOMAIN, literal("tcp"), number2(), literal("http"), optional(peerId())), and(_IP_OR_DOMAIN, literal("http"), optional(peerId())));
-var HTTP = fmt(_HTTP);
-var _HTTPS = or2(and(_IP_OR_DOMAIN, literal("tcp"), or2(and(literal("443"), literal("http")), and(number2(), literal("https"))), optional(peerId())), and(_IP_OR_DOMAIN, literal("tls"), literal("http"), optional(peerId())), and(_IP_OR_DOMAIN, literal("https"), optional(peerId())));
-var HTTPS = fmt(_HTTPS);
-
-// node_modules/@libp2p/utils/dist/src/multiaddr/is-private.js
-function isPrivate(ma) {
-  try {
-    const { address } = ma.nodeAddress();
-    return Boolean(isPrivateIp(address));
-  } catch {
-    return true;
-  }
-}
-__name(isPrivate, "isPrivate");
-
-// node_modules/@libp2p/utils/dist/src/address-sort.js
-function publicAddressesFirst(a, b) {
-  const isAPrivate = isPrivate(a.multiaddr);
-  const isBPrivate = isPrivate(b.multiaddr);
-  if (isAPrivate && !isBPrivate) {
-    return 1;
-  } else if (!isAPrivate && isBPrivate) {
-    return -1;
-  }
-  return 0;
-}
-__name(publicAddressesFirst, "publicAddressesFirst");
-function certifiedAddressesFirst(a, b) {
-  if (a.isCertified && !b.isCertified) {
-    return -1;
-  } else if (!a.isCertified && b.isCertified) {
-    return 1;
-  }
-  return 0;
-}
-__name(certifiedAddressesFirst, "certifiedAddressesFirst");
-function circuitRelayAddressesLast(a, b) {
-  const isACircuit = Circuit.exactMatch(a.multiaddr);
-  const isBCircuit = Circuit.exactMatch(b.multiaddr);
-  if (isACircuit && !isBCircuit) {
-    return 1;
-  } else if (!isACircuit && isBCircuit) {
-    return -1;
-  }
-  return 0;
-}
-__name(circuitRelayAddressesLast, "circuitRelayAddressesLast");
-function defaultAddressSort(a, b) {
-  const publicResult = publicAddressesFirst(a, b);
-  if (publicResult !== 0) {
-    return publicResult;
-  }
-  const relayResult = circuitRelayAddressesLast(a, b);
-  if (relayResult !== 0) {
-    return relayResult;
-  }
-  const certifiedResult = certifiedAddressesFirst(a, b);
-  return certifiedResult;
-}
-__name(defaultAddressSort, "defaultAddressSort");
-
-// node_modules/progress-events/dist/src/index.js
-var CustomProgressEvent = class extends Event {
-  static {
-    __name(this, "CustomProgressEvent");
-  }
-  type;
-  detail;
-  constructor(type, detail) {
-    super(type);
-    this.type = type;
-    this.detail = detail;
-  }
-};
-
-// node_modules/@multiformats/dns/dist/src/utils/get-types.js
-function getTypes(types) {
-  const DEFAULT_TYPES = [
-    RecordType.A
-  ];
-  if (types == null) {
-    return DEFAULT_TYPES;
-  }
-  if (Array.isArray(types)) {
-    if (types.length === 0) {
-      return DEFAULT_TYPES;
-    }
-    return types;
-  }
-  return [
-    types
-  ];
-}
-__name(getTypes, "getTypes");
-
-// node_modules/@multiformats/dns/dist/src/utils/to-dns-response.js
-var DEFAULT_TTL = 60;
-function toDNSResponse(obj) {
-  return {
-    Status: obj.Status ?? 0,
-    TC: obj.TC ?? obj.flag_tc ?? false,
-    RD: obj.RD ?? obj.flag_rd ?? false,
-    RA: obj.RA ?? obj.flag_ra ?? false,
-    AD: obj.AD ?? obj.flag_ad ?? false,
-    CD: obj.CD ?? obj.flag_cd ?? false,
-    Question: (obj.Question ?? obj.questions ?? []).map((question) => {
-      return {
-        name: question.name,
-        type: RecordType[question.type]
-      };
-    }),
-    Answer: (obj.Answer ?? obj.answers ?? []).map((answer) => {
-      return {
-        name: answer.name,
-        type: RecordType[answer.type],
-        TTL: answer.TTL ?? answer.ttl ?? DEFAULT_TTL,
-        data: answer.data instanceof Uint8Array ? toString2(answer.data) : answer.data
-      };
-    })
-  };
-}
-__name(toDNSResponse, "toDNSResponse");
-
-// node_modules/@multiformats/dns/dist/src/resolvers/dns-json-over-https.js
-var DEFAULT_QUERY_CONCURRENCY = 4;
-function dnsJsonOverHttps(url, init = {}) {
-  const httpQueue = new PQueue({
-    concurrency: init.queryConcurrency ?? DEFAULT_QUERY_CONCURRENCY
-  });
-  return async (fqdn, options = {}) => {
-    const searchParams = new URLSearchParams();
-    searchParams.set("name", fqdn);
-    getTypes(options.types).forEach((type) => {
-      searchParams.append("type", RecordType[type]);
-    });
-    options.onProgress?.(new CustomProgressEvent("dns:query", { detail: fqdn }));
-    const response = await httpQueue.add(async () => {
-      const res = await fetch(`${url}?${searchParams}`, {
-        headers: {
-          accept: "application/dns-json"
-        },
-        signal: options?.signal
-      });
-      if (res.status !== 200) {
-        throw new Error(`Unexpected HTTP status: ${res.status} - ${res.statusText}`);
-      }
-      const response2 = toDNSResponse(await res.json());
-      options.onProgress?.(new CustomProgressEvent("dns:response", { detail: response2 }));
-      return response2;
-    }, {
-      signal: options.signal
-    });
-    if (response == null) {
-      throw new Error("No DNS response received");
-    }
-    return response;
-  };
-}
-__name(dnsJsonOverHttps, "dnsJsonOverHttps");
-
-// node_modules/@multiformats/dns/dist/src/resolvers/default.browser.js
-function defaultResolver() {
-  return [
-    dnsJsonOverHttps("https://cloudflare-dns.com/dns-query"),
-    dnsJsonOverHttps("https://dns.google/resolve")
-  ];
-}
-__name(defaultResolver, "defaultResolver");
-
-// node_modules/@multiformats/dns/dist/src/utils/cache.js
-var import_hashlru = __toESM(require_hashlru(), 1);
-var CachedAnswers = class {
-  static {
-    __name(this, "CachedAnswers");
-  }
-  lru;
-  constructor(maxSize) {
-    this.lru = (0, import_hashlru.default)(maxSize);
-  }
-  get(fqdn, types) {
-    let foundAllAnswers = true;
-    const answers = [];
-    for (const type of types) {
-      const cached = this.getAnswers(fqdn, type);
-      if (cached.length === 0) {
-        foundAllAnswers = false;
-        break;
-      }
-      answers.push(...cached);
-    }
-    if (foundAllAnswers) {
-      return toDNSResponse({ answers });
-    }
-  }
-  getAnswers(domain, type) {
-    const key = `${domain.toLowerCase()}-${type}`;
-    const answers = this.lru.get(key);
-    if (answers != null) {
-      const cachedAnswers = answers.filter((entry) => {
-        return entry.expires > Date.now();
-      }).map(({ expires, value }) => ({
-        ...value,
-        TTL: Math.round((expires - Date.now()) / 1e3),
-        type: RecordType[value.type]
-      }));
-      if (cachedAnswers.length === 0) {
-        this.lru.remove(key);
-      }
-      return cachedAnswers;
-    }
-    return [];
-  }
-  add(domain, answer) {
-    const key = `${domain.toLowerCase()}-${answer.type}`;
-    const answers = this.lru.get(key) ?? [];
-    answers.push({
-      expires: Date.now() + (answer.TTL ?? DEFAULT_TTL) * 1e3,
-      value: answer
-    });
-    this.lru.set(key, answers);
-  }
-  remove(domain, type) {
-    const key = `${domain.toLowerCase()}-${type}`;
-    this.lru.remove(key);
-  }
-  clear() {
-    this.lru.clear();
-  }
-};
-function cache2(size) {
-  return new CachedAnswers(size);
-}
-__name(cache2, "cache");
-
-// node_modules/@multiformats/dns/dist/src/dns.js
-var DEFAULT_ANSWER_CACHE_SIZE = 1e3;
-var DNS2 = class {
-  static {
-    __name(this, "DNS");
-  }
-  resolvers;
-  cache;
-  constructor(init) {
-    this.resolvers = {};
-    this.cache = cache2(init.cacheSize ?? DEFAULT_ANSWER_CACHE_SIZE);
-    Object.entries(init.resolvers ?? {}).forEach(([tld, resolver]) => {
-      if (!Array.isArray(resolver)) {
-        resolver = [resolver];
-      }
-      if (!tld.endsWith(".")) {
-        tld = `${tld}.`;
-      }
-      this.resolvers[tld] = resolver;
-    });
-    if (this.resolvers["."] == null) {
-      this.resolvers["."] = defaultResolver();
-    }
-  }
-  /**
-   * Queries DNS resolvers for the passed record types for the passed domain.
-   *
-   * If cached records exist for all desired types they will be returned
-   * instead.
-   *
-   * Any new responses will be added to the cache for subsequent requests.
-   */
-  async query(domain, options = {}) {
-    const types = getTypes(options.types);
-    const cached = options.cached !== false ? this.cache.get(domain, types) : void 0;
-    if (cached != null) {
-      options.onProgress?.(new CustomProgressEvent("dns:cache", { detail: cached }));
-      return cached;
-    }
-    const tld = `${domain.split(".").pop()}.`;
-    const resolvers2 = (this.resolvers[tld] ?? this.resolvers["."]).sort(() => {
-      return Math.random() > 0.5 ? -1 : 1;
-    });
-    const errors = [];
-    for (const resolver of resolvers2) {
-      if (options.signal?.aborted === true) {
-        break;
-      }
-      try {
-        const result = await resolver(domain, {
-          ...options,
-          types
-        });
-        for (const answer of result.Answer) {
-          this.cache.add(domain, answer);
-        }
-        return result;
-      } catch (err) {
-        errors.push(err);
-        options.onProgress?.(new CustomProgressEvent("dns:error", { detail: err }));
-      }
-    }
-    if (errors.length === 1) {
-      throw errors[0];
-    }
-    throw new AggregateError(errors, `DNS lookup of ${domain} ${types} failed`);
-  }
-};
-
-// node_modules/@multiformats/dns/dist/src/index.js
-var RecordType;
-(function(RecordType2) {
-  RecordType2[RecordType2["A"] = 1] = "A";
-  RecordType2[RecordType2["CNAME"] = 5] = "CNAME";
-  RecordType2[RecordType2["TXT"] = 16] = "TXT";
-  RecordType2[RecordType2["AAAA"] = 28] = "AAAA";
-})(RecordType || (RecordType = {}));
-function dns(init = {}) {
-  return new DNS2(init);
-}
-__name(dns, "dns");
-
-// node_modules/@multiformats/multiaddr/dist/src/resolvers/dnsaddr.js
-var MAX_RECURSIVE_DEPTH = 32;
-var { code: dnsaddrCode } = getProtocol("dnsaddr");
-var RecursionLimitError = class extends Error {
-  static {
-    __name(this, "RecursionLimitError");
-  }
-  constructor(message2 = "Max recursive depth reached") {
-    super(message2);
-    this.name = "RecursionLimitError";
-  }
-};
-var dnsaddrResolver = /* @__PURE__ */ __name(async function dnsaddrResolver2(ma, options = {}) {
-  const recursionLimit = options.maxRecursiveDepth ?? MAX_RECURSIVE_DEPTH;
-  if (recursionLimit === 0) {
-    throw new RecursionLimitError("Max recursive depth reached");
-  }
-  const [, hostname] = ma.stringTuples().find(([proto]) => proto === dnsaddrCode) ?? [];
-  const resolver = options?.dns ?? dns();
-  const result = await resolver.query(`_dnsaddr.${hostname}`, {
-    signal: options?.signal,
-    types: [
-      RecordType.TXT
-    ]
-  });
-  const peerId2 = ma.getPeerId();
-  const output2 = [];
-  for (const answer of result.Answer) {
-    const addr = answer.data.replace(/["']/g, "").trim().split("=")[1];
-    if (addr == null) {
-      continue;
-    }
-    if (peerId2 != null && !addr.includes(peerId2)) {
-      continue;
-    }
-    const ma2 = multiaddr(addr);
-    if (addr.startsWith("/dnsaddr")) {
-      const resolved = await ma2.resolve({
-        ...options,
-        maxRecursiveDepth: recursionLimit - 1
-      });
-      output2.push(...resolved.map((ma3) => ma3.toString()));
-    } else {
-      output2.push(ma2.toString());
-    }
-  }
-  return output2;
-}, "dnsaddrResolver");
-
-// node_modules/merge-options/index.mjs
-var import_index4 = __toESM(require_merge_options(), 1);
-var merge_options_default = import_index4.default;
-
-// node_modules/libp2p/dist/src/errors.js
-var messages;
-(function(messages2) {
-  messages2["NOT_STARTED_YET"] = "The libp2p node is not started yet";
-  messages2["ERR_PROTECTOR_REQUIRED"] = "Private network is enforced, but no protector was provided";
-  messages2["NOT_FOUND"] = "Not found";
-})(messages || (messages = {}));
-var codes4;
-(function(codes5) {
-  codes5["ERR_PROTECTOR_REQUIRED"] = "ERR_PROTECTOR_REQUIRED";
-  codes5["ERR_PEER_DIAL_INTERCEPTED"] = "ERR_PEER_DIAL_INTERCEPTED";
-  codes5["ERR_CONNECTION_INTERCEPTED"] = "ERR_CONNECTION_INTERCEPTED";
-  codes5["ERR_INVALID_PROTOCOLS_FOR_STREAM"] = "ERR_INVALID_PROTOCOLS_FOR_STREAM";
-  codes5["ERR_CONNECTION_ENDED"] = "ERR_CONNECTION_ENDED";
-  codes5["ERR_CONNECTION_FAILED"] = "ERR_CONNECTION_FAILED";
-  codes5["ERR_NODE_NOT_STARTED"] = "ERR_NODE_NOT_STARTED";
-  codes5["ERR_ALREADY_ABORTED"] = "ERR_ALREADY_ABORTED";
-  codes5["ERR_TOO_MANY_ADDRESSES"] = "ERR_TOO_MANY_ADDRESSES";
-  codes5["ERR_NO_VALID_ADDRESSES"] = "ERR_NO_VALID_ADDRESSES";
-  codes5["ERR_RELAYED_DIAL"] = "ERR_RELAYED_DIAL";
-  codes5["ERR_DIALED_SELF"] = "ERR_DIALED_SELF";
-  codes5["ERR_DISCOVERED_SELF"] = "ERR_DISCOVERED_SELF";
-  codes5["ERR_DUPLICATE_TRANSPORT"] = "ERR_DUPLICATE_TRANSPORT";
-  codes5["ERR_ENCRYPTION_FAILED"] = "ERR_ENCRYPTION_FAILED";
-  codes5["ERR_HOP_REQUEST_FAILED"] = "ERR_HOP_REQUEST_FAILED";
-  codes5["ERR_INVALID_KEY"] = "ERR_INVALID_KEY";
-  codes5["ERR_INVALID_MESSAGE"] = "ERR_INVALID_MESSAGE";
-  codes5["ERR_INVALID_PARAMETERS"] = "ERR_INVALID_PARAMETERS";
-  codes5["ERR_INVALID_PEER"] = "ERR_INVALID_PEER";
-  codes5["ERR_MUXER_UNAVAILABLE"] = "ERR_MUXER_UNAVAILABLE";
-  codes5["ERR_NOT_FOUND"] = "ERR_NOT_FOUND";
-  codes5["ERR_TRANSPORT_UNAVAILABLE"] = "ERR_TRANSPORT_UNAVAILABLE";
-  codes5["ERR_TRANSPORT_DIAL_FAILED"] = "ERR_TRANSPORT_DIAL_FAILED";
-  codes5["ERR_UNSUPPORTED_PROTOCOL"] = "ERR_UNSUPPORTED_PROTOCOL";
-  codes5["ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED"] = "ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED";
-  codes5["ERR_INVALID_MULTIADDR"] = "ERR_INVALID_MULTIADDR";
-  codes5["ERR_SIGNATURE_NOT_VALID"] = "ERR_SIGNATURE_NOT_VALID";
-  codes5["ERR_FIND_SELF"] = "ERR_FIND_SELF";
-  codes5["ERR_NO_ROUTERS_AVAILABLE"] = "ERR_NO_ROUTERS_AVAILABLE";
-  codes5["ERR_CONNECTION_NOT_MULTIPLEXED"] = "ERR_CONNECTION_NOT_MULTIPLEXED";
-  codes5["ERR_NO_DIAL_TOKENS"] = "ERR_NO_DIAL_TOKENS";
-  codes5["ERR_INVALID_CMS"] = "ERR_INVALID_CMS";
-  codes5["ERR_MISSING_KEYS"] = "ERR_MISSING_KEYS";
-  codes5["ERR_NO_KEY"] = "ERR_NO_KEY";
-  codes5["ERR_INVALID_KEY_NAME"] = "ERR_INVALID_KEY_NAME";
-  codes5["ERR_INVALID_KEY_TYPE"] = "ERR_INVALID_KEY_TYPE";
-  codes5["ERR_KEY_ALREADY_EXISTS"] = "ERR_KEY_ALREADY_EXISTS";
-  codes5["ERR_INVALID_KEY_SIZE"] = "ERR_INVALID_KEY_SIZE";
-  codes5["ERR_KEY_NOT_FOUND"] = "ERR_KEY_NOT_FOUND";
-  codes5["ERR_OLD_KEY_NAME_INVALID"] = "ERR_OLD_KEY_NAME_INVALID";
-  codes5["ERR_NEW_KEY_NAME_INVALID"] = "ERR_NEW_KEY_NAME_INVALID";
-  codes5["ERR_PASSWORD_REQUIRED"] = "ERR_PASSWORD_REQUIRED";
-  codes5["ERR_PEM_REQUIRED"] = "ERR_PEM_REQUIRED";
-  codes5["ERR_CANNOT_READ_KEY"] = "ERR_CANNOT_READ_KEY";
-  codes5["ERR_MISSING_PRIVATE_KEY"] = "ERR_MISSING_PRIVATE_KEY";
-  codes5["ERR_MISSING_PUBLIC_KEY"] = "ERR_MISSING_PUBLIC_KEY";
-  codes5["ERR_INVALID_OLD_PASS_TYPE"] = "ERR_INVALID_OLD_PASS_TYPE";
-  codes5["ERR_INVALID_NEW_PASS_TYPE"] = "ERR_INVALID_NEW_PASS_TYPE";
-  codes5["ERR_INVALID_PASS_LENGTH"] = "ERR_INVALID_PASS_LENGTH";
-  codes5["ERR_NOT_IMPLEMENTED"] = "ERR_NOT_IMPLEMENTED";
-  codes5["ERR_WRONG_PING_ACK"] = "ERR_WRONG_PING_ACK";
-  codes5["ERR_INVALID_RECORD"] = "ERR_INVALID_RECORD";
-  codes5["ERR_ALREADY_SUCCEEDED"] = "ERR_ALREADY_SUCCEEDED";
-  codes5["ERR_NO_HANDLER_FOR_PROTOCOL"] = "ERR_NO_HANDLER_FOR_PROTOCOL";
-  codes5["ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS"] = "ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS";
-  codes5["ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS"] = "ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS";
-  codes5["ERR_CONNECTION_DENIED"] = "ERR_CONNECTION_DENIED";
-  codes5["ERR_TRANSFER_LIMIT_EXCEEDED"] = "ERR_TRANSFER_LIMIT_EXCEEDED";
-})(codes4 || (codes4 = {}));
-
-// node_modules/libp2p/dist/src/config.js
-var DefaultConfig = {
-  addresses: {
-    listen: [],
-    announce: [],
-    noAnnounce: [],
-    announceFilter: /* @__PURE__ */ __name((multiaddrs) => multiaddrs, "announceFilter")
-  },
-  connectionManager: {
-    resolvers: {
-      dnsaddr: dnsaddrResolver
-    },
-    addressSorter: defaultAddressSort
-  },
-  transportManager: {
-    faultTolerance: FaultTolerance.FATAL_ALL
-  }
-};
-async function validateConfig(opts) {
-  const resultingOptions = merge_options_default(DefaultConfig, opts);
-  if (resultingOptions.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
-    throw new CodeError(messages.ERR_PROTECTOR_REQUIRED, codes4.ERR_PROTECTOR_REQUIRED);
-  }
-  if (resultingOptions.privateKey != null && !(await peerIdFromKeys(resultingOptions.privateKey.public.bytes, resultingOptions.privateKey.bytes)).equals(resultingOptions.peerId)) {
-    throw new CodeError("Private key doesn't match peer id", codes4.ERR_INVALID_KEY);
-  }
-  return resultingOptions;
-}
-__name(validateConfig, "validateConfig");
 
 // node_modules/delay/index.js
 var createAbortError = /* @__PURE__ */ __name(() => {
@@ -20011,6 +17652,25 @@ __name(createDelay, "createDelay");
 var delay = createDelay();
 var delay_default = delay;
 
+// node_modules/@libp2p/utils/dist/src/errors.js
+var RateLimitError = class extends Error {
+  static {
+    __name(this, "RateLimitError");
+  }
+  remainingPoints;
+  msBeforeNext;
+  consumedPoints;
+  isFirstInDuration;
+  constructor(message2 = "Rate limit exceeded", props) {
+    super(message2);
+    this.name = "RateLimitError";
+    this.remainingPoints = props.remainingPoints;
+    this.msBeforeNext = props.msBeforeNext;
+    this.consumedPoints = props.consumedPoints;
+    this.isFirstInDuration = props.isFirstInDuration;
+  }
+};
+
 // node_modules/@libp2p/utils/dist/src/rate-limiter.js
 var RateLimiter = class {
   static {
@@ -20041,7 +17701,7 @@ var RateLimiter = class {
       if (this.blockDuration > 0 && res.consumedPoints <= this.points + pointsToConsume) {
         res = this.memoryStorage.set(rlKey, res.consumedPoints, this.blockDuration);
       }
-      throw new CodeError("Rate limit exceeded", "ERR_RATE_LIMIT_EXCEEDED", res);
+      throw new RateLimitError("Rate limit exceeded", res);
     } else if (this.execEvenly && res.msBeforeNext > 0 && !res.isFirstInDuration) {
       let delayMs = Math.ceil(res.msBeforeNext / (res.remainingPoints + 2));
       if (delayMs < this.execEvenlyMinDelayMs) {
@@ -20205,17 +17865,17 @@ function getPeerAddress(peer) {
     peerId2 = peerIdStr == null ? void 0 : peerIdFromString(peerIdStr);
     peer.forEach((ma) => {
       if (!isMultiaddr(ma)) {
-        throw new CodeError("Invalid Multiaddr", codes4.ERR_INVALID_MULTIADDR);
+        throw new InvalidMultiaddrError("Invalid multiaddr");
       }
       const maPeerIdStr = ma.getPeerId();
       if (maPeerIdStr == null) {
         if (peerId2 != null) {
-          throw new CodeError("Multiaddrs must all have the same peer id or have no peer id", codes4.ERR_INVALID_PARAMETERS);
+          throw new InvalidParametersError("Multiaddrs must all have the same peer id or have no peer id");
         }
       } else {
         const maPeerId = peerIdFromString(maPeerIdStr);
         if (peerId2?.equals(maPeerId) !== true) {
-          throw new CodeError("Multiaddrs must all have the same peer id or have no peer id", codes4.ERR_INVALID_PARAMETERS);
+          throw new InvalidParametersError("Multiaddrs must all have the same peer id or have no peer id");
         }
       }
     });
@@ -20226,6 +17886,166 @@ function getPeerAddress(peer) {
   };
 }
 __name(getPeerAddress, "getPeerAddress");
+
+// node_modules/@libp2p/utils/dist/src/close.js
+var DEFAULT_CLOSABLE_PROTOCOLS = [
+  // identify
+  "/ipfs/id/1.0.0",
+  // identify-push
+  "/ipfs/id/push/1.0.0",
+  // autonat
+  "/libp2p/autonat/1.0.0",
+  // dcutr
+  "/libp2p/dcutr"
+];
+async function safelyCloseConnectionIfUnused(connection, options) {
+  const streamProtocols = connection?.streams?.map((stream) => stream.protocol) ?? [];
+  const closableProtocols = options?.closableProtocols ?? DEFAULT_CLOSABLE_PROTOCOLS;
+  if (streamProtocols.filter((proto) => proto != null && !closableProtocols.includes(proto)).length > 0) {
+    return;
+  }
+  try {
+    await connection?.close(options);
+  } catch (err) {
+    connection?.abort(err);
+  }
+}
+__name(safelyCloseConnectionIfUnused, "safelyCloseConnectionIfUnused");
+
+// node_modules/libp2p/dist/src/connection-manager/constants.defaults.js
+var DIAL_TIMEOUT = 5e3;
+var INBOUND_UPGRADE_TIMEOUT = 2e3;
+var MAX_PEER_ADDRS_TO_DIAL = 25;
+var INBOUND_CONNECTION_THRESHOLD = 5;
+var MAX_INCOMING_PENDING_CONNECTIONS = 10;
+var MAX_PARALLEL_RECONNECTS = 5;
+var LAST_DIAL_FAILURE_KEY = "last-dial-failure";
+var LAST_DIAL_SUCCESS_KEY = "last-dial-success";
+var MAX_DIAL_QUEUE_LENGTH = 500;
+
+// node_modules/libp2p/dist/src/connection-manager/constants.browser.js
+var MAX_CONNECTIONS = 100;
+var MAX_PARALLEL_DIALS = 50;
+
+// node_modules/libp2p/dist/src/connection-manager/connection-pruner.js
+var defaultOptions3 = {
+  maxConnections: MAX_CONNECTIONS,
+  allow: []
+};
+var ConnectionPruner = class {
+  static {
+    __name(this, "ConnectionPruner");
+  }
+  maxConnections;
+  connectionManager;
+  peerStore;
+  allow;
+  events;
+  log;
+  constructor(components, init = {}) {
+    this.maxConnections = init.maxConnections ?? defaultOptions3.maxConnections;
+    this.allow = init.allow ?? defaultOptions3.allow;
+    this.connectionManager = components.connectionManager;
+    this.peerStore = components.peerStore;
+    this.events = components.events;
+    this.log = components.logger.forComponent("libp2p:connection-manager:connection-pruner");
+    components.events.addEventListener("connection:open", () => {
+      this.maybePruneConnections().catch((err) => {
+        this.log.error(err);
+      });
+    });
+  }
+  /**
+   * If we have more connections than our maximum, select some excess connections
+   * to prune based on peer value
+   */
+  async maybePruneConnections() {
+    const connections = this.connectionManager.getConnections();
+    const numConnections = connections.length;
+    this.log("checking max connections limit %d/%d", numConnections, this.maxConnections);
+    if (numConnections <= this.maxConnections) {
+      return;
+    }
+    const peerValues = new PeerMap();
+    for (const connection of connections) {
+      const remotePeer = connection.remotePeer;
+      if (peerValues.has(remotePeer)) {
+        continue;
+      }
+      peerValues.set(remotePeer, 0);
+      try {
+        const peer = await this.peerStore.get(remotePeer);
+        peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
+          return acc + curr.value;
+        }, 0));
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          this.log.error("error loading peer tags", err);
+        }
+      }
+    }
+    const sortedConnections = this.sortConnections(connections, peerValues);
+    const toPrune = Math.max(numConnections - this.maxConnections, 0);
+    const toClose = [];
+    for (const connection of sortedConnections) {
+      this.log("too many connections open - closing a connection to %p", connection.remotePeer);
+      const connectionInAllowList = this.allow.some((ma) => {
+        return connection.remoteAddr.toString().startsWith(ma.toString());
+      });
+      if (!connectionInAllowList) {
+        toClose.push(connection);
+      }
+      if (toClose.length === toPrune) {
+        break;
+      }
+    }
+    await Promise.all(toClose.map(async (connection) => {
+      await safelyCloseConnectionIfUnused(connection, {
+        signal: AbortSignal.timeout(1e3)
+      });
+    }));
+    this.events.safeDispatchEvent("connection:prune", { detail: toClose });
+  }
+  sortConnections(connections, peerValues) {
+    return connections.sort((a, b) => {
+      const connectionALifespan = a.timeline.open;
+      const connectionBLifespan = b.timeline.open;
+      if (connectionALifespan < connectionBLifespan) {
+        return 1;
+      }
+      if (connectionALifespan > connectionBLifespan) {
+        return -1;
+      }
+      return 0;
+    }).sort((a, b) => {
+      if (a.direction === "outbound" && b.direction === "inbound") {
+        return 1;
+      }
+      if (a.direction === "inbound" && b.direction === "outbound") {
+        return -1;
+      }
+      return 0;
+    }).sort((a, b) => {
+      if (a.streams.length > b.streams.length) {
+        return 1;
+      }
+      if (a.streams.length < b.streams.length) {
+        return -1;
+      }
+      return 0;
+    }).sort((a, b) => {
+      const peerAValue = peerValues.get(a.remotePeer) ?? 0;
+      const peerBValue = peerValues.get(b.remotePeer) ?? 0;
+      if (peerAValue > peerBValue) {
+        return 1;
+      }
+      if (peerAValue < peerBValue) {
+        return -1;
+      }
+      return 0;
+    });
+  }
+};
 
 // node_modules/p-defer/index.js
 function pDefer() {
@@ -20931,7 +18751,7 @@ var Queue = class extends TypedEventEmitter {
       cleanup();
     }, "onQueueIdle");
     const onSignalAbort = /* @__PURE__ */ __name(() => {
-      cleanup(new CodeError("Queue aborted", "ERR_QUEUE_ABORTED"));
+      cleanup(new AbortError("Queue aborted"));
     }, "onSignalAbort");
     this.addEventListener("completed", onQueueJobComplete);
     this.addEventListener("error", onQueueError);
@@ -20946,383 +18766,6 @@ var Queue = class extends TypedEventEmitter {
       options?.signal?.removeEventListener("abort", onSignalAbort);
       cleanup();
     }
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/peer-queue.js
-var PeerQueue = class extends Queue {
-  static {
-    __name(this, "PeerQueue");
-  }
-  has(peerId2) {
-    return this.find(peerId2) != null;
-  }
-  find(peerId2) {
-    return this.queue.find((job) => {
-      return peerId2.equals(job.options.peerId);
-    });
-  }
-};
-
-// node_modules/libp2p/dist/src/connection-manager/constants.defaults.js
-var DIAL_TIMEOUT = 5e3;
-var INBOUND_UPGRADE_TIMEOUT = 2e3;
-var MAX_PEER_ADDRS_TO_DIAL = 25;
-var AUTO_DIAL_INTERVAL = 5e3;
-var AUTO_DIAL_CONCURRENCY = 25;
-var AUTO_DIAL_PRIORITY = 0;
-var AUTO_DIAL_MAX_QUEUE_LENGTH = 100;
-var AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE = 10;
-var INBOUND_CONNECTION_THRESHOLD = 5;
-var MAX_INCOMING_PENDING_CONNECTIONS = 10;
-var LAST_DIAL_FAILURE_KEY = "last-dial-failure";
-var MAX_DIAL_QUEUE_LENGTH = 500;
-
-// node_modules/libp2p/dist/src/connection-manager/constants.browser.js
-var MIN_CONNECTIONS = 5;
-var MAX_CONNECTIONS = 100;
-var MAX_PARALLEL_DIALS = 50;
-var AUTO_DIAL_PEER_RETRY_THRESHOLD = 1e3 * 60 * 7;
-
-// node_modules/libp2p/dist/src/connection-manager/auto-dial.js
-var defaultOptions3 = {
-  minConnections: MIN_CONNECTIONS,
-  maxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
-  autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY,
-  autoDialInterval: AUTO_DIAL_INTERVAL,
-  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
-  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
-};
-var AutoDial = class {
-  static {
-    __name(this, "AutoDial");
-  }
-  connectionManager;
-  peerStore;
-  queue;
-  minConnections;
-  autoDialPriority;
-  autoDialIntervalMs;
-  autoDialMaxQueueLength;
-  autoDialPeerRetryThresholdMs;
-  autoDialDiscoveredPeersDebounce;
-  autoDialInterval;
-  started;
-  running;
-  log;
-  /**
-   * Proactively tries to connect to known peers stored in the PeerStore.
-   * It will keep the number of connections below the upper limit and sort
-   * the peers to connect based on whether we know their keys and protocols.
-   */
-  constructor(components, init) {
-    this.connectionManager = components.connectionManager;
-    this.peerStore = components.peerStore;
-    this.minConnections = init.minConnections ?? defaultOptions3.minConnections;
-    this.autoDialPriority = init.autoDialPriority ?? defaultOptions3.autoDialPriority;
-    this.autoDialIntervalMs = init.autoDialInterval ?? defaultOptions3.autoDialInterval;
-    this.autoDialMaxQueueLength = init.maxQueueLength ?? defaultOptions3.maxQueueLength;
-    this.autoDialPeerRetryThresholdMs = init.autoDialPeerRetryThreshold ?? defaultOptions3.autoDialPeerRetryThreshold;
-    this.autoDialDiscoveredPeersDebounce = init.autoDialDiscoveredPeersDebounce ?? defaultOptions3.autoDialDiscoveredPeersDebounce;
-    this.log = components.logger.forComponent("libp2p:connection-manager:auto-dial");
-    this.started = false;
-    this.running = false;
-    this.queue = new PeerQueue({
-      concurrency: init.autoDialConcurrency ?? defaultOptions3.autoDialConcurrency,
-      metricName: "libp2p_autodial_queue",
-      metrics: components.metrics
-    });
-    this.queue.addEventListener("error", (evt) => {
-      this.log.error("error during auto-dial", evt.detail);
-    });
-    components.events.addEventListener("connection:close", () => {
-      this.autoDial().catch((err) => {
-        this.log.error(err);
-      });
-    });
-    let debounce2;
-    components.events.addEventListener("peer:discovery", () => {
-      clearTimeout(debounce2);
-      debounce2 = setTimeout(() => {
-        this.autoDial().catch((err) => {
-          this.log.error(err);
-        });
-      }, this.autoDialDiscoveredPeersDebounce);
-    });
-  }
-  isStarted() {
-    return this.started;
-  }
-  start() {
-    this.started = true;
-  }
-  afterStart() {
-    this.autoDial().catch((err) => {
-      this.log.error("error while autodialing", err);
-    });
-  }
-  stop() {
-    this.queue.clear();
-    clearTimeout(this.autoDialInterval);
-    this.started = false;
-    this.running = false;
-  }
-  async autoDial() {
-    if (!this.started || this.running) {
-      return;
-    }
-    const connections = this.connectionManager.getConnectionsMap();
-    const numConnections = connections.size;
-    if (numConnections >= this.minConnections) {
-      if (this.minConnections > 0) {
-        this.log.trace("have enough connections %d/%d", numConnections, this.minConnections);
-      }
-      return;
-    }
-    if (this.queue.size > this.autoDialMaxQueueLength) {
-      this.log("not enough connections %d/%d but auto dial queue is full", numConnections, this.minConnections);
-      this.sheduleNextAutodial();
-      return;
-    }
-    this.running = true;
-    this.log("not enough connections %d/%d - will dial peers to increase the number of connections", numConnections, this.minConnections);
-    const dialQueue = new PeerSet(
-      // @ts-expect-error boolean filter removes falsy peer IDs
-      this.connectionManager.getDialQueue().map((queue) => queue.peerId).filter(Boolean)
-    );
-    const peers = await this.peerStore.all({
-      filters: [
-        // remove some peers
-        (peer) => {
-          if (peer.addresses.length === 0) {
-            this.log.trace("not autodialing %p because they have no addresses", peer.id);
-            return false;
-          }
-          if (connections.has(peer.id)) {
-            this.log.trace("not autodialing %p because they are already connected", peer.id);
-            return false;
-          }
-          if (dialQueue.has(peer.id)) {
-            this.log.trace("not autodialing %p because they are already being dialed", peer.id);
-            return false;
-          }
-          if (this.queue.has(peer.id)) {
-            this.log.trace("not autodialing %p because they are already being autodialed", peer.id);
-            return false;
-          }
-          return true;
-        }
-      ]
-    });
-    const shuffledPeers = peers.sort(() => Math.random() > 0.5 ? 1 : -1);
-    const peerValues = new PeerMap();
-    for (const peer of shuffledPeers) {
-      if (peerValues.has(peer.id)) {
-        continue;
-      }
-      peerValues.set(peer.id, [...peer.tags.values()].reduce((acc, curr) => {
-        return acc + curr.value;
-      }, 0));
-    }
-    const sortedPeers = shuffledPeers.sort((a, b) => {
-      const peerAValue = peerValues.get(a.id) ?? 0;
-      const peerBValue = peerValues.get(b.id) ?? 0;
-      if (peerAValue > peerBValue) {
-        return -1;
-      }
-      if (peerAValue < peerBValue) {
-        return 1;
-      }
-      return 0;
-    });
-    const peersThatHaveNotFailed = sortedPeers.filter((peer) => {
-      const lastDialFailure = peer.metadata.get(LAST_DIAL_FAILURE_KEY);
-      if (lastDialFailure == null) {
-        return true;
-      }
-      const lastDialFailureTimestamp = parseInt(toString2(lastDialFailure));
-      if (isNaN(lastDialFailureTimestamp)) {
-        return true;
-      }
-      return Date.now() - lastDialFailureTimestamp > this.autoDialPeerRetryThresholdMs;
-    });
-    this.log("selected %d/%d peers to dial", peersThatHaveNotFailed.length, peers.length);
-    for (const peer of peersThatHaveNotFailed) {
-      this.queue.add(async () => {
-        const numConnections2 = this.connectionManager.getConnectionsMap().size;
-        if (numConnections2 >= this.minConnections) {
-          this.log("got enough connections now %d/%d", numConnections2, this.minConnections);
-          this.queue.clear();
-          return;
-        }
-        this.log("connecting to a peerStore stored peer %p", peer.id);
-        await this.connectionManager.openConnection(peer.id, {
-          priority: this.autoDialPriority
-        });
-      }, {
-        peerId: peer.id
-      }).catch((err) => {
-        this.log.error("could not connect to peerStore stored peer", err);
-      });
-    }
-    this.running = false;
-    this.sheduleNextAutodial();
-  }
-  sheduleNextAutodial() {
-    if (!this.started) {
-      return;
-    }
-    this.autoDialInterval = setTimeout(() => {
-      this.autoDial().catch((err) => {
-        this.log.error("error while autodialing", err);
-      });
-    }, this.autoDialIntervalMs);
-  }
-};
-
-// node_modules/@libp2p/utils/dist/src/close.js
-var DEFAULT_CLOSABLE_PROTOCOLS = [
-  // identify
-  "/ipfs/id/1.0.0",
-  // identify-push
-  "/ipfs/id/push/1.0.0",
-  // autonat
-  "/libp2p/autonat/1.0.0",
-  // dcutr
-  "/libp2p/dcutr"
-];
-async function safelyCloseConnectionIfUnused(connection, options) {
-  const streamProtocols = connection?.streams?.map((stream) => stream.protocol) ?? [];
-  const closableProtocols = options?.closableProtocols ?? DEFAULT_CLOSABLE_PROTOCOLS;
-  if (streamProtocols.filter((proto) => proto != null && !closableProtocols.includes(proto)).length > 0) {
-    return;
-  }
-  try {
-    await connection?.close(options);
-  } catch (err) {
-    connection?.abort(err);
-  }
-}
-__name(safelyCloseConnectionIfUnused, "safelyCloseConnectionIfUnused");
-
-// node_modules/libp2p/dist/src/connection-manager/connection-pruner.js
-var defaultOptions4 = {
-  maxConnections: MAX_CONNECTIONS,
-  allow: []
-};
-var ConnectionPruner = class {
-  static {
-    __name(this, "ConnectionPruner");
-  }
-  maxConnections;
-  connectionManager;
-  peerStore;
-  allow;
-  events;
-  log;
-  constructor(components, init = {}) {
-    this.maxConnections = init.maxConnections ?? defaultOptions4.maxConnections;
-    this.allow = init.allow ?? defaultOptions4.allow;
-    this.connectionManager = components.connectionManager;
-    this.peerStore = components.peerStore;
-    this.events = components.events;
-    this.log = components.logger.forComponent("libp2p:connection-manager:connection-pruner");
-    components.events.addEventListener("connection:open", () => {
-      this.maybePruneConnections().catch((err) => {
-        this.log.error(err);
-      });
-    });
-  }
-  /**
-   * If we have more connections than our maximum, select some excess connections
-   * to prune based on peer value
-   */
-  async maybePruneConnections() {
-    const connections = this.connectionManager.getConnections();
-    const numConnections = connections.length;
-    this.log("checking max connections limit %d/%d", numConnections, this.maxConnections);
-    if (numConnections <= this.maxConnections) {
-      return;
-    }
-    const peerValues = new PeerMap();
-    for (const connection of connections) {
-      const remotePeer = connection.remotePeer;
-      if (peerValues.has(remotePeer)) {
-        continue;
-      }
-      peerValues.set(remotePeer, 0);
-      try {
-        const peer = await this.peerStore.get(remotePeer);
-        peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
-          return acc + curr.value;
-        }, 0));
-      } catch (err) {
-        if (err.code !== "ERR_NOT_FOUND") {
-          this.log.error("error loading peer tags", err);
-        }
-      }
-    }
-    const sortedConnections = this.sortConnections(connections, peerValues);
-    const toPrune = Math.max(numConnections - this.maxConnections, 0);
-    const toClose = [];
-    for (const connection of sortedConnections) {
-      this.log("too many connections open - closing a connection to %p", connection.remotePeer);
-      const connectionInAllowList = this.allow.some((ma) => {
-        return connection.remoteAddr.toString().startsWith(ma.toString());
-      });
-      if (!connectionInAllowList) {
-        toClose.push(connection);
-      }
-      if (toClose.length === toPrune) {
-        break;
-      }
-    }
-    await Promise.all(toClose.map(async (connection) => {
-      await safelyCloseConnectionIfUnused(connection, {
-        signal: AbortSignal.timeout(1e3)
-      });
-    }));
-    this.events.safeDispatchEvent("connection:prune", { detail: toClose });
-  }
-  sortConnections(connections, peerValues) {
-    return connections.sort((a, b) => {
-      const connectionALifespan = a.timeline.open;
-      const connectionBLifespan = b.timeline.open;
-      if (connectionALifespan < connectionBLifespan) {
-        return 1;
-      }
-      if (connectionALifespan > connectionBLifespan) {
-        return -1;
-      }
-      return 0;
-    }).sort((a, b) => {
-      if (a.direction === "outbound" && b.direction === "inbound") {
-        return 1;
-      }
-      if (a.direction === "inbound" && b.direction === "outbound") {
-        return -1;
-      }
-      return 0;
-    }).sort((a, b) => {
-      if (a.streams.length > b.streams.length) {
-        return 1;
-      }
-      if (a.streams.length < b.streams.length) {
-        return -1;
-      }
-      return 0;
-    }).sort((a, b) => {
-      const peerAValue = peerValues.get(a.remotePeer) ?? 0;
-      const peerBValue = peerValues.get(b.remotePeer) ?? 0;
-      if (peerAValue > peerBValue) {
-        return 1;
-      }
-      if (peerAValue < peerBValue) {
-        return -1;
-      }
-      return 0;
-    });
   }
 };
 
@@ -21401,7 +18844,7 @@ async function resolveMultiaddrs(ma, options) {
 __name(resolveMultiaddrs, "resolveMultiaddrs");
 
 // node_modules/libp2p/dist/src/connection-manager/dial-queue.js
-var defaultOptions5 = {
+var defaultOptions4 = {
   addressSorter: defaultAddressSort,
   maxParallelDials: MAX_PARALLEL_DIALS,
   maxDialQueueLength: MAX_DIAL_QUEUE_LENGTH,
@@ -21425,10 +18868,10 @@ var DialQueue = class {
   connections;
   log;
   constructor(components, init = {}) {
-    this.addressSorter = init.addressSorter ?? defaultOptions5.addressSorter;
-    this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions5.maxPeerAddrsToDial;
-    this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions5.maxDialQueueLength;
-    this.dialTimeout = init.dialTimeout ?? defaultOptions5.dialTimeout;
+    this.addressSorter = init.addressSorter ?? defaultOptions4.addressSorter;
+    this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions4.maxPeerAddrsToDial;
+    this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions4.maxDialQueueLength;
+    this.dialTimeout = init.dialTimeout ?? defaultOptions4.dialTimeout;
     this.connections = init.connections ?? new PeerMap();
     this.log = components.logger.forComponent("libp2p:connection-manager:dial-queue");
     this.components = components;
@@ -21438,7 +18881,7 @@ var DialQueue = class {
       resolvers.set(key, value);
     }
     this.queue = new PriorityQueue2({
-      concurrency: init.maxParallelDials ?? defaultOptions5.maxParallelDials,
+      concurrency: init.maxParallelDials ?? defaultOptions4.maxParallelDials,
       metricName: "libp2p_dial_queue",
       metrics: components.metrics
     });
@@ -21511,7 +18954,7 @@ var DialQueue = class {
       return existingDial.join(options);
     }
     if (this.queue.size >= this.maxDialQueueLength) {
-      throw new CodeError("Dial queue is full", "ERR_DIAL_QUEUE_FULL");
+      throw new DialError("Dial queue is full");
     }
     this.log("creating dial target for %p", peerId2, multiaddrs.map((ma) => ma.toString()));
     options.onProgress?.(new CustomProgressEvent("dial-queue:add-to-dial-queue"));
@@ -21538,7 +18981,7 @@ var DialQueue = class {
         for (const address of addrsToDial) {
           if (dialed === this.maxPeerAddrsToDial) {
             this.log("dialed maxPeerAddrsToDial (%d) addresses for %p, not trying any others", dialed, peerId2);
-            throw new CodeError("Peer had more than maxPeerAddrsToDial", codes4.ERR_TOO_MANY_ADDRESSES);
+            throw new DialError("Peer had more than maxPeerAddrsToDial");
           }
           dialed++;
           try {
@@ -21547,12 +18990,24 @@ var DialQueue = class {
               signal
             });
             this.log("dial to %a succeeded", address.multiaddr);
+            try {
+              await this.components.peerStore.merge(conn.remotePeer, {
+                multiaddrs: [
+                  conn.remoteAddr
+                ],
+                metadata: {
+                  [LAST_DIAL_SUCCESS_KEY]: fromString2(Date.now().toString())
+                }
+              });
+            } catch (err) {
+              this.log.error("could not update last dial failure key for %p", peerId2, err);
+            }
             return conn;
           } catch (err) {
             this.log.error("dial failed to %a", address.multiaddr, err);
             if (peerId2 != null) {
               try {
-                await this.components.peerStore.patch(peerId2, {
+                await this.components.peerStore.merge(peerId2, {
                   metadata: {
                     [LAST_DIAL_FAILURE_KEY]: fromString2(Date.now().toString())
                   }
@@ -21562,7 +19017,7 @@ var DialQueue = class {
               }
             }
             if (signal.aborted) {
-              throw new CodeError(err.message, ERR_TIMEOUT);
+              throw new TimeoutError(err.message);
             }
             errors.push(err);
           }
@@ -21570,7 +19025,7 @@ var DialQueue = class {
         if (errors.length === 1) {
           throw errors[0];
         }
-        throw new AggregateCodeError(errors, "All multiaddr dials failed", codes4.ERR_TRANSPORT_DIAL_FAILED);
+        throw new AggregateError(errors, "All multiaddr dials failed");
       } finally {
         signal.clear();
       }
@@ -21599,10 +19054,10 @@ var DialQueue = class {
     }));
     if (peerId2 != null) {
       if (this.components.peerId.equals(peerId2)) {
-        throw new CodeError("Tried to dial self", codes4.ERR_DIALED_SELF);
+        throw new DialError("Tried to dial self");
       }
       if (await this.components.connectionGater.denyDialPeer?.(peerId2) === true) {
-        throw new CodeError("The dial request is blocked by gater.allowDialPeer", codes4.ERR_PEER_DIAL_INTERCEPTED);
+        throw new DialDeniedError("The dial request is blocked by gater.allowDialPeer");
       }
       if (addrs.length === 0) {
         this.log("loading multiaddrs for %p", peerId2);
@@ -21611,7 +19066,7 @@ var DialQueue = class {
           addrs.push(...peer.addresses);
           this.log("loaded multiaddrs for %p", peerId2, addrs.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
         } catch (err) {
-          if (err.code !== codes4.ERR_NOT_FOUND) {
+          if (err.name !== "NotFoundError") {
             throw err;
           }
         }
@@ -21626,7 +19081,7 @@ var DialQueue = class {
             isCertified: false
           })));
         } catch (err) {
-          if (err.code !== codes4.ERR_NO_ROUTERS_AVAILABLE) {
+          if (err.name !== "NoPeerRoutersError") {
             this.log.error("looking up multiaddrs for %p in the peer routing failed", peerId2, err);
           }
         }
@@ -21684,7 +19139,7 @@ var DialQueue = class {
     }
     const dedupedMultiaddrs = [...dedupedAddrs.values()];
     if (dedupedMultiaddrs.length === 0) {
-      throw new CodeError("The dial request has no valid addresses", codes4.ERR_NO_VALID_ADDRESSES);
+      throw new NoValidAddressesError("The dial request has no valid addresses");
     }
     const gatedAdrs = [];
     for (const addr of dedupedMultiaddrs) {
@@ -21695,7 +19150,7 @@ var DialQueue = class {
     }
     const sortedGatedAddrs = gatedAdrs.sort(this.addressSorter);
     if (sortedGatedAddrs.length === 0) {
-      throw new CodeError("The connection gater denied all addresses in the dial request", codes4.ERR_NO_VALID_ADDRESSES);
+      throw new DialDeniedError("The connection gater denied all addresses in the dial request");
     }
     this.log.trace("addresses for %p before filtering", peerId2 ?? "unknown peer", resolvedAddresses.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
     this.log.trace("addresses for %p after filtering", peerId2 ?? "unknown peer", sortedGatedAddrs.map(({ multiaddr: multiaddr2 }) => multiaddr2.toString()));
@@ -21707,7 +19162,7 @@ var DialQueue = class {
     }
     try {
       const addresses = await this.calculateMultiaddrs(void 0, new Set(multiaddr2.map((ma) => ma.toString())), options);
-      if (options.runOnTransientConnection === false) {
+      if (options.runOnLimitedConnection === false) {
         return addresses.find((addr) => {
           return !Circuit.matches(addr.multiaddr);
         }) != null;
@@ -21720,18 +19175,237 @@ var DialQueue = class {
   }
 };
 
+// node_modules/@libp2p/utils/dist/src/peer-queue.js
+var PeerQueue = class extends Queue {
+  static {
+    __name(this, "PeerQueue");
+  }
+  has(peerId2) {
+    return this.find(peerId2) != null;
+  }
+  find(peerId2) {
+    return this.queue.find((job) => {
+      return peerId2.equals(job.options.peerId);
+    });
+  }
+};
+
+// node_modules/p-retry/index.js
+var import_retry = __toESM(require_retry2(), 1);
+
+// node_modules/is-network-error/index.js
+var objectToString = Object.prototype.toString;
+var isError2 = /* @__PURE__ */ __name((value) => objectToString.call(value) === "[object Error]", "isError");
+var errorMessages = /* @__PURE__ */ new Set([
+  "network error",
+  // Chrome
+  "Failed to fetch",
+  // Chrome
+  "NetworkError when attempting to fetch resource.",
+  // Firefox
+  "The Internet connection appears to be offline.",
+  // Safari 16
+  "Load failed",
+  // Safari 17+
+  "Network request failed",
+  // `cross-fetch`
+  "fetch failed",
+  // Undici (Node.js)
+  "terminated"
+  // Undici (Node.js)
+]);
+function isNetworkError(error) {
+  const isValid = error && isError2(error) && error.name === "TypeError" && typeof error.message === "string";
+  if (!isValid) {
+    return false;
+  }
+  if (error.message === "Load failed") {
+    return error.stack === void 0;
+  }
+  return errorMessages.has(error.message);
+}
+__name(isNetworkError, "isNetworkError");
+
+// node_modules/p-retry/index.js
+var AbortError6 = class extends Error {
+  static {
+    __name(this, "AbortError");
+  }
+  constructor(message2) {
+    super();
+    if (message2 instanceof Error) {
+      this.originalError = message2;
+      ({ message: message2 } = message2);
+    } else {
+      this.originalError = new Error(message2);
+      this.originalError.stack = this.stack;
+    }
+    this.name = "AbortError";
+    this.message = message2;
+  }
+};
+var decorateErrorWithCounts = /* @__PURE__ */ __name((error, attemptNumber, options) => {
+  const retriesLeft = options.retries - (attemptNumber - 1);
+  error.attemptNumber = attemptNumber;
+  error.retriesLeft = retriesLeft;
+  return error;
+}, "decorateErrorWithCounts");
+async function pRetry(input, options) {
+  return new Promise((resolve, reject) => {
+    options = {
+      onFailedAttempt() {
+      },
+      retries: 10,
+      shouldRetry: /* @__PURE__ */ __name(() => true, "shouldRetry"),
+      ...options
+    };
+    const operation = import_retry.default.operation(options);
+    const abortHandler = /* @__PURE__ */ __name(() => {
+      operation.stop();
+      reject(options.signal?.reason);
+    }, "abortHandler");
+    if (options.signal && !options.signal.aborted) {
+      options.signal.addEventListener("abort", abortHandler, { once: true });
+    }
+    const cleanUp = /* @__PURE__ */ __name(() => {
+      options.signal?.removeEventListener("abort", abortHandler);
+      operation.stop();
+    }, "cleanUp");
+    operation.attempt(async (attemptNumber) => {
+      try {
+        const result = await input(attemptNumber);
+        cleanUp();
+        resolve(result);
+      } catch (error) {
+        try {
+          if (!(error instanceof Error)) {
+            throw new TypeError(`Non-error was thrown: "${error}". You should only throw errors.`);
+          }
+          if (error instanceof AbortError6) {
+            throw error.originalError;
+          }
+          if (error instanceof TypeError && !isNetworkError(error)) {
+            throw error;
+          }
+          decorateErrorWithCounts(error, attemptNumber, options);
+          if (!await options.shouldRetry(error)) {
+            operation.stop();
+            reject(error);
+          }
+          await options.onFailedAttempt(error);
+          if (!operation.retry(error)) {
+            throw operation.mainError();
+          }
+        } catch (finalError) {
+          decorateErrorWithCounts(finalError, attemptNumber, options);
+          cleanUp();
+          reject(finalError);
+        }
+      }
+    });
+  });
+}
+__name(pRetry, "pRetry");
+
+// node_modules/libp2p/dist/src/connection-manager/reconnect-queue.js
+var ReconnectQueue = class {
+  static {
+    __name(this, "ReconnectQueue");
+  }
+  log;
+  queue;
+  started;
+  peerStore;
+  retries;
+  retryInterval;
+  backoffFactor;
+  connectionManager;
+  constructor(components, init = {}) {
+    this.log = components.logger.forComponent("libp2p:reconnect-queue");
+    this.peerStore = components.peerStore;
+    this.connectionManager = components.connectionManager;
+    this.queue = new PeerQueue({
+      concurrency: init.maxParallelReconnects ?? MAX_PARALLEL_RECONNECTS,
+      metricName: "libp2p_reconnect_queue",
+      metrics: components.metrics
+    });
+    this.started = false;
+    this.retries = init.retries ?? 5;
+    this.backoffFactor = init.backoffFactor;
+    this.retryInterval = init.retryInterval;
+    components.events.addEventListener("peer:disconnect", (evt) => {
+      this.maybeReconnect(evt.detail).catch((err) => {
+        this.log.error("failed to maybe reconnect to %p", evt.detail, err);
+      });
+    });
+  }
+  async maybeReconnect(peerId2) {
+    if (!this.started) {
+      return;
+    }
+    const peer = await this.peerStore.get(peerId2);
+    if (!peer.tags.has(KEEP_ALIVE)) {
+      return;
+    }
+    if (this.queue.has(peerId2)) {
+      return;
+    }
+    this.queue.add(async (options) => {
+      await pRetry(async (attempt) => {
+        if (!this.started) {
+          return;
+        }
+        try {
+          await this.connectionManager.openConnection(peerId2, {
+            signal: options?.signal
+          });
+        } catch (err) {
+          this.log("reconnecting to %p attempt %d of %d failed", peerId2, attempt, this.retries, err);
+          throw err;
+        }
+      }, {
+        signal: options?.signal,
+        retries: this.retries,
+        factor: this.backoffFactor,
+        minTimeout: this.retryInterval
+      });
+    }, {
+      peerId: peerId2
+    }).catch((err) => {
+      this.log.error("failed to reconnect to %p", peerId2, err);
+    });
+  }
+  start() {
+    this.started = true;
+  }
+  async afterStart() {
+    void Promise.resolve().then(async () => {
+      const keepAlivePeers = await this.peerStore.all({
+        filters: [(peer) => {
+          return peer.tags.has(KEEP_ALIVE);
+        }]
+      });
+      await Promise.all(keepAlivePeers.map(async (peer) => {
+        await this.connectionManager.openConnection(peer.id).catch((err) => {
+          this.log.error(err);
+        });
+      }));
+    }).catch((err) => {
+      this.log.error(err);
+    });
+  }
+  stop() {
+    this.started = false;
+    this.queue.abort();
+  }
+};
+
 // node_modules/libp2p/dist/src/connection-manager/index.js
 var DEFAULT_DIAL_PRIORITY = 50;
-var defaultOptions6 = {
-  minConnections: MIN_CONNECTIONS,
+var defaultOptions5 = {
   maxConnections: MAX_CONNECTIONS,
   inboundConnectionThreshold: INBOUND_CONNECTION_THRESHOLD,
-  maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS,
-  autoDialConcurrency: AUTO_DIAL_CONCURRENCY,
-  autoDialPriority: AUTO_DIAL_PRIORITY,
-  autoDialMaxQueueLength: AUTO_DIAL_MAX_QUEUE_LENGTH,
-  autoDialPeerRetryThreshold: AUTO_DIAL_PEER_RETRY_THRESHOLD,
-  autoDialDiscoveredPeersDebounce: AUTO_DIAL_DISCOVERED_PEERS_DEBOUNCE
+  maxIncomingPendingConnections: MAX_INCOMING_PENDING_CONNECTIONS
 };
 var DefaultConnectionManager = class {
   static {
@@ -21745,7 +19419,7 @@ var DefaultConnectionManager = class {
   incomingPendingConnections;
   maxConnections;
   dialQueue;
-  autoDial;
+  reconnectQueue;
   connectionPruner;
   inboundConnectionRateLimiter;
   peerStore;
@@ -21753,10 +19427,9 @@ var DefaultConnectionManager = class {
   events;
   log;
   constructor(components, init = {}) {
-    this.maxConnections = init.maxConnections ?? defaultOptions6.maxConnections;
-    const minConnections = init.minConnections ?? defaultOptions6.minConnections;
-    if (this.maxConnections < minConnections) {
-      throw new CodeError("Connection Manager maxConnections must be greater than minConnections", codes4.ERR_INVALID_PARAMETERS);
+    this.maxConnections = init.maxConnections ?? defaultOptions5.maxConnections;
+    if (this.maxConnections < 1) {
+      throw new InvalidParametersError("Connection Manager maxConnections must be greater than 0");
     }
     this.connections = new PeerMap();
     this.started = false;
@@ -21771,23 +19444,10 @@ var DefaultConnectionManager = class {
     this.allow = (init.allow ?? []).map((ma) => multiaddr(ma));
     this.deny = (init.deny ?? []).map((ma) => multiaddr(ma));
     this.incomingPendingConnections = 0;
-    this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions6.maxIncomingPendingConnections;
+    this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions5.maxIncomingPendingConnections;
     this.inboundConnectionRateLimiter = new RateLimiter({
-      points: init.inboundConnectionThreshold ?? defaultOptions6.inboundConnectionThreshold,
+      points: init.inboundConnectionThreshold ?? defaultOptions5.inboundConnectionThreshold,
       duration: 1
-    });
-    this.autoDial = new AutoDial({
-      connectionManager: this,
-      peerStore: components.peerStore,
-      events: components.events,
-      logger: components.logger
-    }, {
-      minConnections,
-      autoDialConcurrency: init.autoDialConcurrency ?? defaultOptions6.autoDialConcurrency,
-      autoDialPriority: init.autoDialPriority ?? defaultOptions6.autoDialPriority,
-      autoDialPeerRetryThreshold: init.autoDialPeerRetryThreshold ?? defaultOptions6.autoDialPeerRetryThreshold,
-      autoDialDiscoveredPeersDebounce: init.autoDialDiscoveredPeersDebounce ?? defaultOptions6.autoDialDiscoveredPeersDebounce,
-      maxQueueLength: init.autoDialMaxQueueLength ?? defaultOptions6.autoDialMaxQueueLength
     });
     this.connectionPruner = new ConnectionPruner({
       connectionManager: this,
@@ -21808,6 +19468,17 @@ var DefaultConnectionManager = class {
         dnsaddr: dnsaddrResolver
       },
       connections: this.connections
+    });
+    this.reconnectQueue = new ReconnectQueue({
+      events: components.events,
+      peerStore: components.peerStore,
+      logger: components.logger,
+      connectionManager: this
+    }, {
+      retries: init.reconnectRetries,
+      retryInterval: init.reconnectRetryInterval,
+      backoffFactor: init.reconnectBackoffFactor,
+      maxParallelReconnects: init.maxParallelReconnects
     });
   }
   [Symbol.toStringTag] = "@libp2p/connection-manager";
@@ -21878,34 +19549,15 @@ var DefaultConnectionManager = class {
         return metric;
       }, "calculate")
     });
-    this.dialQueue.start();
-    this.autoDial.start();
+    await start(this.dialQueue, this.reconnectQueue);
     this.started = true;
     this.log("started");
-  }
-  async afterStart() {
-    void Promise.resolve().then(async () => {
-      const keepAlivePeers = await this.peerStore.all({
-        filters: [(peer) => {
-          return peer.tags.has(KEEP_ALIVE);
-        }]
-      });
-      await Promise.all(keepAlivePeers.map(async (peer) => {
-        await this.openConnection(peer.id).catch((err) => {
-          this.log.error(err);
-        });
-      }));
-    }).catch((err) => {
-      this.log.error(err);
-    });
-    this.autoDial.afterStart();
   }
   /**
    * Stops the Connection Manager
    */
   async stop() {
-    this.dialQueue.stop();
-    this.autoDial.stop();
+    await stop(this.reconnectQueue, this.dialQueue);
     const tasks = [];
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
@@ -21988,15 +19640,15 @@ var DefaultConnectionManager = class {
   }
   async openConnection(peerIdOrMultiaddr, options = {}) {
     if (!this.isStarted()) {
-      throw new CodeError("Not started", codes4.ERR_NODE_NOT_STARTED);
+      throw new NotStartedError("Not started");
     }
     options.signal?.throwIfAborted();
     const { peerId: peerId2 } = getPeerAddress(peerIdOrMultiaddr);
     if (peerId2 != null && options.force !== true) {
       this.log("dial %p", peerId2);
-      const existingConnection = this.getConnections(peerId2).find((conn) => !conn.transient);
+      const existingConnection = this.getConnections(peerId2).find((conn) => conn.limits == null);
       if (existingConnection != null) {
-        this.log("had an existing non-transient connection to %p", peerId2);
+        this.log("had an existing non-limited connection to %p", peerId2);
         options.onProgress?.(new CustomProgressEvent("dial-queue:already-connected"));
         return existingConnection;
       }
@@ -22282,7 +19934,7 @@ var UnexpectedEOFError = class extends Error {
 };
 
 // node_modules/it-byte-stream/dist/src/index.js
-var CodeError2 = class extends Error {
+var CodeError = class extends Error {
   static {
     __name(this, "CodeError");
   }
@@ -22292,7 +19944,7 @@ var CodeError2 = class extends Error {
     this.code = code2;
   }
 };
-var AbortError6 = class extends CodeError2 {
+var AbortError7 = class extends CodeError {
   static {
     __name(this, "AbortError");
   }
@@ -22327,7 +19979,7 @@ function byteStream(duplex, opts) {
       let listener;
       const abortPromise = new Promise((resolve, reject) => {
         listener = /* @__PURE__ */ __name(() => {
-          reject(new AbortError6("Read aborted"));
+          reject(new AbortError7("Read aborted"));
         }, "listener");
         options?.signal?.addEventListener("abort", listener);
       });
@@ -22394,6 +20046,7 @@ var PROTOCOL_VERSION = "1.0.0";
 var PROTOCOL_NAME = "ping";
 var PROTOCOL_PREFIX = "ipfs";
 var PING_LENGTH = 32;
+var DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE = true;
 var ConnectionMonitor = class {
   static {
     __name(this, "ConnectionMonitor");
@@ -22405,11 +20058,13 @@ var ConnectionMonitor = class {
   pingIntervalMs;
   abortController;
   timeout;
+  abortConnectionOnPingFailure;
   constructor(components, init = {}) {
     this.components = components;
     this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`;
     this.log = components.logger.forComponent("libp2p:connection-monitor");
     this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS;
+    this.abortConnectionOnPingFailure = init.abortConnectionOnPingFailure ?? DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE;
     this.timeout = new AdaptiveTimeout({
       ...init.pingTimeout ?? {},
       metrics: components.metrics,
@@ -22422,20 +20077,21 @@ var ConnectionMonitor = class {
   ];
   start() {
     this.abortController = new AbortController();
+    setMaxListeners2(Infinity, this.abortController.signal);
     this.heartbeatInterval = setInterval(() => {
       this.components.connectionManager.getConnections().forEach((conn) => {
         Promise.resolve().then(async () => {
-          let start = Date.now();
+          let start2 = Date.now();
           try {
             const signal = this.timeout.getTimeoutSignal({
               signal: this.abortController?.signal
             });
             const stream = await conn.newStream(this.protocol, {
               signal,
-              runOnTransientConnection: true
+              runOnLimitedConnection: true
             });
             const bs = byteStream(stream);
-            start = Date.now();
+            start2 = Date.now();
             await Promise.all([
               bs.write(randomBytes2(PING_LENGTH), {
                 signal
@@ -22444,19 +20100,24 @@ var ConnectionMonitor = class {
                 signal
               })
             ]);
-            conn.rtt = Date.now() - start;
+            conn.rtt = Date.now() - start2;
             await bs.unwrap().close({
               signal
             });
           } catch (err) {
-            if (err.code !== "ERR_UNSUPPORTED_PROTOCOL") {
+            if (err.name !== "UnsupportedProtocolError") {
               throw err;
             }
-            conn.rtt = (Date.now() - start) / 2;
+            conn.rtt = (Date.now() - start2) / 2;
           }
         }).catch((err) => {
-          this.log.error("error during heartbeat, aborting connection", err);
-          conn.abort(err);
+          this.log.error("error during heartbeat", err);
+          if (this.abortConnectionOnPingFailure) {
+            this.log.error("aborting connection due to ping failure");
+            conn.abort(err);
+          } else {
+            this.log("connection ping failed, but not aborting due to abortConnectionOnPingFailure flag");
+          }
         });
       });
     }, this.pingIntervalMs);
@@ -22538,7 +20199,7 @@ var CompoundContentRouting = class {
    */
   async *findProviders(key, options = {}) {
     if (this.routers.length === 0) {
-      throw new CodeError("No content routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
+      throw new NoContentRoutersError("No content routers available");
     }
     const self = this;
     const seen = new PeerSet();
@@ -22564,7 +20225,7 @@ var CompoundContentRouting = class {
    */
   async provide(key, options = {}) {
     if (this.routers.length === 0) {
-      throw new CodeError("No content routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
+      throw new NoContentRoutersError("No content routers available");
     }
     await Promise.all(this.routers.map(async (router) => {
       await router.provide(key, options);
@@ -22575,7 +20236,7 @@ var CompoundContentRouting = class {
    */
   async put(key, value, options) {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes4.ERR_NODE_NOT_STARTED);
+      throw new NotStartedError();
     }
     await Promise.all(this.routers.map(async (router) => {
       await router.put(key, value, options);
@@ -22587,7 +20248,7 @@ var CompoundContentRouting = class {
    */
   async get(key, options) {
     if (!this.isStarted()) {
-      throw new CodeError(messages.NOT_STARTED_YET, codes4.ERR_NODE_NOT_STARTED);
+      throw new NotStartedError();
     }
     return Promise.any(this.routers.map(async (router) => {
       return router.get(key, options);
@@ -22728,10 +20389,10 @@ var DefaultPeerRouting = class {
    */
   async findPeer(id, options) {
     if (this.routers.length === 0) {
-      throw new CodeError("No peer routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
+      throw new NoPeerRoutersError("No peer routers available");
     }
     if (id.toString() === this.peerId.toString()) {
-      throw new CodeError("Should not try to find self", codes4.ERR_FIND_SELF);
+      throw new QueriedForSelfError("Should not try to find self");
     }
     const self = this;
     const source = src_default9(...this.routers.map((router) => async function* () {
@@ -22752,14 +20413,14 @@ var DefaultPeerRouting = class {
       }
       return peer;
     }
-    throw new CodeError(messages.NOT_FOUND, codes4.ERR_NOT_FOUND);
+    throw new NotFoundError();
   }
   /**
    * Attempt to find the closest peers on the network to the given key
    */
   async *getClosestPeers(key, options = {}) {
     if (this.routers.length === 0) {
-      throw new CodeError("No peer routers available", codes4.ERR_NO_ROUTERS_AVAILABLE);
+      throw new NoPeerRoutersError("No peer routers available");
     }
     const self = this;
     const seen = createScalableCuckooFilter(1024);
@@ -22790,10 +20451,10 @@ var DefaultPeerRouting = class {
           multiaddrs: peer.multiaddrs
         });
       }
-      if (seen.has(peer.id.toBytes())) {
+      if (seen.has(peer.id.toMultihash().bytes)) {
         continue;
       }
-      seen.add(peer.id.toBytes());
+      seen.add(peer.id.toMultihash().bytes);
       yield peer;
     }
   }
@@ -22859,7 +20520,7 @@ var RandomWalk = class extends TypedEventEmitter {
     setMaxListeners2(Infinity, this.walkController.signal);
     const signal = anySignal([this.walkController.signal, this.shutdownController.signal]);
     setMaxListeners2(Infinity, signal);
-    const start = Date.now();
+    const start2 = Date.now();
     let found = 0;
     Promise.resolve().then(async () => {
       this.log("start walk");
@@ -22895,7 +20556,7 @@ var RandomWalk = class extends TypedEventEmitter {
     }).catch((err) => {
       this.log.error("randomwalk errored", err);
     }).finally(() => {
-      this.log("finished walk, found %d peers after %dms", found, Date.now() - start);
+      this.log("finished walk, found %d peers after %dms", found, Date.now() - start2);
       this.walking = false;
     });
   }
@@ -22933,7 +20594,7 @@ var DefaultRegistrar = class {
   getHandler(protocol) {
     const handler = this.handlers.get(protocol);
     if (handler == null) {
-      throw new CodeError(`No handler registered for protocol ${protocol}`, codes4.ERR_NO_HANDLER_FOR_PROTOCOL);
+      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol}`);
     }
     return handler;
   }
@@ -22951,7 +20612,7 @@ var DefaultRegistrar = class {
    */
   async handle(protocol, handler, opts) {
     if (this.handlers.has(protocol)) {
-      throw new CodeError(`Handler already registered for protocol ${protocol}`, codes4.ERR_PROTOCOL_HANDLER_ALREADY_REGISTERED);
+      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`);
     }
     const options = merge_options_default.bind({ ignoreUndefined: true })({
       maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
@@ -22983,7 +20644,7 @@ var DefaultRegistrar = class {
    */
   async register(protocol, topology) {
     if (topology == null) {
-      throw new CodeError("invalid topology", codes4.ERR_INVALID_PARAMETERS);
+      throw new InvalidParametersError("invalid topology");
     }
     const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`;
     let topologies = this.topologies.get(protocol);
@@ -23027,7 +20688,7 @@ var DefaultRegistrar = class {
         }
       }
     }).catch((err) => {
-      if (err.code === codes4.ERR_NOT_FOUND) {
+      if (err.name === "NotFoundError") {
         return;
       }
       this.log.error("could not inform topologies of disconnecting peer %p", remotePeer, err);
@@ -23068,7 +20729,7 @@ var DefaultRegistrar = class {
         continue;
       }
       for (const topology of topologies.values()) {
-        if (connection.transient && topology.notifyOnTransient !== true) {
+        if (connection.limits != null && topology.notifyOnLimitedConnection !== true) {
           continue;
         }
         if (topology.filter?.has(peerId2) === true) {
@@ -23152,10 +20813,10 @@ var DefaultTransportManager = class {
   add(transport) {
     const tag = transport[Symbol.toStringTag];
     if (tag == null) {
-      throw new CodeError("Transport must have a valid tag", codes4.ERR_INVALID_KEY);
+      throw new InvalidParametersError("Transport must have a valid tag");
     }
     if (this.transports.has(tag)) {
-      throw new CodeError(`There is already a transport with the tag ${tag}`, codes4.ERR_DUPLICATE_TRANSPORT);
+      throw new InvalidParametersError(`There is already a transport with the tag ${tag}`);
     }
     this.log("adding transport %s", tag);
     this.transports.set(tag, transport);
@@ -23201,20 +20862,13 @@ var DefaultTransportManager = class {
   async dial(ma, options) {
     const transport = this.dialTransportForMultiaddr(ma);
     if (transport == null) {
-      throw new CodeError(`No transport available for address ${String(ma)}`, codes4.ERR_TRANSPORT_UNAVAILABLE);
+      throw new TransportUnavailableError(`No transport available for address ${String(ma)}`);
     }
     options?.onProgress?.(new CustomProgressEvent("transport-manager:selected-transport", transport[Symbol.toStringTag]));
-    try {
-      return await transport.dial(ma, {
-        ...options,
-        upgrader: this.components.upgrader
-      });
-    } catch (err) {
-      if (err.code == null) {
-        err.code = codes4.ERR_TRANSPORT_DIAL_FAILED;
-      }
-      throw err;
-    }
+    return transport.dial(ma, {
+      ...options,
+      upgrader: this.components.upgrader
+    });
   }
   /**
    * Returns all Multiaddr's the listeners are using
@@ -23267,7 +20921,7 @@ var DefaultTransportManager = class {
    */
   async listen(addrs) {
     if (!this.isStarted()) {
-      throw new CodeError("Not started", codes4.ERR_NODE_NOT_STARTED);
+      throw new NotStartedError("Not started");
     }
     if (addrs == null || addrs.length === 0) {
       this.log("no addresses were provided for listening, this node is dial only");
@@ -23309,13 +20963,13 @@ var DefaultTransportManager = class {
       const results = await Promise.allSettled(tasks);
       const isListening = results.find((r) => r.status === "fulfilled");
       if (isListening == null && this.faultTolerance !== FaultTolerance.NO_FATAL) {
-        throw new CodeError(`Transport (${key}) could not listen on any available address`, codes4.ERR_NO_VALID_ADDRESSES);
+        throw new NoValidAddressesError(`Transport (${key}) could not listen on any available address`);
       }
     }
     if (couldNotListen.length === this.transports.size) {
       const message2 = `no valid addresses were provided for transports [${couldNotListen.join(", ")}]`;
       if (this.faultTolerance === FaultTolerance.FATAL_ALL) {
-        throw new CodeError(message2, codes4.ERR_NO_VALID_ADDRESSES);
+        throw new NoValidAddressesError(message2);
       }
       this.log(`libp2p in dial mode only: ${message2}`);
     }
@@ -23388,8 +21042,8 @@ function lpStream(duplex, opts = {}) {
   if (opts.maxDataLength != null && opts.maxLengthLength == null) {
     opts.maxLengthLength = encodingLength2(opts.maxDataLength);
   }
-  const decodeLength = opts?.lengthDecoder ?? decode6;
-  const encodeLength = opts?.lengthEncoder ?? encode5;
+  const decodeLength = opts?.lengthDecoder ?? decode5;
+  const encodeLength = opts?.lengthEncoder ?? encode4;
   const W = {
     read: /* @__PURE__ */ __name(async (options) => {
       let dataLength = -1;
@@ -23448,7 +21102,7 @@ async function read3(reader, options) {
   const buf = await reader.read(options);
   if (buf.byteLength === 0 || buf.get(buf.byteLength - 1) !== NewLine[0]) {
     options.log.error("Invalid mss message - missing newline", buf);
-    throw new CodeError("missing newline", "ERR_INVALID_MULTISTREAM_SELECT_MESSAGE");
+    throw new InvalidMessageError("Missing newline");
   }
   return buf.sublist(0, -1);
 }
@@ -23501,7 +21155,7 @@ async function select(stream, protocols, options) {
       return { stream: lp.unwrap(), protocol: protocol2 };
     }
   }
-  throw new CodeError("protocol selection failed", "ERR_UNSUPPORTED_PROTOCOL");
+  throw new UnsupportedProtocolError("protocol selection failed");
 }
 __name(select, "select");
 function optimisticSelect(stream, protocol, options) {
@@ -23541,7 +21195,7 @@ function optimisticSelect(stream, protocol, options) {
             // length of PROTOCOL_ID plus newline
             fromString2(`${PROTOCOL_ID}
 `),
-            encode5(protocolString.length),
+            encode4(protocolString.length),
             fromString2(protocolString),
             buf
           ).subarray();
@@ -23622,7 +21276,7 @@ function optimisticSelect(stream, protocol, options) {
       }
       options.log.trace('optimistic: read protocol "%s", expecting "%s"', response, protocol);
       if (response !== protocol) {
-        throw new CodeError("protocol selection failed", "ERR_UNSUPPORTED_PROTOCOL");
+        throw new UnsupportedProtocolError("protocol selection failed");
       }
     } finally {
       readProtocol = true;
@@ -23695,7 +21349,7 @@ __name(isAsyncIterable7, "isAsyncIterable");
 var defaultEncoder = /* @__PURE__ */ __name((length3) => {
   const lengthLength = encodingLength2(length3);
   const lengthBuf = allocUnsafe(lengthLength);
-  encode5(length3, lengthBuf);
+  encode4(length3, lengthBuf);
   defaultEncoder.bytes = lengthLength;
   return lengthBuf;
 }, "defaultEncoder");
@@ -23776,7 +21430,7 @@ var ReadMode;
   ReadMode2[ReadMode2["DATA"] = 1] = "DATA";
 })(ReadMode || (ReadMode = {}));
 var defaultDecoder = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode6(buf);
+  const length3 = decode5(buf);
   defaultDecoder.bytes = encodingLength2(length3);
   return length3;
 }, "defaultDecoder");
@@ -23949,7 +21603,7 @@ var ConnectionImpl = class {
   multiplexer;
   encryption;
   status;
-  transient;
+  limits;
   log;
   /**
    * User provided tags
@@ -23983,7 +21637,7 @@ var ConnectionImpl = class {
     this.timeline = init.timeline;
     this.multiplexer = init.multiplexer;
     this.encryption = init.encryption;
-    this.transient = init.transient ?? false;
+    this.limits = init.limits;
     this.log = init.logger.forComponent(`libp2p:connection:${this.direction}:${this.id}`);
     if (this.remoteAddr.getPeerId() == null) {
       this.remoteAddr = this.remoteAddr.encapsulate(`/p2p/${this.remotePeer}`);
@@ -24007,16 +21661,16 @@ var ConnectionImpl = class {
    */
   async newStream(protocols, options) {
     if (this.status === "closing") {
-      throw new CodeError("the connection is being closed", "ERR_CONNECTION_BEING_CLOSED");
+      throw new ConnectionClosingError("the connection is being closed");
     }
     if (this.status === "closed") {
-      throw new CodeError("the connection is closed", "ERR_CONNECTION_CLOSED");
+      throw new ConnectionClosedError("the connection is closed");
     }
     if (!Array.isArray(protocols)) {
       protocols = [protocols];
     }
-    if (this.transient && options?.runOnTransientConnection !== true) {
-      throw new CodeError("Cannot open protocol stream on transient connection", "ERR_TRANSIENT_CONNECTION");
+    if (this.limits != null && options?.runOnLimitedConnection !== true) {
+      throw new LimitedConnectionError("Cannot open protocol stream on limited connection");
     }
     const stream = await this._newStream(protocols, options);
     stream.direction = "outbound";
@@ -24076,7 +21730,7 @@ function findIncomingStreamLimit(protocol, registrar) {
     const { options } = registrar.getHandler(protocol);
     return options.maxInboundStreams;
   } catch (err) {
-    if (err.code !== codes4.ERR_NO_HANDLER_FOR_PROTOCOL) {
+    if (err.name !== "UnhandledProtocolError") {
       throw err;
     }
   }
@@ -24090,7 +21744,7 @@ function findOutgoingStreamLimit(protocol, registrar, options = {}) {
       return options2.maxOutboundStreams;
     }
   } catch (err) {
-    if (err.code !== codes4.ERR_NO_HANDLER_FOR_PROTOCOL) {
+    if (err.name !== "UnhandledProtocolError") {
       throw err;
     }
   }
@@ -24112,19 +21766,19 @@ var DefaultUpgrader = class {
     __name(this, "DefaultUpgrader");
   }
   components;
-  connectionEncryption;
-  muxers;
+  connectionEncrypters;
+  streamMuxers;
   inboundUpgradeTimeout;
   events;
   constructor(components, init) {
     this.components = components;
-    this.connectionEncryption = /* @__PURE__ */ new Map();
-    init.connectionEncryption.forEach((encrypter) => {
-      this.connectionEncryption.set(encrypter.protocol, encrypter);
+    this.connectionEncrypters = /* @__PURE__ */ new Map();
+    init.connectionEncrypters.forEach((encrypter) => {
+      this.connectionEncrypters.set(encrypter.protocol, encrypter);
     });
-    this.muxers = /* @__PURE__ */ new Map();
-    init.muxers.forEach((muxer) => {
-      this.muxers.set(muxer.protocol, muxer);
+    this.streamMuxers = /* @__PURE__ */ new Map();
+    init.streamMuxers.forEach((muxer) => {
+      this.streamMuxers.set(muxer.protocol, muxer);
     });
     this.inboundUpgradeTimeout = init.inboundUpgradeTimeout ?? INBOUND_UPGRADE_TIMEOUT;
     this.events = components.events;
@@ -24134,7 +21788,7 @@ var DefaultUpgrader = class {
     const connectionGater2 = this.components.connectionGater[connectionType];
     if (connectionGater2 !== void 0) {
       if (await connectionGater2(remotePeer, maConn)) {
-        throw new CodeError(`The multiaddr connection is blocked by gater.${connectionType}`, codes4.ERR_CONNECTION_INTERCEPTED);
+        throw new ConnectionInterceptedError(`The multiaddr connection is blocked by gater.${connectionType}`);
       }
     }
   }
@@ -24144,7 +21798,7 @@ var DefaultUpgrader = class {
   async upgradeInbound(maConn, opts) {
     const accept = await this.components.connectionManager.acceptIncomingConnection(maConn);
     if (!accept) {
-      throw new CodeError("connection denied", codes4.ERR_CONNECTION_DENIED);
+      throw new ConnectionDeniedError("connection denied");
     }
     let encryptedConn;
     let remotePeer;
@@ -24153,13 +21807,13 @@ var DefaultUpgrader = class {
     let cryptoProtocol;
     const signal = AbortSignal.timeout(this.inboundUpgradeTimeout);
     const onAbort = /* @__PURE__ */ __name(() => {
-      maConn.abort(new CodeError("inbound upgrade timeout", ERR_TIMEOUT));
+      maConn.abort(new TimeoutError("inbound upgrade timeout"));
     }, "onAbort");
     signal.addEventListener("abort", onAbort, { once: true });
     setMaxListeners2(Infinity, signal);
     try {
       if (await this.components.connectionGater.denyInboundConnection?.(maConn) === true) {
-        throw new CodeError("The multiaddr connection is blocked by gater.acceptConnection", codes4.ERR_CONNECTION_INTERCEPTED);
+        throw new ConnectionInterceptedError("The multiaddr connection is blocked by gater.acceptConnection");
       }
       this.components.metrics?.trackMultiaddrConnection(maConn);
       maConn.log("starting the inbound connection upgrade");
@@ -24188,7 +21842,7 @@ var DefaultUpgrader = class {
         } else {
           const idStr = maConn.remoteAddr.getPeerId();
           if (idStr == null) {
-            throw new CodeError("inbound connection that skipped encryption must have a peer id", codes4.ERR_INVALID_MULTIADDR);
+            throw new InvalidMultiaddrError("inbound connection that skipped encryption must have a peer id");
           }
           const remotePeerId = peerIdFromString(idStr);
           cryptoProtocol = "native";
@@ -24197,12 +21851,12 @@ var DefaultUpgrader = class {
         upgradedConn = encryptedConn;
         if (opts?.muxerFactory != null) {
           muxerFactory = opts.muxerFactory;
-        } else if (this.muxers.size > 0) {
+        } else if (this.streamMuxers.size > 0) {
           opts?.onProgress?.(new CustomProgressEvent("upgrader:multiplex-inbound-connection"));
           const multiplexed = await this._multiplexInbound({
             ...protectedConn,
             ...encryptedConn
-          }, this.muxers);
+          }, this.streamMuxers);
           muxerFactory = multiplexed.muxerFactory;
           upgradedConn = multiplexed.stream;
         }
@@ -24219,7 +21873,7 @@ var DefaultUpgrader = class {
         upgradedConn,
         muxerFactory,
         remotePeer,
-        transient: opts?.transient
+        limits: opts?.limits
       });
     } finally {
       signal.removeEventListener("abort", onAbort);
@@ -24257,7 +21911,10 @@ var DefaultUpgrader = class {
           conn: encryptedConn,
           remotePeer,
           protocol: cryptoProtocol
-        } = await this._encryptOutbound(protectedConn, remotePeerId));
+        } = await this._encryptOutbound(protectedConn, {
+          ...opts,
+          remotePeer: remotePeerId
+        }));
         const maConn2 = {
           ...protectedConn,
           ...encryptedConn
@@ -24265,7 +21922,7 @@ var DefaultUpgrader = class {
         await this.shouldBlockConnection(remotePeer, maConn2, "denyOutboundEncryptedConnection");
       } else {
         if (remotePeerId == null) {
-          throw new CodeError("Encryption was skipped but no peer id was passed", codes4.ERR_INVALID_PEER);
+          throw new InvalidPeerIdError("Encryption was skipped but no peer id was passed");
         }
         cryptoProtocol = "native";
         remotePeer = remotePeerId;
@@ -24273,11 +21930,11 @@ var DefaultUpgrader = class {
       upgradedConn = encryptedConn;
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory;
-      } else if (this.muxers.size > 0) {
+      } else if (this.streamMuxers.size > 0) {
         const multiplexed = await this._multiplexOutbound({
           ...protectedConn,
           ...encryptedConn
-        }, this.muxers);
+        }, this.streamMuxers);
         muxerFactory = multiplexed.muxerFactory;
         upgradedConn = multiplexed.stream;
       }
@@ -24295,14 +21952,14 @@ var DefaultUpgrader = class {
       upgradedConn,
       muxerFactory,
       remotePeer,
-      transient: opts?.transient
+      limits: opts?.limits
     });
   }
   /**
    * A convenience method for generating a new `Connection`
    */
   _createConnection(opts) {
-    const { cryptoProtocol, direction, maConn, upgradedConn, remotePeer, muxerFactory, transient } = opts;
+    const { cryptoProtocol, direction, maConn, upgradedConn, remotePeer, muxerFactory, limits } = opts;
     let muxer;
     let newStream;
     let connection;
@@ -24327,7 +21984,7 @@ var DefaultUpgrader = class {
             const incomingLimit = findIncomingStreamLimit(protocol, this.components.registrar);
             const streamCount = countStreams(protocol, "inbound", connection);
             if (streamCount === incomingLimit) {
-              const err = new CodeError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`, codes4.ERR_TOO_MANY_INBOUND_PROTOCOL_STREAMS);
+              const err = new TooManyInboundProtocolStreamsError(`Too many inbound protocol streams for protocol "${protocol}" - limit ${incomingLimit}`);
               muxedStream.abort(err);
               throw err;
             }
@@ -24358,7 +22015,7 @@ var DefaultUpgrader = class {
       });
       newStream = /* @__PURE__ */ __name(async (protocols, options = {}) => {
         if (muxer == null) {
-          throw new CodeError("Stream is not multiplexed", codes4.ERR_MUXER_UNAVAILABLE);
+          throw new MuxerUnavailableError("Connection is not multiplexed");
         }
         connection.log("starting new stream for protocols %s", protocols);
         const muxedStream = await muxer.newStream();
@@ -24383,7 +22040,7 @@ var DefaultUpgrader = class {
           const outgoingLimit = findOutgoingStreamLimit(protocol, this.components.registrar, options);
           const streamCount = countStreams(protocol, "outbound", connection);
           if (streamCount >= outgoingLimit) {
-            const err = new CodeError(`Too many outbound protocol streams for protocol "${protocol}" - ${streamCount}/${outgoingLimit}`, codes4.ERR_TOO_MANY_OUTBOUND_PROTOCOL_STREAMS);
+            const err = new TooManyOutboundProtocolStreamsError(`Too many outbound protocol streams for protocol "${protocol}" - ${streamCount}/${outgoingLimit}`);
             muxedStream.abort(err);
             throw err;
           }
@@ -24409,10 +22066,7 @@ var DefaultUpgrader = class {
           if (muxedStream.timeline.close == null) {
             muxedStream.abort(err);
           }
-          if (err.code != null) {
-            throw err;
-          }
-          throw new CodeError(String(err), codes4.ERR_UNSUPPORTED_PROTOCOL);
+          throw err;
         }
       }, "newStream");
       void Promise.all([
@@ -24447,7 +22101,7 @@ var DefaultUpgrader = class {
     });
     maConn.timeline.upgraded = Date.now();
     const errConnectionNotMultiplexed = /* @__PURE__ */ __name(() => {
-      throw new CodeError("connection is not multiplexed", codes4.ERR_CONNECTION_NOT_MULTIPLEXED);
+      throw new MuxerUnavailableError("Connection is not multiplexed");
     }, "errConnectionNotMultiplexed");
     connection = createConnection({
       remoteAddr: maConn.remoteAddr,
@@ -24457,7 +22111,7 @@ var DefaultUpgrader = class {
       timeline: maConn.timeline,
       multiplexer: muxer?.protocol,
       encryption: cryptoProtocol,
-      transient,
+      limits,
       logger: this.components.logger,
       newStream: newStream ?? errConnectionNotMultiplexed,
       getStreams: /* @__PURE__ */ __name(() => {
@@ -24494,41 +22148,41 @@ var DefaultUpgrader = class {
   _onStream(opts) {
     const { connection, stream, protocol } = opts;
     const { handler, options } = this.components.registrar.getHandler(protocol);
-    if (connection.transient && options.runOnTransientConnection !== true) {
-      throw new CodeError("Cannot open protocol stream on transient connection", "ERR_TRANSIENT_CONNECTION");
+    if (connection.limits != null && options.runOnLimitedConnection !== true) {
+      throw new LimitedConnectionError("Cannot open protocol stream on limited connection");
     }
     handler({ connection, stream });
   }
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound(connection) {
-    const protocols = Array.from(this.connectionEncryption.keys());
+  async _encryptInbound(connection, options) {
+    const protocols = Array.from(this.connectionEncrypters.keys());
     connection.log("handling inbound crypto protocol selection", protocols);
     try {
       const { stream, protocol } = await handle(connection, protocols, {
         log: connection.log
       });
-      const encrypter = this.connectionEncryption.get(protocol);
+      const encrypter = this.connectionEncrypters.get(protocol);
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`);
       }
       connection.log("encrypting inbound connection using", protocol);
       return {
-        ...await encrypter.secureInbound(this.components.peerId, stream),
+        ...await encrypter.secureInbound(stream, options),
         protocol
       };
     } catch (err) {
       connection.log.error("encrypting inbound connection failed", err);
-      throw new CodeError(err.message, codes4.ERR_ENCRYPTION_FAILED);
+      throw new EncryptionFailedError(err.message);
     }
   }
   /**
    * Attempts to encrypt the given `connection` with the provided connection encrypters.
    * The first `ConnectionEncrypter` module to succeed will be used
    */
-  async _encryptOutbound(connection, remotePeerId) {
-    const protocols = Array.from(this.connectionEncryption.keys());
+  async _encryptOutbound(connection, options) {
+    const protocols = Array.from(this.connectionEncrypters.keys());
     connection.log("selecting outbound crypto protocol", protocols);
     try {
       connection.log.trace("selecting encrypter from %s", protocols);
@@ -24536,18 +22190,18 @@ var DefaultUpgrader = class {
         log: connection.log,
         yieldBytes: true
       });
-      const encrypter = this.connectionEncryption.get(protocol);
+      const encrypter = this.connectionEncrypters.get(protocol);
       if (encrypter == null) {
         throw new Error(`no crypto module found for ${protocol}`);
       }
-      connection.log("encrypting outbound connection to %p using %s", remotePeerId, encrypter);
+      connection.log("encrypting outbound connection to %p using %s", options?.remotePeer, encrypter);
       return {
-        ...await encrypter.secureOutbound(this.components.peerId, stream, remotePeerId),
+        ...await encrypter.secureOutbound(stream, options),
         protocol
       };
     } catch (err) {
-      connection.log.error("encrypting outbound connection to %p failed", remotePeerId, err);
-      throw new CodeError(err.message, codes4.ERR_ENCRYPTION_FAILED);
+      connection.log.error("encrypting outbound connection to %p failed", options?.remotePeer, err);
+      throw new EncryptionFailedError(err.message);
     }
   }
   /**
@@ -24568,7 +22222,7 @@ var DefaultUpgrader = class {
       return { stream, muxerFactory };
     } catch (err) {
       connection.log.error("error multiplexing outbound connection", err);
-      throw new CodeError(String(err), codes4.ERR_MUXER_UNAVAILABLE);
+      throw new MuxerUnavailableError(String(err));
     }
   }
   /**
@@ -24586,19 +22240,19 @@ var DefaultUpgrader = class {
       return { stream, muxerFactory };
     } catch (err) {
       connection.log.error("error multiplexing inbound connection", err);
-      throw new CodeError(String(err), codes4.ERR_MUXER_UNAVAILABLE);
+      throw new MuxerUnavailableError(String(err));
     }
   }
 };
 
 // node_modules/libp2p/dist/src/version.js
-var version = "1.9.4";
+var version = "2.0.2";
 var name2 = "libp2p";
 
 // node_modules/libp2p/dist/src/libp2p.js
-var Libp2pNode = class extends TypedEventEmitter {
+var Libp2p = class extends TypedEventEmitter {
   static {
-    __name(this, "Libp2pNode");
+    __name(this, "Libp2p");
   }
   peerId;
   peerStore;
@@ -24658,8 +22312,8 @@ var Libp2pNode = class extends TypedEventEmitter {
       this.configureComponent("connectionProtector", init.connectionProtector(components));
     }
     this.components.upgrader = new DefaultUpgrader(this.components, {
-      connectionEncryption: (init.connectionEncryption ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
-      muxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
+      connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
+      streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout
     });
     this.configureComponent("transportManager", new DefaultTransportManager(this.components, init.transportManager));
@@ -24783,11 +22437,11 @@ var Libp2pNode = class extends TypedEventEmitter {
   }
   async dialProtocol(peer, protocols, options = {}) {
     if (protocols == null) {
-      throw new CodeError("no protocols were provided to open a stream", codes4.ERR_INVALID_PROTOCOLS_FOR_STREAM);
+      throw new InvalidParametersError("no protocols were provided to open a stream");
     }
     protocols = Array.isArray(protocols) ? protocols : [protocols];
     if (protocols.length === 0) {
-      throw new CodeError("no protocols were provided to open a stream", codes4.ERR_INVALID_PROTOCOLS_FOR_STREAM);
+      throw new InvalidParametersError("no protocols were provided to open a stream");
     }
     const connection = await this.dial(peer, options);
     return connection.newStream(protocols, options);
@@ -24804,9 +22458,6 @@ var Libp2pNode = class extends TypedEventEmitter {
     }
     await this.components.connectionManager.closeConnections(peer, options);
   }
-  /**
-   * Get the public key for the given peer id
-   */
   async getPublicKey(peer, options = {}) {
     this.log("getPublicKey %p", peer);
     if (peer.publicKey != null) {
@@ -24818,20 +22469,20 @@ var Libp2pNode = class extends TypedEventEmitter {
         return peerInfo.id.publicKey;
       }
     } catch (err) {
-      if (err.code !== codes4.ERR_NOT_FOUND) {
+      if (err.name !== "NotFoundError") {
         throw err;
       }
     }
-    const peerKey = concat([
+    const peerKey = concat2([
       fromString2("/pk/"),
-      peer.multihash.digest
+      peer.toMultihash().bytes
     ]);
     const bytes2 = await this.contentRouting.get(peerKey, options);
-    unmarshalPublicKey(bytes2);
+    const publicKey = publicKeyFromProtobuf(bytes2);
     await this.peerStore.patch(peer, {
-      publicKey: bytes2
+      publicKey
     });
-    return bytes2;
+    return publicKey;
   }
   async handle(protocols, handler, options) {
     if (!Array.isArray(protocols)) {
@@ -24865,7 +22516,7 @@ var Libp2pNode = class extends TypedEventEmitter {
   #onDiscoveryPeer(evt) {
     const { detail: peer } = evt;
     if (peer.id.toString() === this.peerId.toString()) {
-      this.log.error(new Error(codes4.ERR_DISCOVERED_SELF));
+      this.log.error("peer discovery mechanism discovered self");
       return;
     }
     void this.components.peerStore.merge(peer.id, {
@@ -24875,19 +22526,14 @@ var Libp2pNode = class extends TypedEventEmitter {
     });
   }
 };
-async function createLibp2pNode(options = {}) {
-  const peerId2 = options.peerId ??= await createEd25519PeerId();
-  if (peerId2.privateKey == null) {
-    throw new CodeError("peer id was missing private key", "ERR_MISSING_PRIVATE_KEY");
-  }
-  options.privateKey ??= await unmarshalPrivateKey2(peerId2.privateKey);
-  return new Libp2pNode(await validateConfig(options));
-}
-__name(createLibp2pNode, "createLibp2pNode");
 
 // node_modules/libp2p/dist/src/index.js
 async function createLibp2p(options = {}) {
-  const node = await createLibp2pNode(options);
+  options.privateKey ??= await generateKeyPair("Ed25519");
+  const node = new Libp2p({
+    ...await validateConfig(options),
+    peerId: peerIdFromPrivateKey(options.privateKey)
+  });
   if (options.start !== false) {
     await node.start();
   }
