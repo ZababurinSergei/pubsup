@@ -23,7 +23,7 @@ import fs from "node:fs";
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
-import { PUBSUB_PEER_DISCOVERY } from './constants.js'
+import { PUBSUB_PEER_DISCOVERY } from './docs/constants.js'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 // import { autoNAT } from '@libp2p/autonat'
 

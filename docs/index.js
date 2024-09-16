@@ -17,8 +17,12 @@ import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { IDBDatastore } from 'datastore-idb'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { PUBSUB_PEER_DISCOVERY } from './constants.js'
+// const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
 
-const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
+const serverPeerId = '12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1'
+const port = 4839
+const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com'
 
 const store = new IDBDatastore('/fs', {
   prefix: '/universe',
@@ -99,18 +103,20 @@ const clean = (line) => line.replaceAll('\n', '')
 
 let boot = []
 
+
 if(isBootstrap) {
   if(isPubsubPeerDiscovery) {
     boot = [
       pubsubPeerDiscovery({
-        interval: 10_000,
+        interval: 10000,
         topics: [PUBSUB_PEER_DISCOVERY],
+        listenOnly: false
       }),
       bootstrap({
         list: [
           isLocalhost
-              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
+              : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`
         ]
       })
     ]
@@ -119,8 +125,8 @@ if(isBootstrap) {
       bootstrap({
         list: [
           isLocalhost
-              ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-              : "/dns4/relay-tuem.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
+              ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
+              : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`
         ]
       })
     ]
@@ -254,17 +260,19 @@ const libp2p = await createLibp2p({
   }
 })
 
+libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
+
 const intervalId = setInterval( () => {
   const ma = multiaddr(isLocalhost
-      ? "/dns4/localhost/tcp/4839/ws/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1"
-      : "/dns4/relay-qcpn.onrender.com/wss/p2p/12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1")
+      ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
+      : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`)
   //
   // const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
 
   libp2p.services.ping.ping(ma)
 }, 1000 * 60 * 13)
 
-DOM.dhtMode().textContent = libp2p.services.dht.getMode()
+// DOM.dhtMode().textContent = libp2p.services.dht.getMode()
 
 DOM.peerId().innerText = libp2p.peerId.toString()
 console.log('multiaddress:',libp2p.getMultiaddrs())
