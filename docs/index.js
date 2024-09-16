@@ -12,16 +12,12 @@ import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
 import { bootstrap } from '@libp2p/bootstrap'
 import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { ping } from '@libp2p/ping'
+import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 
 import { PersistentPeerStore } from '@libp2p/peer-store'
 import { IDBDatastore } from 'datastore-idb'
-
-import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
-import { ping } from '@libp2p/ping'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { PUBSUB_PEER_DISCOVERY } from './constants.js'
-
-// const PUBSUB_PEER_DISCOVERY = 'browser-peer-discovery'
 
 // const datastore = new IDBDatastore('/fs', {
 //   prefix: '/universe',
@@ -30,8 +26,6 @@ import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 
 // await datastore.destroy()
 // await datastore.open()
-
-// console.log('datastore', datastore)
 
 const isLocalhost = window.location.hostname === 'localhost'
 const queryString = window.location.search;
@@ -64,29 +58,6 @@ const DOM = {
   topicPeerList: () => document.getElementById('topic-peers')
 }
 
-// const services =  services: {
-//   autoNAT: autoNAT(),
-//       dcutr: dcutr(),
-//       delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
-//       dht: kadDHT({
-//     validators: {
-//       ipns: ipnsValidator
-//     },
-//     selectors: {
-//       ipns: ipnsSelector
-//     }
-//   }),
-//       identify: identify({
-//     agentVersion
-//   }),
-//       identifyPush: identifyPush({
-//     agentVersion
-//   }),
-//       keychain: keychain(options.keychain),
-//       ping: ping(),
-//       relay: circuitRelayServer(),
-//       upnp: uPnPNAT()
-// }
 const appendOutput = (line) => {
   DOM.output().innerText += `${line}\n`
 }
@@ -126,17 +97,16 @@ if(isBootstrap) {
 if(isPeerInfoMapper) {
   if(urlParams.get('peerInfoMapper') === 'public') {
     publicAddressesMapper = removePublicAddressesMapper
-  }
-
-  if(urlParams.get('peerInfoMapper') === 'private') {
+  } else if(urlParams.get('peerInfoMapper') === 'private') {
     publicAddressesMapper = removePrivateAddressesMapper
+  } else {
+    console.error('peerInfoMapper должно быть значение либо public либо private')
   }
 }
 
 if(isLanKad) {
   DhtProtocol = `${urlParams.get('lanKad')}kad/1.0.0`
 
-  // console.log('----------------------------', DhtProtocol)
   boot = [
     bootstrap({
       list: [
@@ -151,7 +121,6 @@ if(isLanKad) {
   ]
 }
 
-console.log('ddddddddddddddddddddddddd', boot)
 const libp2p = await createLibp2p({
   // peerStore: PersistentPeerStore,
   // datastore: datastore,
@@ -182,6 +151,35 @@ const libp2p = await createLibp2p({
   connectionEncrypters: [noise()],
   // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
+  services: {
+    identify: identify(),
+    identifyPush: identifyPush(),
+    pubsub: gossipsub(),
+    dcutr: dcutr(),
+    ping: ping(),
+    dht: isDht? kadDHT({
+      kBucketSize: 4,
+      kBucketSplitThreshold: `kBucketSize`,
+      prefixLength: 6,
+      clientMode: false,
+      querySelfInterval: 5000,
+      initialQuerySelfInterval: 1000,
+      allowQueryWithZeroPeers: false,
+      protocol: DhtProtocol,
+      logPrefix: "libp2p:kad-dht",
+      pingTimeout: 10000,
+      pingConcurrency: 10,
+      // maxInboundStreams: 32,
+      // maxOutboundStreams: 64,
+      maxInboundStreams: 3,
+      maxOutboundStreams: 6,
+      // peerInfoMapper: removePrivateAddressesMapper,
+      peerInfoMapper: publicAddressesMapper,
+    }): () => { }
+  },
+  connectionManager: {
+    minConnections: 20
+  },
   connectionGater: {
     denyDialPeer: (currentPeerId) => {
       // console.log('00000000000000 denyDialPeer 00000000000000',type, currentPeerId.toString())
@@ -218,35 +216,6 @@ const libp2p = await createLibp2p({
     filterMultiaddrForPeer: async (currentPeerId, multiaddr) => {
         return true
     }
-  },
-  services: {
-    identify: identify(),
-    identifyPush: identifyPush(),
-    pubsub: gossipsub(),
-    dcutr: dcutr(),
-    ping: ping(),
-    dht: isDht? kadDHT({
-      kBucketSize: 4,
-      kBucketSplitThreshold: `kBucketSize`,
-      prefixLength: 6,
-      clientMode: false,
-      querySelfInterval: 5000,
-      initialQuerySelfInterval: 1000,
-      allowQueryWithZeroPeers: false,
-      protocol: DhtProtocol,
-      logPrefix: "libp2p:kad-dht",
-      pingTimeout: 10000,
-      pingConcurrency: 10,
-      // maxInboundStreams: 32,
-      // maxOutboundStreams: 64,
-      maxInboundStreams: 3,
-      maxOutboundStreams: 6,
-      // peerInfoMapper: removePrivateAddressesMapper,
-      peerInfoMapper: publicAddressesMapper,
-    }): () => { }
-  },
-  connectionManager: {
-    minConnections: 20
   }
 })
 
@@ -376,7 +345,7 @@ libp2p.services.pubsub.addEventListener('message', event => {
   const topic = event.detail.topic
   const message = toString(event.detail.data)
 
-  // console.log('------------ MESSAGE ------------', event.detail)
-  // appendOutput(`Message received on topic '${topic}'`)
-  appendOutput(message)
+  console.log('------------ MESSAGE ------------', event.detail)
+  appendOutput(`Message received on topic '${topic}'`)
+  // appendOutput(message)
 })

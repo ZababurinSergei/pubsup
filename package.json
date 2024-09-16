@@ -14,11 +14,13 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build": "npm run build:pubsub && npm run build:libp2p && npm run build:filter && npm run build:peer-store",
+    "build": "npm run build:pubsub && npm run build:libp2p && npm run build:filter && npm run build:peer-store && npm run build:pubsubPeerDiscovery && npm run build:gossipsub",
     "build:pubsub": "esbuild ./src/dep-pubsub.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-pubsub.js",
     "build:libp2p": "esbuild ./src/dep-libp2p.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-libp2p.js",
     "build:filter": "esbuild ./src/dep-filters.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-filters.js",
     "build:peer-store": "esbuild ./src/dep-peer-store.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-peer-store.js",
+    "build:gossipsub": "esbuild ./src/dep-gossipsub.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-gossipsub.js",
+    "build:pubsubPeerDiscovery": "esbuild ./src/dep-pubsubPeerDiscovery.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-pubsubPeerDiscovery.js",
     "test:firefox": "npm run build && playwright test --browser=firefox test",
     "test:chrome": "npm run build && playwright test test"
   },
