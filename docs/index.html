@@ -1,131 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>js-libp2p browser pubsub</title>
-        <style>
-            .control-params, .multiaddr-input-button {
-              display: flex;
-              flex-direction: row;
-              gap: 16px;
-            }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>js-libp2p browser pubsub</title>
+  <style>
+    .control-params, .multiaddr-input-button {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+    }
 
-            label,
-            button {
-                display: block;
-                font-weight: bold;
-                margin: 5px 0;
-            }
+    label,
+    button {
+      display: block;
+      font-weight: bold;
+      margin: 5px 0;
+    }
 
-            div {
-                margin-bottom: 20px;
-            }
+    div {
+      margin-bottom: 20px;
+    }
 
-            #send-section {
-               display: none;
-            }
+    #send-section {
+      display: none;
+    }
 
-            input[type="text"] {
-                width: 800px;
-            }
-        </style>
-        <script type="importmap">
-            {
-                "imports": {
-                  "@chainsafe/libp2p-gossipsub": "./lib-pubsub.js",
-                  "@chainsafe/libp2p-noise": "./lib-pubsub.js",
-                  "@chainsafe/libp2p-yamux": "./lib-pubsub.js",
-                  "@libp2p/circuit-relay-v2": "./lib-pubsub.js",
-                  "@libp2p/identify": "./lib-pubsub.js",
-                  "@libp2p/dcutr": "./lib-pubsub.js",
-                  "@libp2p/webrtc": "./lib-pubsub.js",
-                  "@libp2p/websockets": "./lib-pubsub.js",
-                  "@libp2p/websockets/filters": "./lib-filters.js",
-                  "@libp2p/kad-dht": "./lib-pubsub.js",
-                  "@multiformats/multiaddr": "./lib-pubsub.js",
-                  "uint8arrays": "./lib-pubsub.js",
-                  "@libp2p/bootstrap": "./lib-pubsub.js",
-                  "datastore-idb": "./lib-pubsub.js",
-                  "@libp2p/ping": "./lib-pubsub.js",
-                  "libp2p": "./lib-libp2p.js",
-                  "@libp2p/peer-store": "./lib-peer-store.js",
-                  "@libp2p/peer-id": "./lib-pubsub.js",
-                  "@libp2p/pubsub-peer-discovery": "./lib-pubsub.js"
-                }
-            }
-        </script>
-  </head>
-  <body>
-    <div class="control-params">
-      <button
-            onclick="(function(self) {
+    input[type="text"] {
+      width: 800px;
+    }
+  </style>
+  <script type="importmap">
+    {
+        "imports": {
+          "@chainsafe/libp2p-gossipsub": "./lib-pubsub.js",
+          "@chainsafe/libp2p-noise": "./lib-pubsub.js",
+          "@chainsafe/libp2p-yamux": "./lib-pubsub.js",
+          "@libp2p/circuit-relay-v2": "./lib-pubsub.js",
+          "@libp2p/identify": "./lib-pubsub.js",
+          "@libp2p/dcutr": "./lib-pubsub.js",
+          "@libp2p/webrtc": "./lib-pubsub.js",
+          "@libp2p/websockets": "./lib-pubsub.js",
+          "@libp2p/websockets/filters": "./lib-filters.js",
+          "@libp2p/kad-dht": "./lib-pubsub.js",
+          "@multiformats/multiaddr": "./lib-pubsub.js",
+          "uint8arrays": "./lib-pubsub.js",
+          "@libp2p/bootstrap": "./lib-pubsub.js",
+          "datastore-idb": "./lib-pubsub.js",
+          "@libp2p/ping": "./lib-pubsub.js",
+          "libp2p": "./lib-libp2p.js",
+          "@libp2p/peer-store": "./lib-peer-store.js",
+          "@libp2p/peer-id": "./lib-pubsub.js",
+          "@libp2p/pubsub-peer-discovery": "./lib-pubsub.js"
+        }
+    }
+  </script>
+</head>
+<body>
+<div class="control-params">
+  <button
+          onclick="(function(self) {
                 window.location.href = `${window.location.origin}${window.location.pathname}`
             })(this)"
-      >
-        empty
-      </button>
-      <button
-            onclick="(function(self) {
+  >
+    empty
+  </button>
+  <button
+          onclick="(function(self) {
                 window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap`
             })(this)"
-      >
-        Bootstrap
-      </button>
+  >
+    Bootstrap
+  </button>
 
-      <button
-            onclick="(function(self) {
+  <button
+          onclick="(function(self) {
+                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&dht`
+            })(this)"
+  >
+    Bootstrap && DHT
+  </button>
+
+  <button
+          onclick="(function(self) {
                 window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&pubsubPeerDiscovery`
             })(this)"
-      >
-        Bootstrap && pubsubPeerDiscovery
-      </button>
-    </div>
-    <div>
-      <label for="dial-multiaddr-input">Dial MultiAddr</label>
-      <input type="text" id="dial-multiaddr-input" placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/123Foo" />
-      <div class="multiaddr-input-button">
-        <button id="dial-multiaddr-button">Connect</button>
-        <button id="clear-button">Clear</button>
-      </div>
+  >
+    Bootstrap && pubsubPeerDiscovery
+  </button>
+</div>
+<div>
+  <label for="dial-multiaddr-input">Dial MultiAddr</label>
+  <input type="text" id="dial-multiaddr-input" placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/123Foo" />
+  <div class="multiaddr-input-button">
+    <button id="dial-multiaddr-button">Connect</button>
+    <button id="clear-button">Clear</button>
+  </div>
 
-      <h4>PeerId</h4>
-      <p id="peer-id"></p>
+  <h4>PeerId</h4>
+  <p id="peer-id"></p>
 
-      <h4>DHT mode</h4>
-      <p id="dht-mode"></p>
+  <h4>DHT mode</h4>
+  <p id="dht-mode"></p>
 
-      <h4>Listening Addresses</h4>
-      <ul id="listening-addresses">
-        <li>None</li>
-      </ul>
+  <h4>Listening Addresses</h4>
+  <ul id="listening-addresses">
+    <li>None</li>
+  </ul>
 
-      <h4>Connected Peers</h4>
-      <ul id="peer-connections">
-        <li>None</li>
-      </ul>
-    </div>
-    <hr />
-    <div>
-      <h2>PubSub</h2>
-      <label for="subscribe-topic-input">Subscribe to topic</label>
-      <input type="text" id="subscribe-topic-input" placeholder="my-topic" />
-      <button id="subscribe-topic-button">Subscribe</button>
+  <h4>Connected Peers</h4>
+  <ul id="peer-connections">
+    <li>None</li>
+  </ul>
+</div>
+<hr />
+<div>
+  <h2>PubSub</h2>
+  <label for="subscribe-topic-input">Subscribe to topic</label>
+  <input type="text" id="subscribe-topic-input" placeholder="my-topic" />
+  <button id="subscribe-topic-button">Subscribe</button>
 
-      <h4>Topic Peers</h4>
-      <ul id="topic-peers">
-        <li>None</li>
-      </ul>
+  <h4>Topic Peers</h4>
+  <ul id="topic-peers">
+    <li>None</li>
+  </ul>
 
-      <label for="send-topic-message-input">Send Message to Topic</label>
-      <input type="text" id="send-topic-message-input" placeholder="hello world" disabled="disabled" />
-      <button id="send-topic-message-button" disabled="disabled">Send</button>
-    </div>
-    <hr />
-    <div>
-      <h2>Output</h2>
-      <pre id="output"></pre>
-    </div>
-    <script type="module" src="./index.js"></script>
-  </body>
+  <label for="send-topic-message-input">Send Message to Topic</label>
+  <input type="text" id="send-topic-message-input" placeholder="hello world" disabled="disabled" />
+  <button id="send-topic-message-button" disabled="disabled">Send</button>
+</div>
+<hr />
+<div>
+  <h2>Output</h2>
+  <pre id="output"></pre>
+</div>
+<script type="module" src="./index.js"></script>
+</body>
 </html>
