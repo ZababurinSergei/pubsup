@@ -9,3 +9,6 @@ export const bootstrapPeers = [
 ]
 
 export const PUBSUB_PEER_DISCOVERY = 'discovery'
+
+export const RENDER_EXTERNAL_HOSTNAME = ''
+export const PORT = 4539

@@ -6,7 +6,7 @@ import compression from 'compression';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import http from 'http'
-
+import { mplex } from '@libp2p/mplex'
 /* eslint-disable no-console */
 import { privateKeyFromRaw, generateKeyPair, privateKeyToProtobuf, privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { noise } from '@chainsafe/libp2p-noise'
@@ -56,7 +56,7 @@ dotenv.config();
 
 const port = process.env.PORT
     ? process.env.PORT
-    : 4839;
+    : 4539;
 
 let whitelist = []
 
@@ -273,7 +273,7 @@ async function main () {
         connectionEncrypters: [
             noise()
         ],
-        streamMuxers: [yamux()],
+        streamMuxers: [yamux(), mplex()],
         services: {
             identify: identify(),
             identifyPush: identifyPush(),
