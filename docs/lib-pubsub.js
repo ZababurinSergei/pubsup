@@ -1002,26 +1002,6 @@ var require_netmask = __commonJS({
   }
 });
 
-// node_modules/is-electron/index.js
-var require_is_electron = __commonJS({
-  "node_modules/is-electron/index.js"(exports, module) {
-    function isElectron2() {
-      if (typeof window !== "undefined" && typeof window.process === "object" && window.process.type === "renderer") {
-        return true;
-      }
-      if (typeof process !== "undefined" && typeof process.versions === "object" && !!process.versions.electron) {
-        return true;
-      }
-      if (typeof navigator === "object" && typeof navigator.userAgent === "string" && navigator.userAgent.indexOf("Electron") >= 0) {
-        return true;
-      }
-      return false;
-    }
-    __name(isElectron2, "isElectron");
-    module.exports = isElectron2;
-  }
-});
-
 // node_modules/event-iterator/lib/event-iterator.js
 var require_event_iterator = __commonJS({
   "node_modules/event-iterator/lib/event-iterator.js"(exports) {
@@ -1162,6 +1142,26 @@ var require_dom = __commonJS({
     __name(subscribe, "subscribe");
     exports.subscribe = subscribe;
     exports.default = event_iterator_1.EventIterator;
+  }
+});
+
+// node_modules/is-electron/index.js
+var require_is_electron = __commonJS({
+  "node_modules/is-electron/index.js"(exports, module) {
+    function isElectron2() {
+      if (typeof window !== "undefined" && typeof window.process === "object" && window.process.type === "renderer") {
+        return true;
+      }
+      if (typeof process !== "undefined" && typeof process.versions === "object" && !!process.versions.electron) {
+        return true;
+      }
+      if (typeof navigator === "object" && typeof navigator.userAgent === "string" && navigator.userAgent.indexOf("Electron") >= 0) {
+        return true;
+      }
+      return false;
+    }
+    __name(isElectron2, "isElectron");
+    module.exports = isElectron2;
   }
 });
 
@@ -20909,711 +20909,6 @@ function dcutr(init = {}) {
 }
 __name(dcutr, "dcutr");
 
-// node_modules/it-drain/dist/src/index.js
-function isAsyncIterable5(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable5, "isAsyncIterable");
-function drain(source) {
-  if (isAsyncIterable5(source)) {
-    return (async () => {
-      for await (const _ of source) {
-      }
-    })();
-  } else {
-    for (const _ of source) {
-    }
-  }
-}
-__name(drain, "drain");
-var src_default4 = drain;
-
-// node_modules/it-parallel/dist/src/index.js
-var CustomEvent2 = globalThis.CustomEvent ?? Event;
-async function* parallel(source, options = {}) {
-  let concurrency = options.concurrency ?? Infinity;
-  if (concurrency < 1) {
-    concurrency = Infinity;
-  }
-  const ordered = options.ordered == null ? false : options.ordered;
-  const emitter = new EventTarget();
-  const ops = [];
-  let slotAvailable = pDefer();
-  let resultAvailable = pDefer();
-  let sourceFinished = false;
-  let sourceErr;
-  let opErred = false;
-  emitter.addEventListener("task-complete", () => {
-    resultAvailable.resolve();
-  });
-  void Promise.resolve().then(async () => {
-    try {
-      for await (const task of source) {
-        if (ops.length === concurrency) {
-          slotAvailable = pDefer();
-          await slotAvailable.promise;
-        }
-        if (opErred) {
-          break;
-        }
-        const op = {
-          done: false
-        };
-        ops.push(op);
-        task().then((result) => {
-          op.done = true;
-          op.ok = true;
-          op.value = result;
-          emitter.dispatchEvent(new CustomEvent2("task-complete"));
-        }, (err) => {
-          op.done = true;
-          op.err = err;
-          emitter.dispatchEvent(new CustomEvent2("task-complete"));
-        });
-      }
-      sourceFinished = true;
-      emitter.dispatchEvent(new CustomEvent2("task-complete"));
-    } catch (err) {
-      sourceErr = err;
-      emitter.dispatchEvent(new CustomEvent2("task-complete"));
-    }
-  });
-  function valuesAvailable() {
-    if (ordered) {
-      return ops[0]?.done;
-    }
-    return Boolean(ops.find((op) => op.done));
-  }
-  __name(valuesAvailable, "valuesAvailable");
-  function* yieldOrderedValues() {
-    while (ops.length > 0 && ops[0].done) {
-      const op = ops[0];
-      ops.shift();
-      if (op.ok) {
-        yield op.value;
-      } else {
-        opErred = true;
-        slotAvailable.resolve();
-        throw op.err;
-      }
-      slotAvailable.resolve();
-    }
-  }
-  __name(yieldOrderedValues, "yieldOrderedValues");
-  function* yieldUnOrderedValues() {
-    while (valuesAvailable()) {
-      for (let i = 0; i < ops.length; i++) {
-        if (ops[i].done) {
-          const op = ops[i];
-          ops.splice(i, 1);
-          i--;
-          if (op.ok) {
-            yield op.value;
-          } else {
-            opErred = true;
-            slotAvailable.resolve();
-            throw op.err;
-          }
-          slotAvailable.resolve();
-        }
-      }
-    }
-  }
-  __name(yieldUnOrderedValues, "yieldUnOrderedValues");
-  while (true) {
-    if (!valuesAvailable()) {
-      resultAvailable = pDefer();
-      await resultAvailable.promise;
-    }
-    if (sourceErr != null) {
-      throw sourceErr;
-    }
-    if (ordered) {
-      yield* yieldOrderedValues();
-    } else {
-      yield* yieldUnOrderedValues();
-    }
-    if (sourceFinished && ops.length === 0) {
-      break;
-    }
-  }
-}
-__name(parallel, "parallel");
-
-// node_modules/@libp2p/identify/dist/src/consts.js
-var IDENTIFY_PROTOCOL_VERSION = "0.1.0";
-var MULTICODEC_IDENTIFY_PROTOCOL_NAME = "id";
-var MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME = "id/push";
-var MULTICODEC_IDENTIFY_PROTOCOL_VERSION = "1.0.0";
-var MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION = "1.0.0";
-var MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8;
-var MAX_PUSH_CONCURRENCY = 32;
-
-// node_modules/@libp2p/identify/dist/src/pb/message.js
-var Identify;
-(function(Identify3) {
-  let _codec;
-  Identify3.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w2, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w2.fork();
-        }
-        if (obj.protocolVersion != null) {
-          w2.uint32(42);
-          w2.string(obj.protocolVersion);
-        }
-        if (obj.agentVersion != null) {
-          w2.uint32(50);
-          w2.string(obj.agentVersion);
-        }
-        if (obj.publicKey != null) {
-          w2.uint32(10);
-          w2.bytes(obj.publicKey);
-        }
-        if (obj.listenAddrs != null) {
-          for (const value of obj.listenAddrs) {
-            w2.uint32(18);
-            w2.bytes(value);
-          }
-        }
-        if (obj.observedAddr != null) {
-          w2.uint32(34);
-          w2.bytes(obj.observedAddr);
-        }
-        if (obj.protocols != null) {
-          for (const value of obj.protocols) {
-            w2.uint32(26);
-            w2.string(value);
-          }
-        }
-        if (obj.signedPeerRecord != null) {
-          w2.uint32(66);
-          w2.bytes(obj.signedPeerRecord);
-        }
-        if (opts.lengthDelimited !== false) {
-          w2.ldelim();
-        }
-      }, (reader, length4, opts = {}) => {
-        const obj = {
-          listenAddrs: [],
-          protocols: []
-        };
-        const end = length4 == null ? reader.len : reader.pos + length4;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 5: {
-              obj.protocolVersion = reader.string();
-              break;
-            }
-            case 6: {
-              obj.agentVersion = reader.string();
-              break;
-            }
-            case 1: {
-              obj.publicKey = reader.bytes();
-              break;
-            }
-            case 2: {
-              if (opts.limits?.listenAddrs != null && obj.listenAddrs.length === opts.limits.listenAddrs) {
-                throw new MaxLengthError('Decode error - map field "listenAddrs" had too many elements');
-              }
-              obj.listenAddrs.push(reader.bytes());
-              break;
-            }
-            case 4: {
-              obj.observedAddr = reader.bytes();
-              break;
-            }
-            case 3: {
-              if (opts.limits?.protocols != null && obj.protocols.length === opts.limits.protocols) {
-                throw new MaxLengthError('Decode error - map field "protocols" had too many elements');
-              }
-              obj.protocols.push(reader.string());
-              break;
-            }
-            case 8: {
-              obj.signedPeerRecord = reader.bytes();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  Identify3.encode = (obj) => {
-    return encodeMessage(obj, Identify3.codec());
-  };
-  Identify3.decode = (buf, opts) => {
-    return decodeMessage(buf, Identify3.codec(), opts);
-  };
-})(Identify || (Identify = {}));
-
-// node_modules/wherearewe/src/index.js
-var import_is_electron = __toESM(require_is_electron(), 1);
-var isEnvWithDom = typeof window === "object" && typeof document === "object" && document.nodeType === 9;
-var isElectron = (0, import_is_electron.default)();
-var isBrowser = isEnvWithDom && !isElectron;
-var isElectronMain = isElectron && !isEnvWithDom;
-var isElectronRenderer = isElectron && isEnvWithDom;
-var isNode = typeof globalThis.process !== "undefined" && typeof globalThis.process.release !== "undefined" && globalThis.process.release.name === "node" && !isElectron;
-var isWebWorker = typeof importScripts === "function" && typeof self !== "undefined" && typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
-var isTest = typeof globalThis.process !== "undefined" && typeof globalThis.process.env !== "undefined" && globalThis.process.env["NODE" + /* @__PURE__ */ (() => "_")() + "ENV"] === "test";
-var isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
-
-// node_modules/@libp2p/identify/dist/src/utils.js
-var defaultValues2 = {
-  protocolPrefix: "ipfs",
-  timeout: 5e3,
-  maxInboundStreams: 1,
-  maxOutboundStreams: 1,
-  maxObservedAddresses: 10,
-  maxMessageSize: MAX_IDENTIFY_MESSAGE_SIZE,
-  runOnConnectionOpen: true,
-  runOnSelfUpdate: true,
-  runOnLimitedConnection: true,
-  concurrency: MAX_PUSH_CONCURRENCY
-};
-function getCleanMultiaddr(addr) {
-  if (addr != null && addr.length > 0) {
-    try {
-      return multiaddr(addr);
-    } catch {
-    }
-  }
-}
-__name(getCleanMultiaddr, "getCleanMultiaddr");
-function getAgentVersion(nodeInfo, agentVersion) {
-  if (agentVersion != null) {
-    return agentVersion;
-  }
-  agentVersion = `${nodeInfo.name}/${nodeInfo.version}`;
-  if (isNode || isElectronMain) {
-    agentVersion += ` UserAgent=${globalThis.process.version}`;
-  } else if (isBrowser || isWebWorker || isElectronRenderer || isReactNative) {
-    agentVersion += ` UserAgent=${globalThis.navigator.userAgent}`;
-  }
-  return agentVersion;
-}
-__name(getAgentVersion, "getAgentVersion");
-async function consumeIdentifyMessage(peerStore, events2, log4, connection, message2) {
-  log4("received identify from %p", connection.remotePeer);
-  if (message2 == null) {
-    throw new InvalidMessageError("message was null or undefined");
-  }
-  const peer = {};
-  if (message2.listenAddrs.length > 0) {
-    peer.addresses = message2.listenAddrs.map((buf) => ({
-      isCertified: false,
-      multiaddr: multiaddr(buf)
-    }));
-  }
-  if (message2.protocols.length > 0) {
-    peer.protocols = message2.protocols;
-  }
-  if (message2.publicKey != null) {
-    const publicKey = publicKeyFromProtobuf(message2.publicKey);
-    const peerId2 = peerIdFromPublicKey(publicKey);
-    if (!peerId2.equals(connection.remotePeer)) {
-      throw new InvalidMessageError("public key did not match remote PeerId");
-    }
-    peer.publicKey = publicKey;
-  }
-  let output3;
-  if (message2.signedPeerRecord != null) {
-    log4("received signedPeerRecord from %p", connection.remotePeer);
-    let peerRecordEnvelope = message2.signedPeerRecord;
-    const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord2.DOMAIN);
-    let peerRecord = PeerRecord2.createFromProtobuf(envelope.payload);
-    const envelopePeer = peerIdFromCID(envelope.publicKey.toCID());
-    if (!peerRecord.peerId.equals(envelopePeer)) {
-      throw new InvalidMessageError("signing key does not match PeerId in the PeerRecord");
-    }
-    if (!connection.remotePeer.equals(peerRecord.peerId)) {
-      throw new InvalidMessageError("signing key does not match remote PeerId");
-    }
-    let existingPeer;
-    try {
-      existingPeer = await peerStore.get(peerRecord.peerId);
-    } catch (err) {
-      if (err.name !== "NotFoundError") {
-        throw err;
-      }
-    }
-    if (existingPeer != null) {
-      peer.metadata = existingPeer.metadata;
-      if (existingPeer.peerRecordEnvelope != null) {
-        const storedEnvelope = await RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope);
-        const storedRecord = PeerRecord2.createFromProtobuf(storedEnvelope.payload);
-        if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-          log4("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
-          peerRecord = storedRecord;
-          peerRecordEnvelope = existingPeer.peerRecordEnvelope;
-        }
-      }
-    }
-    peer.peerRecordEnvelope = peerRecordEnvelope;
-    peer.addresses = peerRecord.multiaddrs.map((multiaddr2) => ({
-      isCertified: true,
-      multiaddr: multiaddr2
-    }));
-    output3 = {
-      seq: peerRecord.seqNumber,
-      addresses: peerRecord.multiaddrs
-    };
-  } else {
-    log4("%p did not send a signed peer record", connection.remotePeer);
-  }
-  log4("patching %p with", connection.remotePeer, peer);
-  await peerStore.patch(connection.remotePeer, peer);
-  if (message2.agentVersion != null || message2.protocolVersion != null) {
-    const metadata = {};
-    if (message2.agentVersion != null) {
-      metadata.AgentVersion = fromString2(message2.agentVersion);
-    }
-    if (message2.protocolVersion != null) {
-      metadata.ProtocolVersion = fromString2(message2.protocolVersion);
-    }
-    log4("merging %p metadata", connection.remotePeer, metadata);
-    await peerStore.merge(connection.remotePeer, {
-      metadata
-    });
-  }
-  const result = {
-    peerId: connection.remotePeer,
-    protocolVersion: message2.protocolVersion,
-    agentVersion: message2.agentVersion,
-    publicKey: message2.publicKey,
-    listenAddrs: message2.listenAddrs.map((buf) => multiaddr(buf)),
-    observedAddr: message2.observedAddr == null ? void 0 : multiaddr(message2.observedAddr),
-    protocols: message2.protocols,
-    signedPeerRecord: output3,
-    connection
-  };
-  events2.safeDispatchEvent("peer:identify", { detail: result });
-  return result;
-}
-__name(consumeIdentifyMessage, "consumeIdentifyMessage");
-var AbstractIdentify = class {
-  static {
-    __name(this, "AbstractIdentify");
-  }
-  host;
-  protocol;
-  started;
-  timeout;
-  peerId;
-  privateKey;
-  peerStore;
-  registrar;
-  addressManager;
-  maxInboundStreams;
-  maxOutboundStreams;
-  maxMessageSize;
-  maxObservedAddresses;
-  events;
-  runOnLimitedConnection;
-  log;
-  constructor(components, init) {
-    this.protocol = init.protocol;
-    this.started = false;
-    this.peerId = components.peerId;
-    this.privateKey = components.privateKey;
-    this.peerStore = components.peerStore;
-    this.registrar = components.registrar;
-    this.addressManager = components.addressManager;
-    this.events = components.events;
-    this.log = init.log;
-    this.timeout = init.timeout ?? defaultValues2.timeout;
-    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues2.maxInboundStreams;
-    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues2.maxOutboundStreams;
-    this.maxMessageSize = init.maxMessageSize ?? defaultValues2.maxMessageSize;
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues2.maxObservedAddresses;
-    this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues2.runOnLimitedConnection;
-    this.host = {
-      protocolVersion: `${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: getAgentVersion(components.nodeInfo, init.agentVersion)
-    };
-  }
-  isStarted() {
-    return this.started;
-  }
-  async start() {
-    if (this.started) {
-      return;
-    }
-    await this.peerStore.merge(this.peerId, {
-      metadata: {
-        AgentVersion: fromString2(this.host.agentVersion),
-        ProtocolVersion: fromString2(this.host.protocolVersion)
-      }
-    });
-    await this.registrar.handle(this.protocol, (data) => {
-      void this.handleProtocol(data).catch((err) => {
-        this.log.error(err);
-      });
-    }, {
-      maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams,
-      runOnLimitedConnection: this.runOnLimitedConnection
-    });
-    this.started = true;
-  }
-  async stop() {
-    await this.registrar.unhandle(this.protocol);
-    this.started = false;
-  }
-};
-
-// node_modules/@libp2p/identify/dist/src/identify-push.js
-var IdentifyPush = class extends AbstractIdentify {
-  static {
-    __name(this, "IdentifyPush");
-  }
-  connectionManager;
-  concurrency;
-  constructor(components, init = {}) {
-    super(components, {
-      ...init,
-      protocol: `/${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
-      log: components.logger.forComponent("libp2p:identify-push")
-    });
-    this.connectionManager = components.connectionManager;
-    this.concurrency = init.concurrency ?? defaultValues2.concurrency;
-    if (init.runOnSelfUpdate ?? defaultValues2.runOnSelfUpdate) {
-      components.events.addEventListener("self:peer:update", (evt) => {
-        void this.push().catch((err) => {
-          this.log.error(err);
-        });
-      });
-    }
-  }
-  [serviceCapabilities] = [
-    "@libp2p/identify-push"
-  ];
-  /**
-   * Calls `push` on all peer connections
-   */
-  async push() {
-    if (!this.isStarted()) {
-      return;
-    }
-    const listenAddresses = this.addressManager.getAddresses().map((ma) => ma.decapsulateCode(getProtocol("p2p").code));
-    const peerRecord = new PeerRecord2({
-      peerId: this.peerId,
-      multiaddrs: listenAddresses
-    });
-    const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.privateKey);
-    const supportedProtocols = this.registrar.getProtocols();
-    const peer = await this.peerStore.get(this.peerId);
-    const agentVersion = toString2(peer.metadata.get("AgentVersion") ?? fromString2(this.host.agentVersion));
-    const protocolVersion = toString2(peer.metadata.get("ProtocolVersion") ?? fromString2(this.host.protocolVersion));
-    const self2 = this;
-    async function* pushToConnections() {
-      for (const connection of self2.connectionManager.getConnections()) {
-        const peer2 = await self2.peerStore.get(connection.remotePeer);
-        if (!peer2.protocols.includes(self2.protocol)) {
-          continue;
-        }
-        yield async () => {
-          let stream;
-          const signal = AbortSignal.timeout(self2.timeout);
-          setMaxListeners2(Infinity, signal);
-          try {
-            stream = await connection.newStream(self2.protocol, {
-              signal,
-              runOnLimitedConnection: self2.runOnLimitedConnection
-            });
-            const pb = pbStream(stream, {
-              maxDataLength: self2.maxMessageSize
-            }).pb(Identify);
-            await pb.write({
-              listenAddrs: listenAddresses.map((ma) => ma.bytes),
-              signedPeerRecord: signedPeerRecord.marshal(),
-              protocols: supportedProtocols,
-              agentVersion,
-              protocolVersion
-            }, {
-              signal
-            });
-            await stream.close({
-              signal
-            });
-          } catch (err) {
-            self2.log.error("could not push identify update to peer", err);
-            stream?.abort(err);
-          }
-        };
-      }
-    }
-    __name(pushToConnections, "pushToConnections");
-    await src_default4(parallel(pushToConnections(), {
-      concurrency: this.concurrency
-    }));
-  }
-  /**
-   * Reads the Identify Push message from the given `connection`
-   */
-  async handleProtocol(data) {
-    const { connection, stream } = data;
-    try {
-      if (this.peerId.equals(connection.remotePeer)) {
-        throw new Error("received push from ourselves?");
-      }
-      const options = {
-        signal: AbortSignal.timeout(this.timeout)
-      };
-      const pb = pbStream(stream, {
-        maxDataLength: this.maxMessageSize
-      }).pb(Identify);
-      const message2 = await pb.read(options);
-      await stream.close(options);
-      await consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message2);
-    } catch (err) {
-      this.log.error("received invalid message", err);
-      stream.abort(err);
-      return;
-    }
-    this.log("handled push from %p", connection.remotePeer);
-  }
-};
-
-// node_modules/@libp2p/identify/dist/src/identify.js
-var Identify2 = class extends AbstractIdentify {
-  static {
-    __name(this, "Identify");
-  }
-  constructor(components, init = {}) {
-    super(components, {
-      ...init,
-      protocol: `/${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
-      log: components.logger.forComponent("libp2p:identify")
-    });
-    if (init.runOnConnectionOpen ?? defaultValues2.runOnConnectionOpen) {
-      components.events.addEventListener("connection:open", (evt) => {
-        const connection = evt.detail;
-        this.identify(connection).catch((err) => {
-          this.log.error("error during identify trigged by connection:open", err);
-        });
-      });
-    }
-  }
-  [serviceCapabilities] = [
-    "@libp2p/identify"
-  ];
-  async _identify(connection, options = {}) {
-    let stream;
-    if (options.signal == null) {
-      const signal = AbortSignal.timeout(this.timeout);
-      setMaxListeners2(Infinity, signal);
-      options = {
-        ...options,
-        signal
-      };
-    }
-    try {
-      stream = await connection.newStream(this.protocol, {
-        ...options,
-        runOnLimitedConnection: this.runOnLimitedConnection
-      });
-      const pb = pbStream(stream, {
-        maxDataLength: this.maxMessageSize
-      }).pb(Identify);
-      const message2 = await pb.read(options);
-      await stream.close(options);
-      return message2;
-    } catch (err) {
-      this.log.error("error while reading identify message", err);
-      stream?.abort(err);
-      throw err;
-    }
-  }
-  async identify(connection, options = {}) {
-    const message2 = await this._identify(connection, options);
-    const { publicKey, protocols, observedAddr } = message2;
-    if (publicKey == null) {
-      throw new InvalidMessageError("public key was missing from identify message");
-    }
-    const key = publicKeyFromProtobuf(publicKey);
-    const id = peerIdFromCID(key.toCID());
-    if (!connection.remotePeer.equals(id)) {
-      throw new InvalidMessageError("identified peer does not match the expected peer");
-    }
-    if (this.peerId.equals(id)) {
-      throw new InvalidMessageError("identified peer is our own peer id?");
-    }
-    const cleanObservedAddr = getCleanMultiaddr(observedAddr);
-    this.log("identify completed for peer %p and protocols %o", id, protocols);
-    this.log("our observed address is %a", cleanObservedAddr);
-    if (cleanObservedAddr != null && this.addressManager.getObservedAddrs().length < (this.maxObservedAddresses ?? Infinity)) {
-      this.log("storing our observed address %a", cleanObservedAddr);
-      this.addressManager.addObservedAddr(cleanObservedAddr);
-    }
-    return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message2);
-  }
-  /**
-   * Sends the `Identify` response with the Signed Peer Record
-   * to the requesting peer over the given `connection`
-   */
-  async handleProtocol(data) {
-    const { connection, stream } = data;
-    const signal = AbortSignal.timeout(this.timeout);
-    setMaxListeners2(Infinity, signal);
-    try {
-      const peerData = await this.peerStore.get(this.peerId);
-      const multiaddrs = this.addressManager.getAddresses().map((ma) => ma.decapsulateCode(getProtocol("p2p").code));
-      let signedPeerRecord = peerData.peerRecordEnvelope;
-      if (multiaddrs.length > 0 && signedPeerRecord == null) {
-        const peerRecord = new PeerRecord2({
-          peerId: this.peerId,
-          multiaddrs
-        });
-        const envelope = await RecordEnvelope.seal(peerRecord, this.privateKey);
-        signedPeerRecord = envelope.marshal().subarray();
-      }
-      let observedAddr = connection.remoteAddr.bytes;
-      if (!IP_OR_DOMAIN.matches(connection.remoteAddr)) {
-        observedAddr = void 0;
-      }
-      const pb = pbStream(stream).pb(Identify);
-      await pb.write({
-        protocolVersion: this.host.protocolVersion,
-        agentVersion: this.host.agentVersion,
-        publicKey: publicKeyToProtobuf(this.privateKey.publicKey),
-        listenAddrs: multiaddrs.map((addr) => addr.bytes),
-        signedPeerRecord,
-        observedAddr,
-        protocols: peerData.protocols
-      }, {
-        signal
-      });
-      await stream.close({
-        signal
-      });
-    } catch (err) {
-      this.log.error("could not respond to identify request", err);
-      stream.abort(err);
-    }
-  }
-};
-
-// node_modules/@libp2p/identify/dist/src/index.js
-function identify(init = {}) {
-  return (components) => new Identify2(components, init);
-}
-__name(identify, "identify");
-function identifyPush(init = {}) {
-  return (components) => new IdentifyPush(components, init);
-}
-__name(identifyPush, "identifyPush");
-
 // node_modules/detect-browser/es/index.js
 var __spreadArray = function(to, from3, pack) {
   if (pack || arguments.length === 2) for (var i = 0, l = from3.length, ar; i < l; i++) {
@@ -23989,6 +23284,16 @@ function connect(addr, opts) {
 }
 __name(connect, "connect");
 
+// node_modules/wherearewe/src/index.js
+var import_is_electron = __toESM(require_is_electron(), 1);
+var isEnvWithDom = typeof window === "object" && typeof document === "object" && document.nodeType === 9;
+var isElectron = (0, import_is_electron.default)();
+var isBrowser = isEnvWithDom && !isElectron;
+var isNode = typeof globalThis.process !== "undefined" && typeof globalThis.process.release !== "undefined" && globalThis.process.release.name === "node" && !isElectron;
+var isWebWorker = typeof importScripts === "function" && typeof self !== "undefined" && typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+var isTest = typeof globalThis.process !== "undefined" && typeof globalThis.process.env !== "undefined" && globalThis.process.env["NODE" + /* @__PURE__ */ (() => "_")() + "ENV"] === "test";
+var isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
+
 // node_modules/@libp2p/websockets/dist/src/filters.js
 var filters_exports = {};
 __export(filters_exports, {
@@ -25421,28 +24726,28 @@ __name(setupFormatters, "setupFormatters");
 var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log });
 
 // node_modules/weald/dist/src/index.js
-var src_default5 = browser_default;
+var src_default4 = browser_default;
 
 // node_modules/@libp2p/logger/dist/src/index.js
-src_default5.formatters.b = (v) => {
+src_default4.formatters.b = (v) => {
   return v == null ? "undefined" : base58btc.baseEncode(v);
 };
-src_default5.formatters.t = (v) => {
+src_default4.formatters.t = (v) => {
   return v == null ? "undefined" : base32.baseEncode(v);
 };
-src_default5.formatters.m = (v) => {
+src_default4.formatters.m = (v) => {
   return v == null ? "undefined" : base64.baseEncode(v);
 };
-src_default5.formatters.p = (v) => {
+src_default4.formatters.p = (v) => {
   return v == null ? "undefined" : v.toString();
 };
-src_default5.formatters.c = (v) => {
+src_default4.formatters.c = (v) => {
   return v == null ? "undefined" : v.toString();
 };
-src_default5.formatters.k = (v) => {
+src_default4.formatters.k = (v) => {
   return v == null ? "undefined" : v.toString();
 };
-src_default5.formatters.a = (v) => {
+src_default4.formatters.a = (v) => {
   return v == null ? "undefined" : v.toString();
 };
 function createDisabledLogger(namespace) {
@@ -25469,23 +24774,23 @@ function defaultLogger() {
 __name(defaultLogger, "defaultLogger");
 function logger(name3) {
   let trace = createDisabledLogger(`${name3}:trace`);
-  if (src_default5.enabled(`${name3}:trace`) && src_default5.names.map((r) => r.toString()).find((n) => n.includes(":trace")) != null) {
-    trace = src_default5(`${name3}:trace`);
+  if (src_default4.enabled(`${name3}:trace`) && src_default4.names.map((r) => r.toString()).find((n) => n.includes(":trace")) != null) {
+    trace = src_default4(`${name3}:trace`);
   }
-  return Object.assign(src_default5(name3), {
-    error: src_default5(`${name3}:error`),
+  return Object.assign(src_default4(name3), {
+    error: src_default4(`${name3}:error`),
     trace
   });
 }
 __name(logger, "logger");
 
 // node_modules/it-all/dist/src/index.js
-function isAsyncIterable6(thing) {
+function isAsyncIterable5(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable6, "isAsyncIterable");
+__name(isAsyncIterable5, "isAsyncIterable");
 function all2(source) {
-  if (isAsyncIterable6(source)) {
+  if (isAsyncIterable5(source)) {
     return (async () => {
       const arr2 = [];
       for await (const entry of source) {
@@ -25501,7 +24806,7 @@ function all2(source) {
   return arr;
 }
 __name(all2, "all");
-var src_default6 = all2;
+var src_default5 = all2;
 
 // node_modules/observable-webworkers/dist/src/index.js
 var events = {};
@@ -25533,7 +24838,7 @@ observable.dispatchEvent = function(type, worker, event) {
   }
   events[type].forEach((fn) => fn(worker, event));
 };
-var src_default7 = observable;
+var src_default6 = observable;
 
 // node_modules/mortice/dist/src/constants.js
 var WORKER_REQUEST_READ_LOCK = "lock:worker:request-read";
@@ -25630,8 +24935,8 @@ var browser_default2 = /* @__PURE__ */ __name((options) => {
   const isPrimary = Boolean(globalThis.document) || options.singleProcess;
   if (isPrimary) {
     const emitter = new EventTarget();
-    src_default7.addEventListener("message", handleWorkerLockRequest(emitter, "requestReadLock", WORKER_REQUEST_READ_LOCK, WORKER_RELEASE_READ_LOCK, MASTER_GRANT_READ_LOCK));
-    src_default7.addEventListener("message", handleWorkerLockRequest(emitter, "requestWriteLock", WORKER_REQUEST_WRITE_LOCK, WORKER_RELEASE_WRITE_LOCK, MASTER_GRANT_WRITE_LOCK));
+    src_default6.addEventListener("message", handleWorkerLockRequest(emitter, "requestReadLock", WORKER_REQUEST_READ_LOCK, WORKER_RELEASE_READ_LOCK, MASTER_GRANT_READ_LOCK));
+    src_default6.addEventListener("message", handleWorkerLockRequest(emitter, "requestWriteLock", WORKER_REQUEST_WRITE_LOCK, WORKER_RELEASE_WRITE_LOCK, MASTER_GRANT_WRITE_LOCK));
     return emitter;
   }
   return {
@@ -26853,7 +26158,7 @@ var PersistentPeerStore = class {
     const release = await this.store.lock.readLock();
     this.log.trace("all got read lock");
     try {
-      return await src_default6(this.store.all(query));
+      return await src_default5(this.store.all(query));
     } finally {
       this.log.trace("all release read lock");
       release();
@@ -27023,6 +26328,25 @@ var NotFoundError2 = class _NotFoundError extends Error {
   }
 };
 
+// node_modules/it-drain/dist/src/index.js
+function isAsyncIterable6(thing) {
+  return thing[Symbol.asyncIterator] != null;
+}
+__name(isAsyncIterable6, "isAsyncIterable");
+function drain(source) {
+  if (isAsyncIterable6(source)) {
+    return (async () => {
+      for await (const _ of source) {
+      }
+    })();
+  } else {
+    for (const _ of source) {
+    }
+  }
+}
+__name(drain, "drain");
+var src_default7 = drain;
+
 // node_modules/it-filter/dist/src/index.js
 function isAsyncIterable7(thing) {
   return thing[Symbol.asyncIterator] != null;
@@ -27081,12 +26405,12 @@ __name(isAsyncIterable8, "isAsyncIterable");
 function sort(source, sorter) {
   if (isAsyncIterable8(source)) {
     return async function* () {
-      const arr = await src_default6(source);
+      const arr = await src_default5(source);
       yield* arr.sort(sorter);
     }();
   }
   return function* () {
-    const arr = src_default6(source);
+    const arr = src_default5(source);
     yield* arr.sort(sorter);
   }();
 }
@@ -27179,9 +26503,9 @@ var BaseDatastore = class {
         dels.push(key);
       },
       commit: /* @__PURE__ */ __name(async (options) => {
-        await src_default4(this.putMany(puts, options));
+        await src_default7(this.putMany(puts, options));
         puts = [];
-        await src_default4(this.deleteMany(dels, options));
+        await src_default7(this.deleteMany(dels, options));
         dels = [];
       }, "commit")
     };
@@ -29296,6 +28620,118 @@ var CompoundContentRouting = class {
     }));
   }
 };
+
+// node_modules/it-parallel/dist/src/index.js
+var CustomEvent2 = globalThis.CustomEvent ?? Event;
+async function* parallel(source, options = {}) {
+  let concurrency = options.concurrency ?? Infinity;
+  if (concurrency < 1) {
+    concurrency = Infinity;
+  }
+  const ordered = options.ordered == null ? false : options.ordered;
+  const emitter = new EventTarget();
+  const ops = [];
+  let slotAvailable = pDefer();
+  let resultAvailable = pDefer();
+  let sourceFinished = false;
+  let sourceErr;
+  let opErred = false;
+  emitter.addEventListener("task-complete", () => {
+    resultAvailable.resolve();
+  });
+  void Promise.resolve().then(async () => {
+    try {
+      for await (const task of source) {
+        if (ops.length === concurrency) {
+          slotAvailable = pDefer();
+          await slotAvailable.promise;
+        }
+        if (opErred) {
+          break;
+        }
+        const op = {
+          done: false
+        };
+        ops.push(op);
+        task().then((result) => {
+          op.done = true;
+          op.ok = true;
+          op.value = result;
+          emitter.dispatchEvent(new CustomEvent2("task-complete"));
+        }, (err) => {
+          op.done = true;
+          op.err = err;
+          emitter.dispatchEvent(new CustomEvent2("task-complete"));
+        });
+      }
+      sourceFinished = true;
+      emitter.dispatchEvent(new CustomEvent2("task-complete"));
+    } catch (err) {
+      sourceErr = err;
+      emitter.dispatchEvent(new CustomEvent2("task-complete"));
+    }
+  });
+  function valuesAvailable() {
+    if (ordered) {
+      return ops[0]?.done;
+    }
+    return Boolean(ops.find((op) => op.done));
+  }
+  __name(valuesAvailable, "valuesAvailable");
+  function* yieldOrderedValues() {
+    while (ops.length > 0 && ops[0].done) {
+      const op = ops[0];
+      ops.shift();
+      if (op.ok) {
+        yield op.value;
+      } else {
+        opErred = true;
+        slotAvailable.resolve();
+        throw op.err;
+      }
+      slotAvailable.resolve();
+    }
+  }
+  __name(yieldOrderedValues, "yieldOrderedValues");
+  function* yieldUnOrderedValues() {
+    while (valuesAvailable()) {
+      for (let i = 0; i < ops.length; i++) {
+        if (ops[i].done) {
+          const op = ops[i];
+          ops.splice(i, 1);
+          i--;
+          if (op.ok) {
+            yield op.value;
+          } else {
+            opErred = true;
+            slotAvailable.resolve();
+            throw op.err;
+          }
+          slotAvailable.resolve();
+        }
+      }
+    }
+  }
+  __name(yieldUnOrderedValues, "yieldUnOrderedValues");
+  while (true) {
+    if (!valuesAvailable()) {
+      resultAvailable = pDefer();
+      await resultAvailable.promise;
+    }
+    if (sourceErr != null) {
+      throw sourceErr;
+    }
+    if (ordered) {
+      yield* yieldOrderedValues();
+    } else {
+      yield* yieldUnOrderedValues();
+    }
+    if (sourceFinished && ops.length === 0) {
+      break;
+    }
+  }
+}
+__name(parallel, "parallel");
 
 // node_modules/libp2p/dist/src/peer-routing.js
 var DefaultPeerRouting = class {
@@ -51026,7 +50462,7 @@ var DHTContentRouting = class {
     this.dht = dht;
   }
   async provide(cid, options = {}) {
-    await src_default4(this.dht.provide(cid, options));
+    await src_default7(this.dht.provide(cid, options));
   }
   async *findProviders(cid, options = {}) {
     for await (const event of this.dht.findProviders(cid, options)) {
@@ -51036,7 +50472,7 @@ var DHTContentRouting = class {
     }
   }
   async put(key, value, options) {
-    await src_default4(this.dht.put(key, value, options));
+    await src_default7(this.dht.put(key, value, options));
   }
   async get(key, options) {
     for await (const event of this.dht.get(key, options)) {
@@ -51979,12 +51415,9 @@ export {
   dcutr,
   filters_exports as filters,
   fromString2 as fromString,
-  identify,
-  identifyPush,
   kadDHT,
   multiaddr,
   noise,
-  peerIdFromString,
   ping,
   removePrivateAddressesMapper,
   removePublicAddressesMapper,

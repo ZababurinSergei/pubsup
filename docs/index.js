@@ -182,38 +182,39 @@ const libp2p = await createLibp2p({
   },
   connectionGater: {
     denyDialPeer: (currentPeerId) => {
-      // console.log('00000000000000 denyDialPeer 00000000000000',type, currentPeerId.toString())
+      console.log('-------- denyDialPeer --------', currentPeerId.toString())
       return false
     },
     denyDialMultiaddr: async (currentPeerId) => {
-      // console.log('111111111111 denyDialMultiaddr 111111111111',type, currentPeerId.toString())
+      console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
       return false
     },
     denyOutboundConnection: (currentPeerId, maConn) => {
-      // console.log('####### 1 ####### denyOutboundConnection ##############',type, currentPeerId.toString())
+      console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
-      // console.log('####### 2 ####### denyOutboundEncryptedConnection ##############',type, currentPeerId.toString())
+      console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
-      // console.log('####### 3 ####### denyOutboundUpgradedConnection ##############', type, currentPeerId.toString())
+      console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyInboundConnection: (maConn) => {
-      // console.log('------- 1 ------- denyInboundConnection --------------', type, maConn.remoteAddr.toString())
+      console.log('-------- 1 denyInboundConnection 1 --------', maConn)
       return false
     },
     denyInboundEncryptedConnection: (currentPeerId, maConn) => {
-      // console.log('------- 2 ------- denyInboundEncryptedConnection --------------', type, currentPeerId.toString())
+      console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyInboundUpgradedConnection: (currentPeerId, maConn) => {
-      // console.log('------- 3 ------- denyInboundUpgradedConnection --------------', type, currentPeerId.toString())
+      console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
       return false
     },
-    filterMultiaddrForPeer: async (currentPeerId, multiaddr) => {
+    filterMultiaddrForPeer: async (currentPeerId, maConn) => {
+      console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
         return true
     }
   }
