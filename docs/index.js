@@ -16,10 +16,8 @@ import { PersistentPeerStore } from '@libp2p/peer-store'
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { IDBDatastore } from 'datastore-idb'
 import { ping } from '@libp2p/ping'
-import { peerIdFromString } from '@libp2p/peer-id'
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 import { FaultTolerance } from '@libp2p/interface-transport'
-
 
 const serverPeerId = '12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1'
 const port = 4839

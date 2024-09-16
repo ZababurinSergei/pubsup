@@ -11731,7 +11731,7 @@ var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters
 // node_modules/weald/dist/src/index.js
 var src_default = browser_default;
 
-// node_modules/@libp2p/logger/dist/src/index.js
+// node_modules/libp2p/node_modules/@libp2p/logger/dist/src/index.js
 src_default.formatters.b = (v) => {
   return v == null ? "undefined" : base58btc.baseEncode(v);
 };
