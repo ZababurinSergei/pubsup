@@ -20,7 +20,7 @@ import * as  peerIdLib  from '@libp2p/peer-id'
 import * as createEd25519PeerId from '@libp2p/peer-id-factory'
 import { webTransport } from '@libp2p/webtransport'
 import fs from "node:fs";
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { MemoryDatastore } from 'datastore-core'
 import {ping} from "@libp2p/ping";
 import { PUBSUB_PEER_DISCOVERY } from './docs/constants.js'
@@ -246,7 +246,6 @@ async function main () {
                 `/ip4/0.0.0.0/tcp/${port}/wss`
             ],
             announce: [
-                `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}`,
                 `/dns4/${process.env.RENDER_EXTERNAL_HOSTNAME}/wss`
             ]
         }
@@ -255,13 +254,12 @@ async function main () {
                 `/ip4/0.0.0.0/tcp/${port}/ws`
             ],
             announce: [
-                `/dns4/localhost/tcp/${port}`,
                 `/dns4/localhost/tcp/${port}/ws`
             ]
         }
 
     const libp2p = await createLibp2p({
-        peerStore: PersistentPeerStore,
+        peerStore: persistentPeerStore,
         MemoryDatastore,
         privateKey: peerId,
         addresses: addresses,
@@ -273,7 +271,7 @@ async function main () {
         connectionEncrypters: [
             noise()
         ],
-        streamMuxers: [yamux(), mplex()],
+        streamMuxers: [yamux()],
         services: {
             identify: identify(),
             identifyPush: identifyPush(),

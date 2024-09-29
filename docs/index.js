@@ -263,8 +263,12 @@ function updatePeerList () {
   DOM.peerConnectionsList().replaceChildren(...peerList)
 }
 
-libp2p.addEventListener('peer:discovery', (evt) => {
+libp2p.addEventListener('peer:discovery', async (evt) => {
   console.log(`peer:discovery ${evt.detail.id.toString()}`)
+  console.log(`peer:discovery `, evt.detail.multiaddrs)
+  if(evt.detail.multiaddrs.length !== 0) {
+    await libp2p.dial(evt.detail.multiaddrs)
+  }
 })
 
 // update peer connections
