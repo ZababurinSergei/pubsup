@@ -47,7 +47,7 @@
     "@libp2p/webtransport": "^4.1.9",
     "@multiformats/multiaddr": "^12.3.1",
     "blockstore-core": "^5.0.2",
-    "compression": "^1.7.4",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "datastore-core": "^10.0.2",
     "datastore-idb": "^3.0.1",
