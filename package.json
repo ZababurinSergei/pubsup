@@ -51,7 +51,7 @@
     "cors": "^2.8.5",
     "datastore-core": "^10.0.2",
     "datastore-idb": "^3.0.1",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-enqueue": "^1.0.0",
     "http-proxy": "^1.18.1",
