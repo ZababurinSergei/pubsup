@@ -52,7 +52,7 @@
     "datastore-core": "^10.0.2",
     "datastore-idb": "^3.0.1",
     "dotenv": "^16.4.5",
-    "express": "^4.21.0",
+    "express": "^5.1.0",
     "express-enqueue": "^1.0.0",
     "http-proxy": "^1.18.1",
     "libp2p": "^1.9.4",

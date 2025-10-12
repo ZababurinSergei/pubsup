@@ -230,9 +230,9 @@ async function main () {
         // res.status(200).sendFile(path.join(__dirname, '/index.html'));
     });
 
-    app.post(`/*`, async (req, res) => {
-        console.log('==== POST ====', req.path);
-    });
+    // app.post(`/*`, async (req, res) => {
+    //     console.log('==== POST ====', req.path);
+    // });
 
     app.use(queue.getErrorMiddleware());
 
