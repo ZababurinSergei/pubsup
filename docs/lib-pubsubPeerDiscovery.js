@@ -2236,11 +2236,11 @@ function ip6StringToValue(str) {
 }
 __name(ip6StringToValue, "ip6StringToValue");
 var decoders = Object.values(bases).map((c) => c.decoder);
-var anybaseDecoder = function() {
+var anybaseDecoder = (function() {
   let acc = decoders[0].or(decoders[1]);
   decoders.slice(2).forEach((d) => acc = acc.or(d));
   return acc;
-}();
+})();
 function mb2bytes(mbstr) {
   return anybaseDecoder.decode(mbstr);
 }

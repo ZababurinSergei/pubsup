@@ -12127,11 +12127,11 @@ function ip6StringToValue(str) {
 }
 __name(ip6StringToValue, "ip6StringToValue");
 var decoders = Object.values(bases).map((c) => c.decoder);
-var anybaseDecoder = function() {
+var anybaseDecoder = (function() {
   let acc = decoders[0].or(decoders[1]);
   decoders.slice(2).forEach((d) => acc = acc.or(d));
   return acc;
-}();
+})();
 function mb2bytes(mbstr) {
   return anybaseDecoder.decode(mbstr);
 }
@@ -15622,18 +15622,13 @@ pvtsutils/build/index.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 @noble/curves/esm/utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/modular.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/curve.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/edwards.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/ed25519.js:
+@noble/curves/esm/abstract/weierstrass.js:
+@noble/curves/esm/_shortw_utils.js:
+@noble/curves/esm/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 pvutils/build/utils.es.js:
@@ -15675,14 +15670,5 @@ asn1js/build/index.es.js:
    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    * 
    *)
-
-@noble/curves/esm/abstract/weierstrass.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
-@noble/curves/esm/_shortw_utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
-@noble/curves/esm/secp256k1.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 */
 //# sourceMappingURL=lib-peer-store.js.map

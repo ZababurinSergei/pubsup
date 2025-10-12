@@ -957,7 +957,7 @@ var require_netmask = __commonJS({
         }
         return [n2, i2];
       }, "atob");
-      Netmask2 = function() {
+      Netmask2 = (function() {
         function Netmask3(net, mask) {
           var error, i2, j, ref;
           if (typeof net !== "string") {
@@ -1040,7 +1040,7 @@ var require_netmask = __commonJS({
           return this.base + "/" + this.bitmask;
         };
         return Netmask3;
-      }();
+      })();
       exports.ip2long = ip2long;
       exports.long2ip = long2ip;
       exports.Netmask = Netmask2;
@@ -16634,11 +16634,11 @@ function ip6StringToValue(str) {
 }
 __name(ip6StringToValue, "ip6StringToValue");
 var decoders = Object.values(bases).map((c2) => c2.decoder);
-var anybaseDecoder = function() {
+var anybaseDecoder = (function() {
   let acc = decoders[0].or(decoders[1]);
   decoders.slice(2).forEach((d2) => acc = acc.or(d2));
   return acc;
-}();
+})();
 function mb2bytes(mbstr) {
   return anybaseDecoder.decode(mbstr);
 }
@@ -20150,23 +20150,23 @@ __name(isAsyncIterable3, "isAsyncIterable");
 function filter(source, fn) {
   let index = 0;
   if (isAsyncIterable3(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const entry of source) {
         if (await fn(entry, index++)) {
           yield entry;
         }
       }
-    }();
+    })();
   }
   const peekable2 = src_default4(source);
   const { value, done } = peekable2.next();
   if (done === true) {
-    return function* () {
-    }();
+    return (function* () {
+    })();
   }
   const res = fn(value, index++);
   if (typeof res.then === "function") {
-    return async function* () {
+    return (async function* () {
       if (await res) {
         yield value;
       }
@@ -20175,10 +20175,10 @@ function filter(source, fn) {
           yield entry;
         }
       }
-    }();
+    })();
   }
   const func2 = fn;
-  return function* () {
+  return (function* () {
     if (res === true) {
       yield value;
     }
@@ -20187,7 +20187,7 @@ function filter(source, fn) {
         yield entry;
       }
     }
-  }();
+  })();
 }
 __name(filter, "filter");
 var src_default5 = filter;
@@ -20199,15 +20199,15 @@ function isAsyncIterable4(thing) {
 __name(isAsyncIterable4, "isAsyncIterable");
 function sort(source, sorter) {
   if (isAsyncIterable4(source)) {
-    return async function* () {
+    return (async function* () {
       const arr = await src_default2(source);
       yield* arr.sort(sorter);
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     const arr = src_default2(source);
     yield* arr.sort(sorter);
-  }();
+  })();
 }
 __name(sort, "sort");
 var src_default6 = sort;
@@ -20219,7 +20219,7 @@ function isAsyncIterable5(thing) {
 __name(isAsyncIterable5, "isAsyncIterable");
 function take(source, limit) {
   if (isAsyncIterable5(source)) {
-    return async function* () {
+    return (async function* () {
       let items = 0;
       if (limit < 1) {
         return;
@@ -20231,9 +20231,9 @@ function take(source, limit) {
           return;
         }
       }
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     let items = 0;
     if (limit < 1) {
       return;
@@ -20245,7 +20245,7 @@ function take(source, limit) {
         return;
       }
     }
-  }();
+  })();
 }
 __name(take, "take");
 var src_default7 = take;
@@ -24053,14 +24053,14 @@ function byteStream(duplex, opts) {
     unwrap: /* @__PURE__ */ __name(() => {
       if (readBuffer.byteLength > 0) {
         const originalStream = duplex.source;
-        duplex.source = async function* () {
+        duplex.source = (async function* () {
           if (opts?.yieldBytes === false) {
             yield readBuffer;
           } else {
             yield* readBuffer;
           }
           yield* originalStream;
-        }();
+        })();
       }
       return duplex;
     }, "unwrap")
@@ -24524,13 +24524,13 @@ var DefaultPeerRouting = class {
       throw new CodeError("Should not try to find self", codes4.ERR_FIND_SELF);
     }
     const self = this;
-    const source = src_default8(...this.routers.map((router) => async function* () {
+    const source = src_default8(...this.routers.map((router) => (async function* () {
       try {
         yield await router.findPeer(id, options);
       } catch (err) {
         self.log.error(err);
       }
-    }()));
+    })()));
     for await (const peer of source) {
       if (peer == null) {
         continue;
@@ -24553,7 +24553,7 @@ var DefaultPeerRouting = class {
     }
     const self = this;
     const seen = createScalableCuckooFilter(1024);
-    for await (const peer of parallel(async function* () {
+    for await (const peer of parallel((async function* () {
       const source = src_default8(...self.routers.map((router) => router.getClosestPeers(key, options)));
       for await (let peer2 of source) {
         yield async () => {
@@ -24571,7 +24571,7 @@ var DefaultPeerRouting = class {
           return peer2;
         };
       }
-    }())) {
+    })())) {
       if (peer == null) {
         continue;
       }
@@ -25315,7 +25315,7 @@ function optimisticSelect(stream, protocol, options) {
   });
   stream.sink = async (source) => {
     const { sink } = lp.unwrap();
-    await sink(async function* () {
+    await sink((async function* () {
       let sentData = false;
       for await (const buf of source) {
         if (sendingProtocol) {
@@ -25350,7 +25350,7 @@ function optimisticSelect(stream, protocol, options) {
       if (!sentData) {
         await negotiate();
       }
-    }());
+    })());
   };
   async function negotiate() {
     if (negotiating) {
@@ -25421,11 +25421,11 @@ function optimisticSelect(stream, protocol, options) {
     }
   }
   __name(doReadProtocol, "doReadProtocol");
-  stream.source = async function* () {
+  stream.source = (async function* () {
     await negotiate();
     options.log.trace('optimistic: reading data from "%s" stream', protocol);
     yield* lp.unwrap().source;
-  }();
+  })();
   if (stream.closeRead != null) {
     const originalCloseRead = stream.closeRead.bind(stream);
     stream.closeRead = async (opts) => {
@@ -25508,17 +25508,17 @@ function encode6(source, options) {
   }
   __name(maybeYield, "maybeYield");
   if (isAsyncIterable7(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const chunk of source) {
         yield* maybeYield(chunk);
       }
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     for (const chunk of source) {
       yield* maybeYield(chunk);
     }
-  }();
+  })();
 }
 __name(encode6, "encode");
 encode6.single = (chunk, options) => {
@@ -25621,7 +25621,7 @@ function decode7(source, options) {
   }
   __name(maybeYield, "maybeYield");
   if (isAsyncIterable7(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const buf of source) {
         buffer.append(buf);
         yield* maybeYield();
@@ -25629,9 +25629,9 @@ function decode7(source, options) {
       if (buffer.byteLength > 0) {
         throw new UnexpectedEOFError2("Unexpected end of input");
       }
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     for (const buf of source) {
       buffer.append(buf);
       yield* maybeYield();
@@ -25639,12 +25639,12 @@ function decode7(source, options) {
     if (buffer.byteLength > 0) {
       throw new UnexpectedEOFError2("Unexpected end of input");
     }
-  }();
+  })();
 }
 __name(decode7, "decode");
 decode7.fromReader = (reader, options) => {
   let byteLength = 1;
-  const varByteSource = async function* () {
+  const varByteSource = (async function* () {
     while (true) {
       try {
         const { done, value } = await reader.next(byteLength);
@@ -25663,7 +25663,7 @@ decode7.fromReader = (reader, options) => {
         byteLength = 1;
       }
     }
-  }();
+  })();
   const onLength = /* @__PURE__ */ __name((l2) => {
     byteLength = l2;
   }, "onLength");
@@ -26719,18 +26719,13 @@ pvtsutils/build/index.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 @noble/curves/esm/utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/modular.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/curve.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/edwards.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/ed25519.js:
+@noble/curves/esm/abstract/weierstrass.js:
+@noble/curves/esm/_shortw_utils.js:
+@noble/curves/esm/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 pvutils/build/utils.es.js:
@@ -26772,14 +26767,5 @@ asn1js/build/index.es.js:
    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    * 
    *)
-
-@noble/curves/esm/abstract/weierstrass.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
-@noble/curves/esm/_shortw_utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
-@noble/curves/esm/secp256k1.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 */
 //# sourceMappingURL=lib-libp2p.js.map

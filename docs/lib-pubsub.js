@@ -911,7 +911,7 @@ var require_netmask = __commonJS({
         }
         return [n2, i2];
       }, "atob");
-      Netmask2 = function() {
+      Netmask2 = (function() {
         function Netmask3(net, mask) {
           var error, i2, j, ref;
           if (typeof net !== "string") {
@@ -994,7 +994,7 @@ var require_netmask = __commonJS({
           return this.base + "/" + this.bitmask;
         };
         return Netmask3;
-      }();
+      })();
       exports.ip2long = ip2long;
       exports.long2ip = long2ip;
       exports.Netmask = Netmask2;
@@ -12802,17 +12802,17 @@ function encode6(source, options) {
   }
   __name(maybeYield, "maybeYield");
   if (isAsyncIterable(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const chunk of source) {
         yield* maybeYield(chunk);
       }
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     for (const chunk of source) {
       yield* maybeYield(chunk);
     }
-  }();
+  })();
 }
 __name(encode6, "encode");
 encode6.single = (chunk, options) => {
@@ -12915,7 +12915,7 @@ function decode7(source, options) {
   }
   __name(maybeYield, "maybeYield");
   if (isAsyncIterable(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const buf of source) {
         buffer.append(buf);
         yield* maybeYield();
@@ -12923,9 +12923,9 @@ function decode7(source, options) {
       if (buffer.byteLength > 0) {
         throw new UnexpectedEOFError("Unexpected end of input");
       }
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     for (const buf of source) {
       buffer.append(buf);
       yield* maybeYield();
@@ -12933,12 +12933,12 @@ function decode7(source, options) {
     if (buffer.byteLength > 0) {
       throw new UnexpectedEOFError("Unexpected end of input");
     }
-  }();
+  })();
 }
 __name(decode7, "decode");
 decode7.fromReader = (reader, options) => {
   let byteLength = 1;
-  const varByteSource = async function* () {
+  const varByteSource = (async function* () {
     while (true) {
       try {
         const { done, value } = await reader.next(byteLength);
@@ -12957,7 +12957,7 @@ decode7.fromReader = (reader, options) => {
         byteLength = 1;
       }
     }
-  }();
+  })();
   const onLength = /* @__PURE__ */ __name((l2) => {
     byteLength = l2;
   }, "onLength");
@@ -13207,14 +13207,14 @@ function byteStream(duplex, opts) {
     unwrap: /* @__PURE__ */ __name(() => {
       if (readBuffer.byteLength > 0) {
         const originalStream = duplex.source;
-        duplex.source = async function* () {
+        duplex.source = (async function* () {
           if (opts?.yieldBytes === false) {
             yield readBuffer;
           } else {
             yield* readBuffer;
           }
           yield* originalStream;
-        }();
+        })();
       }
       return duplex;
     }, "unwrap")
@@ -13310,10 +13310,10 @@ function pair() {
       piped = true;
       deferred.resolve(source);
     }, "sink"),
-    source: async function* () {
+    source: (async function* () {
       const source = await deferred.promise;
       yield* source;
-    }()
+    })()
   };
 }
 __name(pair, "pair");
@@ -16148,7 +16148,7 @@ __name(isPromise4, "isPromise");
 function forEach(source, fn) {
   let index = 0;
   if (isAsyncIterable4(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const val of source) {
         const res2 = fn(val, index++);
         if (isPromise4(res2)) {
@@ -16156,17 +16156,17 @@ function forEach(source, fn) {
         }
         yield val;
       }
-    }();
+    })();
   }
   const peekable2 = src_default2(source);
   const { value, done } = peekable2.next();
   if (done === true) {
-    return function* () {
-    }();
+    return (function* () {
+    })();
   }
   const res = fn(value, index++);
   if (typeof res?.then === "function") {
-    return async function* () {
+    return (async function* () {
       yield value;
       for (const val of peekable2) {
         const res2 = fn(val, index++);
@@ -16175,16 +16175,16 @@ function forEach(source, fn) {
         }
         yield val;
       }
-    }();
+    })();
   }
   const func2 = fn;
-  return function* () {
+  return (function* () {
     yield value;
     for (const val of peekable2) {
       func2(val, index++);
       yield val;
     }
-  }();
+  })();
 }
 __name(forEach, "forEach");
 var src_default3 = forEach;
@@ -17340,11 +17340,11 @@ function ip6StringToValue(str) {
 }
 __name(ip6StringToValue, "ip6StringToValue");
 var decoders = Object.values(bases).map((c2) => c2.decoder);
-var anybaseDecoder = function() {
+var anybaseDecoder = (function() {
   let acc = decoders[0].or(decoders[1]);
   decoders.slice(2).forEach((d2) => acc = acc.or(d2));
   return acc;
-}();
+})();
 function mb2bytes(mbstr) {
   return anybaseDecoder.decode(mbstr);
 }
@@ -19302,7 +19302,7 @@ function streamToMaConnection(props) {
   const maConn = {
     log: log4,
     sink: stream.sink,
-    source: async function* () {
+    source: (async function* () {
       try {
         for await (const list of stream.source) {
           if (list instanceof Uint8Array) {
@@ -19315,7 +19315,7 @@ function streamToMaConnection(props) {
         closedRead = true;
         close();
       }
-    }(),
+    })(),
     remoteAddr,
     timeline: { open: Date.now(), close: void 0 },
     close: stream.close,
@@ -21490,7 +21490,7 @@ var __spreadArray = function(to, from3, pack) {
 };
 var BrowserInfo = (
   /** @class */
-  /* @__PURE__ */ function() {
+  /* @__PURE__ */ (function() {
     function BrowserInfo2(name2, version, os) {
       this.name = name2;
       this.version = version;
@@ -21499,11 +21499,11 @@ var BrowserInfo = (
     }
     __name(BrowserInfo2, "BrowserInfo");
     return BrowserInfo2;
-  }()
+  })()
 );
 var NodeInfo = (
   /** @class */
-  /* @__PURE__ */ function() {
+  /* @__PURE__ */ (function() {
     function NodeInfo2(version) {
       this.version = version;
       this.type = "node";
@@ -21512,11 +21512,11 @@ var NodeInfo = (
     }
     __name(NodeInfo2, "NodeInfo");
     return NodeInfo2;
-  }()
+  })()
 );
 var SearchBotDeviceInfo = (
   /** @class */
-  /* @__PURE__ */ function() {
+  /* @__PURE__ */ (function() {
     function SearchBotDeviceInfo2(name2, version, os, bot) {
       this.name = name2;
       this.version = version;
@@ -21526,11 +21526,11 @@ var SearchBotDeviceInfo = (
     }
     __name(SearchBotDeviceInfo2, "SearchBotDeviceInfo");
     return SearchBotDeviceInfo2;
-  }()
+  })()
 );
 var BotInfo = (
   /** @class */
-  /* @__PURE__ */ function() {
+  /* @__PURE__ */ (function() {
     function BotInfo2() {
       this.type = "bot";
       this.bot = true;
@@ -21540,11 +21540,11 @@ var BotInfo = (
     }
     __name(BotInfo2, "BotInfo");
     return BotInfo2;
-  }()
+  })()
 );
 var ReactNativeInfo = (
   /** @class */
-  /* @__PURE__ */ function() {
+  /* @__PURE__ */ (function() {
     function ReactNativeInfo2() {
       this.type = "react-native";
       this.name = "react-native";
@@ -21553,7 +21553,7 @@ var ReactNativeInfo = (
     }
     __name(ReactNativeInfo2, "ReactNativeInfo");
     return ReactNativeInfo2;
-  }()
+  })()
 );
 var SEARCHBOX_UA_REGEX = /alexa|bot|crawl(er|ing)|facebookexternalhit|feedburner|google web preview|nagios|postrank|pingdom|slurp|spider|yahoo!|yandex/;
 var SEARCHBOT_OS_REGEX = /(nuhk|curl|Googlebot|Yammybot|Openbot|Slurp|MSNBot|Ask\ Jeeves\/Teoma|ia_archiver)/;
@@ -23294,13 +23294,13 @@ var WebRTCDirectTransport = class {
       const wrappedDuplex = {
         ...wrappedChannel,
         sink: wrappedChannel.sink.bind(wrappedChannel),
-        source: async function* () {
+        source: (async function* () {
           for await (const list of wrappedChannel.source) {
             for (const buf of list) {
               yield buf;
             }
           }
-        }()
+        })()
       };
       const maConn = new WebRTCMultiaddrConnection(this.components, {
         peerConnection,
@@ -23689,7 +23689,7 @@ var source_default = /* @__PURE__ */ __name((socket) => {
       socket.addEventListener("error", onError);
     });
   }, "connected");
-  const source = async function* () {
+  const source = (async function* () {
     const messages = new import_event_iterator.EventIterator(({ push, stop: stop2, fail }) => {
       const onMessage = /* @__PURE__ */ __name((event) => {
         let data = null;
@@ -23723,7 +23723,7 @@ var source_default = /* @__PURE__ */ __name((socket) => {
     for await (const chunk of messages) {
       yield isArrayBuffer(chunk) ? new Uint8Array(chunk) : chunk;
     }
-  }();
+  })();
   let isConnected = socket.readyState === 1;
   let connError;
   socket.addEventListener("open", () => {
@@ -23913,7 +23913,7 @@ function socketToMaConn(stream, remoteAddr, options) {
     log: log4,
     async sink(source) {
       try {
-        await stream.sink(async function* () {
+        await stream.sink((async function* () {
           for await (const buf of source) {
             if (buf instanceof Uint8Array) {
               yield buf;
@@ -23921,7 +23921,7 @@ function socketToMaConn(stream, remoteAddr, options) {
               yield buf.subarray();
             }
           }
-        }());
+        })());
       } catch (err) {
         if (err.type !== "aborted") {
           log4.error(err);
@@ -24392,34 +24392,34 @@ __name(isAsyncIterable6, "isAsyncIterable");
 function map2(source, func2) {
   let index = 0;
   if (isAsyncIterable6(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const val of source) {
         yield func2(val, index++);
       }
-    }();
+    })();
   }
   const peekable2 = src_default2(source);
   const { value, done } = peekable2.next();
   if (done === true) {
-    return function* () {
-    }();
+    return (function* () {
+    })();
   }
   const res = func2(value, index++);
   if (typeof res.then === "function") {
-    return async function* () {
+    return (async function* () {
       yield await res;
       for (const val of peekable2) {
         yield func2(val, index++);
       }
-    }();
+    })();
   }
   const fn = func2;
-  return function* () {
+  return (function* () {
     yield res;
     for (const val of peekable2) {
       yield fn(val, index++);
     }
-  }();
+  })();
 }
 __name(map2, "map");
 var src_default5 = map2;
@@ -28825,7 +28825,7 @@ function isAsyncIterable8(thing) {
 __name(isAsyncIterable8, "isAsyncIterable");
 function take(source, limit) {
   if (isAsyncIterable8(source)) {
-    return async function* () {
+    return (async function* () {
       let items = 0;
       if (limit < 1) {
         return;
@@ -28837,9 +28837,9 @@ function take(source, limit) {
           return;
         }
       }
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     let items = 0;
     if (limit < 1) {
       return;
@@ -28851,7 +28851,7 @@ function take(source, limit) {
         return;
       }
     }
-  }();
+  })();
 }
 __name(take, "take");
 var src_default7 = take;
@@ -46840,23 +46840,23 @@ __name(isAsyncIterable9, "isAsyncIterable");
 function filter(source, fn) {
   let index = 0;
   if (isAsyncIterable9(source)) {
-    return async function* () {
+    return (async function* () {
       for await (const entry of source) {
         if (await fn(entry, index++)) {
           yield entry;
         }
       }
-    }();
+    })();
   }
   const peekable2 = src_default2(source);
   const { value, done } = peekable2.next();
   if (done === true) {
-    return function* () {
-    }();
+    return (function* () {
+    })();
   }
   const res = fn(value, index++);
   if (typeof res.then === "function") {
-    return async function* () {
+    return (async function* () {
       if (await res) {
         yield value;
       }
@@ -46865,10 +46865,10 @@ function filter(source, fn) {
           yield entry;
         }
       }
-    }();
+    })();
   }
   const func2 = fn;
-  return function* () {
+  return (function* () {
     if (res === true) {
       yield value;
     }
@@ -46877,7 +46877,7 @@ function filter(source, fn) {
         yield entry;
       }
     }
-  }();
+  })();
 }
 __name(filter, "filter");
 var src_default8 = filter;
@@ -46913,15 +46913,15 @@ function isAsyncIterable11(thing) {
 __name(isAsyncIterable11, "isAsyncIterable");
 function sort(source, sorter) {
   if (isAsyncIterable11(source)) {
-    return async function* () {
+    return (async function* () {
       const arr = await src_default9(source);
       yield* arr.sort(sorter);
-    }();
+    })();
   }
-  return function* () {
+  return (function* () {
     const arr = src_default9(source);
     yield* arr.sort(sorter);
-  }();
+  })();
 }
 __name(sort, "sort");
 var src_default10 = sort;
@@ -48328,21 +48328,14 @@ pvtsutils/build/index.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 @noble/curves/esm/utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/modular.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/curve.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/edwards.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/abstract/montgomery.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
 @noble/curves/esm/ed25519.js:
+@noble/curves/esm/abstract/weierstrass.js:
+@noble/curves/esm/_shortw_utils.js:
+@noble/curves/esm/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 pvutils/build/utils.es.js:
@@ -48384,15 +48377,6 @@ asn1js/build/index.es.js:
    * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    * 
    *)
-
-@noble/curves/esm/abstract/weierstrass.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
-@noble/curves/esm/_shortw_utils.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
-
-@noble/curves/esm/secp256k1.js:
-  (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 
 @noble/ciphers/esm/utils.js:
   (*! noble-ciphers - MIT License (c) 2023 Paul Miller (paulmillr.com) *)
