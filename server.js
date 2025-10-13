@@ -825,7 +825,7 @@ const node = await createLibp2p({
         identify: identify(),
         identifyPush: identifyPush(),
         pubsub: gossipsub(),
-        autoNAT: autoNATv2(),
+        // autoNAT: autoNATv2(),
         relay: circuitRelayServer(),
         ping: ping(),
         http: http({
