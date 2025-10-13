@@ -4316,8 +4316,8 @@ function edwards(params, extraOpts = {}) {
       const y2 = modP(y * y);
       const u = modP(y2 - _1n4);
       const v = modP(d2 * y2 - a2);
-      let { isValid: isValid3, value: x } = uvRatio2(u, v);
-      if (!isValid3)
+      let { isValid: isValid2, value: x } = uvRatio2(u, v);
+      if (!isValid2)
         throw new Error("bad point: invalid y coordinate");
       const isXOdd = (x & _1n4) === _1n4;
       const isLastByteOdd = (lastByte & 128) !== 0;
@@ -4802,8 +4802,8 @@ __name(hashAndSign2, "hashAndSign");
 async function hashAndVerifyWebCrypto(publicKey, sig, msg) {
   if (publicKey.buffer instanceof ArrayBuffer) {
     const key = await webcrypto_default.get().subtle.importKey("raw", publicKey.buffer, { name: "Ed25519" }, false, ["verify"]);
-    const isValid3 = await webcrypto_default.get().subtle.verify({ name: "Ed25519" }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray());
-    return isValid3;
+    const isValid2 = await webcrypto_default.get().subtle.verify({ name: "Ed25519" }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray());
+    return isValid2;
   }
   throw new TypeError("WebCrypto does not support SharedArrayBuffer for Ed25519 keys");
 }
@@ -8015,53 +8015,12 @@ function toCurve(curve) {
 }
 __name(toCurve, "toCurve");
 
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/connection.js
-var connectionSymbol = Symbol.for("@libp2p/connection");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/content-routing.js
-var contentRoutingSymbol = Symbol.for("@libp2p/content-routing");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/errors.js
-var AbortError = class extends Error {
-  static name = "AbortError";
-  constructor(message2 = "The operation was aborted") {
-    super(message2);
-    this.name = "AbortError";
-  }
-};
+// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/errors.js
 var InvalidParametersError2 = class extends Error {
   static name = "InvalidParametersError";
   constructor(message2 = "Invalid parameters") {
     super(message2);
     this.name = "InvalidParametersError";
-  }
-};
-var ConnectionClosedError = class extends Error {
-  static name = "ConnectionClosedError";
-  constructor(message2 = "The connection is closed") {
-    super(message2);
-    this.name = "ConnectionClosedError";
-  }
-};
-var NotFoundError = class extends Error {
-  static name = "NotFoundError";
-  constructor(message2 = "Not found") {
-    super(message2);
-    this.name = "NotFoundError";
-  }
-};
-var InvalidPeerIdError = class extends Error {
-  static name = "InvalidPeerIdError";
-  constructor(message2 = "Invalid PeerID") {
-    super(message2);
-    this.name = "InvalidPeerIdError";
-  }
-};
-var InvalidMultiaddrError = class extends Error {
-  static name = "InvalidMultiaddrError";
-  constructor(message2 = "Invalid multiaddr") {
-    super(message2);
-    this.name = "InvalidMultiaddrError";
   }
 };
 var InvalidCIDError = class extends Error {
@@ -8078,48 +8037,6 @@ var InvalidMultihashError = class extends Error {
     this.name = "InvalidMultihashError";
   }
 };
-var TimeoutError = class extends Error {
-  static name = "TimeoutError";
-  constructor(message2 = "Timed out") {
-    super(message2);
-    this.name = "TimeoutError";
-  }
-};
-var NotStartedError = class extends Error {
-  static name = "NotStartedError";
-  constructor(message2 = "Not started") {
-    super(message2);
-    this.name = "NotStartedError";
-  }
-};
-var DialError = class extends Error {
-  static name = "DialError";
-  constructor(message2 = "Dial error") {
-    super(message2);
-    this.name = "DialError";
-  }
-};
-var LimitedConnectionError = class extends Error {
-  static name = "LimitedConnectionError";
-  constructor(message2 = "Limited connection") {
-    super(message2);
-    this.name = "LimitedConnectionError";
-  }
-};
-var TooManyInboundProtocolStreamsError = class extends Error {
-  static name = "TooManyInboundProtocolStreamsError";
-  constructor(message2 = "Too many inbound protocol streams") {
-    super(message2);
-    this.name = "TooManyInboundProtocolStreamsError";
-  }
-};
-var TooManyOutboundProtocolStreamsError = class extends Error {
-  static name = "TooManyOutboundProtocolStreamsError";
-  constructor(message2 = "Too many outbound protocol streams") {
-    super(message2);
-    this.name = "TooManyOutboundProtocolStreamsError";
-  }
-};
 var UnsupportedKeyTypeError2 = class extends Error {
   static name = "UnsupportedKeyTypeError";
   constructor(message2 = "Unsupported key type") {
@@ -8128,99 +8045,10 @@ var UnsupportedKeyTypeError2 = class extends Error {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/events.js
-var StreamCloseEvent = class extends Event {
-  static {
-    __name(this, "StreamCloseEvent");
-  }
-  error;
-  local;
-  constructor(local, error, eventInitDict) {
-    super("close", eventInitDict);
-    this.error = error;
-    this.local = local;
-  }
-};
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-discovery.js
-var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-id.js
+// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/peer-id.js
 var peerIdSymbol = Symbol.for("@libp2p/peer-id");
-function isPeerId(other) {
-  return Boolean(other?.[peerIdSymbol]);
-}
-__name(isPeerId, "isPeerId");
 
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-routing.js
-var peerRoutingSymbol = Symbol.for("@libp2p/peer-routing");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-store.js
-var KEEP_ALIVE = "keep-alive";
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/startable.js
-function isStartable(obj) {
-  return obj != null && typeof obj.start === "function" && typeof obj.stop === "function";
-}
-__name(isStartable, "isStartable");
-async function start(...objs) {
-  const startables = [];
-  for (const obj of objs) {
-    if (isStartable(obj)) {
-      startables.push(obj);
-    }
-  }
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.beforeStart != null) {
-      await s2.beforeStart();
-    }
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    await s2.start();
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.afterStart != null) {
-      await s2.afterStart();
-    }
-  }));
-}
-__name(start, "start");
-async function stop(...objs) {
-  const startables = [];
-  for (const obj of objs) {
-    if (isStartable(obj)) {
-      startables.push(obj);
-    }
-  }
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.beforeStop != null) {
-      await s2.beforeStop();
-    }
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    await s2.stop();
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.afterStop != null) {
-      await s2.afterStop();
-    }
-  }));
-}
-__name(stop, "stop");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/transport.js
-var transportSymbol = Symbol.for("@libp2p/transport");
-var FaultTolerance;
-(function(FaultTolerance2) {
-  FaultTolerance2[FaultTolerance2["FATAL_ALL"] = 0] = "FATAL_ALL";
-  FaultTolerance2[FaultTolerance2["NO_FATAL"] = 1] = "NO_FATAL";
-})(FaultTolerance || (FaultTolerance = {}));
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/index.js
-var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
-var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
-
-// node_modules/libp2p/node_modules/@libp2p/peer-id/dist/src/peer-id.js
+// node_modules/@libp2p/peer-id/dist/src/peer-id.js
 var inspect = Symbol.for("nodejs.util.inspect.custom");
 var LIBP2P_KEY_CODE = 114;
 var PeerIdImpl = class {
@@ -8366,7 +8194,7 @@ var URLPeerId = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/peer-id/dist/src/index.js
+// node_modules/@libp2p/peer-id/dist/src/index.js
 var LIBP2P_KEY_CODE2 = 114;
 var TRANSPORT_IPFS_GATEWAY_HTTP_CODE2 = 2336;
 function peerIdFromString(str, decoder) {
@@ -8447,10 +8275,194 @@ function isSha256Multihash(multihash) {
 }
 __name(isSha256Multihash, "isSha256Multihash");
 
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/connection.js
+var connectionSymbol = Symbol.for("@libp2p/connection");
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/content-routing.js
+var contentRoutingSymbol = Symbol.for("@libp2p/content-routing");
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/errors.js
+var AbortError = class extends Error {
+  static name = "AbortError";
+  constructor(message2 = "The operation was aborted") {
+    super(message2);
+    this.name = "AbortError";
+  }
+};
+var InvalidParametersError3 = class extends Error {
+  static name = "InvalidParametersError";
+  constructor(message2 = "Invalid parameters") {
+    super(message2);
+    this.name = "InvalidParametersError";
+  }
+};
+var ConnectionClosedError = class extends Error {
+  static name = "ConnectionClosedError";
+  constructor(message2 = "The connection is closed") {
+    super(message2);
+    this.name = "ConnectionClosedError";
+  }
+};
+var NotFoundError = class extends Error {
+  static name = "NotFoundError";
+  constructor(message2 = "Not found") {
+    super(message2);
+    this.name = "NotFoundError";
+  }
+};
+var InvalidPeerIdError = class extends Error {
+  static name = "InvalidPeerIdError";
+  constructor(message2 = "Invalid PeerID") {
+    super(message2);
+    this.name = "InvalidPeerIdError";
+  }
+};
+var InvalidMultiaddrError = class extends Error {
+  static name = "InvalidMultiaddrError";
+  constructor(message2 = "Invalid multiaddr") {
+    super(message2);
+    this.name = "InvalidMultiaddrError";
+  }
+};
+var TimeoutError = class extends Error {
+  static name = "TimeoutError";
+  constructor(message2 = "Timed out") {
+    super(message2);
+    this.name = "TimeoutError";
+  }
+};
+var NotStartedError = class extends Error {
+  static name = "NotStartedError";
+  constructor(message2 = "Not started") {
+    super(message2);
+    this.name = "NotStartedError";
+  }
+};
+var DialError = class extends Error {
+  static name = "DialError";
+  constructor(message2 = "Dial error") {
+    super(message2);
+    this.name = "DialError";
+  }
+};
+var LimitedConnectionError = class extends Error {
+  static name = "LimitedConnectionError";
+  constructor(message2 = "Limited connection") {
+    super(message2);
+    this.name = "LimitedConnectionError";
+  }
+};
+var TooManyInboundProtocolStreamsError = class extends Error {
+  static name = "TooManyInboundProtocolStreamsError";
+  constructor(message2 = "Too many inbound protocol streams") {
+    super(message2);
+    this.name = "TooManyInboundProtocolStreamsError";
+  }
+};
+var TooManyOutboundProtocolStreamsError = class extends Error {
+  static name = "TooManyOutboundProtocolStreamsError";
+  constructor(message2 = "Too many outbound protocol streams") {
+    super(message2);
+    this.name = "TooManyOutboundProtocolStreamsError";
+  }
+};
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/events.js
+var StreamCloseEvent = class extends Event {
+  static {
+    __name(this, "StreamCloseEvent");
+  }
+  error;
+  local;
+  constructor(local, error, eventInitDict) {
+    super("close", eventInitDict);
+    this.error = error;
+    this.local = local;
+  }
+};
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-discovery.js
+var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-id.js
+var peerIdSymbol2 = Symbol.for("@libp2p/peer-id");
+function isPeerId(other) {
+  return Boolean(other?.[peerIdSymbol2]);
+}
+__name(isPeerId, "isPeerId");
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-routing.js
+var peerRoutingSymbol = Symbol.for("@libp2p/peer-routing");
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-store.js
+var KEEP_ALIVE = "keep-alive";
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/startable.js
+function isStartable(obj) {
+  return obj != null && typeof obj.start === "function" && typeof obj.stop === "function";
+}
+__name(isStartable, "isStartable");
+async function start(...objs) {
+  const startables = [];
+  for (const obj of objs) {
+    if (isStartable(obj)) {
+      startables.push(obj);
+    }
+  }
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.beforeStart != null) {
+      await s2.beforeStart();
+    }
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    await s2.start();
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.afterStart != null) {
+      await s2.afterStart();
+    }
+  }));
+}
+__name(start, "start");
+async function stop(...objs) {
+  const startables = [];
+  for (const obj of objs) {
+    if (isStartable(obj)) {
+      startables.push(obj);
+    }
+  }
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.beforeStop != null) {
+      await s2.beforeStop();
+    }
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    await s2.stop();
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.afterStop != null) {
+      await s2.afterStop();
+    }
+  }));
+}
+__name(stop, "stop");
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/transport.js
+var transportSymbol = Symbol.for("@libp2p/transport");
+var FaultTolerance;
+(function(FaultTolerance2) {
+  FaultTolerance2[FaultTolerance2["FATAL_ALL"] = 0] = "FATAL_ALL";
+  FaultTolerance2[FaultTolerance2["NO_FATAL"] = 1] = "NO_FATAL";
+})(FaultTolerance || (FaultTolerance = {}));
+
+// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/index.js
+var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
+var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
+
 // node_modules/libp2p/dist/src/config.js
 async function validateConfig(opts) {
   if (opts.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
-    throw new InvalidParametersError2("Private network is enforced, but no protector was provided");
+    throw new InvalidParametersError3("Private network is enforced, but no protector was provided");
   }
   return opts;
 }
@@ -8967,7 +8979,7 @@ function notEmpty(str) {
 }
 __name(notEmpty, "notEmpty");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-collections/dist/src/util.js
+// node_modules/@libp2p/peer-collections/dist/src/util.js
 function mapIterable(iter, map) {
   const iterator = {
     [Symbol.iterator]: () => {
@@ -8998,7 +9010,7 @@ function peerIdFromString2(str) {
 }
 __name(peerIdFromString2, "peerIdFromString");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-collections/dist/src/map.js
+// node_modules/@libp2p/peer-collections/dist/src/map.js
 var PeerMap = class {
   static {
     __name(this, "PeerMap");
@@ -9053,7 +9065,7 @@ var PeerMap = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/peer-collections/dist/src/set.js
+// node_modules/@libp2p/peer-collections/dist/src/set.js
 var PeerSet = class _PeerSet {
   static {
     __name(this, "PeerSet");
@@ -9192,7 +9204,7 @@ function fnv1a(value2, { size = 32, utf8Buffer } = {}) {
 }
 __name(fnv1a, "fnv1a");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/filters/hashes.js
+// node_modules/@libp2p/utils/dist/src/filters/hashes.js
 var fnv1a2 = {
   hash: /* @__PURE__ */ __name((input) => {
     return Number(fnv1a(input, {
@@ -9212,7 +9224,7 @@ function numberToBuffer(num) {
 }
 __name(numberToBuffer, "numberToBuffer");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/filters/fingerprint.js
+// node_modules/@libp2p/utils/dist/src/filters/fingerprint.js
 var MAX_FINGERPRINT_SIZE = 64;
 var Fingerprint = class {
   static {
@@ -9248,13 +9260,13 @@ var Fingerprint = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/filters/utils.js
+// node_modules/@libp2p/utils/dist/src/filters/utils.js
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 __name(getRandomInt, "getRandomInt");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/filters/bucket.js
+// node_modules/@libp2p/utils/dist/src/filters/bucket.js
 var Bucket = class {
   static {
     __name(this, "Bucket");
@@ -9308,7 +9320,7 @@ var Bucket = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/filters/cuckoo-filter.js
+// node_modules/@libp2p/utils/dist/src/filters/cuckoo-filter.js
 var maxCuckooCount = 500;
 var CuckooFilter = class {
   static {
@@ -9434,7 +9446,7 @@ function optimize(maxItems, errorRate = 1e-3) {
 }
 __name(optimize, "optimize");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/filters/scalable-cuckoo-filter.js
+// node_modules/@libp2p/utils/dist/src/filters/scalable-cuckoo-filter.js
 var ScalableCuckooFilter = class {
   static {
     __name(this, "ScalableCuckooFilter");
@@ -9522,7 +9534,23 @@ function createScalableCuckooFilter(maxItems, errorRate = 1e-3, options) {
 }
 __name(createScalableCuckooFilter, "createScalableCuckooFilter");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/multiaddr/get-net-config.js
+// node_modules/@libp2p/utils/node_modules/@libp2p/interface/dist/src/errors.js
+var AbortError2 = class extends Error {
+  static name = "AbortError";
+  constructor(message2 = "The operation was aborted") {
+    super(message2);
+    this.name = "AbortError";
+  }
+};
+var InvalidParametersError4 = class extends Error {
+  static name = "InvalidParametersError";
+  constructor(message2 = "Invalid parameters") {
+    super(message2);
+    this.name = "InvalidParametersError";
+  }
+};
+
+// node_modules/@libp2p/utils/dist/src/multiaddr/get-net-config.js
 function getNetConfig(ma) {
   const components = ma.getComponents();
   const config = {};
@@ -9558,7 +9586,7 @@ function getNetConfig(ma) {
     index++;
   }
   if (config.type == null || config.host == null) {
-    throw new InvalidParametersError2(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`);
+    throw new InvalidParametersError4(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`);
   }
   if (components[index]?.name === "tls" && components[index + 1]?.name === "sni") {
     config.sni = components[index + 1].value;
@@ -10021,7 +10049,7 @@ var IpNet = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/multiaddr/is-link-local.js
+// node_modules/@libp2p/utils/dist/src/multiaddr/is-link-local.js
 function isLinkLocal(ma) {
   try {
     const config = getNetConfig(ma);
@@ -10045,7 +10073,7 @@ function isLoopbackAddr(ip) {
 }
 __name(isLoopbackAddr, "isLoopbackAddr");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/multiaddr/is-loopback.js
+// node_modules/@libp2p/utils/dist/src/multiaddr/is-loopback.js
 function isLoopback(ma) {
   try {
     const config = getNetConfig(ma);
@@ -10062,7 +10090,7 @@ function isLoopback(ma) {
 }
 __name(isLoopback, "isLoopback");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/multiaddr/is-network-address.js
+// node_modules/@libp2p/utils/dist/src/multiaddr/is-network-address.js
 function isNetworkAddress(ma) {
   try {
     getNetConfig(ma);
@@ -10083,7 +10111,7 @@ function isIPv6(input) {
 }
 __name(isIPv6, "isIPv6");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/private-ip.js
+// node_modules/@libp2p/utils/dist/src/private-ip.js
 var import_netmask = __toESM(require_netmask(), 1);
 var PRIVATE_IP_RANGES = [
   "0.0.0.0/8",
@@ -10166,7 +10194,7 @@ function isPrivateIp(ip) {
 }
 __name(isPrivateIp, "isPrivateIp");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/multiaddr/is-private.js
+// node_modules/@libp2p/utils/dist/src/multiaddr/is-private.js
 function isPrivate(ma) {
   try {
     const config = getNetConfig(ma);
@@ -10284,7 +10312,7 @@ var FIFO = class {
 };
 
 // node_modules/it-pushable/dist/src/index.js
-var AbortError2 = class extends Error {
+var AbortError3 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -10413,7 +10441,7 @@ function _pushable(getNext, options) {
       if (signal != null) {
         cancel = new Promise((resolve, reject) => {
           listener = /* @__PURE__ */ __name(() => {
-            reject(new AbortError2());
+            reject(new AbortError3());
           }, "listener");
           signal.addEventListener("abort", listener);
         });
@@ -10487,7 +10515,7 @@ var TimeoutError2 = class extends Error {
     this.name = "TimeoutError";
   }
 };
-var AbortError3 = class extends Error {
+var AbortError4 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -10497,7 +10525,7 @@ var AbortError3 = class extends Error {
     this.message = message2;
   }
 };
-var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError3(errorMessage) : new DOMException(errorMessage), "getDOMException");
+var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError4(errorMessage) : new DOMException(errorMessage), "getDOMException");
 var getAbortedReason = /* @__PURE__ */ __name((signal) => {
   const reason = signal.reason === void 0 ? getDOMException("This operation was aborted.") : signal.reason;
   return reason instanceof Error ? reason : getDOMException(reason);
@@ -10573,7 +10601,7 @@ function pTimeout(promise, options) {
 }
 __name(pTimeout, "pTimeout");
 
-// node_modules/libp2p/node_modules/p-event/index.js
+// node_modules/p-event/index.js
 var normalizeEmitter = /* @__PURE__ */ __name((emitter) => {
   const addListener2 = emitter.addEventListener || emitter.on || emitter.addListener;
   const removeListener2 = emitter.removeEventListener || emitter.off || emitter.removeListener;
@@ -10680,7 +10708,7 @@ function pEvent(emitter, event, options) {
 }
 __name(pEvent, "pEvent");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/debounce.js
+// node_modules/@libp2p/utils/dist/src/debounce.js
 function debounce(func, wait) {
   let timeout;
   const output = /* @__PURE__ */ __name(function() {
@@ -10700,7 +10728,7 @@ function debounce(func, wait) {
 }
 __name(debounce, "debounce");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/errors.js
+// node_modules/@libp2p/utils/dist/src/errors.js
 var RateLimitError = class extends Error {
   static {
     __name(this, "RateLimitError");
@@ -10730,7 +10758,7 @@ var UnexpectedEOFError = class extends Error {
   name = "UnexpectedEOFError";
 };
 
-// node_modules/libp2p/node_modules/race-signal/dist/src/index.js
+// node_modules/@libp2p/utils/node_modules/race-signal/dist/src/index.js
 function defaultTranslate(signal) {
   return signal.reason;
 }
@@ -10764,7 +10792,7 @@ async function raceSignal(promise, signal, opts) {
 }
 __name(raceSignal, "raceSignal");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/queue/recipient.js
+// node_modules/@libp2p/utils/dist/src/queue/recipient.js
 var JobRecipient = class {
   static {
     __name(this, "JobRecipient");
@@ -10778,14 +10806,14 @@ var JobRecipient = class {
     this.signal?.addEventListener("abort", this.onAbort);
   }
   onAbort() {
-    this.deferred.reject(this.signal?.reason ?? new AbortError());
+    this.deferred.reject(this.signal?.reason ?? new AbortError2());
   }
   cleanup() {
     this.signal?.removeEventListener("abort", this.onAbort);
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/queue/job.js
+// node_modules/@libp2p/utils/dist/src/queue/job.js
 function randomId() {
   return `${parseInt(String(Math.random() * 1e9), 10).toString()}${Date.now()}`;
 }
@@ -10822,7 +10850,7 @@ var Job = class {
       return acc && curr.signal?.aborted === true;
     }, true);
     if (allAborted) {
-      this.controller.abort(new AbortError());
+      this.controller.abort(new AbortError2());
       this.cleanup();
     }
   }
@@ -10863,7 +10891,7 @@ var Job = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/queue/index.js
+// node_modules/@libp2p/utils/dist/src/queue/index.js
 var Queue = class extends TypedEventEmitter {
   static {
     __name(this, "Queue");
@@ -11003,7 +11031,7 @@ var Queue = class extends TypedEventEmitter {
    */
   abort() {
     this.queue.forEach((job) => {
-      job.abort(new AbortError());
+      job.abort(new AbortError2());
     });
     this.clear();
   }
@@ -11105,7 +11133,7 @@ var Queue = class extends TypedEventEmitter {
       cleanup();
     }, "onQueueIdle");
     const onSignalAbort = /* @__PURE__ */ __name(() => {
-      cleanup(new AbortError("Queue aborted"));
+      cleanup(new AbortError2("Queue aborted"));
     }, "onSignalAbort");
     this.addEventListener("completed", onQueueJobComplete);
     this.addEventListener("failure", onQueueFailure);
@@ -11158,7 +11186,7 @@ function anySignal(signals) {
 }
 __name(anySignal, "anySignal");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/moving-average.js
+// node_modules/@libp2p/utils/dist/src/moving-average.js
 var MovingAverage = class {
   static {
     __name(this, "MovingAverage");
@@ -11195,7 +11223,7 @@ var MovingAverage = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/adaptive-timeout.js
+// node_modules/@libp2p/utils/dist/src/adaptive-timeout.js
 var DEFAULT_TIMEOUT_MULTIPLIER = 1.2;
 var DEFAULT_FAILURE_MULTIPLIER = 2;
 var DEFAULT_MIN_TIMEOUT = 5e3;
@@ -11267,7 +11295,7 @@ var AdaptiveTimeout = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/errors.js
+// node_modules/@multiformats/multiaddr/dist/src/errors.js
 var InvalidMultiaddrError2 = class extends Error {
   static name = "InvalidMultiaddrError";
   name = "InvalidMultiaddrError";
@@ -11276,7 +11304,7 @@ var ValidationError = class extends Error {
   static name = "ValidationError";
   name = "ValidationError";
 };
-var InvalidParametersError3 = class extends Error {
+var InvalidParametersError5 = class extends Error {
   static name = "InvalidParametersError";
   name = "InvalidParametersError";
 };
@@ -11285,7 +11313,7 @@ var UnknownProtocolError = class extends Error {
   name = "UnknownProtocolError";
 };
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/constants.js
+// node_modules/@multiformats/multiaddr/dist/src/constants.js
 var CODE_IP4 = 4;
 var CODE_TCP = 6;
 var CODE_UDP = 273;
@@ -11327,7 +11355,7 @@ var CODE_WEBRTC = 281;
 var CODE_P2P_CIRCUIT = 290;
 var CODE_MEMORY = 777;
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/utils.js
+// node_modules/@multiformats/multiaddr/dist/src/utils.js
 function bytesToString(base3) {
   return (buf) => {
     return toString2(buf, base3);
@@ -11508,7 +11536,7 @@ function bytes2mb(base3) {
 }
 __name(bytes2mb, "bytes2mb");
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/validation.js
+// node_modules/@multiformats/multiaddr/dist/src/validation.js
 function integer(value2) {
   const int = parseInt(value2);
   if (int.toString() !== value2) {
@@ -11540,7 +11568,7 @@ function validate(...funcs) {
 __name(validate, "validate");
 var validatePort = validate(integer, positive, maxValue(65535));
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/registry.js
+// node_modules/@multiformats/multiaddr/dist/src/registry.js
 var V = -1;
 var Registry = class {
   static {
@@ -11774,7 +11802,7 @@ codecs.forEach((codec) => {
   registry.addProtocol(codec);
 });
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/components.js
+// node_modules/@multiformats/multiaddr/dist/src/components.js
 function bytesToComponents(bytes) {
   const components = [];
   let i2 = 0;
@@ -11925,7 +11953,7 @@ function sizeForAddr(codec, bytes, offset) {
 }
 __name(sizeForAddr, "sizeForAddr");
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/multiaddr.js
+// node_modules/@multiformats/multiaddr/dist/src/multiaddr.js
 var inspect2 = Symbol.for("nodejs.util.inspect.custom");
 var symbol2 = Symbol.for("@multiformats/multiaddr");
 function toComponents(addr) {
@@ -12001,7 +12029,7 @@ var Multiaddr = class _Multiaddr {
     const s2 = this.toString();
     const i2 = s2.lastIndexOf(addrString);
     if (i2 < 0) {
-      throw new InvalidParametersError3(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
+      throw new InvalidParametersError5(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
     }
     return new _Multiaddr(s2.slice(0, i2), {
       validate: false
@@ -12049,7 +12077,7 @@ function validate2(addr) {
 }
 __name(validate2, "validate");
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr/dist/src/index.js
+// node_modules/@multiformats/multiaddr/dist/src/index.js
 function isMultiaddr(value2) {
   return Boolean(value2?.[symbol2]);
 }
@@ -12060,7 +12088,7 @@ function multiaddr(addr) {
 __name(multiaddr, "multiaddr");
 
 // node_modules/race-signal/dist/src/index.js
-var AbortError4 = class extends Error {
+var AbortError5 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -12080,10 +12108,10 @@ async function raceSignal2(promise, signal, opts) {
   if (signal.aborted) {
     promise.catch(() => {
     });
-    return Promise.reject(new AbortError4(opts?.errorMessage, opts?.errorCode, opts?.errorName));
+    return Promise.reject(new AbortError5(opts?.errorMessage, opts?.errorCode, opts?.errorName));
   }
   let listener;
-  const error = new AbortError4(opts?.errorMessage, opts?.errorCode, opts?.errorName);
+  const error = new AbortError5(opts?.errorMessage, opts?.errorCode, opts?.errorName);
   try {
     return await Promise.race([
       promise,
@@ -12102,7 +12130,7 @@ async function raceSignal2(promise, signal, opts) {
 }
 __name(raceSignal2, "raceSignal");
 
-// node_modules/it-merge/node_modules/it-queueless-pushable/dist/src/index.js
+// node_modules/it-queueless-pushable/dist/src/index.js
 var QueuelessPushable = class {
   static {
     __name(this, "QueuelessPushable");
@@ -12249,11 +12277,32 @@ function merge(...sources) {
 __name(merge, "merge");
 var src_default2 = merge;
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/stream-utils.js
+// node_modules/@libp2p/utils/dist/src/stream-utils.js
 var DEFAULT_MAX_BUFFER_SIZE = 4194304;
 var UnwrappedError = class extends Error {
   static name = "UnwrappedError";
   name = "UnwrappedError";
+};
+var InvalidMessageLengthError = class extends Error {
+  static {
+    __name(this, "InvalidMessageLengthError");
+  }
+  name = "InvalidMessageLengthError";
+  code = "ERR_INVALID_MSG_LENGTH";
+};
+var InvalidDataLengthError = class extends Error {
+  static {
+    __name(this, "InvalidDataLengthError");
+  }
+  name = "InvalidDataLengthError";
+  code = "ERR_MSG_DATA_TOO_LONG";
+};
+var InvalidDataLengthLengthError = class extends Error {
+  static {
+    __name(this, "InvalidDataLengthLengthError");
+  }
+  name = "InvalidDataLengthLengthError";
+  code = "ERR_MSG_LENGTH_TOO_LONG";
 };
 function isStream(obj) {
   return typeof obj?.closeRead === "function";
@@ -12283,7 +12332,7 @@ function byteStream(stream, opts) {
   let hasBytes;
   let unwrapped = false;
   if (!isValid(stream)) {
-    throw new InvalidParametersError2("Argument should be a Stream or a Multiaddr");
+    throw new InvalidParametersError4("Argument should be a Stream or a Multiaddr");
   }
   const byteStreamOnMessageListener = /* @__PURE__ */ __name((evt) => {
     readBuffer.append(evt.data);
@@ -12307,7 +12356,7 @@ function byteStream(stream, opts) {
     hasBytes?.resolve();
   }, "byteStreamOnRemoteCloseWrite");
   stream.addEventListener("remoteCloseWrite", byteStreamOnRemoteCloseWrite);
-  const byteStream3 = {
+  const byteStream2 = {
     readBuffer,
     // @ts-expect-error options type prevents type inference
     async read(options) {
@@ -12345,7 +12394,7 @@ function byteStream(stream, opts) {
           stream.log.error("closed while reading %d/%d bytes", readBuffer.byteLength, toRead);
           throw new UnexpectedEOFError(`Unexpected EOF - stream closed while reading ${readBuffer.byteLength}/${toRead} bytes`);
         }
-        return byteStream3.read(options);
+        return byteStream2.read(options);
       }
       const output = readBuffer.sublist(0, toRead);
       readBuffer.consume(toRead);
@@ -12377,11 +12426,80 @@ function byteStream(stream, opts) {
       return stream;
     }
   };
-  return byteStream3;
+  return byteStream2;
 }
 __name(byteStream, "byteStream");
+function lpStream(stream, opts = {}) {
+  const bytes = byteStream(stream, opts);
+  if (opts.maxDataLength != null && opts.maxLengthLength == null) {
+    opts.maxLengthLength = encodingLength2(opts.maxDataLength);
+  }
+  const decodeLength = opts?.lengthDecoder ?? decode6;
+  const encodeLength2 = opts?.lengthEncoder ?? encode5;
+  const lpStream2 = {
+    async read(options) {
+      let dataLength = -1;
+      const lengthBuffer = new Uint8ArrayList();
+      while (true) {
+        const buf2 = await bytes.read({
+          ...options,
+          bytes: 1
+        });
+        if (buf2 == null) {
+          break;
+        }
+        lengthBuffer.append(buf2);
+        try {
+          dataLength = decodeLength(lengthBuffer);
+        } catch (err) {
+          if (err instanceof RangeError) {
+            continue;
+          }
+          throw err;
+        }
+        if (dataLength < 0) {
+          throw new InvalidMessageLengthError("Invalid message length");
+        }
+        if (opts?.maxLengthLength != null && lengthBuffer.byteLength > opts.maxLengthLength) {
+          throw new InvalidDataLengthLengthError(`Message length length too long - ${lengthBuffer.byteLength} > ${opts.maxLengthLength}`);
+        }
+        if (dataLength > -1) {
+          break;
+        }
+      }
+      if (opts?.maxDataLength != null && dataLength > opts.maxDataLength) {
+        throw new InvalidDataLengthError(`Message length too long - ${dataLength} > ${opts.maxDataLength}`);
+      }
+      const buf = await bytes.read({
+        ...options,
+        bytes: dataLength
+      });
+      if (buf == null) {
+        stream.log.error("tried to read %d bytes but the stream closed", dataLength);
+        throw new UnexpectedEOFError(`Unexpected EOF - tried to read ${dataLength} bytes but the stream closed`);
+      }
+      if (buf.byteLength !== dataLength) {
+        stream.log.error("read %d/%d bytes before the stream closed", buf.byteLength, dataLength);
+        throw new UnexpectedEOFError(`Unexpected EOF - read ${buf.byteLength}/${dataLength} bytes before the stream closed`);
+      }
+      return buf;
+    },
+    async write(data, options) {
+      await bytes.write(new Uint8ArrayList(encodeLength2(data.byteLength), data), options);
+    },
+    async writeV(data, options) {
+      const list = new Uint8ArrayList(...data.flatMap((buf) => [encodeLength2(buf.byteLength), buf]));
+      await bytes.write(list, options);
+    },
+    unwrap() {
+      return bytes.unwrap();
+    }
+  };
+  return lpStream2;
+}
+__name(lpStream, "lpStream");
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/peer-queue.js
+// node_modules/@libp2p/utils/dist/src/peer-queue.js
 var PeerQueue = class extends Queue {
   static {
     __name(this, "PeerQueue");
@@ -12396,7 +12514,7 @@ var PeerQueue = class extends Queue {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/priority-queue.js
+// node_modules/@libp2p/utils/dist/src/priority-queue.js
 var PriorityQueue = class extends Queue {
   static {
     __name(this, "PriorityQueue");
@@ -12417,7 +12535,7 @@ var PriorityQueue = class extends Queue {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/rate-limiter.js
+// node_modules/@libp2p/utils/dist/src/rate-limiter.js
 var RateLimiter = class {
   static {
     __name(this, "RateLimiter");
@@ -12587,7 +12705,7 @@ var MemoryStorage = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/utils/dist/src/tracked-map.js
+// node_modules/@libp2p/utils/dist/src/tracked-map.js
 var TrackedMap = class extends Map {
   static {
     __name(this, "TrackedMap");
@@ -12629,7 +12747,7 @@ function trackedMap(config) {
 }
 __name(trackedMap, "trackedMap");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-collections/dist/src/tracked-map.js
+// node_modules/@libp2p/peer-collections/dist/src/tracked-map.js
 var TrackedPeerMap = class extends PeerMap {
   static {
     __name(this, "TrackedPeerMap");
@@ -12671,7 +12789,30 @@ function trackedPeerMap(config) {
 }
 __name(trackedPeerMap, "trackedPeerMap");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/envelope/envelope.js
+// node_modules/@libp2p/peer-store/node_modules/@libp2p/interface/dist/src/errors.js
+var InvalidParametersError6 = class extends Error {
+  static name = "InvalidParametersError";
+  constructor(message2 = "Invalid parameters") {
+    super(message2);
+    this.name = "InvalidParametersError";
+  }
+};
+var NotFoundError2 = class extends Error {
+  static name = "NotFoundError";
+  constructor(message2 = "Not found") {
+    super(message2);
+    this.name = "NotFoundError";
+  }
+};
+
+// node_modules/@libp2p/peer-store/node_modules/@libp2p/interface/dist/src/peer-id.js
+var peerIdSymbol3 = Symbol.for("@libp2p/peer-id");
+function isPeerId2(other) {
+  return Boolean(other?.[peerIdSymbol3]);
+}
+__name(isPeerId2, "isPeerId");
+
+// node_modules/@libp2p/peer-record/dist/src/envelope/envelope.js
 var Envelope;
 (function(Envelope2) {
   let _codec;
@@ -12746,7 +12887,7 @@ var Envelope;
   };
 })(Envelope || (Envelope = {}));
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/envelope/errors.js
+// node_modules/@libp2p/peer-record/dist/src/envelope/errors.js
 var InvalidSignatureError = class extends Error {
   static {
     __name(this, "InvalidSignatureError");
@@ -12757,7 +12898,7 @@ var InvalidSignatureError = class extends Error {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/envelope/index.js
+// node_modules/@libp2p/peer-record/dist/src/envelope/index.js
 var RecordEnvelope = class _RecordEnvelope {
   static {
     __name(this, "RecordEnvelope");
@@ -12862,11 +13003,11 @@ var formatSignaturePayload = /* @__PURE__ */ __name((domain, payloadType, payloa
   return new Uint8ArrayList(domainLength, domainUint8Array, payloadTypeLength, payloadType, payloadLength, payload);
 }, "formatSignaturePayload");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/peer-record/consts.js
+// node_modules/@libp2p/peer-record/dist/src/peer-record/consts.js
 var ENVELOPE_DOMAIN_PEER_RECORD = "libp2p-peer-record";
 var ENVELOPE_PAYLOAD_TYPE_PEER_RECORD = Uint8Array.from([3, 1]);
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/peer-record/peer-record.js
+// node_modules/@libp2p/peer-record/dist/src/peer-record/peer-record.js
 var PeerRecord;
 (function(PeerRecord3) {
   let AddressInfo;
@@ -12985,7 +13126,7 @@ var PeerRecord;
   };
 })(PeerRecord || (PeerRecord = {}));
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/peer-record/utils.js
+// node_modules/@libp2p/peer-record/dist/src/peer-record/utils.js
 function arrayEquals(a2, b) {
   const sort2 = /* @__PURE__ */ __name((a3, b2) => a3.toString().localeCompare(b2.toString()), "sort");
   if (a2.length !== b.length) {
@@ -12996,7 +13137,7 @@ function arrayEquals(a2, b) {
 }
 __name(arrayEquals, "arrayEquals");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-record/dist/src/peer-record/index.js
+// node_modules/@libp2p/peer-record/dist/src/peer-record/index.js
 var PeerRecord2 = class _PeerRecord {
   static {
     __name(this, "PeerRecord");
@@ -13085,7 +13226,7 @@ __name(all, "all");
 var src_default3 = all;
 
 // node_modules/abort-error/dist/src/index.js
-var AbortError5 = class extends Error {
+var AbortError6 = class extends Error {
   static name = "AbortError";
   name = "AbortError";
   constructor(message2 = "The operation was aborted", ...rest) {
@@ -13095,7 +13236,7 @@ var AbortError5 = class extends Error {
 
 // node_modules/race-event/dist/src/index.js
 async function raceEvent(emitter, eventName, signal, opts) {
-  const error = new AbortError5(opts?.errorMessage);
+  const error = new AbortError6(opts?.errorMessage);
   if (opts?.errorCode != null) {
     error.code = opts.errorCode;
   }
@@ -13191,7 +13332,7 @@ var JobRecipient2 = class {
     this.signal?.addEventListener("abort", this.onAbort);
   }
   onAbort() {
-    this.deferred.reject(this.signal?.reason ?? new AbortError5());
+    this.deferred.reject(this.signal?.reason ?? new AbortError6());
   }
   cleanup() {
     this.signal?.removeEventListener("abort", this.onAbort);
@@ -13235,7 +13376,7 @@ var Job2 = class {
       return acc && curr.signal?.aborted === true;
     }, true);
     if (allAborted) {
-      this.controller.abort(new AbortError5());
+      this.controller.abort(new AbortError6());
       this.cleanup();
     }
   }
@@ -13435,7 +13576,7 @@ var Queue2 = class extends TypedEventEmitter {
    */
   abort() {
     this.queue.forEach((job) => {
-      job.abort(new AbortError5());
+      job.abort(new AbortError6());
     });
     this.clear();
   }
@@ -13536,7 +13677,7 @@ var Queue2 = class extends TypedEventEmitter {
       cleanup();
     }, "onQueueIdle");
     const onSignalAbort = /* @__PURE__ */ __name(() => {
-      cleanup(new AbortError5("Queue aborted"));
+      cleanup(new AbortError6("Queue aborted"));
     }, "onSignalAbort");
     this.addEventListener("success", onQueueJobComplete);
     this.addEventListener("failure", onQueueError);
@@ -13825,7 +13966,7 @@ async function createReleasable(queue, options) {
     rej = reject;
   });
   const listener = /* @__PURE__ */ __name(() => {
-    rej(new AbortError5());
+    rej(new AbortError6());
   }, "listener");
   options?.signal?.addEventListener("abort", listener, {
     once: true
@@ -13914,11 +14055,11 @@ function createMortice(options) {
 }
 __name(createMortice, "createMortice");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/constants.js
+// node_modules/@libp2p/peer-store/dist/src/constants.js
 var MAX_ADDRESS_AGE = 36e5;
 var MAX_PEER_AGE = 216e5;
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/pb/peer.js
+// node_modules/@libp2p/peer-store/dist/src/pb/peer.js
 var Peer;
 (function(Peer2) {
   let Peer$metadataEntry;
@@ -14272,7 +14413,7 @@ var Tag;
   };
 })(Tag || (Tag = {}));
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/utils/bytes-to-peer.js
+// node_modules/@libp2p/peer-store/dist/src/utils/bytes-to-peer.js
 function populatePublicKey(peerId, protobuf) {
   if (peerId.publicKey != null || protobuf.publicKey == null) {
     return peerId;
@@ -14315,7 +14456,7 @@ function pbToPeer(peerId, peer, maxAddressAge) {
 }
 __name(pbToPeer, "pbToPeer");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/utils/peer-equals.js
+// node_modules/@libp2p/peer-store/dist/src/utils/peer-equals.js
 function peerEquals(peerA, peerB) {
   return addressesEqual(peerA.addresses, peerB.addresses) && protocolsEqual(peerA.protocols, peerB.protocols) && publicKeyEqual(peerA.publicKey, peerB.publicKey) && peerRecordEnvelope(peerA.peerRecordEnvelope, peerB.peerRecordEnvelope) && metadataEqual(peerA.metadata, peerB.metadata) && tagsEqual(peerA.tags, peerB.tags);
 }
@@ -14391,7 +14532,7 @@ function compareMaps(mapA, mapB, compare) {
 }
 __name(compareMaps, "compareMaps");
 
-// node_modules/libp2p/node_modules/interface-datastore/dist/src/key.js
+// node_modules/@libp2p/peer-store/node_modules/interface-datastore/dist/src/key.js
 var pathSepS = "/";
 var pathSepB = new TextEncoder().encode(pathSepS);
 var pathSep = pathSepB[0];
@@ -14753,18 +14894,18 @@ function flatten(arr) {
 }
 __name(flatten, "flatten");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/utils/peer-id-to-datastore-key.js
+// node_modules/@libp2p/peer-store/dist/src/utils/peer-id-to-datastore-key.js
 var NAMESPACE_COMMON = "/peers/";
 function peerIdToDatastoreKey(peerId) {
-  if (!isPeerId(peerId) || peerId.type == null) {
-    throw new InvalidParametersError2("Invalid PeerId");
+  if (!isPeerId2(peerId) || peerId.type == null) {
+    throw new InvalidParametersError6("Invalid PeerId");
   }
   const b32key = peerId.toCID().toString();
   return new Key(`${NAMESPACE_COMMON}${b32key}`);
 }
 __name(peerIdToDatastoreKey, "peerIdToDatastoreKey");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/utils/dedupe-addresses.js
+// node_modules/@libp2p/peer-store/dist/src/utils/dedupe-addresses.js
 async function dedupeFilterAndSortAddresses(peerId, filter2, addresses, existingAddresses, options) {
   const addressMap = /* @__PURE__ */ new Map();
   for (const addr of addresses) {
@@ -14775,7 +14916,7 @@ async function dedupeFilterAndSortAddresses(peerId, filter2, addresses, existing
       addr.multiaddr = multiaddr(addr.multiaddr);
     }
     if (!isMultiaddr(addr.multiaddr)) {
-      throw new InvalidParametersError2("Multiaddr was invalid");
+      throw new InvalidParametersError6("Multiaddr was invalid");
     }
     if (!await filter2(peerId, addr.multiaddr, options)) {
       continue;
@@ -14807,17 +14948,17 @@ async function dedupeFilterAndSortAddresses(peerId, filter2, addresses, existing
 }
 __name(dedupeFilterAndSortAddresses, "dedupeFilterAndSortAddresses");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/utils/to-peer-pb.js
+// node_modules/@libp2p/peer-store/dist/src/utils/to-peer-pb.js
 async function toPeerPB(peerId, data, strategy, options) {
   if (data == null) {
-    throw new InvalidParametersError2("Invalid PeerData");
+    throw new InvalidParametersError6("Invalid PeerData");
   }
   if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
-    throw new InvalidParametersError2("publicKey bytes do not match peer id publicKey bytes");
+    throw new InvalidParametersError6("publicKey bytes do not match peer id publicKey bytes");
   }
   const existingPeer = options.existingPeer?.peer;
   if (existingPeer != null && !peerId.equals(existingPeer.id)) {
-    throw new InvalidParametersError2("peer id did not match existing peer id");
+    throw new InvalidParametersError6("peer id did not match existing peer id");
   }
   let addresses = existingPeer?.addresses ?? [];
   let protocols = new Set(existingPeer?.protocols ?? []);
@@ -14949,31 +15090,31 @@ function createSortedMap(entries, options) {
 __name(createSortedMap, "createSortedMap");
 function validateMetadata(key, value2) {
   if (typeof key !== "string") {
-    throw new InvalidParametersError2("Metadata key must be a string");
+    throw new InvalidParametersError6("Metadata key must be a string");
   }
   if (!(value2 instanceof Uint8Array)) {
-    throw new InvalidParametersError2("Metadata value must be a Uint8Array");
+    throw new InvalidParametersError6("Metadata value must be a Uint8Array");
   }
 }
 __name(validateMetadata, "validateMetadata");
 function validateTag(key, tag) {
   if (typeof key !== "string") {
-    throw new InvalidParametersError2("Tag name must be a string");
+    throw new InvalidParametersError6("Tag name must be a string");
   }
   if (tag.value != null) {
     if (parseInt(`${tag.value}`, 10) !== tag.value) {
-      throw new InvalidParametersError2("Tag value must be an integer");
+      throw new InvalidParametersError6("Tag value must be an integer");
     }
     if (tag.value < 0 || tag.value > 100) {
-      throw new InvalidParametersError2("Tag value must be between 0-100");
+      throw new InvalidParametersError6("Tag value must be between 0-100");
     }
   }
   if (tag.ttl != null) {
     if (parseInt(`${tag.ttl}`, 10) !== tag.ttl) {
-      throw new InvalidParametersError2("Tag ttl must be an integer");
+      throw new InvalidParametersError6("Tag ttl must be an integer");
     }
     if (tag.ttl < 0) {
-      throw new InvalidParametersError2("Tag ttl must be between greater than 0");
+      throw new InvalidParametersError6("Tag ttl must be between greater than 0");
     }
   }
 }
@@ -14996,7 +15137,7 @@ function mapTag(key, tag) {
 }
 __name(mapTag, "mapTag");
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/store.js
+// node_modules/@libp2p/peer-store/dist/src/store.js
 function keyToPeerId(key) {
   const base32Str = key.toString().split("/")[2];
   const buf = CID.parse(base32Str, base32);
@@ -15114,7 +15255,7 @@ var PersistentStore = class {
     const peer = Peer.decode(buf);
     if (this.#peerIsExpired(peerId, peer)) {
       await this.datastore.delete(key, options);
-      throw new NotFoundError();
+      throw new NotFoundError2();
     }
     return pbToPeer(peerId, peer, this.peerId.equals(peerId) ? Infinity : this.maxAddressAge);
   }
@@ -15164,7 +15305,7 @@ var PersistentStore = class {
       const peerPB = Peer.decode(buf);
       if (this.#peerIsExpired(peerId, peerPB)) {
         await this.datastore.delete(key, options);
-        throw new NotFoundError();
+        throw new NotFoundError2();
       }
       return {
         peerPB,
@@ -15202,7 +15343,7 @@ var PersistentStore = class {
   }
 };
 
-// node_modules/libp2p/node_modules/@libp2p/peer-store/dist/src/index.js
+// node_modules/@libp2p/peer-store/dist/src/index.js
 var PersistentPeerStore = class {
   static {
     __name(this, "PersistentPeerStore");
@@ -15289,8 +15430,8 @@ var PersistentPeerStore = class {
     }
   }
   async consumePeerRecord(buf, arg1, arg2) {
-    const expectedPeer = isPeerId(arg1) ? arg1 : isPeerId(arg1?.expectedPeer) ? arg1.expectedPeer : void 0;
-    const options = isPeerId(arg1) ? arg2 : arg1 === void 0 ? arg2 : arg1;
+    const expectedPeer = isPeerId2(arg1) ? arg1 : isPeerId2(arg1?.expectedPeer) ? arg1.expectedPeer : void 0;
+    const options = isPeerId2(arg1) ? arg2 : arg1 === void 0 ? arg2 : arg1;
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord2.DOMAIN, options);
     const peerId = peerIdFromCID(envelope.publicKey.toCID());
     if (expectedPeer?.equals(peerId) === false) {
@@ -15339,8 +15480,370 @@ function persistentPeerStore(components, init = {}) {
 }
 __name(persistentPeerStore, "persistentPeerStore");
 
-// node_modules/libp2p/node_modules/interface-store/dist/src/errors.js
-var NotFoundError2 = class _NotFoundError extends Error {
+// node_modules/datastore-core/node_modules/interface-datastore/dist/src/key.js
+var pathSepS2 = "/";
+var pathSepB2 = new TextEncoder().encode(pathSepS2);
+var pathSep2 = pathSepB2[0];
+var Key2 = class _Key {
+  static {
+    __name(this, "Key");
+  }
+  _buf;
+  /**
+   * @param {string | Uint8Array} s
+   * @param {boolean} [clean]
+   */
+  constructor(s2, clean2) {
+    if (typeof s2 === "string") {
+      this._buf = fromString2(s2);
+    } else if (s2 instanceof Uint8Array) {
+      this._buf = s2;
+    } else {
+      throw new Error("Invalid key, should be String of Uint8Array");
+    }
+    if (clean2 == null) {
+      clean2 = true;
+    }
+    if (clean2) {
+      this.clean();
+    }
+    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep2) {
+      throw new Error("Invalid key");
+    }
+  }
+  /**
+   * Convert to the string representation
+   *
+   * @param {import('uint8arrays/to-string').SupportedEncodings} [encoding] - The encoding to use.
+   * @returns {string}
+   */
+  toString(encoding = "utf8") {
+    return toString2(this._buf, encoding);
+  }
+  /**
+   * Return the Uint8Array representation of the key
+   *
+   * @returns {Uint8Array}
+   */
+  uint8Array() {
+    return this._buf;
+  }
+  /**
+   * Return string representation of the key
+   *
+   * @returns {string}
+   */
+  get [Symbol.toStringTag]() {
+    return `Key(${this.toString()})`;
+  }
+  /**
+   * Constructs a key out of a namespace array.
+   *
+   * @param {Array<string>} list - The array of namespaces
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * Key.withNamespaces(['one', 'two'])
+   * // => Key('/one/two')
+   * ```
+   */
+  static withNamespaces(list) {
+    return new _Key(list.join(pathSepS2));
+  }
+  /**
+   * Returns a randomly (uuid) generated key.
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * Key.random()
+   * // => Key('/344502982398')
+   * ```
+   */
+  static random() {
+    return new _Key(Math.random().toString().substring(2));
+  }
+  /**
+   * @param {*} other
+   */
+  static asKey(other) {
+    if (other instanceof Uint8Array || typeof other === "string") {
+      return new _Key(other);
+    }
+    if (typeof other.uint8Array === "function") {
+      return new _Key(other.uint8Array());
+    }
+    return null;
+  }
+  /**
+   * Cleanup the current key
+   *
+   * @returns {void}
+   */
+  clean() {
+    if (this._buf == null || this._buf.byteLength === 0) {
+      this._buf = pathSepB2;
+    }
+    if (this._buf[0] !== pathSep2) {
+      const bytes = new Uint8Array(this._buf.byteLength + 1);
+      bytes.fill(pathSep2, 0, 1);
+      bytes.set(this._buf, 1);
+      this._buf = bytes;
+    }
+    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep2) {
+      this._buf = this._buf.subarray(0, -1);
+    }
+  }
+  /**
+   * Check if the given key is sorted lower than ourself.
+   *
+   * @param {Key} key - The other Key to check against
+   * @returns {boolean}
+   */
+  less(key) {
+    const list1 = this.list();
+    const list2 = key.list();
+    for (let i2 = 0; i2 < list1.length; i2++) {
+      if (list2.length < i2 + 1) {
+        return false;
+      }
+      const c1 = list1[i2];
+      const c2 = list2[i2];
+      if (c1 < c2) {
+        return true;
+      } else if (c1 > c2) {
+        return false;
+      }
+    }
+    return list1.length < list2.length;
+  }
+  /**
+   * Returns the key with all parts in reversed order.
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').reverse()
+   * // => Key('/Actor:JohnCleese/MontyPython/Comedy')
+   * ```
+   */
+  reverse() {
+    return _Key.withNamespaces(this.list().slice().reverse());
+  }
+  /**
+   * Returns the `namespaces` making up this Key.
+   *
+   * @returns {Array<string>}
+   */
+  namespaces() {
+    return this.list();
+  }
+  /**
+   * Returns the "base" namespace of this key.
+   *
+   * @returns {string}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').baseNamespace()
+   * // => 'Actor:JohnCleese'
+   * ```
+   */
+  baseNamespace() {
+    const ns = this.namespaces();
+    return ns[ns.length - 1];
+  }
+  /**
+   * Returns the `list` representation of this key.
+   *
+   * @returns {Array<string>}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').list()
+   * // => ['Comedy', 'MontyPythong', 'Actor:JohnCleese']
+   * ```
+   */
+  list() {
+    return this.toString().split(pathSepS2).slice(1);
+  }
+  /**
+   * Returns the "type" of this key (value of last namespace).
+   *
+   * @returns {string}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').type()
+   * // => 'Actor'
+   * ```
+   */
+  type() {
+    return namespaceType2(this.baseNamespace());
+  }
+  /**
+   * Returns the "name" of this key (field of last namespace).
+   *
+   * @returns {string}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').name()
+   * // => 'JohnCleese'
+   * ```
+   */
+  name() {
+    return namespaceValue2(this.baseNamespace());
+  }
+  /**
+   * Returns an "instance" of this type key (appends value to namespace).
+   *
+   * @param {string} s - The string to append.
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor').instance('JohnClesse')
+   * // => Key('/Comedy/MontyPython/Actor:JohnCleese')
+   * ```
+   */
+  instance(s2) {
+    return new _Key(this.toString() + ":" + s2);
+  }
+  /**
+   * Returns the "path" of this key (parent + type).
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').path()
+   * // => Key('/Comedy/MontyPython/Actor')
+   * ```
+   */
+  path() {
+    let p2 = this.parent().toString();
+    if (!p2.endsWith(pathSepS2)) {
+      p2 += pathSepS2;
+    }
+    p2 += this.type();
+    return new _Key(p2);
+  }
+  /**
+   * Returns the `parent` Key of this Key.
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key("/Comedy/MontyPython/Actor:JohnCleese").parent()
+   * // => Key("/Comedy/MontyPython")
+   * ```
+   */
+  parent() {
+    const list = this.list();
+    if (list.length === 1) {
+      return new _Key(pathSepS2);
+    }
+    return new _Key(list.slice(0, -1).join(pathSepS2));
+  }
+  /**
+   * Returns the `child` Key of this Key.
+   *
+   * @param {Key} key - The child Key to add
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython').child(new Key('Actor:JohnCleese'))
+   * // => Key('/Comedy/MontyPython/Actor:JohnCleese')
+   * ```
+   */
+  child(key) {
+    if (this.toString() === pathSepS2) {
+      return key;
+    } else if (key.toString() === pathSepS2) {
+      return this;
+    }
+    return new _Key(this.toString() + key.toString(), false);
+  }
+  /**
+   * Returns whether this key is a prefix of `other`
+   *
+   * @param {Key} other - The other key to test against
+   * @returns {boolean}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy').isAncestorOf('/Comedy/MontyPython')
+   * // => true
+   * ```
+   */
+  isAncestorOf(other) {
+    if (other.toString() === this.toString()) {
+      return false;
+    }
+    return other.toString().startsWith(this.toString());
+  }
+  /**
+   * Returns whether this key is a contains another as prefix.
+   *
+   * @param {Key} other - The other Key to test against
+   * @returns {boolean}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython').isDecendantOf('/Comedy')
+   * // => true
+   * ```
+   */
+  isDecendantOf(other) {
+    if (other.toString() === this.toString()) {
+      return false;
+    }
+    return this.toString().startsWith(other.toString());
+  }
+  /**
+   * Checks if this key has only one namespace.
+   *
+   * @returns {boolean}
+   */
+  isTopLevel() {
+    return this.list().length === 1;
+  }
+  /**
+   * Concats one or more Keys into one new Key.
+   *
+   * @param {Array<Key>} keys - The array of keys to concatenate
+   * @returns {Key}
+   */
+  concat(...keys) {
+    return _Key.withNamespaces([...this.namespaces(), ...flatten2(keys.map((key) => key.namespaces()))]);
+  }
+};
+function namespaceType2(ns) {
+  const parts = ns.split(":");
+  if (parts.length < 2) {
+    return "";
+  }
+  return parts.slice(0, -1).join(":");
+}
+__name(namespaceType2, "namespaceType");
+function namespaceValue2(ns) {
+  const parts = ns.split(":");
+  return parts[parts.length - 1];
+}
+__name(namespaceValue2, "namespaceValue");
+function flatten2(arr) {
+  return [].concat(...arr);
+}
+__name(flatten2, "flatten");
+
+// node_modules/datastore-core/node_modules/interface-store/dist/src/errors.js
+var NotFoundError3 = class _NotFoundError extends Error {
   static name = "NotFoundError";
   static code = "ERR_NOT_FOUND";
   name = _NotFoundError.name;
@@ -15505,7 +16008,7 @@ function take(source, limit) {
 __name(take, "take");
 var src_default8 = take;
 
-// node_modules/libp2p/node_modules/datastore-core/dist/src/base.js
+// node_modules/datastore-core/dist/src/base.js
 var BaseDatastore = class {
   static {
     __name(this, "BaseDatastore");
@@ -15620,7 +16123,7 @@ var BaseDatastore = class {
   }
 };
 
-// node_modules/libp2p/node_modules/datastore-core/dist/src/memory.js
+// node_modules/datastore-core/dist/src/memory.js
 var MemoryDatastore = class extends BaseDatastore {
   static {
     __name(this, "MemoryDatastore");
@@ -15639,7 +16142,7 @@ var MemoryDatastore = class extends BaseDatastore {
     options?.signal?.throwIfAborted();
     const result = this.data.get(key.toString());
     if (result == null) {
-      throw new NotFoundError2();
+      throw new NotFoundError3();
     }
     return result;
   }
@@ -15654,20 +16157,20 @@ var MemoryDatastore = class extends BaseDatastore {
   *_all(q, options) {
     options?.signal?.throwIfAborted();
     for (const [key, value2] of this.data.entries()) {
-      yield { key: new Key(key), value: value2 };
+      yield { key: new Key2(key), value: value2 };
       options?.signal?.throwIfAborted();
     }
   }
   *_allKeys(q, options) {
     options?.signal?.throwIfAborted();
     for (const key of this.data.keys()) {
-      yield new Key(key);
+      yield new Key2(key);
       options?.signal?.throwIfAborted();
     }
   }
 };
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr-matcher/dist/src/utils.js
+// node_modules/@multiformats/multiaddr-matcher/dist/src/utils.js
 var code2 = /* @__PURE__ */ __name((code3) => {
   return {
     match: /* @__PURE__ */ __name((vals) => {
@@ -15795,7 +16298,7 @@ function fmt(...matchers) {
 }
 __name(fmt, "fmt");
 
-// node_modules/libp2p/node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
+// node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
 var _PEER_ID = value(CODE_P2P);
 var PEER_ID = fmt(_PEER_ID);
 var _DNS4 = value(CODE_DNS4);
@@ -16957,12 +17460,12 @@ function getPeerAddress(peer) {
       const maPeerIdStr = ma.getComponents().findLast((c2) => c2.code === CODE_P2P)?.value;
       if (maPeerIdStr == null) {
         if (peerId != null) {
-          throw new InvalidParametersError2("Multiaddrs must all have the same peer id or have no peer id");
+          throw new InvalidParametersError3("Multiaddrs must all have the same peer id or have no peer id");
         }
       } else {
         const maPeerId = peerIdFromString(maPeerIdStr);
         if (peerId?.equals(maPeerId) !== true) {
-          throw new InvalidParametersError2("Multiaddrs must all have the same peer id or have no peer id");
+          throw new InvalidParametersError3("Multiaddrs must all have the same peer id or have no peer id");
         }
       }
     });
@@ -17005,7 +17508,7 @@ function multiaddrToIpNet(ma) {
   const config = getNetConfig(ma);
   let mask = config.cidr;
   if (config.type !== "ip4" && config.type !== "ip6") {
-    throw new InvalidParametersError2(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
+    throw new InvalidParametersError3(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
   }
   if (mask == null) {
     switch (config.type) {
@@ -17018,7 +17521,7 @@ function multiaddrToIpNet(ma) {
         break;
       }
       default: {
-        throw new InvalidParametersError2(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
+        throw new InvalidParametersError3(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
       }
     }
   }
@@ -18373,8 +18876,8 @@ var errorMessages = /* @__PURE__ */ new Set([
   // Cloudflare Workers (fetch)
 ]);
 function isNetworkError(error) {
-  const isValid3 = error && isError(error) && error.name === "TypeError" && typeof error.message === "string";
-  if (!isValid3) {
+  const isValid2 = error && isError(error) && error.name === "TypeError" && typeof error.message === "string";
+  if (!isValid2) {
     return false;
   }
   const { message: message2, stack } = error;
@@ -18417,7 +18920,7 @@ function validateNumberOption(name3, value2, { min = 0, allowInfinity = false } 
   }
 }
 __name(validateNumberOption, "validateNumberOption");
-var AbortError6 = class extends Error {
+var AbortError7 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -18451,7 +18954,7 @@ function calculateRemainingTime(start2, max) {
 __name(calculateRemainingTime, "calculateRemainingTime");
 async function onAttemptFailure({ error, attemptNumber, retriesConsumed, startTime, options }) {
   const normalizedError = error instanceof Error ? error : new TypeError(`Non-error was thrown: "${error}". You should only throw errors.`);
-  if (normalizedError instanceof AbortError6) {
+  if (normalizedError instanceof AbortError7) {
     throw normalizedError.originalError;
   }
   const retriesLeft = Number.isFinite(options.retries) ? Math.max(0, options.retries - retriesConsumed) : options.retries;
@@ -18707,7 +19210,7 @@ var DefaultConnectionManager = class {
   constructor(components, init = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions4.maxConnections;
     if (this.maxConnections < 1) {
-      throw new InvalidParametersError2("Connection Manager maxConnections must be greater than 0");
+      throw new InvalidParametersError3("Connection Manager maxConnections must be greater than 0");
     }
     this.connections = new PeerMap();
     this.started = false;
@@ -18859,7 +19362,7 @@ var DefaultConnectionManager = class {
   }
   setMaxConnections(maxConnections) {
     if (this.maxConnections < 1) {
-      throw new InvalidParametersError2("Connection Manager maxConnections must be greater than 0");
+      throw new InvalidParametersError3("Connection Manager maxConnections must be greater than 0");
     }
     let needsPrune = false;
     if (maxConnections < this.maxConnections) {
@@ -19527,6 +20030,40 @@ var DefaultPeerRouting = class {
   }
 };
 
+// node_modules/libp2p/node_modules/race-signal/dist/src/index.js
+function defaultTranslate2(signal) {
+  return signal.reason;
+}
+__name(defaultTranslate2, "defaultTranslate");
+async function raceSignal3(promise, signal, opts) {
+  if (signal == null) {
+    return promise;
+  }
+  const translateError = opts?.translateError ?? defaultTranslate2;
+  if (signal.aborted) {
+    promise.catch(() => {
+    });
+    return Promise.reject(translateError(signal));
+  }
+  let listener;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((resolve, reject) => {
+        listener = /* @__PURE__ */ __name(() => {
+          reject(translateError(signal));
+        }, "listener");
+        signal.addEventListener("abort", listener);
+      })
+    ]);
+  } finally {
+    if (listener != null) {
+      signal.removeEventListener("abort", listener);
+    }
+  }
+}
+__name(raceSignal3, "raceSignal");
+
 // node_modules/libp2p/dist/src/random-walk.js
 var RandomWalk = class extends TypedEventEmitter {
   static {
@@ -19615,7 +20152,7 @@ var RandomWalk = class extends TypedEventEmitter {
             });
             if (this.walkers === 1 && this.needNext != null) {
               this.log("wait for need next");
-              await raceSignal(this.needNext.promise, signal);
+              await raceSignal3(this.needNext.promise, signal);
             }
             s2 = Date.now();
           }
@@ -19733,7 +20270,7 @@ var Registrar = class {
    */
   async register(protocol, topology) {
     if (topology == null) {
-      throw new InvalidParametersError2("invalid topology");
+      throw new InvalidParametersError3("invalid topology");
     }
     const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`;
     let topologies = this.topologies.get(protocol);
@@ -19884,10 +20421,10 @@ var DefaultTransportManager = class {
   add(transport) {
     const tag = transport[Symbol.toStringTag];
     if (tag == null) {
-      throw new InvalidParametersError2("Transport must have a valid tag");
+      throw new InvalidParametersError3("Transport must have a valid tag");
     }
     if (this.transports.has(tag)) {
-      throw new InvalidParametersError2(`There is already a transport with the tag ${tag}`);
+      throw new InvalidParametersError3(`There is already a transport with the tag ${tag}`);
     }
     this.log("adding transport %s", tag);
     this.transports.set(tag, transport);
@@ -20135,13 +20672,6 @@ var PROTOCOL_ID = "/multistream/1.0.0";
 var MAX_PROTOCOL_LENGTH = 1024;
 
 // node_modules/@libp2p/multistream-select/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidParametersError4 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
 var UnsupportedProtocolError = class extends Error {
   static name = "UnsupportedProtocolError";
   constructor(message2 = "Unsupported protocol error") {
@@ -20157,374 +20687,63 @@ var InvalidMessageError = class extends Error {
   }
 };
 
-// node_modules/@libp2p/multistream-select/node_modules/p-event/index.js
-var normalizeEmitter2 = /* @__PURE__ */ __name((emitter) => {
-  const addListener2 = emitter.addEventListener || emitter.on || emitter.addListener;
-  const removeListener2 = emitter.removeEventListener || emitter.off || emitter.removeListener;
-  if (!addListener2 || !removeListener2) {
-    throw new TypeError("Emitter is not compatible");
+// node_modules/@libp2p/multistream-select/dist/src/multistream.js
+var NewLine = fromString2("\n");
+async function readString(reader, options) {
+  const buf = await reader.read(options);
+  const arr = buf.subarray();
+  if (arr.byteLength === 0 || arr[arr.length - 1] !== NewLine[0]) {
+    throw new InvalidMessageError("Missing newline");
   }
-  return {
-    addListener: addListener2.bind(emitter),
-    removeListener: removeListener2.bind(emitter)
-  };
-}, "normalizeEmitter");
-function pEventMultiple2(emitter, event, options) {
-  let cancel;
-  const returnValue = new Promise((resolve, reject) => {
-    options = {
-      rejectionEvents: ["error"],
-      multiArgs: false,
-      rejectionMultiArgs: false,
-      resolveImmediately: false,
-      ...options
-    };
-    if (!(options.count >= 0 && (options.count === Number.POSITIVE_INFINITY || Number.isInteger(options.count)))) {
-      throw new TypeError("The `count` option should be at least 0 or more");
-    }
-    options.signal?.throwIfAborted();
-    const events = [event].flat();
-    const items = [];
-    const { addListener: addListener2, removeListener: removeListener2 } = normalizeEmitter2(emitter);
-    const onItem = /* @__PURE__ */ __name(async (...arguments_) => {
-      const value2 = options.multiArgs ? arguments_ : arguments_[0];
-      if (options.filter) {
-        try {
-          if (!await options.filter(value2)) {
-            return;
-          }
-        } catch (error) {
-          cancel();
-          reject(error);
-          return;
-        }
-      }
-      items.push(value2);
-      if (options.count === items.length) {
-        cancel();
-        resolve(items);
-      }
-    }, "onItem");
-    const rejectHandler = /* @__PURE__ */ __name((...arguments_) => {
-      cancel();
-      reject(options.rejectionMultiArgs ? arguments_ : arguments_[0]);
-    }, "rejectHandler");
-    cancel = /* @__PURE__ */ __name(() => {
-      for (const event2 of events) {
-        removeListener2(event2, onItem);
-      }
-      for (const rejectionEvent of options.rejectionEvents) {
-        if (!events.includes(rejectionEvent)) {
-          removeListener2(rejectionEvent, rejectHandler);
-        }
-      }
-    }, "cancel");
-    for (const event2 of events) {
-      addListener2(event2, onItem);
-    }
-    for (const rejectionEvent of options.rejectionEvents) {
-      if (!events.includes(rejectionEvent)) {
-        addListener2(rejectionEvent, rejectHandler);
-      }
-    }
-    if (options.signal) {
-      options.signal.addEventListener("abort", () => {
-        rejectHandler(options.signal.reason);
-      }, { once: true });
-    }
-    if (options.resolveImmediately) {
-      resolve(items);
-    }
-  });
-  returnValue.cancel = cancel;
-  if (typeof options.timeout === "number") {
-    const timeout = pTimeout(returnValue, { milliseconds: options.timeout });
-    timeout.cancel = () => {
-      cancel();
-      timeout.clear();
-    };
-    return timeout;
-  }
-  return returnValue;
+  return toString2(arr).trimEnd();
 }
-__name(pEventMultiple2, "pEventMultiple");
-function pEvent2(emitter, event, options) {
-  if (typeof options === "function") {
-    options = { filter: options };
+__name(readString, "readString");
+
+// node_modules/@libp2p/multistream-select/dist/src/select.js
+async function select(stream, protocols, options = {}) {
+  protocols = Array.isArray(protocols) ? [...protocols] : [protocols];
+  if (protocols.length === 0) {
+    throw new Error("At least one protocol must be specified");
   }
-  options = {
+  const log2 = stream.log.newScope("mss:select");
+  const lp = lpStream(stream, {
     ...options,
-    count: 1,
-    resolveImmediately: false
-  };
-  const arrayPromise = pEventMultiple2(emitter, event, options);
-  const promise = arrayPromise.then((array) => array[0]);
-  promise.cancel = arrayPromise.cancel;
-  return promise;
-}
-__name(pEvent2, "pEvent");
-
-// node_modules/@libp2p/multistream-select/node_modules/@libp2p/utils/dist/src/errors.js
-var UnexpectedEOFError2 = class extends Error {
-  static name = "UnexpectedEOFError";
-  name = "UnexpectedEOFError";
-};
-
-// node_modules/@libp2p/multistream-select/node_modules/race-signal/dist/src/index.js
-function defaultTranslate2(signal) {
-  return signal.reason;
-}
-__name(defaultTranslate2, "defaultTranslate");
-async function raceSignal3(promise, signal, opts) {
-  if (signal == null) {
-    return promise;
-  }
-  const translateError = opts?.translateError ?? defaultTranslate2;
-  if (signal.aborted) {
-    promise.catch(() => {
-    });
-    return Promise.reject(translateError(signal));
-  }
-  let listener;
-  try {
-    return await Promise.race([
-      promise,
-      new Promise((resolve, reject) => {
-        listener = /* @__PURE__ */ __name(() => {
-          reject(translateError(signal));
-        }, "listener");
-        signal.addEventListener("abort", listener);
-      })
-    ]);
-  } finally {
-    if (listener != null) {
-      signal.removeEventListener("abort", listener);
-    }
-  }
-}
-__name(raceSignal3, "raceSignal");
-
-// node_modules/@libp2p/multistream-select/node_modules/@libp2p/utils/dist/src/stream-utils.js
-var DEFAULT_MAX_BUFFER_SIZE2 = 4194304;
-var UnwrappedError2 = class extends Error {
-  static name = "UnwrappedError";
-  name = "UnwrappedError";
-};
-var InvalidMessageLengthError = class extends Error {
-  static {
-    __name(this, "InvalidMessageLengthError");
-  }
-  name = "InvalidMessageLengthError";
-  code = "ERR_INVALID_MSG_LENGTH";
-};
-var InvalidDataLengthError = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthError");
-  }
-  name = "InvalidDataLengthError";
-  code = "ERR_MSG_DATA_TOO_LONG";
-};
-var InvalidDataLengthLengthError = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthLengthError");
-  }
-  name = "InvalidDataLengthLengthError";
-  code = "ERR_MSG_LENGTH_TOO_LONG";
-};
-function isStream2(obj) {
-  return typeof obj?.closeRead === "function";
-}
-__name(isStream2, "isStream");
-function isMultiaddrConnection2(obj) {
-  return typeof obj?.close === "function";
-}
-__name(isMultiaddrConnection2, "isMultiaddrConnection");
-function isEOF2(obj) {
-  if (isStream2(obj)) {
-    return obj.remoteWriteStatus !== "writable" && obj.readBufferLength === 0;
-  }
-  if (isMultiaddrConnection2(obj)) {
-    return obj.status !== "open";
-  }
-  return false;
-}
-__name(isEOF2, "isEOF");
-function isValid2(obj) {
-  return obj?.addEventListener != null && obj?.removeEventListener != null && obj?.send != null && obj?.push != null && obj?.log != null;
-}
-__name(isValid2, "isValid");
-function byteStream2(stream, opts) {
-  const maxBufferSize = opts?.maxBufferSize ?? DEFAULT_MAX_BUFFER_SIZE2;
-  const readBuffer = new Uint8ArrayList();
-  let hasBytes;
-  let unwrapped = false;
-  if (!isValid2(stream)) {
-    throw new InvalidParametersError4("Argument should be a Stream or a Multiaddr");
-  }
-  const byteStreamOnMessageListener = /* @__PURE__ */ __name((evt) => {
-    readBuffer.append(evt.data);
-    if (readBuffer.byteLength > maxBufferSize) {
-      const readBufferSize = readBuffer.byteLength;
-      readBuffer.consume(readBuffer.byteLength);
-      hasBytes?.reject(new Error(`Read buffer overflow - ${readBufferSize} > ${maxBufferSize}`));
-    }
-    hasBytes?.resolve();
-  }, "byteStreamOnMessageListener");
-  stream.addEventListener("message", byteStreamOnMessageListener);
-  const byteStreamOnCloseListener = /* @__PURE__ */ __name((evt) => {
-    if (evt.error != null) {
-      hasBytes?.reject(evt.error);
+    maxDataLength: MAX_PROTOCOL_LENGTH
+  });
+  for (let i2 = 0; i2 < protocols.length; i2++) {
+    const protocol = protocols[i2];
+    let response;
+    if (i2 === 0) {
+      log2.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
+      const p1 = fromString2(`${PROTOCOL_ID}
+`);
+      const p2 = fromString2(`${protocol}
+`);
+      await lp.writeV([p1, p2], options);
+      log2.trace("reading multistream-select header");
+      response = await readString(lp, options);
+      log2.trace('read "%s"', response);
+      if (response !== PROTOCOL_ID) {
+        log2.error("did not read multistream-select header from response");
+        break;
+      }
     } else {
-      hasBytes?.resolve();
+      log2.trace('write "%s"', protocol);
+      await lp.write(fromString2(`${protocol}
+`), options);
     }
-  }, "byteStreamOnCloseListener");
-  stream.addEventListener("close", byteStreamOnCloseListener);
-  const byteStreamOnRemoteCloseWrite = /* @__PURE__ */ __name(() => {
-    hasBytes?.resolve();
-  }, "byteStreamOnRemoteCloseWrite");
-  stream.addEventListener("remoteCloseWrite", byteStreamOnRemoteCloseWrite);
-  const byteStream3 = {
-    readBuffer,
-    // @ts-expect-error options type prevents type inference
-    async read(options) {
-      if (unwrapped === true) {
-        throw new UnwrappedError2("Stream was unwrapped");
-      }
-      if (isEOF2(stream)) {
-        if (options?.bytes == null) {
-          return null;
-        }
-        if (readBuffer.byteLength < options.bytes) {
-          stream.log.error("closed after reading %d/%d bytes", readBuffer.byteLength, options.bytes);
-          throw new UnexpectedEOFError2(`Unexpected EOF - stream closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`);
-        }
-      }
-      const bytesToRead = options?.bytes ?? 1;
-      hasBytes = Promise.withResolvers();
-      while (true) {
-        if (readBuffer.byteLength >= bytesToRead) {
-          hasBytes.resolve();
-          break;
-        }
-        await raceSignal3(hasBytes.promise, options?.signal);
-        if (isEOF2(stream)) {
-          if (readBuffer.byteLength === 0 && options?.bytes == null) {
-            return null;
-          }
-          break;
-        }
-        hasBytes = Promise.withResolvers();
-      }
-      const toRead = options?.bytes ?? readBuffer.byteLength;
-      if (readBuffer.byteLength < toRead) {
-        if (isEOF2(stream)) {
-          stream.log.error("closed while reading %d/%d bytes", readBuffer.byteLength, toRead);
-          throw new UnexpectedEOFError2(`Unexpected EOF - stream closed while reading ${readBuffer.byteLength}/${toRead} bytes`);
-        }
-        return byteStream3.read(options);
-      }
-      const output = readBuffer.sublist(0, toRead);
-      readBuffer.consume(toRead);
-      return output;
-    },
-    async write(data, options) {
-      if (unwrapped === true) {
-        throw new UnwrappedError2("Stream was unwrapped");
-      }
-      if (!stream.send(data)) {
-        await pEvent2(stream, "drain", {
-          signal: options?.signal,
-          rejectionEvents: ["close"]
-        });
-      }
-    },
-    unwrap() {
-      if (unwrapped) {
-        return stream;
-      }
-      unwrapped = true;
-      stream.removeEventListener("message", byteStreamOnMessageListener);
-      stream.removeEventListener("close", byteStreamOnCloseListener);
-      stream.removeEventListener("remoteCloseWrite", byteStreamOnRemoteCloseWrite);
-      if (readBuffer.byteLength > 0) {
-        stream.log("stream unwrapped with %d unread bytes", readBuffer.byteLength);
-        stream.push(readBuffer);
-      }
-      return stream;
+    log2.trace("reading protocol response");
+    response = await readString(lp, options);
+    log2.trace('read "%s"', response);
+    if (response === protocol) {
+      log2.trace('selected "%s" after negotiation', response);
+      lp.unwrap();
+      return protocol;
     }
-  };
-  return byteStream3;
-}
-__name(byteStream2, "byteStream");
-function lpStream(stream, opts = {}) {
-  const bytes = byteStream2(stream, opts);
-  if (opts.maxDataLength != null && opts.maxLengthLength == null) {
-    opts.maxLengthLength = encodingLength2(opts.maxDataLength);
   }
-  const decodeLength = opts?.lengthDecoder ?? decode6;
-  const encodeLength2 = opts?.lengthEncoder ?? encode5;
-  const lpStream2 = {
-    async read(options) {
-      let dataLength = -1;
-      const lengthBuffer = new Uint8ArrayList();
-      while (true) {
-        const buf2 = await bytes.read({
-          ...options,
-          bytes: 1
-        });
-        if (buf2 == null) {
-          break;
-        }
-        lengthBuffer.append(buf2);
-        try {
-          dataLength = decodeLength(lengthBuffer);
-        } catch (err) {
-          if (err instanceof RangeError) {
-            continue;
-          }
-          throw err;
-        }
-        if (dataLength < 0) {
-          throw new InvalidMessageLengthError("Invalid message length");
-        }
-        if (opts?.maxLengthLength != null && lengthBuffer.byteLength > opts.maxLengthLength) {
-          throw new InvalidDataLengthLengthError(`Message length length too long - ${lengthBuffer.byteLength} > ${opts.maxLengthLength}`);
-        }
-        if (dataLength > -1) {
-          break;
-        }
-      }
-      if (opts?.maxDataLength != null && dataLength > opts.maxDataLength) {
-        throw new InvalidDataLengthError(`Message length too long - ${dataLength} > ${opts.maxDataLength}`);
-      }
-      const buf = await bytes.read({
-        ...options,
-        bytes: dataLength
-      });
-      if (buf == null) {
-        stream.log.error("tried to read %d bytes but the stream closed", dataLength);
-        throw new UnexpectedEOFError2(`Unexpected EOF - tried to read ${dataLength} bytes but the stream closed`);
-      }
-      if (buf.byteLength !== dataLength) {
-        stream.log.error("read %d/%d bytes before the stream closed", buf.byteLength, dataLength);
-        throw new UnexpectedEOFError2(`Unexpected EOF - read ${buf.byteLength}/${dataLength} bytes before the stream closed`);
-      }
-      return buf;
-    },
-    async write(data, options) {
-      await bytes.write(new Uint8ArrayList(encodeLength2(data.byteLength), data), options);
-    },
-    async writeV(data, options) {
-      const list = new Uint8ArrayList(...data.flatMap((buf) => [encodeLength2(buf.byteLength), buf]));
-      await bytes.write(list, options);
-    },
-    unwrap() {
-      return bytes.unwrap();
-    }
-  };
-  return lpStream2;
+  throw new UnsupportedProtocolError(`Protocol selection failed - could not negotiate ${protocols}`);
 }
-__name(lpStream, "lpStream");
+__name(select, "select");
 
 // node_modules/@libp2p/multistream-select/node_modules/it-length-prefixed/dist/src/constants.js
 var MAX_LENGTH_LENGTH = 8;
@@ -20552,7 +20771,7 @@ var InvalidDataLengthLengthError2 = class extends Error {
   name = "InvalidDataLengthLengthError";
   code = "ERR_MSG_LENGTH_TOO_LONG";
 };
-var UnexpectedEOFError3 = class extends Error {
+var UnexpectedEOFError2 = class extends Error {
   static {
     __name(this, "UnexpectedEOFError");
   }
@@ -20690,7 +20909,7 @@ function decode7(source, options) {
         yield* maybeYield();
       }
       if (buffer.byteLength > 0) {
-        throw new UnexpectedEOFError3("Unexpected end of input");
+        throw new UnexpectedEOFError2("Unexpected end of input");
       }
     })();
   }
@@ -20700,7 +20919,7 @@ function decode7(source, options) {
       yield* maybeYield();
     }
     if (buffer.byteLength > 0) {
-      throw new UnexpectedEOFError3("Unexpected end of input");
+      throw new UnexpectedEOFError2("Unexpected end of input");
     }
   })();
 }
@@ -20735,64 +20954,6 @@ decode7.fromReader = (reader, options) => {
     onLength
   });
 };
-
-// node_modules/@libp2p/multistream-select/dist/src/multistream.js
-var NewLine = fromString2("\n");
-async function readString(reader, options) {
-  const buf = await reader.read(options);
-  const arr = buf.subarray();
-  if (arr.byteLength === 0 || arr[arr.length - 1] !== NewLine[0]) {
-    throw new InvalidMessageError("Missing newline");
-  }
-  return toString2(arr).trimEnd();
-}
-__name(readString, "readString");
-
-// node_modules/@libp2p/multistream-select/dist/src/select.js
-async function select(stream, protocols, options = {}) {
-  protocols = Array.isArray(protocols) ? [...protocols] : [protocols];
-  if (protocols.length === 0) {
-    throw new Error("At least one protocol must be specified");
-  }
-  const log2 = stream.log.newScope("mss:select");
-  const lp = lpStream(stream, {
-    ...options,
-    maxDataLength: MAX_PROTOCOL_LENGTH
-  });
-  for (let i2 = 0; i2 < protocols.length; i2++) {
-    const protocol = protocols[i2];
-    let response;
-    if (i2 === 0) {
-      log2.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
-      const p1 = fromString2(`${PROTOCOL_ID}
-`);
-      const p2 = fromString2(`${protocol}
-`);
-      await lp.writeV([p1, p2], options);
-      log2.trace("reading multistream-select header");
-      response = await readString(lp, options);
-      log2.trace('read "%s"', response);
-      if (response !== PROTOCOL_ID) {
-        log2.error("did not read multistream-select header from response");
-        break;
-      }
-    } else {
-      log2.trace('write "%s"', protocol);
-      await lp.write(fromString2(`${protocol}
-`), options);
-    }
-    log2.trace("reading protocol response");
-    response = await readString(lp, options);
-    log2.trace('read "%s"', response);
-    if (response === protocol) {
-      log2.trace('selected "%s" after negotiation', response);
-      lp.unwrap();
-      return protocol;
-    }
-  }
-  throw new UnsupportedProtocolError(`Protocol selection failed - could not negotiate ${protocols}`);
-}
-__name(select, "select");
 
 // node_modules/@libp2p/multistream-select/dist/src/handle.js
 async function handle(stream, protocols, options = {}) {
@@ -21162,7 +21323,7 @@ var Upgrader = class {
       if (!accepted) {
         throw new ConnectionDeniedError("Connection denied");
       }
-      await raceSignal(this.shouldBlockConnection("denyInboundConnection", maConn), signal);
+      await raceSignal3(this.shouldBlockConnection("denyInboundConnection", maConn), signal);
       await this._performUpgrade(maConn, "inbound", {
         ...opts,
         signal
@@ -21191,7 +21352,7 @@ var Upgrader = class {
       let remotePeerId;
       if (idStr != null) {
         remotePeerId = peerIdFromString(idStr);
-        await raceSignal(this.shouldBlockConnection("denyOutboundConnection", remotePeerId, maConn), opts.signal);
+        await raceSignal3(this.shouldBlockConnection("denyOutboundConnection", remotePeerId, maConn), opts.signal);
       }
       let direction = "outbound";
       if (opts.initiator === false) {
@@ -21607,11 +21768,11 @@ var Libp2p = class extends TypedEventEmitter {
   }
   async dialProtocol(peer, protocols, options = {}) {
     if (protocols == null) {
-      throw new InvalidParametersError2("no protocols were provided to open a stream");
+      throw new InvalidParametersError3("no protocols were provided to open a stream");
     }
     protocols = Array.isArray(protocols) ? protocols : [protocols];
     if (protocols.length === 0) {
-      throw new InvalidParametersError2("no protocols were provided to open a stream");
+      throw new InvalidParametersError3("no protocols were provided to open a stream");
     }
     return this.components.connectionManager.openStream(peer, protocols, options);
   }
