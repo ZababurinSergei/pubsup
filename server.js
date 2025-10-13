@@ -831,21 +831,21 @@ const node = await createLibp2p({
         http: http({
             server: nodeServer(app)
         }),
-        // lanDHT: kadDHT({
-        //     protocol: '/ipfs/lan/kad/1.0.0',
-        //     peerInfoMapper: removePublicAddressesMapper,
-        //     clientMode: false,
-        //     logPrefix: 'libp2p:dht-lan',
-        //     datastorePrefix: '/dht-lan',
-        //     metricsPrefix: 'libp2p_dht_lan'
-        // }),
-        // aminoDHT: kadDHT({
-        //     protocol: '/ipfs/kad/1.0.0',
-        //     peerInfoMapper: removePrivateAddressesMapper,
-        //     logPrefix: 'libp2p:dht-amino',
-        //     datastorePrefix: '/dht-amino',
-        //     metricsPrefix: 'libp2p_dht_amino'
-        // })
+        lanDHT: kadDHT({
+            protocol: '/ipfs/lan/kad/1.0.0',
+            peerInfoMapper: removePublicAddressesMapper,
+            clientMode: false,
+            logPrefix: 'libp2p:dht-lan',
+            datastorePrefix: '/dht-lan',
+            metricsPrefix: 'libp2p_dht_lan'
+        }),
+        aminoDHT: kadDHT({
+            protocol: '/ipfs/kad/1.0.0',
+            peerInfoMapper: removePrivateAddressesMapper,
+            logPrefix: 'libp2p:dht-amino',
+            datastorePrefix: '/dht-amino',
+            metricsPrefix: 'libp2p_dht_amino'
+        })
     }
 })
 
@@ -969,7 +969,6 @@ app.post('/del-task', (req, res) => {
     sendToAllUsers();
 });
 
-RENDER_EXTERNAL_HOSTNAME
 server.listen(port, RENDER_EXTERNAL_HOSTNAME, () => {
     console.log('pid: ', process.pid);
     console.log(`Server running at http://localhost:${port}/`);
