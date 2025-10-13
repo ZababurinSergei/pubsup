@@ -31,12 +31,13 @@ import {autoNATv2} from '@libp2p/autonat-v2'
 
 // const datastore = new MemoryDatastore()
 let __dirname = process.cwd();
-
+const RENDER_EXTERNAL_HOSTNAME = process.env.RENDER_EXTERNAL_HOSTNAME ? process.env.RENDER_EXTERNAL_HOSTNAME: 'localhost'
 // Путь для сохранения приватного ключа
 const PRIVATE_KEY_PATH = path.join(process.cwd(), 'private-key.proto');
 
 const peerId = await getOrCreatePrivateKey();
 
+console.log('RENDER_EXTERNAL_HOSTNAME', RENDER_EXTERNAL_HOSTNAME)
 /**
  * Сохраняет приватный ключ на диск
  * @param {Uint8Array} privateKey - Приватный ключ в бинарном формате
@@ -968,8 +969,8 @@ app.post('/del-task', (req, res) => {
     sendToAllUsers();
 });
 
-
-server.listen(port, 'localhost', () => {
+RENDER_EXTERNAL_HOSTNAME
+server.listen(port, RENDER_EXTERNAL_HOSTNAME, () => {
     console.log('pid: ', process.pid);
     console.log(`Server running at http://localhost:${port}/`);
 })
