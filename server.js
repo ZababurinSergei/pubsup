@@ -35,7 +35,7 @@ let __dirname = process.cwd();
 // Путь для сохранения приватного ключа
 const PRIVATE_KEY_PATH = path.join(process.cwd(), 'private-key.proto');
 
-const peerId  = await getOrCreatePrivateKey();
+const peerId = await getOrCreatePrivateKey();
 
 /**
  * Сохраняет приватный ключ на диск
@@ -93,7 +93,7 @@ async function getOrCreatePrivateKey() {
     // Если ключа нет, генерируем новый и сохраняем
     if (!privateKey) {
         console.log('Генерация нового приватного ключа...');
-        const { generateKeyPair } = await import('@libp2p/crypto/keys');
+        const {generateKeyPair} = await import('@libp2p/crypto/keys');
         privateKey = await generateKeyPair('Ed25519');
 
         // Сохраняем новый ключ
@@ -593,17 +593,17 @@ app.get(`/`, async (req, res) => {
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
             const text = element.textContent || element.innerText;
-            
             navigator.clipboard.writeText(text).then(() => {
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = '✓ Copied!';
-                btn.classList.add('copied');
                 
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('copied');
-                }, 2000);
+                // const btn = event.target;
+                // const originalText = btn.textContent;
+                // btn.textContent = '✓ Copied!';
+                // btn.classList.add('copied');
+                
+                // setTimeout(() => {
+                    // btn.textContent = originalText;
+                    // btn.classList.remove('copied');
+                // }, 2000);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
                 alert('Failed to copy to clipboard');
@@ -808,11 +808,6 @@ let addresses = process.env.PORT
         ]
     }
 
-
-// const privateKey = await generateKeyPair('Ed25519')
-// const peerIdTest = peerIdFromPrivateKey(privateKey)
-//
-
 const node = await createLibp2p({
     privateKey: peerId,
     addresses: addresses,
@@ -835,21 +830,21 @@ const node = await createLibp2p({
         http: http({
             server: nodeServer(app)
         }),
-        lanDHT: kadDHT({
-            protocol: '/ipfs/lan/kad/1.0.0',
-            peerInfoMapper: removePublicAddressesMapper,
-            clientMode: false,
-            logPrefix: 'libp2p:dht-lan',
-            datastorePrefix: '/dht-lan',
-            metricsPrefix: 'libp2p_dht_lan'
-        }),
-        aminoDHT: kadDHT({
-            protocol: '/ipfs/kad/1.0.0',
-            peerInfoMapper: removePrivateAddressesMapper,
-            logPrefix: 'libp2p:dht-amino',
-            datastorePrefix: '/dht-amino',
-            metricsPrefix: 'libp2p_dht_amino'
-        })
+        // lanDHT: kadDHT({
+        //     protocol: '/ipfs/lan/kad/1.0.0',
+        //     peerInfoMapper: removePublicAddressesMapper,
+        //     clientMode: false,
+        //     logPrefix: 'libp2p:dht-lan',
+        //     datastorePrefix: '/dht-lan',
+        //     metricsPrefix: 'libp2p_dht_lan'
+        // }),
+        // aminoDHT: kadDHT({
+        //     protocol: '/ipfs/kad/1.0.0',
+        //     peerInfoMapper: removePrivateAddressesMapper,
+        //     logPrefix: 'libp2p:dht-amino',
+        //     datastorePrefix: '/dht-amino',
+        //     metricsPrefix: 'libp2p_dht_amino'
+        // })
     }
 })
 

@@ -11,14 +11,14 @@ import { createLibp2p } from 'libp2p'
 import { fromString, toString } from 'uint8arrays'
 import { bootstrap } from '@libp2p/bootstrap'
 import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
-import { PersistentPeerStore } from '@libp2p/peer-store'
+import { persistentPeerStore } from '@libp2p/peer-store'
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
 import { IDBDatastore } from 'datastore-idb'
 import { ping } from '@libp2p/ping'
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 import { FaultTolerance } from '@libp2p/interface-transport'
 
-const serverPeerId = '12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1'
+const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
 const port = 4839
 const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com'
 
@@ -160,10 +160,10 @@ if(isLanKad) {
   ]
 }
 
-
+console.log('-------------- boot----------------- ', boot)
 const libp2p = await createLibp2p({
   store,
-  PersistentPeerStore,
+  persistentPeerStore,
   addresses: {
     listen: [
       '/webrtc-direct',
