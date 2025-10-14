@@ -13,7 +13,8 @@ import { webSockets } from '@libp2p/websockets'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
 
-const args = process.argv.slice(2)
+const args = ['/dns4/localhost/tcp/5973/ws/p2p/12D3KooWCbQLftnZs5JKXygRpLK7DhCubX4ZydzANvtYX1zHHaXD/p2p-circuit/webrtc/p2p/12D3KooW9uBrm6qYfnhSGF5kgCRuf95BpnaGdtELqx8NfkhqDsSA']
+// process.argv.slice(2)
 
 // Example of how to use arguments
 if (args.length === 0) {

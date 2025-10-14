@@ -10,9 +10,7 @@
     }
   },
   "scripts": {
-    "build:esbuild": "esbuild ./index.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./index.bundle.mjs",
-    "start": "vite",
-    "build": "vite build",
+    "build": "esbuild ./index.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./index.bundle.mjs",
     "relay": "node ./src/relay.js",
     "proxy": "node ./src/proxy.js",
     "test": "npm run build && test-browser-example test",
