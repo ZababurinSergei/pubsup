@@ -28,100 +28,15 @@ import {ping} from "@libp2p/ping";
 import {PUBSUB_PEER_DISCOVERY} from './docs/constants.js'
 import {gossipsub} from '@chainsafe/libp2p-gossipsub'
 import {autoNATv2} from '@libp2p/autonat-v2'
+import peerData from './peerId.mjs'
 
 // const datastore = new MemoryDatastore()
 let __dirname = process.cwd();
+
 const RENDER_EXTERNAL_HOSTNAME = process.env.RENDER_EXTERNAL_HOSTNAME ? process.env.RENDER_EXTERNAL_HOSTNAME: 'localhost'
+
 // Путь для сохранения приватного ключа
-const PRIVATE_KEY_PATH = path.join(process.cwd(), 'private-key.proto');
-
-const peerId = await getOrCreatePrivateKey();
-
-console.log('RENDER_EXTERNAL_HOSTNAME', RENDER_EXTERNAL_HOSTNAME)
-/**
- * Сохраняет приватный ключ на диск
- * @param {Uint8Array} privateKey - Приватный ключ в бинарном формате
- * @returns {Promise<boolean>} - Успешно ли сохранен ключ
- */
-async function savePrivateKey(privateKey) {
-    try {
-        // Конвертируем приватный ключ в protobuf формат
-        const privateKeyProto = privateKeyToProtobuf(privateKey);
-
-        // Сохраняем на диск
-        fs.writeFileSync(PRIVATE_KEY_PATH, privateKeyProto);
-        console.log('Приватный ключ успешно сохранен:', PRIVATE_KEY_PATH);
-        return true;
-    } catch (error) {
-        console.error('Ошибка при сохранении приватного ключа:', error);
-        return false;
-    }
-}
-
-/**
- * Читает приватный ключ с диска
- * @returns {Promise<Uint8Array|null>} - Приватный ключ или null если ошибка
- */
-async function readPrivateKey() {
-    try {
-        // Проверяем существует ли файл
-        if (!fs.existsSync(PRIVATE_KEY_PATH)) {
-            console.log('Файл приватного ключа не найден:', PRIVATE_KEY_PATH);
-            return null;
-        }
-
-        // Читаем файл
-        const buffer = fs.readFileSync(PRIVATE_KEY_PATH);
-
-        // Конвертируем из protobuf обратно в приватный ключ
-        const privateKey = privateKeyFromProtobuf(buffer);
-        console.log('Приватный ключ успешно загружен с диска');
-        return privateKey;
-    } catch (error) {
-        console.error('Ошибка при чтении приватного ключа:', error);
-        return null;
-    }
-}
-
-/**
- * Генерирует и сохраняет новый приватный ключ, если его нет
- * @returns {Promise<Uint8Array>} - Существующий или новый приватный ключ
- */
-async function getOrCreatePrivateKey() {
-    // Пытаемся прочитать существующий ключ
-    let privateKey = await readPrivateKey();
-
-    // Если ключа нет, генерируем новый и сохраняем
-    if (!privateKey) {
-        console.log('Генерация нового приватного ключа...');
-        const {generateKeyPair} = await import('@libp2p/crypto/keys');
-        privateKey = await generateKeyPair('Ed25519');
-
-        // Сохраняем новый ключ
-        await savePrivateKey(privateKey);
-    }
-
-    return privateKey;
-}
-
-// const buffer = fs.readFileSync(__dirname + '/peerId.proto')
-// const peerId = await createEd25519PeerId.createFromProtobuf(buffer)
-
-//TODO надо вставить
-/*
-const peerId = privateKeyFromProtobuf(buffer)
-// const writePeerId = async (name) => {
-//     let peerId = await generateKeyPair('Ed25519')
-//     fs.writeFileSync(__dirname + name, privateKeyToProtobuf(peerId))
-//     return peerId
-// }
-// const readPeerId = async (name) => {
-//     const buffer = fs.readFileSync(__dirname + name)
-//     return privateKeyFromProtobuf(buffer)
-// }
-// console.log('__dirname + namePeerId', __dirname + namePeerId)
-// const peerId = fs.existsSync(__dirname + namePeerId) && isRead ? await readPeerId(namePeerId) :await writePeerId(namePeerId)
- */
+const peerId = await peerData()
 
 dotenv.config();
 
@@ -969,7 +884,7 @@ app.post('/del-task', (req, res) => {
     sendToAllUsers();
 });
 
-server.listen(port, RENDER_EXTERNAL_HOSTNAME, () => {
-    console.log('pid: ', process.pid);
-    console.log(`Server running at http://localhost:${port}/`);
-})
+// server.listen(port, RENDER_EXTERNAL_HOSTNAME, () => {
+//     console.log('pid: ', process.pid);
+//     console.log(`Server running at http://localhost:${port}/`);
+// })
