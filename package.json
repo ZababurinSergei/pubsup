@@ -39,6 +39,7 @@
     "@libp2p/http-ping": "^2.0.1",
     "@libp2p/http-server": "^2.0.1",
     "@libp2p/identify": "^4.0.5",
+    "@libp2p/interface": "^3.0.2",
     "@libp2p/interface-transport": "^4.0.3",
     "@libp2p/kad-dht": "^16.0.5",
     "@libp2p/peer-id": "^6.0.3",
