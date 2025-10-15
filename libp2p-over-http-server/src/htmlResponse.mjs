@@ -73,10 +73,12 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
         
         .info-item {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid #f1f1f1;
+            overflow-x: hidden;
+            gap: 8px;
         }
         
         .info-label {
@@ -84,19 +86,23 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             color: #4a5568;
             display: flex;
             width: 7dvw;
-            
-
+            display: flex;
+            flex-wrap: nowrap;
+            min-width: fit-content;
         }
         
         .info-value {
             font-family: 'Courier New', monospace;
             background: #f7fafc;
-            padding: 4px 8px;
+            // padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.9em;
-            word-break: break-all;
+            // word-break: break-all;
             // max-width: 60%;
             text-align: right;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
         }
         
         .copy-btn {
@@ -245,6 +251,13 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
         
         .container_peer_id {
             display: flex;
+            width: 100%;
+        }
+        
+        .bootstrap-address {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             width: 100%;
         }
     </style>
@@ -408,8 +421,8 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             <h3>📡 Bootstrap Address</h3>
             <div class="info-item">
                 <span class="info-label">Primary Address:</span>
-                <div>
-                    <span class="info-value" id="primaryAddress">${pathNode[0]}</span>
+                <div class="bootstrap-address">
+                    <span class="info-value" id="primaryAddress">${pathNode.filter(item => item.includes('/ws'))}</span>
                     <button class="copy-btn" onclick="copyToClipboard('primaryAddress')">Copy</button>
                 </div>
             </div>
@@ -570,11 +583,9 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             const events = new EventSource('/events');
             
             events.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                // Peer ID уже установлен на сервере, но обновляем если приходит новый
+                const data = JSON.parse(event.data); 
                 if (data.peerId && data.peerId !== document.getElementById('peerId').textContent) {
-                // console.log('ddddddddddddd', data.peerId.publicKey.toString())
-                //     document.getElementById('peerId').textContent = data.peerId.publicKey.toString();
+                    document.getElementById('peerId').textContent = data.peerId;
                 }
             };
             
@@ -590,8 +601,8 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
         
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            // setupEventSource();
-            refreshClients();
+            setupEventSource();
+            // refreshClients();
             
             // Set libp2p version (this would need to be passed from server)
             document.getElementById('libp2pVersion').textContent = '3.0.6';
@@ -602,10 +613,10 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             }, 1000);
             
             // Refresh data every 30 seconds
-            setInterval(() => {
-                refreshPeers();
-                refreshClients();
-            }, 30000);
+            // setInterval(() => {
+            //     refreshPeers();
+            //     refreshClients();
+            // }, 30000);
         });
     </script>
 </body>

@@ -96,8 +96,6 @@ app.get(`/`, async (req, res) => {
     res.status(200).send(await htmlResponse({node, pathNode, PORT}));
 })
 
-
-
 function genUniqId() {
   return Date.now() + '-' + Math.floor(Math.random() * 1000000000);
 }
@@ -124,7 +122,6 @@ app.get('/peers', (req, res) => {
     peers.push(item.toString())
   }
 
-  console.log('node.services.lanDHT', node.services.lanDHT)
   res.json({
     status: true,
     peers: peers,
@@ -134,39 +131,39 @@ app.get('/peers', (req, res) => {
   // node.services.lanDHT.getMode()
 });
 
-// app.get('/events', (req, res) => {
-//   const headers = {
-//     'Content-Type': 'text/event-stream',
-//     'Access-Control-Allow-Origin': '*',
-//     'Connection': 'keep-alive',
-//     'Cache-Control': 'no-cache'
-//   };
-//
-//   res.writeHead(200, headers);
-//
-//   const sendData = `data: ${JSON.stringify({
-//     peerId: peerId.toString()
-//   })}\n\n`;
-//
-//   res.write(sendData);
-//   res.flush();
-//
-//   const clientId = genUniqId();
-//
-//   const newClient = {
-//     id: clientId,
-//     res,
-//   };
-//
-//   clients.push(newClient);
-//
-//   console.log(`${clientId} - Connection opened`);
-//
-//   req.on('close', () => {
-//     console.log(`${clientId} - Connection closed`);
-//     clients = clients.filter(client => client.id !== clientId);
-//   });
-// });
+app.get('/events', (req, res) => {
+  const headers = {
+    'Content-Type': 'text/event-stream',
+    'Access-Control-Allow-Origin': '*',
+    'Connection': 'keep-alive',
+    'Cache-Control': 'no-cache'
+  };
+
+  res.writeHead(200, headers);
+
+  const sendData = `data: ${JSON.stringify({
+    peerId: peerId.publicKey.toString()
+  })}\n\n`;
+
+  res.write(sendData);
+  res.flush();
+
+  const clientId = genUniqId();
+
+  const newClient = {
+    id: clientId,
+    res,
+  };
+
+  clients.push(newClient);
+
+  console.log(`${clientId} - Connection opened`, clients.length);
+
+  req.on('close', () => {
+    clients = clients.filter(client => client.id !== clientId);
+    console.log(`${clientId} - Connection closed`, clients.length);
+  });
+});
 
 
 // register a handler function for the passed protocol - it will be served at
