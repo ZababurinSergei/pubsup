@@ -5,7 +5,7 @@ var __export = (target, all) => {
     __defProp(target, name2, { get: all[name2], enumerable: true });
 };
 
-// node_modules/@libp2p/crypto/node_modules/@libp2p/interface/dist/src/errors.js
+// node_modules/@libp2p/interface/dist/src/errors.js
 var InvalidParametersError = class extends Error {
   static name = "InvalidParametersError";
   constructor(message2 = "Invalid parameters") {
@@ -27,6 +27,12 @@ var UnsupportedKeyTypeError = class extends Error {
     this.name = "UnsupportedKeyTypeError";
   }
 };
+
+// node_modules/@libp2p/interface/dist/src/peer-discovery.js
+var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
+
+// node_modules/@libp2p/interface/dist/src/peer-id.js
+var peerIdSymbol = Symbol.for("@libp2p/peer-id");
 
 // node_modules/main-event/dist/src/events.browser.js
 function setMaxListeners() {
@@ -7189,21 +7195,6 @@ function publicKeyToProtobuf(key) {
 }
 __name(publicKeyToProtobuf, "publicKeyToProtobuf");
 
-// node_modules/@libp2p/pubsub-peer-discovery/node_modules/@libp2p/interface/dist/src/peer-discovery.js
-var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
-
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/errors.js
-var UnsupportedKeyTypeError2 = class extends Error {
-  static name = "UnsupportedKeyTypeError";
-  constructor(message2 = "Unsupported key type") {
-    super(message2);
-    this.name = "UnsupportedKeyTypeError";
-  }
-};
-
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol = Symbol.for("@libp2p/peer-id");
-
 // node_modules/@libp2p/peer-id/dist/src/peer-id.js
 var inspect = Symbol.for("nodejs.util.inspect.custom");
 var LIBP2P_KEY_CODE = 114;
@@ -7368,7 +7359,7 @@ function peerIdFromPublicKey(publicKey) {
       publicKey
     });
   }
-  throw new UnsupportedKeyTypeError2();
+  throw new UnsupportedKeyTypeError();
 }
 __name(peerIdFromPublicKey, "peerIdFromPublicKey");
 
@@ -7381,7 +7372,7 @@ var ValidationError = class extends Error {
   static name = "ValidationError";
   name = "ValidationError";
 };
-var InvalidParametersError3 = class extends Error {
+var InvalidParametersError2 = class extends Error {
   static name = "InvalidParametersError";
   name = "InvalidParametersError";
 };
@@ -8324,7 +8315,7 @@ var Multiaddr = class _Multiaddr {
     const s = this.toString();
     const i = s.lastIndexOf(addrString);
     if (i < 0) {
-      throw new InvalidParametersError3(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
+      throw new InvalidParametersError2(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
     }
     return new _Multiaddr(s.slice(0, i), {
       validate: false

@@ -439,7 +439,20 @@ var require_hashlru = __commonJS({
   }
 });
 
-// node_modules/@libp2p/crypto/node_modules/@libp2p/interface/dist/src/errors.js
+// node_modules/@libp2p/interface/dist/src/connection.js
+var connectionSymbol = Symbol.for("@libp2p/connection");
+
+// node_modules/@libp2p/interface/dist/src/content-routing.js
+var contentRoutingSymbol = Symbol.for("@libp2p/content-routing");
+
+// node_modules/@libp2p/interface/dist/src/errors.js
+var AbortError = class extends Error {
+  static name = "AbortError";
+  constructor(message2 = "The operation was aborted") {
+    super(message2);
+    this.name = "AbortError";
+  }
+};
 var InvalidParametersError = class extends Error {
   static name = "InvalidParametersError";
   constructor(message2 = "Invalid parameters") {
@@ -461,6 +474,104 @@ var InvalidPrivateKeyError = class extends Error {
     this.name = "InvalidPrivateKeyError";
   }
 };
+var ConnectionClosedError = class extends Error {
+  static name = "ConnectionClosedError";
+  constructor(message2 = "The connection is closed") {
+    super(message2);
+    this.name = "ConnectionClosedError";
+  }
+};
+var NotFoundError = class extends Error {
+  static name = "NotFoundError";
+  constructor(message2 = "Not found") {
+    super(message2);
+    this.name = "NotFoundError";
+  }
+};
+var InvalidPeerIdError = class extends Error {
+  static name = "InvalidPeerIdError";
+  constructor(message2 = "Invalid PeerID") {
+    super(message2);
+    this.name = "InvalidPeerIdError";
+  }
+};
+var InvalidMultiaddrError = class extends Error {
+  static name = "InvalidMultiaddrError";
+  constructor(message2 = "Invalid multiaddr") {
+    super(message2);
+    this.name = "InvalidMultiaddrError";
+  }
+};
+var InvalidCIDError = class extends Error {
+  static name = "InvalidCIDError";
+  constructor(message2 = "Invalid CID") {
+    super(message2);
+    this.name = "InvalidCIDError";
+  }
+};
+var InvalidMultihashError = class extends Error {
+  static name = "InvalidMultihashError";
+  constructor(message2 = "Invalid Multihash") {
+    super(message2);
+    this.name = "InvalidMultihashError";
+  }
+};
+var UnsupportedProtocolError = class extends Error {
+  static name = "UnsupportedProtocolError";
+  constructor(message2 = "Unsupported protocol error") {
+    super(message2);
+    this.name = "UnsupportedProtocolError";
+  }
+};
+var InvalidMessageError = class extends Error {
+  static name = "InvalidMessageError";
+  constructor(message2 = "Invalid message") {
+    super(message2);
+    this.name = "InvalidMessageError";
+  }
+};
+var TimeoutError = class extends Error {
+  static name = "TimeoutError";
+  constructor(message2 = "Timed out") {
+    super(message2);
+    this.name = "TimeoutError";
+  }
+};
+var NotStartedError = class extends Error {
+  static name = "NotStartedError";
+  constructor(message2 = "Not started") {
+    super(message2);
+    this.name = "NotStartedError";
+  }
+};
+var DialError = class extends Error {
+  static name = "DialError";
+  constructor(message2 = "Dial error") {
+    super(message2);
+    this.name = "DialError";
+  }
+};
+var LimitedConnectionError = class extends Error {
+  static name = "LimitedConnectionError";
+  constructor(message2 = "Limited connection") {
+    super(message2);
+    this.name = "LimitedConnectionError";
+  }
+};
+var TooManyInboundProtocolStreamsError = class extends Error {
+  static name = "TooManyInboundProtocolStreamsError";
+  constructor(message2 = "Too many inbound protocol streams") {
+    super(message2);
+    this.name = "TooManyInboundProtocolStreamsError";
+  }
+};
+var TooManyOutboundProtocolStreamsError = class extends Error {
+  static name = "TooManyOutboundProtocolStreamsError";
+  constructor(message2 = "Too many outbound protocol streams") {
+    super(message2);
+    this.name = "TooManyOutboundProtocolStreamsError";
+  }
+};
 var UnsupportedKeyTypeError = class extends Error {
   static name = "UnsupportedKeyTypeError";
   constructor(message2 = "Unsupported key type") {
@@ -468,6 +579,94 @@ var UnsupportedKeyTypeError = class extends Error {
     this.name = "UnsupportedKeyTypeError";
   }
 };
+
+// node_modules/@libp2p/interface/dist/src/events.js
+var StreamCloseEvent = class extends Event {
+  static {
+    __name(this, "StreamCloseEvent");
+  }
+  error;
+  local;
+  constructor(local, error, eventInitDict) {
+    super("close", eventInitDict);
+    this.error = error;
+    this.local = local;
+  }
+};
+
+// node_modules/@libp2p/interface/dist/src/peer-discovery.js
+var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
+
+// node_modules/@libp2p/interface/dist/src/peer-id.js
+var peerIdSymbol = Symbol.for("@libp2p/peer-id");
+function isPeerId(other) {
+  return Boolean(other?.[peerIdSymbol]);
+}
+__name(isPeerId, "isPeerId");
+
+// node_modules/@libp2p/interface/dist/src/peer-routing.js
+var peerRoutingSymbol = Symbol.for("@libp2p/peer-routing");
+
+// node_modules/@libp2p/interface/dist/src/peer-store.js
+var KEEP_ALIVE = "keep-alive";
+
+// node_modules/@libp2p/interface/dist/src/startable.js
+function isStartable(obj) {
+  return obj != null && typeof obj.start === "function" && typeof obj.stop === "function";
+}
+__name(isStartable, "isStartable");
+async function start(...objs) {
+  const startables = [];
+  for (const obj of objs) {
+    if (isStartable(obj)) {
+      startables.push(obj);
+    }
+  }
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.beforeStart != null) {
+      await s2.beforeStart();
+    }
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    await s2.start();
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.afterStart != null) {
+      await s2.afterStart();
+    }
+  }));
+}
+__name(start, "start");
+async function stop(...objs) {
+  const startables = [];
+  for (const obj of objs) {
+    if (isStartable(obj)) {
+      startables.push(obj);
+    }
+  }
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.beforeStop != null) {
+      await s2.beforeStop();
+    }
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    await s2.stop();
+  }));
+  await Promise.all(startables.map(async (s2) => {
+    if (s2.afterStop != null) {
+      await s2.afterStop();
+    }
+  }));
+}
+__name(stop, "stop");
+
+// node_modules/@libp2p/interface/dist/src/transport.js
+var transportSymbol = Symbol.for("@libp2p/transport");
+var FaultTolerance;
+(function(FaultTolerance2) {
+  FaultTolerance2[FaultTolerance2["FATAL_ALL"] = 0] = "FATAL_ALL";
+  FaultTolerance2[FaultTolerance2["NO_FATAL"] = 1] = "NO_FATAL";
+})(FaultTolerance || (FaultTolerance = {}));
 
 // node_modules/main-event/dist/src/events.browser.js
 function setMaxListeners() {
@@ -526,6 +725,10 @@ var TypedEventEmitter = class extends EventTarget {
     return this.dispatchEvent(new CustomEvent(type, detail));
   }
 };
+
+// node_modules/@libp2p/interface/dist/src/index.js
+var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
+var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
 
 // node_modules/multiformats/dist/src/bases/base58.js
 var base58_exports = {};
@@ -8015,39 +8218,6 @@ function toCurve(curve) {
 }
 __name(toCurve, "toCurve");
 
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidParametersError2 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-var InvalidCIDError = class extends Error {
-  static name = "InvalidCIDError";
-  constructor(message2 = "Invalid CID") {
-    super(message2);
-    this.name = "InvalidCIDError";
-  }
-};
-var InvalidMultihashError = class extends Error {
-  static name = "InvalidMultihashError";
-  constructor(message2 = "Invalid Multihash") {
-    super(message2);
-    this.name = "InvalidMultihashError";
-  }
-};
-var UnsupportedKeyTypeError2 = class extends Error {
-  static name = "UnsupportedKeyTypeError";
-  constructor(message2 = "Unsupported key type") {
-    super(message2);
-    this.name = "UnsupportedKeyTypeError";
-  }
-};
-
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol = Symbol.for("@libp2p/peer-id");
-
 // node_modules/@libp2p/peer-id/dist/src/peer-id.js
 var inspect = Symbol.for("nodejs.util.inspect.custom");
 var LIBP2P_KEY_CODE = 114;
@@ -8205,7 +8375,7 @@ function peerIdFromString(str, decoder) {
     return peerIdFromCID(CID.parse(str));
   } else {
     if (decoder == null) {
-      throw new InvalidParametersError2('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
+      throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
     }
     multihash = decode4(decoder.decode(str));
   }
@@ -8229,7 +8399,7 @@ function peerIdFromPublicKey(publicKey) {
       publicKey
     });
   }
-  throw new UnsupportedKeyTypeError2();
+  throw new UnsupportedKeyTypeError();
 }
 __name(peerIdFromPublicKey, "peerIdFromPublicKey");
 function peerIdFromPrivateKey(privateKey) {
@@ -8275,194 +8445,10 @@ function isSha256Multihash(multihash) {
 }
 __name(isSha256Multihash, "isSha256Multihash");
 
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/connection.js
-var connectionSymbol = Symbol.for("@libp2p/connection");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/content-routing.js
-var contentRoutingSymbol = Symbol.for("@libp2p/content-routing");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/errors.js
-var AbortError = class extends Error {
-  static name = "AbortError";
-  constructor(message2 = "The operation was aborted") {
-    super(message2);
-    this.name = "AbortError";
-  }
-};
-var InvalidParametersError3 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-var ConnectionClosedError = class extends Error {
-  static name = "ConnectionClosedError";
-  constructor(message2 = "The connection is closed") {
-    super(message2);
-    this.name = "ConnectionClosedError";
-  }
-};
-var NotFoundError = class extends Error {
-  static name = "NotFoundError";
-  constructor(message2 = "Not found") {
-    super(message2);
-    this.name = "NotFoundError";
-  }
-};
-var InvalidPeerIdError = class extends Error {
-  static name = "InvalidPeerIdError";
-  constructor(message2 = "Invalid PeerID") {
-    super(message2);
-    this.name = "InvalidPeerIdError";
-  }
-};
-var InvalidMultiaddrError = class extends Error {
-  static name = "InvalidMultiaddrError";
-  constructor(message2 = "Invalid multiaddr") {
-    super(message2);
-    this.name = "InvalidMultiaddrError";
-  }
-};
-var TimeoutError = class extends Error {
-  static name = "TimeoutError";
-  constructor(message2 = "Timed out") {
-    super(message2);
-    this.name = "TimeoutError";
-  }
-};
-var NotStartedError = class extends Error {
-  static name = "NotStartedError";
-  constructor(message2 = "Not started") {
-    super(message2);
-    this.name = "NotStartedError";
-  }
-};
-var DialError = class extends Error {
-  static name = "DialError";
-  constructor(message2 = "Dial error") {
-    super(message2);
-    this.name = "DialError";
-  }
-};
-var LimitedConnectionError = class extends Error {
-  static name = "LimitedConnectionError";
-  constructor(message2 = "Limited connection") {
-    super(message2);
-    this.name = "LimitedConnectionError";
-  }
-};
-var TooManyInboundProtocolStreamsError = class extends Error {
-  static name = "TooManyInboundProtocolStreamsError";
-  constructor(message2 = "Too many inbound protocol streams") {
-    super(message2);
-    this.name = "TooManyInboundProtocolStreamsError";
-  }
-};
-var TooManyOutboundProtocolStreamsError = class extends Error {
-  static name = "TooManyOutboundProtocolStreamsError";
-  constructor(message2 = "Too many outbound protocol streams") {
-    super(message2);
-    this.name = "TooManyOutboundProtocolStreamsError";
-  }
-};
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/events.js
-var StreamCloseEvent = class extends Event {
-  static {
-    __name(this, "StreamCloseEvent");
-  }
-  error;
-  local;
-  constructor(local, error, eventInitDict) {
-    super("close", eventInitDict);
-    this.error = error;
-    this.local = local;
-  }
-};
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-discovery.js
-var peerDiscoverySymbol = Symbol.for("@libp2p/peer-discovery");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol2 = Symbol.for("@libp2p/peer-id");
-function isPeerId(other) {
-  return Boolean(other?.[peerIdSymbol2]);
-}
-__name(isPeerId, "isPeerId");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-routing.js
-var peerRoutingSymbol = Symbol.for("@libp2p/peer-routing");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/peer-store.js
-var KEEP_ALIVE = "keep-alive";
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/startable.js
-function isStartable(obj) {
-  return obj != null && typeof obj.start === "function" && typeof obj.stop === "function";
-}
-__name(isStartable, "isStartable");
-async function start(...objs) {
-  const startables = [];
-  for (const obj of objs) {
-    if (isStartable(obj)) {
-      startables.push(obj);
-    }
-  }
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.beforeStart != null) {
-      await s2.beforeStart();
-    }
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    await s2.start();
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.afterStart != null) {
-      await s2.afterStart();
-    }
-  }));
-}
-__name(start, "start");
-async function stop(...objs) {
-  const startables = [];
-  for (const obj of objs) {
-    if (isStartable(obj)) {
-      startables.push(obj);
-    }
-  }
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.beforeStop != null) {
-      await s2.beforeStop();
-    }
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    await s2.stop();
-  }));
-  await Promise.all(startables.map(async (s2) => {
-    if (s2.afterStop != null) {
-      await s2.afterStop();
-    }
-  }));
-}
-__name(stop, "stop");
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/transport.js
-var transportSymbol = Symbol.for("@libp2p/transport");
-var FaultTolerance;
-(function(FaultTolerance2) {
-  FaultTolerance2[FaultTolerance2["FATAL_ALL"] = 0] = "FATAL_ALL";
-  FaultTolerance2[FaultTolerance2["NO_FATAL"] = 1] = "NO_FATAL";
-})(FaultTolerance || (FaultTolerance = {}));
-
-// node_modules/libp2p/node_modules/@libp2p/interface/dist/src/index.js
-var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
-var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
-
 // node_modules/libp2p/dist/src/config.js
 async function validateConfig(opts) {
   if (opts.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
-    throw new InvalidParametersError3("Private network is enforced, but no protector was provided");
+    throw new InvalidParametersError("Private network is enforced, but no protector was provided");
   }
   return opts;
 }
@@ -9534,22 +9520,6 @@ function createScalableCuckooFilter(maxItems, errorRate = 1e-3, options) {
 }
 __name(createScalableCuckooFilter, "createScalableCuckooFilter");
 
-// node_modules/@libp2p/utils/node_modules/@libp2p/interface/dist/src/errors.js
-var AbortError2 = class extends Error {
-  static name = "AbortError";
-  constructor(message2 = "The operation was aborted") {
-    super(message2);
-    this.name = "AbortError";
-  }
-};
-var InvalidParametersError4 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-
 // node_modules/@libp2p/utils/dist/src/multiaddr/get-net-config.js
 function getNetConfig(ma) {
   const components = ma.getComponents();
@@ -9586,7 +9556,7 @@ function getNetConfig(ma) {
     index++;
   }
   if (config.type == null || config.host == null) {
-    throw new InvalidParametersError4(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`);
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`);
   }
   if (components[index]?.name === "tls" && components[index + 1]?.name === "sni") {
     config.sni = components[index + 1].value;
@@ -10312,7 +10282,7 @@ var FIFO = class {
 };
 
 // node_modules/it-pushable/dist/src/index.js
-var AbortError3 = class extends Error {
+var AbortError2 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -10441,7 +10411,7 @@ function _pushable(getNext, options) {
       if (signal != null) {
         cancel = new Promise((resolve, reject) => {
           listener = /* @__PURE__ */ __name(() => {
-            reject(new AbortError3());
+            reject(new AbortError2());
           }, "listener");
           signal.addEventListener("abort", listener);
         });
@@ -10515,7 +10485,7 @@ var TimeoutError2 = class extends Error {
     this.name = "TimeoutError";
   }
 };
-var AbortError4 = class extends Error {
+var AbortError3 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -10525,7 +10495,7 @@ var AbortError4 = class extends Error {
     this.message = message2;
   }
 };
-var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError4(errorMessage) : new DOMException(errorMessage), "getDOMException");
+var getDOMException = /* @__PURE__ */ __name((errorMessage) => globalThis.DOMException === void 0 ? new AbortError3(errorMessage) : new DOMException(errorMessage), "getDOMException");
 var getAbortedReason = /* @__PURE__ */ __name((signal) => {
   const reason = signal.reason === void 0 ? getDOMException("This operation was aborted.") : signal.reason;
   return reason instanceof Error ? reason : getDOMException(reason);
@@ -10806,7 +10776,7 @@ var JobRecipient = class {
     this.signal?.addEventListener("abort", this.onAbort);
   }
   onAbort() {
-    this.deferred.reject(this.signal?.reason ?? new AbortError2());
+    this.deferred.reject(this.signal?.reason ?? new AbortError());
   }
   cleanup() {
     this.signal?.removeEventListener("abort", this.onAbort);
@@ -10850,7 +10820,7 @@ var Job = class {
       return acc && curr.signal?.aborted === true;
     }, true);
     if (allAborted) {
-      this.controller.abort(new AbortError2());
+      this.controller.abort(new AbortError());
       this.cleanup();
     }
   }
@@ -11031,7 +11001,7 @@ var Queue = class extends TypedEventEmitter {
    */
   abort() {
     this.queue.forEach((job) => {
-      job.abort(new AbortError2());
+      job.abort(new AbortError());
     });
     this.clear();
   }
@@ -11133,7 +11103,7 @@ var Queue = class extends TypedEventEmitter {
       cleanup();
     }, "onQueueIdle");
     const onSignalAbort = /* @__PURE__ */ __name(() => {
-      cleanup(new AbortError2("Queue aborted"));
+      cleanup(new AbortError("Queue aborted"));
     }, "onSignalAbort");
     this.addEventListener("completed", onQueueJobComplete);
     this.addEventListener("failure", onQueueFailure);
@@ -11304,7 +11274,7 @@ var ValidationError = class extends Error {
   static name = "ValidationError";
   name = "ValidationError";
 };
-var InvalidParametersError5 = class extends Error {
+var InvalidParametersError2 = class extends Error {
   static name = "InvalidParametersError";
   name = "InvalidParametersError";
 };
@@ -12029,7 +11999,7 @@ var Multiaddr = class _Multiaddr {
     const s2 = this.toString();
     const i2 = s2.lastIndexOf(addrString);
     if (i2 < 0) {
-      throw new InvalidParametersError5(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
+      throw new InvalidParametersError2(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
     }
     return new _Multiaddr(s2.slice(0, i2), {
       validate: false
@@ -12088,7 +12058,7 @@ function multiaddr(addr) {
 __name(multiaddr, "multiaddr");
 
 // node_modules/race-signal/dist/src/index.js
-var AbortError5 = class extends Error {
+var AbortError4 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -12108,10 +12078,10 @@ async function raceSignal2(promise, signal, opts) {
   if (signal.aborted) {
     promise.catch(() => {
     });
-    return Promise.reject(new AbortError5(opts?.errorMessage, opts?.errorCode, opts?.errorName));
+    return Promise.reject(new AbortError4(opts?.errorMessage, opts?.errorCode, opts?.errorName));
   }
   let listener;
-  const error = new AbortError5(opts?.errorMessage, opts?.errorCode, opts?.errorName);
+  const error = new AbortError4(opts?.errorMessage, opts?.errorCode, opts?.errorName);
   try {
     return await Promise.race([
       promise,
@@ -12332,7 +12302,7 @@ function byteStream(stream, opts) {
   let hasBytes;
   let unwrapped = false;
   if (!isValid(stream)) {
-    throw new InvalidParametersError4("Argument should be a Stream or a Multiaddr");
+    throw new InvalidParametersError("Argument should be a Stream or a Multiaddr");
   }
   const byteStreamOnMessageListener = /* @__PURE__ */ __name((evt) => {
     readBuffer.append(evt.data);
@@ -12789,29 +12759,6 @@ function trackedPeerMap(config) {
 }
 __name(trackedPeerMap, "trackedPeerMap");
 
-// node_modules/@libp2p/peer-store/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidParametersError6 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-var NotFoundError2 = class extends Error {
-  static name = "NotFoundError";
-  constructor(message2 = "Not found") {
-    super(message2);
-    this.name = "NotFoundError";
-  }
-};
-
-// node_modules/@libp2p/peer-store/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol3 = Symbol.for("@libp2p/peer-id");
-function isPeerId2(other) {
-  return Boolean(other?.[peerIdSymbol3]);
-}
-__name(isPeerId2, "isPeerId");
-
 // node_modules/@libp2p/peer-record/dist/src/envelope/envelope.js
 var Envelope;
 (function(Envelope2) {
@@ -13226,7 +13173,7 @@ __name(all, "all");
 var src_default3 = all;
 
 // node_modules/abort-error/dist/src/index.js
-var AbortError6 = class extends Error {
+var AbortError5 = class extends Error {
   static name = "AbortError";
   name = "AbortError";
   constructor(message2 = "The operation was aborted", ...rest) {
@@ -13236,7 +13183,7 @@ var AbortError6 = class extends Error {
 
 // node_modules/race-event/dist/src/index.js
 async function raceEvent(emitter, eventName, signal, opts) {
-  const error = new AbortError6(opts?.errorMessage);
+  const error = new AbortError5(opts?.errorMessage);
   if (opts?.errorCode != null) {
     error.code = opts.errorCode;
   }
@@ -13332,7 +13279,7 @@ var JobRecipient2 = class {
     this.signal?.addEventListener("abort", this.onAbort);
   }
   onAbort() {
-    this.deferred.reject(this.signal?.reason ?? new AbortError6());
+    this.deferred.reject(this.signal?.reason ?? new AbortError5());
   }
   cleanup() {
     this.signal?.removeEventListener("abort", this.onAbort);
@@ -13376,7 +13323,7 @@ var Job2 = class {
       return acc && curr.signal?.aborted === true;
     }, true);
     if (allAborted) {
-      this.controller.abort(new AbortError6());
+      this.controller.abort(new AbortError5());
       this.cleanup();
     }
   }
@@ -13576,7 +13523,7 @@ var Queue2 = class extends TypedEventEmitter {
    */
   abort() {
     this.queue.forEach((job) => {
-      job.abort(new AbortError6());
+      job.abort(new AbortError5());
     });
     this.clear();
   }
@@ -13677,7 +13624,7 @@ var Queue2 = class extends TypedEventEmitter {
       cleanup();
     }, "onQueueIdle");
     const onSignalAbort = /* @__PURE__ */ __name(() => {
-      cleanup(new AbortError6("Queue aborted"));
+      cleanup(new AbortError5("Queue aborted"));
     }, "onSignalAbort");
     this.addEventListener("success", onQueueJobComplete);
     this.addEventListener("failure", onQueueError);
@@ -13966,7 +13913,7 @@ async function createReleasable(queue, options) {
     rej = reject;
   });
   const listener = /* @__PURE__ */ __name(() => {
-    rej(new AbortError6());
+    rej(new AbortError5());
   }, "listener");
   options?.signal?.addEventListener("abort", listener, {
     once: true
@@ -14897,8 +14844,8 @@ __name(flatten, "flatten");
 // node_modules/@libp2p/peer-store/dist/src/utils/peer-id-to-datastore-key.js
 var NAMESPACE_COMMON = "/peers/";
 function peerIdToDatastoreKey(peerId) {
-  if (!isPeerId2(peerId) || peerId.type == null) {
-    throw new InvalidParametersError6("Invalid PeerId");
+  if (!isPeerId(peerId) || peerId.type == null) {
+    throw new InvalidParametersError("Invalid PeerId");
   }
   const b32key = peerId.toCID().toString();
   return new Key(`${NAMESPACE_COMMON}${b32key}`);
@@ -14916,7 +14863,7 @@ async function dedupeFilterAndSortAddresses(peerId, filter2, addresses, existing
       addr.multiaddr = multiaddr(addr.multiaddr);
     }
     if (!isMultiaddr(addr.multiaddr)) {
-      throw new InvalidParametersError6("Multiaddr was invalid");
+      throw new InvalidParametersError("Multiaddr was invalid");
     }
     if (!await filter2(peerId, addr.multiaddr, options)) {
       continue;
@@ -14951,14 +14898,14 @@ __name(dedupeFilterAndSortAddresses, "dedupeFilterAndSortAddresses");
 // node_modules/@libp2p/peer-store/dist/src/utils/to-peer-pb.js
 async function toPeerPB(peerId, data, strategy, options) {
   if (data == null) {
-    throw new InvalidParametersError6("Invalid PeerData");
+    throw new InvalidParametersError("Invalid PeerData");
   }
   if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
-    throw new InvalidParametersError6("publicKey bytes do not match peer id publicKey bytes");
+    throw new InvalidParametersError("publicKey bytes do not match peer id publicKey bytes");
   }
   const existingPeer = options.existingPeer?.peer;
   if (existingPeer != null && !peerId.equals(existingPeer.id)) {
-    throw new InvalidParametersError6("peer id did not match existing peer id");
+    throw new InvalidParametersError("peer id did not match existing peer id");
   }
   let addresses = existingPeer?.addresses ?? [];
   let protocols = new Set(existingPeer?.protocols ?? []);
@@ -15090,31 +15037,31 @@ function createSortedMap(entries, options) {
 __name(createSortedMap, "createSortedMap");
 function validateMetadata(key, value2) {
   if (typeof key !== "string") {
-    throw new InvalidParametersError6("Metadata key must be a string");
+    throw new InvalidParametersError("Metadata key must be a string");
   }
   if (!(value2 instanceof Uint8Array)) {
-    throw new InvalidParametersError6("Metadata value must be a Uint8Array");
+    throw new InvalidParametersError("Metadata value must be a Uint8Array");
   }
 }
 __name(validateMetadata, "validateMetadata");
 function validateTag(key, tag) {
   if (typeof key !== "string") {
-    throw new InvalidParametersError6("Tag name must be a string");
+    throw new InvalidParametersError("Tag name must be a string");
   }
   if (tag.value != null) {
     if (parseInt(`${tag.value}`, 10) !== tag.value) {
-      throw new InvalidParametersError6("Tag value must be an integer");
+      throw new InvalidParametersError("Tag value must be an integer");
     }
     if (tag.value < 0 || tag.value > 100) {
-      throw new InvalidParametersError6("Tag value must be between 0-100");
+      throw new InvalidParametersError("Tag value must be between 0-100");
     }
   }
   if (tag.ttl != null) {
     if (parseInt(`${tag.ttl}`, 10) !== tag.ttl) {
-      throw new InvalidParametersError6("Tag ttl must be an integer");
+      throw new InvalidParametersError("Tag ttl must be an integer");
     }
     if (tag.ttl < 0) {
-      throw new InvalidParametersError6("Tag ttl must be between greater than 0");
+      throw new InvalidParametersError("Tag ttl must be between greater than 0");
     }
   }
 }
@@ -15255,7 +15202,7 @@ var PersistentStore = class {
     const peer = Peer.decode(buf);
     if (this.#peerIsExpired(peerId, peer)) {
       await this.datastore.delete(key, options);
-      throw new NotFoundError2();
+      throw new NotFoundError();
     }
     return pbToPeer(peerId, peer, this.peerId.equals(peerId) ? Infinity : this.maxAddressAge);
   }
@@ -15305,7 +15252,7 @@ var PersistentStore = class {
       const peerPB = Peer.decode(buf);
       if (this.#peerIsExpired(peerId, peerPB)) {
         await this.datastore.delete(key, options);
-        throw new NotFoundError2();
+        throw new NotFoundError();
       }
       return {
         peerPB,
@@ -15430,8 +15377,8 @@ var PersistentPeerStore = class {
     }
   }
   async consumePeerRecord(buf, arg1, arg2) {
-    const expectedPeer = isPeerId2(arg1) ? arg1 : isPeerId2(arg1?.expectedPeer) ? arg1.expectedPeer : void 0;
-    const options = isPeerId2(arg1) ? arg2 : arg1 === void 0 ? arg2 : arg1;
+    const expectedPeer = isPeerId(arg1) ? arg1 : isPeerId(arg1?.expectedPeer) ? arg1.expectedPeer : void 0;
+    const options = isPeerId(arg1) ? arg2 : arg1 === void 0 ? arg2 : arg1;
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord2.DOMAIN, options);
     const peerId = peerIdFromCID(envelope.publicKey.toCID());
     if (expectedPeer?.equals(peerId) === false) {
@@ -15843,7 +15790,7 @@ function flatten2(arr) {
 __name(flatten2, "flatten");
 
 // node_modules/datastore-core/node_modules/interface-store/dist/src/errors.js
-var NotFoundError3 = class _NotFoundError extends Error {
+var NotFoundError2 = class _NotFoundError extends Error {
   static name = "NotFoundError";
   static code = "ERR_NOT_FOUND";
   name = _NotFoundError.name;
@@ -16142,7 +16089,7 @@ var MemoryDatastore = class extends BaseDatastore {
     options?.signal?.throwIfAborted();
     const result = this.data.get(key.toString());
     if (result == null) {
-      throw new NotFoundError3();
+      throw new NotFoundError2();
     }
     return result;
   }
@@ -17460,12 +17407,12 @@ function getPeerAddress(peer) {
       const maPeerIdStr = ma.getComponents().findLast((c2) => c2.code === CODE_P2P)?.value;
       if (maPeerIdStr == null) {
         if (peerId != null) {
-          throw new InvalidParametersError3("Multiaddrs must all have the same peer id or have no peer id");
+          throw new InvalidParametersError("Multiaddrs must all have the same peer id or have no peer id");
         }
       } else {
         const maPeerId = peerIdFromString(maPeerIdStr);
         if (peerId?.equals(maPeerId) !== true) {
-          throw new InvalidParametersError3("Multiaddrs must all have the same peer id or have no peer id");
+          throw new InvalidParametersError("Multiaddrs must all have the same peer id or have no peer id");
         }
       }
     });
@@ -17508,7 +17455,7 @@ function multiaddrToIpNet(ma) {
   const config = getNetConfig(ma);
   let mask = config.cidr;
   if (config.type !== "ip4" && config.type !== "ip6") {
-    throw new InvalidParametersError3(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
   }
   if (mask == null) {
     switch (config.type) {
@@ -17521,7 +17468,7 @@ function multiaddrToIpNet(ma) {
         break;
       }
       default: {
-        throw new InvalidParametersError3(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
+        throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
       }
     }
   }
@@ -18920,7 +18867,7 @@ function validateNumberOption(name3, value2, { min = 0, allowInfinity = false } 
   }
 }
 __name(validateNumberOption, "validateNumberOption");
-var AbortError7 = class extends Error {
+var AbortError6 = class extends Error {
   static {
     __name(this, "AbortError");
   }
@@ -18954,7 +18901,7 @@ function calculateRemainingTime(start2, max) {
 __name(calculateRemainingTime, "calculateRemainingTime");
 async function onAttemptFailure({ error, attemptNumber, retriesConsumed, startTime, options }) {
   const normalizedError = error instanceof Error ? error : new TypeError(`Non-error was thrown: "${error}". You should only throw errors.`);
-  if (normalizedError instanceof AbortError7) {
+  if (normalizedError instanceof AbortError6) {
     throw normalizedError.originalError;
   }
   const retriesLeft = Number.isFinite(options.retries) ? Math.max(0, options.retries - retriesConsumed) : options.retries;
@@ -19210,7 +19157,7 @@ var DefaultConnectionManager = class {
   constructor(components, init = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions4.maxConnections;
     if (this.maxConnections < 1) {
-      throw new InvalidParametersError3("Connection Manager maxConnections must be greater than 0");
+      throw new InvalidParametersError("Connection Manager maxConnections must be greater than 0");
     }
     this.connections = new PeerMap();
     this.started = false;
@@ -19362,7 +19309,7 @@ var DefaultConnectionManager = class {
   }
   setMaxConnections(maxConnections) {
     if (this.maxConnections < 1) {
-      throw new InvalidParametersError3("Connection Manager maxConnections must be greater than 0");
+      throw new InvalidParametersError("Connection Manager maxConnections must be greater than 0");
     }
     let needsPrune = false;
     if (maxConnections < this.maxConnections) {
@@ -20270,7 +20217,7 @@ var Registrar = class {
    */
   async register(protocol, topology) {
     if (topology == null) {
-      throw new InvalidParametersError3("invalid topology");
+      throw new InvalidParametersError("invalid topology");
     }
     const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`;
     let topologies = this.topologies.get(protocol);
@@ -20421,10 +20368,10 @@ var DefaultTransportManager = class {
   add(transport) {
     const tag = transport[Symbol.toStringTag];
     if (tag == null) {
-      throw new InvalidParametersError3("Transport must have a valid tag");
+      throw new InvalidParametersError("Transport must have a valid tag");
     }
     if (this.transports.has(tag)) {
-      throw new InvalidParametersError3(`There is already a transport with the tag ${tag}`);
+      throw new InvalidParametersError(`There is already a transport with the tag ${tag}`);
     }
     this.log("adding transport %s", tag);
     this.transports.set(tag, transport);
@@ -20670,22 +20617,6 @@ __name(getErrorMessage, "getErrorMessage");
 // node_modules/@libp2p/multistream-select/dist/src/constants.js
 var PROTOCOL_ID = "/multistream/1.0.0";
 var MAX_PROTOCOL_LENGTH = 1024;
-
-// node_modules/@libp2p/multistream-select/node_modules/@libp2p/interface/dist/src/errors.js
-var UnsupportedProtocolError = class extends Error {
-  static name = "UnsupportedProtocolError";
-  constructor(message2 = "Unsupported protocol error") {
-    super(message2);
-    this.name = "UnsupportedProtocolError";
-  }
-};
-var InvalidMessageError = class extends Error {
-  static name = "InvalidMessageError";
-  constructor(message2 = "Invalid message") {
-    super(message2);
-    this.name = "InvalidMessageError";
-  }
-};
 
 // node_modules/@libp2p/multistream-select/dist/src/multistream.js
 var NewLine = fromString2("\n");
@@ -21768,11 +21699,11 @@ var Libp2p = class extends TypedEventEmitter {
   }
   async dialProtocol(peer, protocols, options = {}) {
     if (protocols == null) {
-      throw new InvalidParametersError3("no protocols were provided to open a stream");
+      throw new InvalidParametersError("no protocols were provided to open a stream");
     }
     protocols = Array.isArray(protocols) ? protocols : [protocols];
     if (protocols.length === 0) {
-      throw new InvalidParametersError3("no protocols were provided to open a stream");
+      throw new InvalidParametersError("no protocols were provided to open a stream");
     }
     return this.components.connectionManager.openStream(peer, protocols, options);
   }

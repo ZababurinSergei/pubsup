@@ -14,6 +14,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "build:front": "esbuild ./docs/index.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/index.bundle.mjs",
     "build": "npm run build:pubsub && npm run build:libp2p && npm run build:peer-store && npm run build:pubsubPeerDiscovery && npm run build:gossipsub && npm run build:identify",
     "build:pubsub": "esbuild ./src/dep-pubsub.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-pubsub.js",
     "build:libp2p": "esbuild ./src/dep-libp2p.js --bundle --sourcemap --format=esm --target=chrome114 --define:global=window --keep-names --outfile=./docs/lib-libp2p.js",
@@ -27,7 +28,7 @@
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^14.1.2",
     "@chainsafe/libp2p-noise": "^17.0.0",
-    "@chainsafe/libp2p-yamux": "^8.0.0",
+    "@chainsafe/libp2p-yamux": "^8.0.1",
     "@libp2p/autonat": "^3.0.5",
     "@libp2p/autonat-v2": "^2.0.5",
     "@libp2p/bootstrap": "^12.0.6",
@@ -67,7 +68,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "esbuild": "^0.25.10",
+    "esbuild": "^0.25.11",
     "test-ipfs-example": "^1.3.3"
   },
   "engines": {

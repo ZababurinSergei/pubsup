@@ -225,25 +225,7 @@ var require_netmask = __commonJS({
   }
 });
 
-// node_modules/@libp2p/identify/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidMessageError = class extends Error {
-  static name = "InvalidMessageError";
-  constructor(message2 = "Invalid message") {
-    super(message2);
-    this.name = "InvalidMessageError";
-  }
-};
-
-// node_modules/main-event/dist/src/events.browser.js
-function setMaxListeners() {
-}
-__name(setMaxListeners, "setMaxListeners");
-
-// node_modules/@libp2p/identify/node_modules/@libp2p/interface/dist/src/index.js
-var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
-var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
-
-// node_modules/@libp2p/crypto/node_modules/@libp2p/interface/dist/src/errors.js
+// node_modules/@libp2p/interface/dist/src/errors.js
 var InvalidParametersError = class extends Error {
   static name = "InvalidParametersError";
   constructor(message2 = "Invalid parameters") {
@@ -258,6 +240,27 @@ var InvalidPublicKeyError = class extends Error {
     this.name = "InvalidPublicKeyError";
   }
 };
+var InvalidCIDError = class extends Error {
+  static name = "InvalidCIDError";
+  constructor(message2 = "Invalid CID") {
+    super(message2);
+    this.name = "InvalidCIDError";
+  }
+};
+var InvalidMultihashError = class extends Error {
+  static name = "InvalidMultihashError";
+  constructor(message2 = "Invalid Multihash") {
+    super(message2);
+    this.name = "InvalidMultihashError";
+  }
+};
+var InvalidMessageError = class extends Error {
+  static name = "InvalidMessageError";
+  constructor(message2 = "Invalid message") {
+    super(message2);
+    this.name = "InvalidMessageError";
+  }
+};
 var UnsupportedKeyTypeError = class extends Error {
   static name = "UnsupportedKeyTypeError";
   constructor(message2 = "Unsupported key type") {
@@ -265,6 +268,18 @@ var UnsupportedKeyTypeError = class extends Error {
     this.name = "UnsupportedKeyTypeError";
   }
 };
+
+// node_modules/@libp2p/interface/dist/src/peer-id.js
+var peerIdSymbol = Symbol.for("@libp2p/peer-id");
+
+// node_modules/main-event/dist/src/events.browser.js
+function setMaxListeners() {
+}
+__name(setMaxListeners, "setMaxListeners");
+
+// node_modules/@libp2p/interface/dist/src/index.js
+var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
+var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
 
 // node_modules/multiformats/dist/src/bases/base58.js
 var base58_exports = {};
@@ -7627,32 +7642,6 @@ var formatSignaturePayload = /* @__PURE__ */ __name((domain, payloadType, payloa
   return new Uint8ArrayList(domainLength, domainUint8Array, payloadTypeLength, payloadType, payloadLength, payload);
 }, "formatSignaturePayload");
 
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidCIDError = class extends Error {
-  static name = "InvalidCIDError";
-  constructor(message2 = "Invalid CID") {
-    super(message2);
-    this.name = "InvalidCIDError";
-  }
-};
-var InvalidMultihashError = class extends Error {
-  static name = "InvalidMultihashError";
-  constructor(message2 = "Invalid Multihash") {
-    super(message2);
-    this.name = "InvalidMultihashError";
-  }
-};
-var UnsupportedKeyTypeError2 = class extends Error {
-  static name = "UnsupportedKeyTypeError";
-  constructor(message2 = "Unsupported key type") {
-    super(message2);
-    this.name = "UnsupportedKeyTypeError";
-  }
-};
-
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol = Symbol.for("@libp2p/peer-id");
-
 // node_modules/@libp2p/peer-id/dist/src/peer-id.js
 var inspect = Symbol.for("nodejs.util.inspect.custom");
 var LIBP2P_KEY_CODE = 114;
@@ -7819,7 +7808,7 @@ function peerIdFromPublicKey(publicKey) {
       publicKey
     });
   }
-  throw new UnsupportedKeyTypeError2();
+  throw new UnsupportedKeyTypeError();
 }
 __name(peerIdFromPublicKey, "peerIdFromPublicKey");
 function peerIdFromMultihash(multihash) {
@@ -7870,7 +7859,7 @@ var ValidationError = class extends Error {
   static name = "ValidationError";
   name = "ValidationError";
 };
-var InvalidParametersError3 = class extends Error {
+var InvalidParametersError2 = class extends Error {
   static name = "InvalidParametersError";
   name = "InvalidParametersError";
 };
@@ -8830,7 +8819,7 @@ var Multiaddr = class _Multiaddr {
     const s = this.toString();
     const i = s.lastIndexOf(addrString);
     if (i < 0) {
-      throw new InvalidParametersError3(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
+      throw new InvalidParametersError2(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
     }
     return new _Multiaddr(s.slice(0, i), {
       validate: false
@@ -9086,15 +9075,6 @@ var PeerRecord2 = class _PeerRecord {
   }
 };
 
-// node_modules/@libp2p/utils/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidParametersError4 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-
 // node_modules/@libp2p/utils/dist/src/multiaddr/get-net-config.js
 function getNetConfig(ma) {
   const components = ma.getComponents();
@@ -9131,7 +9111,7 @@ function getNetConfig(ma) {
     index++;
   }
   if (config.type == null || config.host == null) {
-    throw new InvalidParametersError4(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`);
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`);
   }
   if (components[index]?.name === "tls" && components[index + 1]?.name === "sni") {
     config.sni = components[index + 1].value;
@@ -9821,7 +9801,7 @@ function byteStream(stream, opts) {
   let hasBytes;
   let unwrapped = false;
   if (!isValid(stream)) {
-    throw new InvalidParametersError4("Argument should be a Stream or a Multiaddr");
+    throw new InvalidParametersError("Argument should be a Stream or a Multiaddr");
   }
   const byteStreamOnMessageListener = /* @__PURE__ */ __name((evt) => {
     readBuffer.append(evt.data);

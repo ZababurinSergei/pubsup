@@ -17,12 +17,16 @@ import { IDBDatastore } from 'datastore-idb'
 import { ping } from '@libp2p/ping'
 import { PUBSUB_PEER_DISCOVERY } from './constants.js'
 import { FaultTolerance } from '@libp2p/interface-transport'
-import {http} from "@libp2p/http";
-import {nodeServer} from "@libp2p/http-server";
 
-const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
-const port = 4839
-const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com'
+// const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
+// const port = 4839
+// const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com'
+
+
+const serverPeerId = '12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i'
+const port = 6835
+const RENDER_EXTERNAL_HOSTNAME = 'localhost'
+
 
 const store = new IDBDatastore('/fs', {
   prefix: '/universe',
@@ -164,44 +168,105 @@ if(isLanKad) {
 
 console.log('-------------- boot----------------- ', boot)
 const libp2p = await createLibp2p({
+  store,
+  persistentPeerStore,
   addresses: {
     listen: [
-      // make a reservation on any discovered relays - this will let other
-      // peers use the relay to contact us
-      '/p2p-circuit',
-      // create listeners for incoming WebRTC connection attempts on on all
-      // available Circuit Relay connections
+      '/webrtc-direct',
       '/webrtc'
     ]
   },
   transports: [
+    webRTCDirect(),
     // the WebSocket transport lets us dial a local relay
     webSockets(),
     // support dialing/listening on WebRTC addresses
     webRTC(),
     // support dialing/listening on Circuit Relay addresses
-    circuitRelayTransport()
+    circuitRelayTransport({
+      // make a reservation on any discovered relays - this will let other
+      // peers use the relay to contact us
+      discoverRelays: 2
+    })
   ],
+  peerDiscovery: boot,
   // a connection encrypter is necessary to dial the relay
-  connectionEncrypters: [noise()],
+  connectionEncryption: [noise()],
   // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
   services: {
     identify: identify(),
-    ping: ping()
+    identifyPush: identifyPush(),
+    pubsub: gossipsub(),
+    dcutr: dcutr(),
+    ping: ping(),
+    dht: isDht ? kadDHT({
+      kBucketSize: 4,
+      kBucketSplitThreshold: `kBucketSize`,
+      prefixLength: 6,
+      clientMode: false,
+      querySelfInterval: 5000,
+      initialQuerySelfInterval: 1000,
+      allowQueryWithZeroPeers: false,
+      protocol: DhtProtocol,
+      logPrefix: "libp2p:kad-dht",
+      pingTimeout: 10000,
+      pingConcurrency: 10,
+      // maxInboundStreams: 32,
+      // maxOutboundStreams: 64,
+      maxInboundStreams: 3,
+      maxOutboundStreams: 6,
+      // peerInfoMapper: removePrivateAddressesMapper,
+      peerInfoMapper: publicAddressesMapper,
+    }): () => { }
+  },
+  connectionManager: {
+    minConnections: 20
+  },
+  transportManager: {
+    faultTolerance: FaultTolerance.NO_FATAL
   },
   connectionGater: {
-    denyDialMultiaddr: () => {
-      // by default we refuse to dial local addresses from browsers since they
-      // are usually sent by remote peers broadcasting undialable multiaddrs and
-      // cause errors to appear in the console but in this example we are
-      // explicitly connecting to a local node so allow all addresses
+    denyDialPeer: (currentPeerId) => {
+      console.log('-------- denyDialPeer --------', currentPeerId.toString())
       return false
+    },
+    denyDialMultiaddr: async (currentPeerId) => {
+      console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
+      return false
+    },
+    denyOutboundConnection: (currentPeerId, maConn) => {
+      console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyInboundConnection: (maConn) => {
+      console.log('-------- 1 denyInboundConnection 1 --------', maConn)
+      return false
+    },
+    denyInboundEncryptedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyInboundUpgradedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    filterMultiaddrForPeer: async (currentPeerId, maConn) => {
+      console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
+      return true
     }
   }
 })
 
-// libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
+libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
 
 const intervalId = setInterval( () => {
   const ma = multiaddr(isLocalhost

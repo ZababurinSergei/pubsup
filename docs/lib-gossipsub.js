@@ -444,7 +444,7 @@ var TypedEventEmitter = class extends EventTarget {
 var serviceCapabilities = Symbol.for("@libp2p/service-capabilities");
 var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
 
-// node_modules/@libp2p/crypto/node_modules/@libp2p/interface/dist/src/errors.js
+// node_modules/@libp2p/interface/dist/src/errors.js
 var InvalidParametersError2 = class extends Error {
   static name = "InvalidParametersError";
   constructor(message2 = "Invalid parameters") {

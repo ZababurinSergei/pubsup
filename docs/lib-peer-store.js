@@ -5,12 +5,19 @@ var __export = (target, all2) => {
     __defProp(target, name2, { get: all2[name2], enumerable: true });
 };
 
-// node_modules/@libp2p/peer-store/node_modules/@libp2p/interface/dist/src/errors.js
+// node_modules/@libp2p/interface/dist/src/errors.js
 var InvalidParametersError = class extends Error {
   static name = "InvalidParametersError";
   constructor(message2 = "Invalid parameters") {
     super(message2);
     this.name = "InvalidParametersError";
+  }
+};
+var InvalidPublicKeyError = class extends Error {
+  static name = "InvalidPublicKeyError";
+  constructor(message2 = "Invalid public key") {
+    super(message2);
+    this.name = "InvalidPublicKeyError";
   }
 };
 var NotFoundError = class extends Error {
@@ -20,8 +27,29 @@ var NotFoundError = class extends Error {
     this.name = "NotFoundError";
   }
 };
+var InvalidCIDError = class extends Error {
+  static name = "InvalidCIDError";
+  constructor(message2 = "Invalid CID") {
+    super(message2);
+    this.name = "InvalidCIDError";
+  }
+};
+var InvalidMultihashError = class extends Error {
+  static name = "InvalidMultihashError";
+  constructor(message2 = "Invalid Multihash") {
+    super(message2);
+    this.name = "InvalidMultihashError";
+  }
+};
+var UnsupportedKeyTypeError = class extends Error {
+  static name = "UnsupportedKeyTypeError";
+  constructor(message2 = "Unsupported key type") {
+    super(message2);
+    this.name = "UnsupportedKeyTypeError";
+  }
+};
 
-// node_modules/@libp2p/peer-store/node_modules/@libp2p/interface/dist/src/peer-id.js
+// node_modules/@libp2p/interface/dist/src/peer-id.js
 var peerIdSymbol = Symbol.for("@libp2p/peer-id");
 function isPeerId(other) {
   return Boolean(other?.[peerIdSymbol]);
@@ -83,29 +111,6 @@ var TypedEventEmitter = class extends EventTarget {
   }
   safeDispatchEvent(type, detail = {}) {
     return this.dispatchEvent(new CustomEvent(type, detail));
-  }
-};
-
-// node_modules/@libp2p/crypto/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidParametersError2 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-var InvalidPublicKeyError = class extends Error {
-  static name = "InvalidPublicKeyError";
-  constructor(message2 = "Invalid public key") {
-    super(message2);
-    this.name = "InvalidPublicKeyError";
-  }
-};
-var UnsupportedKeyTypeError = class extends Error {
-  static name = "UnsupportedKeyTypeError";
-  constructor(message2 = "Unsupported key type") {
-    super(message2);
-    this.name = "UnsupportedKeyTypeError";
   }
 };
 
@@ -2120,7 +2125,7 @@ function pkiMessageToECDSAPublicKey(message2) {
       y
     });
   }
-  throw new InvalidParametersError2(`coordinates were wrong length, got ${coordinates.byteLength}, expected 65, 97 or 133`);
+  throw new InvalidParametersError(`coordinates were wrong length, got ${coordinates.byteLength}, expected 65, 97 or 133`);
 }
 __name(pkiMessageToECDSAPublicKey, "pkiMessageToECDSAPublicKey");
 function publicKeyToPKIMessage(publicKey) {
@@ -2146,7 +2151,7 @@ function getOID(curve) {
   if (curve === "P-521") {
     return OID_521;
   }
-  throw new InvalidParametersError2(`Invalid curve ${curve}`);
+  throw new InvalidParametersError(`Invalid curve ${curve}`);
 }
 __name(getOID, "getOID");
 
@@ -4319,7 +4324,7 @@ __name(unmarshalEd25519PublicKey, "unmarshalEd25519PublicKey");
 function ensureEd25519Key(key, length3) {
   key = Uint8Array.from(key ?? []);
   if (key.length !== length3) {
-    throw new InvalidParametersError2(`Key must be a Uint8Array of length ${length3}, got ${key.length}`);
+    throw new InvalidParametersError(`Key must be a Uint8Array of length ${length3}, got ${key.length}`);
   }
   return key;
 }
@@ -5952,7 +5957,7 @@ function pkcs1MessageToJwk(message2) {
 __name(pkcs1MessageToJwk, "pkcs1MessageToJwk");
 function jwkToPkcs1(jwk) {
   if (jwk.n == null || jwk.e == null || jwk.d == null || jwk.p == null || jwk.q == null || jwk.dp == null || jwk.dq == null || jwk.qi == null) {
-    throw new InvalidParametersError2("JWK was missing components");
+    throw new InvalidParametersError("JWK was missing components");
   }
   return encodeSequence([
     encodeInteger(Uint8Array.from([0])),
@@ -5987,7 +5992,7 @@ function pkixMessageToJwk(message2) {
 __name(pkixMessageToJwk, "pkixMessageToJwk");
 function jwkToPkix(jwk) {
   if (jwk.n == null || jwk.e == null) {
-    throw new InvalidParametersError2("JWK was missing components");
+    throw new InvalidParametersError("JWK was missing components");
   }
   const subjectPublicKeyInfo = encodeSequence([
     RSA_ALGORITHM_IDENTIFIER,
@@ -6033,7 +6038,7 @@ function pkixMessageToRSAPublicKey(message2, bytes, digest2) {
 __name(pkixMessageToRSAPublicKey, "pkixMessageToRSAPublicKey");
 function jwkToRSAPrivateKey(jwk) {
   if (rsaKeySize(jwk) > MAX_RSA_KEY_SIZE) {
-    throw new InvalidParametersError2("Key size is too large");
+    throw new InvalidParametersError("Key size is too large");
   }
   const keys = jwkToJWKKeyPair(jwk);
   const hash = sha2562(PublicKey.encode({
@@ -6046,7 +6051,7 @@ function jwkToRSAPrivateKey(jwk) {
 __name(jwkToRSAPrivateKey, "jwkToRSAPrivateKey");
 async function generateRSAKeyPair(bits) {
   if (bits > MAX_RSA_KEY_SIZE) {
-    throw new InvalidParametersError2("Key size is too large");
+    throw new InvalidParametersError("Key size is too large");
   }
   const keys = await generateRSAKey(bits);
   const hash = sha2562(PublicKey.encode({
@@ -6059,7 +6064,7 @@ async function generateRSAKeyPair(bits) {
 __name(generateRSAKeyPair, "generateRSAKeyPair");
 function jwkToJWKKeyPair(key) {
   if (key == null) {
-    throw new InvalidParametersError2("Missing key parameter");
+    throw new InvalidParametersError("Missing key parameter");
   }
   return {
     privateKey: key,
@@ -6112,7 +6117,7 @@ async function hashAndVerify3(key, sig, msg, options) {
 __name(hashAndVerify3, "hashAndVerify");
 async function exportKey(pair, options) {
   if (pair.privateKey == null || pair.publicKey == null) {
-    throw new InvalidParametersError2("Private and public key are required");
+    throw new InvalidParametersError("Private and public key are required");
   }
   const result = await Promise.all([
     webcrypto_default.get().subtle.exportKey("jwk", pair.privateKey),
@@ -6124,9 +6129,9 @@ async function exportKey(pair, options) {
 __name(exportKey, "exportKey");
 function rsaKeySize(jwk) {
   if (jwk.kty !== "RSA") {
-    throw new InvalidParametersError2("invalid key type");
+    throw new InvalidParametersError("invalid key type");
   } else if (jwk.n == null) {
-    throw new InvalidParametersError2("invalid key modulus");
+    throw new InvalidParametersError("invalid key modulus");
   }
   const bytes = fromString2(jwk.n, "base64url");
   return bytes.length * 8;
@@ -7291,32 +7296,6 @@ function publicKeyToProtobuf(key) {
 }
 __name(publicKeyToProtobuf, "publicKeyToProtobuf");
 
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidCIDError = class extends Error {
-  static name = "InvalidCIDError";
-  constructor(message2 = "Invalid CID") {
-    super(message2);
-    this.name = "InvalidCIDError";
-  }
-};
-var InvalidMultihashError = class extends Error {
-  static name = "InvalidMultihashError";
-  constructor(message2 = "Invalid Multihash") {
-    super(message2);
-    this.name = "InvalidMultihashError";
-  }
-};
-var UnsupportedKeyTypeError2 = class extends Error {
-  static name = "UnsupportedKeyTypeError";
-  constructor(message2 = "Unsupported key type") {
-    super(message2);
-    this.name = "UnsupportedKeyTypeError";
-  }
-};
-
-// node_modules/@libp2p/peer-id/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol2 = Symbol.for("@libp2p/peer-id");
-
 // node_modules/@libp2p/peer-id/dist/src/peer-id.js
 var inspect = Symbol.for("nodejs.util.inspect.custom");
 var LIBP2P_KEY_CODE = 114;
@@ -7339,7 +7318,7 @@ var PeerIdImpl = class {
   get [Symbol.toStringTag]() {
     return `PeerId(${this.toString()})`;
   }
-  [peerIdSymbol2] = true;
+  [peerIdSymbol] = true;
   toString() {
     if (this.string == null) {
       this.string = base58btc.encode(this.multihash.bytes).slice(1);
@@ -7439,7 +7418,7 @@ var URLPeerId = class {
   [inspect]() {
     return `PeerId(${this.url})`;
   }
-  [peerIdSymbol2] = true;
+  [peerIdSymbol] = true;
   toString() {
     return this.toCID().toString();
   }
@@ -7483,7 +7462,7 @@ function peerIdFromPublicKey(publicKey) {
       publicKey
     });
   }
-  throw new UnsupportedKeyTypeError2();
+  throw new UnsupportedKeyTypeError();
 }
 __name(peerIdFromPublicKey, "peerIdFromPublicKey");
 function peerIdFromMultihash(multihash) {
@@ -7725,7 +7704,7 @@ var ValidationError = class extends Error {
   static name = "ValidationError";
   name = "ValidationError";
 };
-var InvalidParametersError4 = class extends Error {
+var InvalidParametersError2 = class extends Error {
   static name = "InvalidParametersError";
   name = "InvalidParametersError";
 };
@@ -8668,7 +8647,7 @@ var Multiaddr = class _Multiaddr {
     const s = this.toString();
     const i = s.lastIndexOf(addrString);
     if (i < 0) {
-      throw new InvalidParametersError4(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
+      throw new InvalidParametersError2(`Address ${this.toString()} does not contain subaddress: ${addrString}`);
     }
     return new _Multiaddr(s.slice(0, i), {
       validate: false
