@@ -163,6 +163,11 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             gap: 10px;
         }
         
+        .peer-blocked {
+            border-left-color: #f56565 !important;
+            background: #fff5f5 !important;
+        }
+        
         .peer-info {
             flex: 1;
             word-break: break-all;
@@ -204,6 +209,23 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         
         .peer-btn-danger:hover {
             background: #c53030;
+        }
+        
+        .peer-btn-warning {
+            background: #ed8936;
+        }
+        
+        .peer-btn-warning:hover {
+            background: #dd6b20;
+        }
+        
+        .blocked-badge {
+            background: #f56565;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-left: 8px;
         }
         
         .actions {
@@ -437,7 +459,6 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         </div>
         
         <div class="dashboard">
-            <!-- Остальные карточки остаются без изменений -->
             <div class="card">
                 <h3>🆔 Node Identity</h3>
                 <div class="info-grid">
@@ -577,9 +598,7 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 <button class="btn btn-danger" onclick="window.showPeerForm('disconnectAll')">🚫 Disconnect All</button>
             </div>
             
-            <!-- Формы для управления пирами -->
             <div class="peer-management">
-                <!-- Форма для получения всех пиров -->
                 <div id="getAllPeersForm" class="peer-form hidden">
                     <h4>📋 Get All Peers</h4>
                     <p>Get detailed information about all connected peers</p>
@@ -590,7 +609,6 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                     <div id="getAllPeersResponse" class="response-area hidden"></div>
                 </div>
                 
-                <!-- Форма для получения информации о конкретном пире -->
                 <div id="getPeerForm" class="peer-form hidden">
                     <h4>🔍 Get Peer Info</h4>
                     <div class="form-group">
@@ -598,13 +616,11 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                         <input type="text" id="peerIdInput" class="form-input" placeholder="Enter Peer ID...">
                     </div>
                     <div class="form-actions">
-                        <button class="btn btn-success" onclick="window.getPeerInfo()">Get Peer Info</button>
-                        <button class="btn btn-secondary" onclick="window.hidePeerForm('getPeer')">Cancel</button>
+                        <button class="btn btn-secondary" onclick="window.hidePeerForm('getPeer')">Закрыть</button>
                     </div>
                     <div id="getPeerResponse" class="response-area hidden"></div>
                 </div>
                 
-                <!-- Форма для отключения конкретного пира -->
                 <div id="disconnectPeerForm" class="peer-form hidden">
                     <h4>🚫 Disconnect Peer</h4>
                     <div class="form-group">
@@ -612,13 +628,11 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                         <input type="text" id="disconnectPeerIdInput" class="form-input" placeholder="Enter Peer ID to disconnect...">
                     </div>
                     <div class="form-actions">
-                        <button class="btn btn-danger" onclick="window.disconnectPeer()">Disconnect Peer</button>
-                        <button class="btn btn-secondary" onclick="window.hidePeerForm('disconnectPeer')">Cancel</button>
+                        <button class="btn btn-secondary" onclick="window.hidePeerForm('disconnectPeer')">Закрыть</button>
                     </div>
                     <div id="disconnectPeerResponse" class="response-area hidden"></div>
                 </div>
                 
-                <!-- Форма для отключения всех пиров -->
                 <div id="disconnectAllForm" class="peer-form hidden">
                     <h4>🚫 Disconnect All Peers</h4>
                     <p><strong>Warning:</strong> This will disconnect all connected peers. This action cannot be undone.</p>
@@ -638,10 +652,10 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                     <div class="peer-item">
                         <div class="peer-info">${peerIdString}</div>
                         <div class="peer-actions">
-                            <button class="peer-btn peer-btn-info" onclick="window.getSpecificPeerInfo('${peerIdString}')">
+                            <button class="peer-btn peer-btn-info" onclick="window.getSpecificPeerInfo('${peerIdString.replace(/'/g, "\\'")}')">
                                 🔍 Get Info
                             </button>
-                            <button class="peer-btn peer-btn-danger" onclick="window.disconnectSpecificPeer('${peerIdString}')">
+                            <button class="peer-btn peer-btn-danger" onclick="window.disconnectSpecificPeer('${peerIdString.replace(/'/g, "\\'")}')">
                                 🚫 Disconnect
                             </button>
                         </div>
@@ -654,16 +668,13 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
     </div>
 
     <script type="module">
-        // Делаем функции глобальными, чтобы они были доступны из HTML
         window.nodeData = {};
         window.startTime = Date.now();
+        window.blockedPeers = {};
         
-        // Функции для управления формами
         window.showPeerForm = function(formType) {
-            // Скрываем все формы
             window.hideAllPeerForms();
             
-            // Показываем нужную форму
             switch(formType) {
                 case 'getAllPeers':
                     document.getElementById('getAllPeersForm').classList.remove('hidden');
@@ -704,7 +715,6 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             });
         };
         
-        // Функции для работы с конкретными пирами (кнопки рядом с пиром)
         window.getSpecificPeerInfo = function(peerId) {
             document.getElementById('peerIdInput').value = peerId;
             window.showPeerForm('getPeer');
@@ -717,7 +727,26 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             window.disconnectPeer();
         };
         
-        // Функции для работы с API
+        window.unblockPeer = async function(peerId) {
+            try {
+                const response = await fetch(\`/peers/unblock/\${peerId}\`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.status) {
+                    window.showNotification(\`Peer \${peerId} unblocked\`);
+                    window.refreshPeers();
+                    window.refreshBlockedPeers();
+                }
+            } catch (error) {
+                window.showNotification('Error unblocking peer');
+            }
+        };
+        
         window.getAllPeers = async function() {
             try {
                 const response = await fetch('/peers');
@@ -793,8 +822,8 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 
                 window.showNotification(\`Peer \${peerId} disconnected successfully\`);
                 
-                // Обновляем список пиров
                 setTimeout(window.refreshPeers, 1000);
+                setTimeout(window.refreshBlockedPeers, 1000);
             } catch (error) {
                 const responseArea = document.getElementById('disconnectPeerResponse');
                 responseArea.textContent = 'Error: ' + error.message;
@@ -826,8 +855,8 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 
                 window.showNotification('All peers disconnected successfully');
                 
-                // Обновляем список пиров
                 setTimeout(window.refreshPeers, 1000);
+                setTimeout(window.refreshBlockedPeers, 1000);
             } catch (error) {
                 const responseArea = document.getElementById('disconnectAllResponse');
                 responseArea.textContent = 'Error: ' + error.message;
@@ -838,7 +867,22 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             }
         };
         
-        // Существующие функции (остаются без изменений)
+        window.refreshBlockedPeers = async function() {
+            try {
+                const response = await fetch('/peers/blocked');
+                const data = await response.json();
+                if (data.status && data.blockedPeers) {
+                    window.blockedPeers = {};
+                    data.blockedPeers.forEach(blocked => {
+                        window.blockedPeers[blocked.peerId] = true;
+                    });
+                    window.updateDashboard();
+                }
+            } catch (error) {
+                console.log('Error fetching blocked peers:', error);
+            }
+        };
+        
         window.copyAllAddresses = function() {
             const addresses = Array.from(document.querySelectorAll('.address-item'))
                 .map(item => item.textContent)
@@ -948,14 +992,16 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 
                 const peersList = document.getElementById('peersList');
                 if (window.nodeData.peers.length > 0) {
-                    // Обрабатываем данные из API - извлекаем peerId из объектов
                     const peerItems = window.nodeData.peers.map(peer => {
-                        // Если peer - это объект, извлекаем peerId, иначе используем как строку
                         const peerId = typeof peer === 'object' && peer.peerId ? peer.peerId : peer;
                         const peerIdString = String(peerId);
+                        const isBlocked = window.blockedPeers && window.blockedPeers[peerIdString];
                         
-                        return \`<div class="peer-item">
-                            <div class="peer-info">\${peerIdString}</div>
+                        return \`<div class="peer-item \${isBlocked ? 'peer-blocked' : ''}">
+                            <div class="peer-info">
+                                \${peerIdString}
+                                \${isBlocked ? '<span class="blocked-badge">🚫 Blocked</span>' : ''}
+                            </div>
                             <div class="peer-actions">
                                 <button class="peer-btn peer-btn-info" onclick="window.getSpecificPeerInfo('\${peerIdString.replace(/'/g, "\\\\'")}')">
                                     🔍 Get Info
@@ -963,6 +1009,11 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                                 <button class="peer-btn peer-btn-danger" onclick="window.disconnectSpecificPeer('\${peerIdString.replace(/'/g, "\\\\'")}')">
                                     🚫 Disconnect
                                 </button>
+                                \${isBlocked ? \`
+                                <button class="peer-btn peer-btn-warning" onclick="window.unblockPeer('\${peerIdString.replace(/'/g, "\\\\'")}')">
+                                    ✅ Unblock
+                                </button>
+                                \` : ''}
                             </div>
                         </div>\`;
                     }).join('');
@@ -1014,8 +1065,8 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             setupEventSource();
             window.refreshClients();
             window.refreshPeers();
+            window.refreshBlockedPeers();
             
-            // Utility functions
             function copyToClipboard(event) {
                 const button = event.currentTarget
                 const element = document.getElementById(button.dataset.id);
@@ -1049,6 +1100,7 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             setInterval(() => {
                 window.refreshPeers();
                 window.refreshClients();
+                window.refreshBlockedPeers();
             }, 3000);
         });
     </script>

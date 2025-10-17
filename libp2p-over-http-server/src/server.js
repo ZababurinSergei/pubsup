@@ -7,19 +7,19 @@ import { canHandle } from '@libp2p/http-server/node'
 import { createLibp2p } from 'libp2p'
 import { HTTP_TEST_PROTOCOL } from './common.js'
 import peerData from '../../peerId.mjs'
-import {identify} from "@libp2p/identify";
-import {circuitRelayServer} from "@libp2p/circuit-relay-v2";
-import {ping} from "@libp2p/ping";
-import {webSockets} from "./websockets/dist/src/index.js";
-import {noise} from "@chainsafe/libp2p-noise";
-import {yamux} from "@chainsafe/libp2p-yamux";
-import express from "express";
-import compression from "compression";
-import cors from "cors";
+import {identify} from "@libp2p/identify"
+import {circuitRelayServer} from "@libp2p/circuit-relay-v2"
+import {ping} from "@libp2p/ping"
+import {webSockets} from "./websockets/dist/src/index.js"
+import {noise} from "@chainsafe/libp2p-noise"
+import {yamux} from "@chainsafe/libp2p-yamux"
+import express from "express"
+import compression from "compression"
+import cors from "cors"
 import {htmlResponse} from './htmlResponse.mjs'
-import path from "path";
-import process from "node:process";
-import * as dotenv from "dotenv";
+import path from "path"
+import process from "node:process"
+import * as dotenv from "dotenv"
 
 const __dirname = process.cwd();
 
@@ -60,6 +60,11 @@ const addresses = process.env.PORT
       ]
     }
 
+// Система блокировки пиров
+const blockedPeers = new Map();
+const BLOCK_DURATION = 30000; // 30 секунд блокировки
+const permanentBlockedPeers = new Set();
+
 const libp2p = await createLibp2p({
   privateKey: peerId,
   addresses: addresses,
@@ -89,9 +94,26 @@ libp2p.addEventListener('peer:discovery', (evt) => {
   console.log(`peer:discovery ${evt.detail.id.toString()}`)
 })
 
-// update peer connections
+// Обработчик connection:open с проверкой блокировки
 libp2p.addEventListener('connection:open', (event) => {
-  console.log('connection:open', event.detail.remoteAddr.toString())
+  const peerId = event.detail.remotePeer.toString();
+
+  // Проверяем постоянную блокировку
+  if (permanentBlockedPeers.has(peerId)) {
+    console.log(`Rejecting connection from permanently blocked peer: ${peerId}`);
+    event.detail.close().catch(() => {});
+    return;
+  }
+
+  // Проверяем временную блокировку
+  const blockedUntil = blockedPeers.get(peerId);
+  if (blockedUntil && Date.now() < blockedUntil) {
+    console.log(`Rejecting connection from temporarily blocked peer: ${peerId}`);
+    event.detail.close().catch(() => {});
+    return;
+  }
+
+  console.log('connection:open', event.detail.remoteAddr.toString());
 })
 
 libp2p.addEventListener('connection:close', (event) => {
@@ -139,6 +161,10 @@ app.post('/peers/disconnect/:peerId', async (req, res) => {
       });
     }
 
+    // Добавляем пира в список заблокированных
+    blockedPeers.set(peerId, Date.now() + BLOCK_DURATION);
+    console.log(`Blocked peer ${peerId} for ${BLOCK_DURATION}ms`);
+
     // Получаем все соединения
     const connections = libp2p.getConnections();
 
@@ -160,10 +186,20 @@ app.post('/peers/disconnect/:peerId', async (req, res) => {
 
     console.log(`Disconnected from peer: ${peerId}`);
 
+    // Удаляем из blockedPeers через указанное время
+    setTimeout(() => {
+      if (blockedPeers.has(peerId)) {
+        blockedPeers.delete(peerId);
+        console.log(`Unblocked peer: ${peerId}`);
+      }
+    }, BLOCK_DURATION);
+
     res.json({
       status: true,
       message: `Successfully disconnected from peer ${peerId}`,
-      disconnectedConnections: peerConnections.length
+      disconnectedConnections: peerConnections.length,
+      blocked: true,
+      blockDuration: BLOCK_DURATION
     });
 
   } catch (error) {
@@ -192,18 +228,36 @@ app.post('/peers/disconnect-all', async (req, res) => {
     // Собираем информацию о пирах перед отключением
     const peerIds = [...new Set(connections.map(conn => conn.remotePeer.toString()))];
 
+    // Добавляем всех пиров в список заблокированных
+    peerIds.forEach(peerId => {
+      blockedPeers.set(peerId, Date.now() + BLOCK_DURATION);
+    });
+    console.log(`Blocked ${peerIds.length} peers for ${BLOCK_DURATION}ms`);
+
     // Закрываем все соединения
     const closePromises = connections.map(conn => conn.close());
     await Promise.all(closePromises);
 
     console.log(`Disconnected from all peers. Total connections: ${connections.length}, Unique peers: ${peerIds.length}`);
 
+    // Удаляем из blockedPeers через указанное время
+    setTimeout(() => {
+      peerIds.forEach(peerId => {
+        if (blockedPeers.has(peerId)) {
+          blockedPeers.delete(peerId);
+          console.log(`Unblocked peer: ${peerId}`);
+        }
+      });
+    }, BLOCK_DURATION);
+
     res.json({
       status: true,
       message: `Successfully disconnected from all peers`,
       disconnectedConnections: connections.length,
       disconnectedPeers: peerIds.length,
-      peerIds: peerIds
+      peerIds: peerIds,
+      blocked: true,
+      blockDuration: BLOCK_DURATION
     });
 
   } catch (error) {
@@ -254,7 +308,9 @@ app.get('/peers/:peerId', (req, res) => {
             protocol: stream.protocol,
             direction: stream.direction
           }))
-      )
+      ),
+      blocked: blockedPeers.has(peerId),
+      permanentlyBlocked: permanentBlockedPeers.has(peerId)
     };
 
     res.json({
@@ -269,6 +325,141 @@ app.get('/peers/:peerId', (req, res) => {
       error: error.message
     });
   }
+});
+
+// Эндпоинт для разблокировки пира
+app.post('/peers/unblock/:peerId', async (req, res) => {
+  try {
+    const { peerId } = req.params;
+
+    if (!peerId) {
+      return res.status(400).json({
+        status: false,
+        error: 'Peer ID is required'
+      });
+    }
+
+    if (blockedPeers.has(peerId)) {
+      blockedPeers.delete(peerId);
+      console.log(`Manually unblocked peer: ${peerId}`);
+
+      res.json({
+        status: true,
+        message: `Peer ${peerId} has been unblocked`
+      });
+    } else {
+      res.json({
+        status: true,
+        message: `Peer ${peerId} was not blocked`
+      });
+    }
+
+  } catch (error) {
+    console.error('Error unblocking peer:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
+});
+
+// Эндпоинт для постоянной блокировки пира
+app.post('/peers/block-permanent/:peerId', async (req, res) => {
+  try {
+    const { peerId } = req.params;
+
+    if (!peerId) {
+      return res.status(400).json({
+        status: false,
+        error: 'Peer ID is required'
+      });
+    }
+
+    permanentBlockedPeers.add(peerId);
+
+    // Закрываем существующие соединения
+    const connections = libp2p.getConnections();
+    const peerConnections = connections.filter(conn =>
+        conn.remotePeer.toString() === peerId
+    );
+
+    if (peerConnections.length > 0) {
+      const closePromises = peerConnections.map(conn => conn.close());
+      await Promise.all(closePromises);
+      console.log(`Closed ${peerConnections.length} connections from permanently blocked peer: ${peerId}`);
+    }
+
+    console.log(`Permanently blocked peer: ${peerId}`);
+
+    res.json({
+      status: true,
+      message: `Peer ${peerId} permanently blocked`
+    });
+
+  } catch (error) {
+    console.error('Error permanently blocking peer:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
+});
+
+// Эндпоинт для снятия постоянной блокировки
+app.post('/peers/unblock-permanent/:peerId', async (req, res) => {
+  try {
+    const { peerId } = req.params;
+
+    if (!peerId) {
+      return res.status(400).json({
+        status: false,
+        error: 'Peer ID is required'
+      });
+    }
+
+    if (permanentBlockedPeers.has(peerId)) {
+      permanentBlockedPeers.delete(peerId);
+      console.log(`Removed permanent block for peer: ${peerId}`);
+
+      res.json({
+        status: true,
+        message: `Peer ${peerId} removed from permanent block list`
+      });
+    } else {
+      res.json({
+        status: true,
+        message: `Peer ${peerId} was not permanently blocked`
+      });
+    }
+
+  } catch (error) {
+    console.error('Error unblocking permanent peer:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
+});
+
+// Эндпоинт для получения списка заблокированных пиров
+app.get('/peers/blocked', (req, res) => {
+  const blocked = Array.from(blockedPeers.entries()).map(([peerId, blockUntil]) => ({
+    peerId,
+    blockedUntil: new Date(blockUntil).toISOString(),
+    timeRemaining: Math.max(0, blockUntil - Date.now()),
+    type: 'temporary'
+  }));
+
+  const permanentlyBlocked = Array.from(permanentBlockedPeers).map(peerId => ({
+    peerId,
+    type: 'permanent'
+  }));
+
+  res.json({
+    status: true,
+    blockedPeers: blocked,
+    permanentlyBlockedPeers: permanentlyBlocked
+  });
 });
 
 // Обновленный эндпоинт для получения списка всех пиров с детальной информацией
@@ -304,7 +495,9 @@ app.get('/peers', (req, res) => {
           id: stream.id,
           protocol: stream.protocol,
           direction: stream.direction
-        }))
+        })),
+        blocked: blockedPeers.has(peerId),
+        permanentlyBlocked: permanentBlockedPeers.has(peerId)
       };
     });
 
@@ -393,6 +586,10 @@ async function cleanup() {
     }
   });
   clients = [];
+
+  // Очищаем списки блокировок
+  blockedPeers.clear();
+  permanentBlockedPeers.clear();
 
   // Закрываем все p2p соединения
   if (libp2p) {
