@@ -269,6 +269,20 @@ app.post('/peers/disconnect-all', async (req, res) => {
   }
 });
 
+// Эндпоинт для получения списка заблокированных пиров
+app.get('/peers/blocked', (req, res) => {
+  const blocked = Array.from(blockedPeers.entries()).map(([peerId, blockUntil]) => ({
+    peerId,
+    blockedUntil: new Date(blockUntil).toISOString(),
+    timeRemaining: Math.max(0, blockUntil - Date.now())
+  }));
+
+  res.json({
+    status: true,
+    blockedPeers: blocked
+  });
+});
+
 // Эндпоинт для получения информации о конкретном пире
 app.get('/peers/:peerId', (req, res) => {
   try {

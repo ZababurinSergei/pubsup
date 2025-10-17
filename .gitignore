@@ -38,3 +38,4 @@ node_modules
 .env
 ./_sandbox
 ./_sandbox_1
+**/index.bundle.mjs/**
