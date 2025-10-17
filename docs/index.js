@@ -366,7 +366,6 @@ DOM.sendTopicMessageButton().onclick = async () => {
 setInterval(() => {
   const topic = DOM.subscribeTopicInput().value
   const peerList = libp2p.services.pubsub.getSubscribers(topic)
-  console.log('---------------', topic, peerList)
   peerList.map(peerId => {
       const el = document.createElement('li')
       el.textContent = peerId.toString()
