@@ -1,139 +1,418 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>js-libp2p browser pubsub</title>
-        <style>
-            .control-params, .multiaddr-input-button {
-              display: flex;
-              flex-direction: row;
-              gap: 16px;
-            }
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чат</title>
+  <link rel="shortcut icon" href="data:image/png;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbbv+DGW3/mRlt/5kZbf+ZGq6/hIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGa3/ohkt/7/Zbj//2S3/v9lt/6WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGm5/iRlt/74Zbj//2W4//9luP//Zbf++mi4/i4gIPciGhr24hsb9uwbG/bsGhr24CEh9xoAAAAAAAAAAAAAAABnuP5mZLf+/2W4//9luP//Zbj//2S3/v9muP5yGBj2rhMT9v8TE/b/ExP2/xMT9f8YGPWkAAAAAAAAAAAAAAAAb7z/BGW3/tZluP//Zbj//2W4//9lt/7gJzH3ShMT9f8TE/b/ExP2/xMT9v8TE/b/ExP1/CAg9joAAAAAAAAAAAAAAABmuP5GZLf+6GS3/uhkt/7oZbf+UhgY9YQSEvX/ExP2/xMT9v8TE/b/ExP2/xIS9f8aGvZ8AAAAAD4++gQgIPZ6IiL2hiIi9oYgIPZ8KCj5BAAAAAAtLfgUFBT17BMT9v8TE/b/ExP2/xMT9v8VFfXoLCz4DgAAAAAaGvZqEhL1/xMT9v8TE/b/EhL1/xsb9nIAAAAAAAAAABwc9m4SEvX/ExP2/xMT9v8SEvX/HR32ZAAAAAAnJ/gSFRX16hMT9v8TE/b/ExP2/xMT9v8UFPXuJyf4Fp2xlAKNnqUYLC/mfhYW83ATE/VuFxf1aDc3+gIAAAAAGBj1fhIS9f8TE/b/ExP2/xMT9v8TE/b/ExP1/xkZ9YaGn3yIhZ57/4Wee/+Gn3yKAAAAAAAAAAAAAAAAAAAAACMj9zYTE/X8ExP2/xMT9v8TE/b/ExP2/xMT9f9JUshihZ57+IaffP+Gn3z/hZ579oigfiYAAAAAAAAAAAAAAAAAAAAAGBj1oBIS9f8TE/b/ExP2/xMT1f8YGPWmiKB+PIWee/+Gn3z/hp98/4Wee/+HoH06AAAAAAAAAAAAAAAAAAAAACUl9xgVFfXOExP11BMT9dQUFPXQJib3HgAAAACGn3ymhp98/4affP+Gn3ymAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAiKB+EIihf0CIoX9AiKB+EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAP//AADg/wAA4MMAAOCBAADggQAA8QEAAOeBAADDwwAAgf8AAIAPAACBDwAAgQ8AAMMPAAD//wAA//8AAA==" type="image/png">
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #64748b;
+      --border-color: #e2e8f0;
+      --background-color: #f8fafc;
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --border-radius: 6px;
+    }
 
-            label,
-            button {
-                display: block;
-                font-weight: bold;
-                margin: 5px 0;
-            }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-            div {
-                margin-bottom: 20px;
-            }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #334155;
+      background-color: #fff;
+      padding: var(--spacing-md);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-            #send-section {
-               display: none;
-            }
+    /* Обновленный стиль для header */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: var(--spacing-md);
+    }
 
-            input[type="text"] {
-                width: 800px;
-            }
-        </style>
-        <script type="importmap">
-            {
-                "imports": {
-                    "@chainsafe/libp2p-gossipsub": "./lib-gossipsub.js",
-                    "@chainsafe/libp2p-noise": "./lib-pubsub.js",
-                    "@chainsafe/libp2p-yamux": "./lib-pubsub.js",
-                    "@libp2p/circuit-relay-v2": "./lib-pubsub.js",
-                    "@libp2p/identify": "./lib-identify.js",
-                    "@libp2p/dcutr": "./lib-pubsub.js",
-                    "@libp2p/webrtc": "./lib-pubsub.js",
-                    "@libp2p/websockets": "./lib-pubsub.js",
-                    "@libp2p/kad-dht": "./lib-pubsub.js",
-                    "@multiformats/multiaddr": "./lib-pubsub.js",
-                    "uint8arrays": "./lib-pubsub.js",
-                    "@libp2p/bootstrap": "./lib-pubsub.js",
-                    "datastore-idb": "./lib-pubsub.js",
-                    "@libp2p/ping": "./lib-pubsub.js",
-                    "libp2p": "./lib-libp2p.js",
-                    "@libp2p/peer-store": "./lib-peer-store.js",
-                    "@libp2p/peer-id": "./lib-pubsub.js",
-                    "@libp2p/pubsub-peer-discovery": "./lib-pubsubPeerDiscovery.js",
-                    "@libp2p/interface-transport": "./lib-pubsub.js"
-                }
-            }
-        </script>
-  </head>
-  <body>
-    <div class="control-params">
-      <button
-            onclick="(function(self) {
-                window.location.href = `${window.location.origin}${window.location.pathname}`
-            })(this)"
-      >
-        empty
-      </button>
-      <button
-            onclick="(function(self) {
-                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap`
-            })(this)"
-      >
-        Bootstrap
-      </button>
+    .logo {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
 
-      <button
-              onclick="(function(self) {
-                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&dht`
-            })(this)"
-      >
-        Bootstrap && DHT
-      </button>
+    .header-content h1 {
+      margin-bottom: var(--spacing-sm);
+      font-size: 1.8rem;
+      color: #1e293b;
+    }
 
-      <button
-            onclick="(function(self) {
-                window.location.href = `${window.location.origin}${window.location.pathname}?bootstrap&pubsubPeerDiscovery`
-            })(this)"
-      >
-        Bootstrap && pubsubPeerDiscovery
-      </button>
-    </div>
-    <div>
-      <label for="dial-multiaddr-input">Dial MultiAddr</label>
+    .header-content p {
+      color: var(--secondary-color);
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4 {
+      color: #1e293b;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: var(--spacing-lg);
+    }
+
+    section {
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      background-color: var(--background-color);
+    }
+
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .input-row {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: flex-end;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      display: block;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    button:disabled {
+      background-color: var(--secondary-color);
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background-color: var(--secondary-color);
+    }
+
+    button.secondary:hover {
+      background-color: #475569;
+    }
+
+    .connection-form {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: var(--spacing-md);
+      align-items: end;
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      background: white;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+    }
+
+    .connection-form .input-group {
+      margin-bottom: 0;
+    }
+
+    .status-panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .status-item {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .status-item h4 {
+      color: var(--secondary-color);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .status-item p, .status-item ul {
+      font-size: 1rem;
+    }
+
+    ul {
+      list-style-type: none;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-sm);
+      background-color: white;
+    }
+
+    li {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-color);
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    li.clickable {
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    li.clickable:hover {
+      background-color: #f1f5f9;
+    }
+
+    .peer-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .peer-info .status-item {
+      background: white;
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+    }
+
+    #output {
+      background-color: #1e293b;
+      color: #e2e8f0;
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius);
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: var(--spacing-lg) 0;
+    }
+
+    @media (max-width: 768px) {
+      .connection-form {
+        grid-template-columns: 1fr;
+      }
+
+      .input-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .control-panel {
+        flex-direction: column;
+      }
+
+      .status-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .peer-info {
+        grid-template-columns: 1fr;
+      }
+
+      input[type="text"] {
+        width: 100%;
+      }
+
+      /* Адаптивный стиль для header на мобильных устройствах */
+      .header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-sm);
+      }
+
+      .header-content h1 {
+        font-size: 1.5rem;
+      }
+
+      .header-content p {
+        font-size: 0.9rem;
+      }
+    }
+
+    #listening-addresses li {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<!-- Обновленный header с русским описанием -->
+<div class="header">
+  <img src="./logo.png" alt="Логотип" class="logo">
+  <div class="header-content">
+    <h1>Чат</h1>
+    <p>Децентрализованная сеть для обмена сообщениями</p>
+  </div>
+</div>
+
+<section id="configuration">
+  <h2>Конфигурация</h2>
+  <div class="control-panel">
+    <button id="empty-config" class="secondary">Пустая конфигурация</button>
+    <button id="bootstrap-config">Только Bootstrap</button>
+    <button id="bootstrap-dht-config">Bootstrap + DHT</button>
+    <button id="bootstrap-pubsub-config">Bootstrap + PubSub Discovery</button>
+  </div>
+</section>
+
+<section id="connection">
+  <h2>Управление подключениями</h2>
+
+  <!-- Форма подключения -->
+  <div class="connection-form">
+    <div class="input-group">
+      <label for="dial-multiaddr-input">MultiAddr для подключения</label>
       <input type="text" id="dial-multiaddr-input" placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/123Foo" />
-      <div class="multiaddr-input-button">
-        <button id="dial-multiaddr-button">Connect</button>
-        <button id="clear-button">Clear</button>
-      </div>
+    </div>
+    <button id="dial-multiaddr-button">Подключиться</button>
+    <button id="clear-button" class="secondary">Очистить</button>
+  </div>
 
-      <h4>PeerId</h4>
-      <p id="peer-id"></p>
+  <!-- Информация о пире -->
+  <div class="peer-info">
+    <div class="status-item">
+      <h4>Peer ID</h4>
+      <p id="peer-id">Не подключен</p>
+    </div>
 
-      <h4>DHT mode</h4>
-      <p id="dht-mode"></p>
+    <div class="status-item">
+      <h4>Режим DHT</h4>
+      <p id="dht-mode">Не доступен</p>
+    </div>
+  </div>
 
-      <h4>Listening Addresses</h4>
+  <!-- Панель статусов на всю ширину -->
+  <div class="status-panel">
+    <div class="status-item">
+      <h4>Адреса прослушивания</h4>
       <ul id="listening-addresses">
-        <li>None</li>
+        <li>Нет</li>
       </ul>
+    </div>
 
-      <h4>Connected Peers</h4>
+    <div class="status-item">
+      <h4>Подключенные пиры</h4>
       <ul id="peer-connections">
-        <li>None</li>
+        <li>Нет</li>
       </ul>
     </div>
-    <hr />
-    <div>
-      <h2>PubSub</h2>
-      <label for="subscribe-topic-input">Subscribe to topic</label>
-      <input type="text" id="subscribe-topic-input" placeholder="my-topic" />
-      <button id="subscribe-topic-button">Subscribe</button>
+  </div>
+</section>
 
-      <h4>Topic Peers</h4>
-      <ul id="topic-peers">
-        <li>None</li>
-      </ul>
+<section id="pubsub">
+  <h2>PubSub сообщения</h2>
+  <div class="input-group">
+    <label for="subscribe-topic-input">Подписаться на топик</label>
+    <div class="input-row">
+      <input type="text" id="subscribe-topic-input" placeholder="мой-топик" />
+      <button id="subscribe-topic-button">Подписаться</button>
+    </div>
+  </div>
 
-      <label for="send-topic-message-input">Send Message to Topic</label>
-      <input type="text" id="send-topic-message-input" placeholder="hello world" disabled="disabled" />
-      <button id="send-topic-message-button" disabled="disabled">Send</button>
+  <div class="status-item">
+    <h4>Пиры в топике</h4>
+    <ul id="topic-peers">
+      <li>Нет</li>
+    </ul>
+  </div>
+
+  <div class="input-group">
+    <label for="send-topic-message-input">Отправить сообщение в топик</label>
+    <div class="input-row">
+      <input type="text" id="send-topic-message-input" placeholder="привет мир" disabled />
+      <button id="send-topic-message-button" disabled>Отправить</button>
     </div>
-    <hr />
-    <div>
-      <h2>Output</h2>
-      <pre id="output"></pre>
-    </div>
-    <script type="module" src="./index.bundle.mjs"></script>
-  </body>
+  </div>
+</section>
+
+<section id="output-section">
+  <h2>Лог событий</h2>
+  <pre id="output"></pre>
+</section>
+
+<script type="importmap">
+  {
+      "imports": {
+          "@chainsafe/libp2p-gossipsub": "./lib-gossipsub.js",
+          "@chainsafe/libp2p-noise": "./lib-pubsub.js",
+          "@chainsafe/libp2p-yamux": "./lib-pubsub.js",
+          "@libp2p/circuit-relay-v2": "./lib-pubsub.js",
+          "@libp2p/identify": "./lib-identify.js",
+          "@libp2p/dcutr": "./lib-pubsub.js",
+          "@libp2p/webrtc": "./lib-pubsub.js",
+          "@libp2p/websockets": "./lib-pubsub.js",
+          "@libp2p/kad-dht": "./lib-pubsub.js",
+          "@multiformats/multiaddr": "./lib-pubsub.js",
+          "uint8arrays": "./lib-pubsub.js",
+          "@libp2p/bootstrap": "./lib-pubsub.js",
+          "datastore-idb": "./lib-pubsub.js",
+          "@libp2p/ping": "./lib-pubsub.js",
+          "libp2p": "./lib-libp2p.js",
+          "@libp2p/peer-store": "./lib-peer-store.js",
+          "@libp2p/peer-id": "./lib-pubsub.js",
+          "@libp2p/pubsub-peer-discovery": "./lib-pubsubPeerDiscovery.js",
+          "@libp2p/interface-transport": "./lib-pubsub.js"
+      }
+  }
+</script>
+<script type="module" src="./index.bundle.mjs"></script>
+</body>
 </html>

@@ -1,22 +1,22 @@
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { dcutr } from '@libp2p/dcutr'
-import { identify, identifyPush } from '@libp2p/identify'
-import { webRTC, webRTCDirect } from '@libp2p/webrtc'
-import { webSockets } from '@libp2p/websockets'
-import { multiaddr } from '@multiformats/multiaddr'
-import { createLibp2p } from 'libp2p'
-import { fromString, toString } from 'uint8arrays'
-import { bootstrap } from '@libp2p/bootstrap'
-import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
-import { persistentPeerStore } from '@libp2p/peer-store'
-import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
-import { IDBDatastore } from 'datastore-idb'
-import { ping } from '@libp2p/ping'
-import { PUBSUB_PEER_DISCOVERY } from './constants.js'
-import { FaultTolerance } from '@libp2p/interface-transport'
+import {gossipsub} from '@chainsafe/libp2p-gossipsub'
+import {noise} from '@chainsafe/libp2p-noise'
+import {yamux} from '@chainsafe/libp2p-yamux'
+import {circuitRelayTransport} from '@libp2p/circuit-relay-v2'
+import {dcutr} from '@libp2p/dcutr'
+import {identify, identifyPush} from '@libp2p/identify'
+import {webRTC, webRTCDirect} from '@libp2p/webrtc'
+import {webSockets} from '@libp2p/websockets'
+import {multiaddr} from '@multiformats/multiaddr'
+import {createLibp2p} from 'libp2p'
+import {fromString, toString} from 'uint8arrays'
+import {bootstrap} from '@libp2p/bootstrap'
+import {kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper} from '@libp2p/kad-dht'
+import {persistentPeerStore} from '@libp2p/peer-store'
+import {pubsubPeerDiscovery} from '@libp2p/pubsub-peer-discovery'
+import {IDBDatastore} from 'datastore-idb'
+import {ping} from '@libp2p/ping'
+import {PUBSUB_PEER_DISCOVERY} from './constants.js'
+import {FaultTolerance} from '@libp2p/interface-transport'
 import {http} from "@libp2p/http";
 import {nodeServer} from "@libp2p/http-server";
 
@@ -82,8 +82,8 @@ const clean = (line) => line.replaceAll('\n', '')
 let boot = []
 
 
-if(isBootstrap) {
-  if(isPubsubPeerDiscovery) {
+if (isBootstrap) {
+  if (isPubsubPeerDiscovery) {
     boot = [
       pubsubPeerDiscovery({
         interval: 10000,
@@ -111,17 +111,17 @@ if(isBootstrap) {
   }
 }
 
-if(isPeerInfoMapper) {
-  if(urlParams.get('peerInfoMapper') === 'public') {
+if (isPeerInfoMapper) {
+  if (urlParams.get('peerInfoMapper') === 'public') {
     publicAddressesMapper = removePublicAddressesMapper
   }
 
-  if(urlParams.get('peerInfoMapper') === 'private') {
+  if (urlParams.get('peerInfoMapper') === 'private') {
     publicAddressesMapper = removePrivateAddressesMapper
   }
 }
 
-if(isLanKad) {
+if (isLanKad) {
   DhtProtocol = `${urlParams.get('lanKad')}kad/1.0.0`
 
   // console.log('----------------------------', DhtProtocol)
@@ -141,6 +141,8 @@ if(isLanKad) {
 
 console.log('-------------- boot----------------- ', boot)
 const libp2p = await createLibp2p({
+  store,
+  persistentPeerStore,
   addresses: {
     listen: [
       '/p2p-circuit',
@@ -155,7 +157,6 @@ const libp2p = await createLibp2p({
       discoverRelays: 2
     })
   ],
-  peerDiscovery: boot,
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   connectionManager: {
@@ -168,6 +169,8 @@ const libp2p = await createLibp2p({
     identify: identify(),
     identifyPush: identifyPush(),
     pubsub: gossipsub({
+      doPX: true,
+      allowPublishToZeroPeers: true,
       emitSelf: true
     }),
     dcutr: dcutr(),
@@ -175,35 +178,35 @@ const libp2p = await createLibp2p({
   },
   connectionGater: {
     denyDialPeer: (currentPeerId) => {
-      console.log('-------- denyDialPeer --------', currentPeerId.toString())
+      // console.log('-------- denyDialPeer --------', currentPeerId.toString())
       return false
     },
     denyDialMultiaddr: async (currentPeerId) => {
-      console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
+      // console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
       return false
     },
     denyOutboundConnection: (currentPeerId, maConn) => {
-      console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
+      // console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
-      console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+      // console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
-      console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+      // console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyInboundConnection: (maConn) => {
-      console.log('-------- 1 denyInboundConnection 1 --------', maConn)
+      // console.log('-------- 1 denyInboundConnection 1 --------', maConn)
       return false
     },
     denyInboundEncryptedConnection: (currentPeerId, maConn) => {
-      console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+      // console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
       return false
     },
     denyInboundUpgradedConnection: (currentPeerId, maConn) => {
-      console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+      // console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
       return false
     },
     filterMultiaddrForPeer: async (currentPeerId, maConn) => {
@@ -213,48 +216,42 @@ const libp2p = await createLibp2p({
   }
 })
 
-// console.log('====== PUBSUB_PEER_DISCOVERY ======', PUBSUB_PEER_DISCOVERY)
-// libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
+console.log('====== PUBSUB_PEER_DISCOVERY ======', PUBSUB_PEER_DISCOVERY)
+libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
 
-const intervalId = setInterval( () => {
-  const ma = multiaddr(isLocalhost
-      ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
-      : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`)
-  //
-  // const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
-
-  console.log('ping multiaddr: ', ma)
-  libp2p.services.ping.ping(ma)
-}, 1000 * 60 * 13)
+// const intervalId = setInterval(() => {
+//   const ma = multiaddr(isLocalhost
+//       ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
+//       : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`)
+//   //
+//   // const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
+//
+//   console.log('ping multiaddr: ', ma)
+//   libp2p.services.ping.ping(ma)
+// }, 1000 * 60 * 13)
 
 // DOM.dhtMode().textContent = libp2p.services.dht.getMode()
 
 DOM.peerId().innerText = libp2p.peerId.toString()
-console.log('multiaddress:',libp2p.getMultiaddrs())
-function updatePeerList () {
+console.log('multiaddress:', libp2p.getMultiaddrs())
+
+function updatePeerList() {
   // Update connections list
   const peerList = libp2p.getPeers()
-    .map(peerId => {
-      const el = document.createElement('li')
-      el.textContent = peerId.toString()
-      const addrList = document.createElement('ul')
-      for (const conn of libp2p.getConnections(peerId)) {
-        const addr = document.createElement('li')
-        let connection = conn.remoteAddr.toString().split(conn.multiplexer)
+      .map(peerId => {
+        const el = document.createElement('li')
+        el.textContent = peerId.toString()
+        const addrList = document.createElement('ul')
+        for (const conn of libp2p.getConnections(peerId)) {
+          const addr = document.createElement('li')
+          addr.textContent = conn.remoteAddr.toString()
+          addrList.appendChild(addr)
+        }
 
-        connection = connection.length > 1
-            ? `${conn.multiplexer}${connection[1]}`
-            : connection[0]
+        el.appendChild(addrList)
 
-        addr.textContent = conn.remoteAddr.toString()
-
-        addrList.appendChild(addr)
-      }
-
-      el.appendChild(addrList)
-
-      return el
-    })
+        return el
+      })
 
   DOM.peerConnectionsList().replaceChildren(...peerList)
 }
@@ -276,18 +273,19 @@ libp2p.addEventListener('connection:close', (event) => {
 
 // update listening addresses
 libp2p.addEventListener('self:peer:update', (event) => {
-  console.log('self:peer:update', event.detail)
+  // console.log('self:peer:update', event.detail)
   const multiaddrs = libp2p.getMultiaddrs()
-    .map((ma) => {
-      const el = document.createElement('li')
-      el.textContent = ma.toString()
-      el.onclick = (event) => {
-        navigator.clipboard.writeText(event.currentTarget.textContent)
-            .then(() => {})
-            .catch((err) => console.error(err.name, err.message));
-      }
-      return el
-    })
+      .map((ma) => {
+        const el = document.createElement('li')
+        el.textContent = ma.toString()
+        el.onclick = (event) => {
+          navigator.clipboard.writeText(event.currentTarget.textContent)
+              .then(() => {
+              })
+              .catch((err) => console.error(err.name, err.message));
+        }
+        return el
+      })
 
   DOM.listeningAddressesList().replaceChildren(...multiaddrs)
 })
@@ -309,7 +307,7 @@ DOM.subscribeTopicButton().onclick = async () => {
   const topic = DOM.subscribeTopicInput().value
   appendOutput(`Subscribing to '${clean(topic)}'`)
 
-  libp2p.services.pubsub.subscribe(topic)
+  await libp2p.services.pubsub.subscribe(topic)
 
   DOM.sendTopicMessageInput().disabled = undefined
   DOM.sendTopicMessageButton().disabled = undefined
@@ -320,26 +318,29 @@ DOM.sendTopicMessageButton().onclick = async () => {
   const topic = DOM.subscribeTopicInput().value
   const message = DOM.sendTopicMessageInput().value
   appendOutput(`Sending message '${clean(message)}'`)
-
   await libp2p.services.pubsub.publish(topic, fromString(message))
 }
-
-// update topic peers
-// setInterval(() => {
-//   const topic = DOM.subscribeTopicInput().value
-//   const peerList = libp2p.services.pubsub.getSubscribers(topic)
-//     .map(peerId => {
-//       const el = document.createElement('li')
-//       el.textContent = peerId.toString()
-//       return el
-//     })
-//   DOM.topicPeerList().replaceChildren(...peerList)
-// }, 500)
+setInterval(() => {
+  const topic = DOM.subscribeTopicInput().value
+  const peerList = libp2p.services.pubsub.getSubscribers(topic)
+  peerList.map(peerId => {
+      const el = document.createElement('li')
+      el.textContent = peerId.toString()
+      return el
+    })
+  if(peerList.length === 0) {
+    const el = document.createElement('li')
+    el.textContent = 'Нет'
+    DOM.topicPeerList().replaceChildren(el)
+  } else {
+    DOM.topicPeerList().replaceChildren(...peerList)
+  }
+}, 500)
 
 libp2p.services.pubsub.addEventListener('message', event => {
+  console.log('---------------------- PUBSUB EVENT -------------------------------')
   const topic = event.detail.topic
   const message = toString(event.detail.data)
   appendOutput(`Message received on topic '${topic}'`)
   appendOutput(message)
 })
-

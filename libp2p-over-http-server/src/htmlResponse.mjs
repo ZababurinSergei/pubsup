@@ -119,7 +119,7 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             align-self: center;
             min-width: 5dvw;
             box-sizing: border-box;
-            min-height: 1.3dvw;
+            min-height: 1.5dvw;
         }
         
         .copy-btn:hover {

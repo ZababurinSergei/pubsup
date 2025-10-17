@@ -53128,6 +53128,8 @@ if (isLanKad) {
 }
 console.log("-------------- boot----------------- ", boot);
 var libp2p = await createLibp2p({
+  store,
+  persistentPeerStore,
   addresses: {
     listen: [
       "/p2p-circuit",
@@ -53142,7 +53144,6 @@ var libp2p = await createLibp2p({
       discoverRelays: 2
     })
   ],
-  peerDiscovery: boot,
   connectionEncrypters: [noise()],
   streamMuxers: [yamux()],
   connectionManager: {
@@ -53155,6 +53156,8 @@ var libp2p = await createLibp2p({
     identify: identify(),
     identifyPush: identifyPush(),
     pubsub: gossipsub({
+      doPX: true,
+      allowPublishToZeroPeers: true,
       emitSelf: true
     }),
     dcutr: dcutr(),
@@ -53162,35 +53165,27 @@ var libp2p = await createLibp2p({
   },
   connectionGater: {
     denyDialPeer: /* @__PURE__ */ __name((currentPeerId) => {
-      console.log("-------- denyDialPeer --------", currentPeerId.toString());
       return false;
     }, "denyDialPeer"),
     denyDialMultiaddr: /* @__PURE__ */ __name(async (currentPeerId) => {
-      console.log("-------- denyDialMultiaddr --------", currentPeerId.toString());
       return false;
     }, "denyDialMultiaddr"),
     denyOutboundConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
-      console.log("-------- 1 denyOutboundConnection 1 --------", currentPeerId.toString(), maConn);
       return false;
     }, "denyOutboundConnection"),
     denyOutboundEncryptedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
-      console.log("-------- 2 denyOutboundEncryptedConnection 2 --------", currentPeerId.toString(), maConn);
       return false;
     }, "denyOutboundEncryptedConnection"),
     denyOutboundUpgradedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
-      console.log("-------- 3 denyOutboundUpgradedConnection 3 --------", currentPeerId.toString(), maConn);
       return false;
     }, "denyOutboundUpgradedConnection"),
     denyInboundConnection: /* @__PURE__ */ __name((maConn) => {
-      console.log("-------- 1 denyInboundConnection 1 --------", maConn);
       return false;
     }, "denyInboundConnection"),
     denyInboundEncryptedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
-      console.log("-------- 2 denyInboundEncryptedConnection 2 --------", currentPeerId.toString(), maConn);
       return false;
     }, "denyInboundEncryptedConnection"),
     denyInboundUpgradedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
-      console.log("-------- 3 denyInboundUpgradedConnection 3 --------", currentPeerId.toString(), maConn);
       return false;
     }, "denyInboundUpgradedConnection"),
     filterMultiaddrForPeer: /* @__PURE__ */ __name(async (currentPeerId, maConn) => {
@@ -53198,11 +53193,8 @@ var libp2p = await createLibp2p({
     }, "filterMultiaddrForPeer")
   }
 });
-var intervalId = setInterval(() => {
-  const ma = multiaddr(isLocalhost ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}` : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`);
-  console.log("ping multiaddr: ", ma);
-  libp2p.services.ping.ping(ma);
-}, 1e3 * 60 * 13);
+console.log("====== PUBSUB_PEER_DISCOVERY ======", PUBSUB_PEER_DISCOVERY);
+libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY);
 DOM.peerId().innerText = libp2p.peerId.toString();
 console.log("multiaddress:", libp2p.getMultiaddrs());
 function updatePeerList() {
@@ -53212,8 +53204,6 @@ function updatePeerList() {
     const addrList = document.createElement("ul");
     for (const conn of libp2p.getConnections(peerId)) {
       const addr = document.createElement("li");
-      let connection = conn.remoteAddr.toString().split(conn.multiplexer);
-      connection = connection.length > 1 ? `${conn.multiplexer}${connection[1]}` : connection[0];
       addr.textContent = conn.remoteAddr.toString();
       addrList.appendChild(addr);
     }
@@ -53235,7 +53225,6 @@ libp2p.addEventListener("connection:close", (event) => {
   updatePeerList();
 });
 libp2p.addEventListener("self:peer:update", (event) => {
-  console.log("self:peer:update", event.detail);
   const multiaddrs = libp2p.getMultiaddrs().map((ma) => {
     const el = document.createElement("li");
     el.textContent = ma.toString();
@@ -53259,7 +53248,7 @@ DOM.dialMultiaddrButton().onclick = async () => {
 DOM.subscribeTopicButton().onclick = async () => {
   const topic = DOM.subscribeTopicInput().value;
   appendOutput(`Subscribing to '${clean4(topic)}'`);
-  libp2p.services.pubsub.subscribe(topic);
+  await libp2p.services.pubsub.subscribe(topic);
   DOM.sendTopicMessageInput().disabled = void 0;
   DOM.sendTopicMessageButton().disabled = void 0;
 };
@@ -53269,7 +53258,25 @@ DOM.sendTopicMessageButton().onclick = async () => {
   appendOutput(`Sending message '${clean4(message2)}'`);
   await libp2p.services.pubsub.publish(topic, fromString2(message2));
 };
+setInterval(() => {
+  const topic = DOM.subscribeTopicInput().value;
+  console.log("dddddddddddddddddddddddddddddddddddddd", libp2p.services.pubsub);
+  const peerList = libp2p.services.pubsub.getSubscribers(topic);
+  peerList.map((peerId) => {
+    const el = document.createElement("li");
+    el.textContent = peerId.toString();
+    return el;
+  });
+  if (peerList.length === 0) {
+    const el = document.createElement("li");
+    el.textContent = "\u041D\u0435\u0442";
+    DOM.topicPeerList().replaceChildren(el);
+  } else {
+    DOM.topicPeerList().replaceChildren(...peerList);
+  }
+}, 500);
 libp2p.services.pubsub.addEventListener("message", (event) => {
+  console.log("---------------------- PUBSUB EVENT -------------------------------");
   const topic = event.detail.topic;
   const message2 = toString2(event.detail.data);
   appendOutput(`Message received on topic '${topic}'`);
