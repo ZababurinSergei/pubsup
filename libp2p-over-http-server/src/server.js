@@ -87,14 +87,7 @@ const node = await createLibp2p({
 
 let clients = [];
 
-
-app.use('/pubsub', express.static(path.join(__dirname, '/docs')));
-// app.use('/assets', express.static(path.join(__dirname, '/dist/assets')));
 app.use('/assets', express.static(path.join(__dirname, '/public')));
-
-app.get(`/`, async (req, res) => {
-    res.status(200).send(await htmlResponse({node, pathNode, PORT}));
-})
 
 function genUniqId() {
   return Date.now() + '-' + Math.floor(Math.random() * 1000000000);
@@ -139,6 +132,8 @@ app.get('/events', (req, res) => {
     'Cache-Control': 'no-cache'
   };
 
+  const clientId = genUniqId();
+
   res.writeHead(200, headers);
 
   const sendData = `data: ${JSON.stringify({
@@ -146,9 +141,8 @@ app.get('/events', (req, res) => {
   })}\n\n`;
 
   res.write(sendData);
-  res.flush();
 
-  const clientId = genUniqId();
+  res.flush();
 
   const newClient = {
     id: clientId,
@@ -165,9 +159,6 @@ app.get('/events', (req, res) => {
   });
 });
 
-
-// register a handler function for the passed protocol - it will be served at
-// the protocol id path by default
 node.services.http.handle(HTTP_TEST_PROTOCOL, {
   handler: (req) => {
     return new Response('Hello World!')
@@ -182,3 +173,66 @@ node.getMultiaddrs().forEach(ma => {
   pathNode.push(ma.toString())
   console.info(ma.toString())
 })
+
+app.get('/', async (req, res) => {
+  res.status(200).send(await htmlResponse({node, pathNode, PORT}));
+})
+
+// Функция очистки всех данных
+async function cleanup() {
+  console.log('Очистка данных сервера...');
+
+  // Закрываем все соединения с клиентами SSE
+  clients.forEach(client => {
+    try {
+      client.res.end();
+    } catch (error) {
+      console.error('Ошибка при закрытии соединения с клиентом:', error);
+    }
+  });
+  clients = [];
+
+  // Очищаем массив pathNode
+  pathNode = [];
+
+  // Останавливаем Libp2p узел
+  if (node) {
+    console.log('Остановка Libp2p узла...');
+    await node.stop();
+    console.log('Libp2p узел остановлен');
+  }
+
+  console.log('Очистка завершена');
+}
+
+// Обработчики событий завершения работы
+process.on('SIGINT', async () => {
+  console.log('\nПолучен SIGINT (Ctrl+C)');
+  await cleanup();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Получен SIGTERM');
+  await cleanup();
+  process.exit(0);
+});
+
+process.on('beforeExit', async () => {
+  console.log('Процесс завершает работу (beforeExit)');
+  await cleanup();
+});
+
+process.on('uncaughtException', async (error) => {
+  console.error('Необработанное исключение:', error);
+  await cleanup();
+  process.exit(1);
+});
+
+process.on('unhandledRejection', async (reason, promise) => {
+  console.error('Необработанный промис:', promise, 'причина:', reason);
+  await cleanup();
+  process.exit(1);
+});
+
+console.log(`Server running at http://localhost:${PORT}/`);

@@ -2,7 +2,7 @@ import process from "node:process";
 
 export const htmlResponse = async ({node, pathNode, PORT}) => {
 
-  return `<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
@@ -117,6 +117,9 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             transition: background 0.3s;
             height: fit-content;
             align-self: center;
+            min-width: 5dvw;
+            box-sizing: border-box;
+            min-height: 1.3dvw;
         }
         
         .copy-btn:hover {
@@ -278,7 +281,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                         <span class="info-label">Peer ID:</span>
                         <div class="container_peer_id">
                             <span class="info-value" id="peerId">${node.peerId.publicKey.toString()}</span>
-                            <button class="copy-btn" onclick="copyToClipboard('peerId')">Copy</button>
+                            <button class="copy-btn" data-id="peerId">Copy</button>
                         </div>
                     </div>
                     <div class="info-item">
@@ -423,37 +426,16 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                 <span class="info-label">Primary Address:</span>
                 <div class="bootstrap-address">
                     <span class="info-value" id="primaryAddress">${pathNode.filter(item => item.includes('/ws'))}</span>
-                    <button class="copy-btn" onclick="copyToClipboard('primaryAddress')">Copy</button>
+                    <button class="copy-btn" data-id="primaryAddress">Copy</button>
                 </div>
             </div>
             <div class="refresh-info">Use this address to connect other nodes to this relay</div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
         let nodeData = {};
         let startTime = Date.now();
-        
-        // Utility functions
-        function copyToClipboard(elementId) {
-            const element = document.getElementById(elementId);
-            const text = element.textContent || element.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                
-                // const btn = event.target;
-                // const originalText = btn.textContent;
-                // btn.textContent = '✓ Copied!';
-                // btn.classList.add('copied');
-                
-                // setTimeout(() => {
-                    // btn.textContent = originalText;
-                    // btn.classList.remove('copied');
-                // }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                alert('Failed to copy to clipboard');
-            });
-        }
         
         function copyAllAddresses() {
             const addresses = Array.from(document.querySelectorAll('.address-item'))
@@ -487,7 +469,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = \`node-info-\${new Date().toISOString().split('T')[0]}.json\`;
+            link.download = \`node-info-${new Date().toISOString().split('T')[0]}.json\`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -542,7 +524,9 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                 updateDashboard();
                 showNotification('Peers list updated');
             } catch (error) {
-                console.error('Error fetching peers:', error);
+                console.log('Error fetching peers:', error);
+                nodeData = {}
+                updateDashboard();
                 showNotification('Error updating peers list');
             }
         }
@@ -551,14 +535,15 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             try {
                 const response = await fetch('/clients');
                 const clients = await response.json();
+                console.log('clients', clients)
                 document.getElementById('clientsCount').textContent = clients.length;
             } catch (error) {
-                console.error('Error fetching clients:', error);
+                document.getElementById('clientsCount').textContent = 'Сервер не найден';
+                console.log('Error fetching clients:', error);
             }
         }
         
         function updateDashboard() {
-            // Update peers count and list
             if (nodeData.peers) {
                 document.getElementById('peersCount').textContent = nodeData.peers.length;
                 
@@ -568,8 +553,10 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                         \`<div class="peer-item">\${peer}</div>\`
                     ).join('');
                 } else {
-                    peersList.innerHTML = '<div class="refresh-info">No peers connected</div>';
+                    peersList.innerHTML = '<div class="refresh-info">Сервер не найден</div>';
                 }
+            } else {
+               document.getElementById('peersCount').textContent = 'Сервер не найден';
             }
             
             // Update DHT mode
@@ -578,9 +565,23 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             }
         }
         
+        function getPageIdentifier() {
+            let pageId = sessionStorage.getItem('pageIdentifier');
+            if (!pageId) {
+                pageId = crypto.randomUUID();
+                sessionStorage.setItem('pageIdentifier', pageId);
+                
+                // Дополнительно логируем создание нового ID
+                console.log('New page session ID:', pageId);
+            }
+            return "/events?pageId=" + pageId;
+        }
+
         // SSE connection for real-time updates
         function setupEventSource() {
-            const events = new EventSource('/events');
+    
+            const url = getPageIdentifier();
+            const events = new EventSource(url);
             
             events.onmessage = (event) => {
                 const data = JSON.parse(event.data); 
@@ -593,30 +594,52 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                 console.log('SSE connection error:', err);
                 document.getElementById('nodeStatus').textContent = 'Connection Issues';
                 document.querySelector('#nodeStatus').previousElementSibling.class = 'status-indicator status-offline';
-                
-                // Attempt reconnect after 5 seconds
-                setTimeout(setupEventSource, 5000);
             };
         }
         
-        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             setupEventSource();
-            // refreshClients();
-            
-            // Set libp2p version (this would need to be passed from server)
+            refreshClients();
+            refreshPeers();
+             
+                  // Utility functions
+            function copyToClipboard(event) {
+                const button = event.currentTarget
+                const element = document.getElementById(button.dataset.id);
+                const text = element.textContent || element.innerText;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = button.textContent;
+                    button.textContent = '✓ Copied!';
+                    button.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.classList.remove('copied');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+            }
+        
+            console.log('document.body.querySelector', document.body.querySelector('.copy-btn'))
+        
+            const copyButtons = document.body.querySelectorAll('.copy-btn')
+            copyButtons.forEach(item => {
+                item.addEventListener('click', copyToClipboard)
+            })
+        
             document.getElementById('libp2pVersion').textContent = '3.0.6';
             
-            // Update uptime every second
             setInterval(() => {
                 document.getElementById('uptime').textContent = formatUptime();
             }, 1000);
             
             // Refresh data every 30 seconds
-            // setInterval(() => {
-            //     refreshPeers();
-            //     refreshClients();
-            // }, 30000);
+            setInterval(() => {
+                refreshPeers();
+                refreshClients();
+            }, 3000);
         });
     </script>
 </body>

@@ -74,29 +74,6 @@ const DOM = {
   topicPeerList: () => document.getElementById('topic-peers')
 }
 
-// const services =  services: {
-//   autoNAT: autoNAT(),
-//       dcutr: dcutr(),
-//       delegatedRouting: () => createDelegatedRoutingV1HttpApiClient('https://delegated-ipfs.dev'),
-//       dht: kadDHT({
-//     validators: {
-//       ipns: ipnsValidator
-//     },
-//     selectors: {
-//       ipns: ipnsSelector
-//     }
-//   }),
-//       identify: identify({
-//     agentVersion
-//   }),
-//       identifyPush: identifyPush({
-//     agentVersion
-//   }),
-//       keychain: keychain(options.keychain),
-//       ping: ping(),
-//       relay: circuitRelayServer(),
-//       upnp: uPnPNAT()
-// }
 const appendOutput = (line) => {
   DOM.output().innerText += `${line}\n`
 }
@@ -166,41 +143,77 @@ console.log('-------------- boot----------------- ', boot)
 const libp2p = await createLibp2p({
   addresses: {
     listen: [
-      // make a reservation on any discovered relays - this will let other
-      // peers use the relay to contact us
       '/p2p-circuit',
-      // create listeners for incoming WebRTC connection attempts on on all
-      // available Circuit Relay connections
       '/webrtc'
     ]
   },
   transports: [
-    // the WebSocket transport lets us dial a local relay
+    webRTCDirect(),
     webSockets(),
-    // support dialing/listening on WebRTC addresses
     webRTC(),
-    // support dialing/listening on Circuit Relay addresses
-    circuitRelayTransport()
+    circuitRelayTransport({
+      discoverRelays: 2
+    })
   ],
-  // a connection encrypter is necessary to dial the relay
+  peerDiscovery: boot,
   connectionEncrypters: [noise()],
-  // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
+  connectionManager: {
+    minConnections: 20
+  },
+  transportManager: {
+    faultTolerance: FaultTolerance.NO_FATAL
+  },
   services: {
     identify: identify(),
-    ping: ping()
+    identifyPush: identifyPush(),
+    pubsub: gossipsub({
+      emitSelf: true
+    }),
+    dcutr: dcutr(),
+    ping: ping(),
   },
   connectionGater: {
-    denyDialMultiaddr: () => {
-      // by default we refuse to dial local addresses from browsers since they
-      // are usually sent by remote peers broadcasting undialable multiaddrs and
-      // cause errors to appear in the console but in this example we are
-      // explicitly connecting to a local node so allow all addresses
+    denyDialPeer: (currentPeerId) => {
+      console.log('-------- denyDialPeer --------', currentPeerId.toString())
       return false
+    },
+    denyDialMultiaddr: async (currentPeerId) => {
+      console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
+      return false
+    },
+    denyOutboundConnection: (currentPeerId, maConn) => {
+      console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyInboundConnection: (maConn) => {
+      console.log('-------- 1 denyInboundConnection 1 --------', maConn)
+      return false
+    },
+    denyInboundEncryptedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    denyInboundUpgradedConnection: (currentPeerId, maConn) => {
+      console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+      return false
+    },
+    filterMultiaddrForPeer: async (currentPeerId, maConn) => {
+      console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
+      return true
     }
   }
 })
 
+// console.log('====== PUBSUB_PEER_DISCOVERY ======', PUBSUB_PEER_DISCOVERY)
 // libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
 
 const intervalId = setInterval( () => {
@@ -210,6 +223,7 @@ const intervalId = setInterval( () => {
   //
   // const peer = peerIdFromString('12D3KooWAyrwipbQChADmVUepf7N7Q7rJcwBQw3nb4TLcrLB2uJ1')
 
+  console.log('ping multiaddr: ', ma)
   libp2p.services.ping.ping(ma)
 }, 1000 * 60 * 13)
 
@@ -226,13 +240,12 @@ function updatePeerList () {
       const addrList = document.createElement('ul')
       for (const conn of libp2p.getConnections(peerId)) {
         const addr = document.createElement('li')
-
         let connection = conn.remoteAddr.toString().split(conn.multiplexer)
+
         connection = connection.length > 1
             ? `${conn.multiplexer}${connection[1]}`
             : connection[0]
 
-        // console.log('------- Connections ------------', conn.multiplexer, conn.remoteAddr.toString().split(conn.multiplexer))
         addr.textContent = conn.remoteAddr.toString()
 
         addrList.appendChild(addr)
@@ -242,6 +255,7 @@ function updatePeerList () {
 
       return el
     })
+
   DOM.peerConnectionsList().replaceChildren(...peerList)
 }
 
@@ -274,6 +288,7 @@ libp2p.addEventListener('self:peer:update', (event) => {
       }
       return el
     })
+
   DOM.listeningAddressesList().replaceChildren(...multiaddrs)
 })
 
@@ -310,21 +325,21 @@ DOM.sendTopicMessageButton().onclick = async () => {
 }
 
 // update topic peers
-setInterval(() => {
-  const topic = DOM.subscribeTopicInput().value
-  const peerList = libp2p.services.pubsub.getSubscribers(topic)
-    .map(peerId => {
-      const el = document.createElement('li')
-      el.textContent = peerId.toString()
-      return el
-    })
-  DOM.topicPeerList().replaceChildren(...peerList)
-}, 500)
+// setInterval(() => {
+//   const topic = DOM.subscribeTopicInput().value
+//   const peerList = libp2p.services.pubsub.getSubscribers(topic)
+//     .map(peerId => {
+//       const el = document.createElement('li')
+//       el.textContent = peerId.toString()
+//       return el
+//     })
+//   DOM.topicPeerList().replaceChildren(...peerList)
+// }, 500)
 
 libp2p.services.pubsub.addEventListener('message', event => {
   const topic = event.detail.topic
   const message = toString(event.detail.data)
-
   appendOutput(`Message received on topic '${topic}'`)
   appendOutput(message)
 })
+
