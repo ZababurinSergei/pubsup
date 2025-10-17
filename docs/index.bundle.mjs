@@ -33,7 +33,7 @@ var __toESM = (mod3, isNodeMode, target) => (target = mod3 != null ? __create(__
 var require_netmask = __commonJS({
   "node_modules/netmask/lib/netmask.js"(exports) {
     (function() {
-      var Netmask2, atob, chr, chr0, chrA, chra, ip2long, long2ip;
+      var Netmask2, atob2, chr, chr0, chrA, chra, ip2long, long2ip;
       long2ip = /* @__PURE__ */ __name(function(long) {
         var a2, b, c2, d2;
         a2 = (long & 255 << 24) >>> 24;
@@ -55,7 +55,7 @@ var require_netmask = __commonJS({
             }
             ip = ip.substring(1);
           }
-          ref = atob(ip), n2 = ref[0], c2 = ref[1];
+          ref = atob2(ip), n2 = ref[0], c2 = ref[1];
           ip = ip.substring(c2);
           b.push(n2);
         }
@@ -93,7 +93,7 @@ var require_netmask = __commonJS({
       chr0 = chr("0");
       chra = chr("a");
       chrA = chr("A");
-      atob = /* @__PURE__ */ __name(function(s2) {
+      atob2 = /* @__PURE__ */ __name(function(s2) {
         var base3, dmax, i2, n2, start2;
         n2 = 0;
         base3 = 10;
@@ -225,6 +225,1547 @@ var require_netmask = __commonJS({
   }
 });
 
+// node_modules/reflect-metadata/Reflect.js
+var require_Reflect = __commonJS({
+  "node_modules/reflect-metadata/Reflect.js"() {
+    var Reflect2;
+    (function(Reflect3) {
+      (function(factory) {
+        var root = typeof globalThis === "object" ? globalThis : typeof window === "object" ? window : typeof self === "object" ? self : typeof this === "object" ? this : sloppyModeThis();
+        var exporter = makeExporter(Reflect3);
+        if (typeof root.Reflect !== "undefined") {
+          exporter = makeExporter(root.Reflect, exporter);
+        }
+        factory(exporter, root);
+        if (typeof root.Reflect === "undefined") {
+          root.Reflect = Reflect3;
+        }
+        function makeExporter(target, previous) {
+          return function(key, value2) {
+            Object.defineProperty(target, key, { configurable: true, writable: true, value: value2 });
+            if (previous)
+              previous(key, value2);
+          };
+        }
+        __name(makeExporter, "makeExporter");
+        function functionThis() {
+          try {
+            return Function("return this;")();
+          } catch (_) {
+          }
+        }
+        __name(functionThis, "functionThis");
+        function indirectEvalThis() {
+          try {
+            return (void 0, eval)("(function() { return this; })()");
+          } catch (_) {
+          }
+        }
+        __name(indirectEvalThis, "indirectEvalThis");
+        function sloppyModeThis() {
+          return functionThis() || indirectEvalThis();
+        }
+        __name(sloppyModeThis, "sloppyModeThis");
+      })(function(exporter, root) {
+        var hasOwn = Object.prototype.hasOwnProperty;
+        var supportsSymbol = typeof Symbol === "function";
+        var toPrimitiveSymbol = supportsSymbol && typeof Symbol.toPrimitive !== "undefined" ? Symbol.toPrimitive : "@@toPrimitive";
+        var iteratorSymbol = supportsSymbol && typeof Symbol.iterator !== "undefined" ? Symbol.iterator : "@@iterator";
+        var supportsCreate = typeof Object.create === "function";
+        var supportsProto = { __proto__: [] } instanceof Array;
+        var downLevel = !supportsCreate && !supportsProto;
+        var HashMap = {
+          // create an object in dictionary mode (a.k.a. "slow" mode in v8)
+          create: supportsCreate ? function() {
+            return MakeDictionary(/* @__PURE__ */ Object.create(null));
+          } : supportsProto ? function() {
+            return MakeDictionary({ __proto__: null });
+          } : function() {
+            return MakeDictionary({});
+          },
+          has: downLevel ? function(map, key) {
+            return hasOwn.call(map, key);
+          } : function(map, key) {
+            return key in map;
+          },
+          get: downLevel ? function(map, key) {
+            return hasOwn.call(map, key) ? map[key] : void 0;
+          } : function(map, key) {
+            return map[key];
+          }
+        };
+        var functionPrototype = Object.getPrototypeOf(Function);
+        var _Map = typeof Map === "function" && typeof Map.prototype.entries === "function" ? Map : CreateMapPolyfill();
+        var _Set = typeof Set === "function" && typeof Set.prototype.entries === "function" ? Set : CreateSetPolyfill();
+        var _WeakMap = typeof WeakMap === "function" ? WeakMap : CreateWeakMapPolyfill();
+        var registrySymbol = supportsSymbol ? Symbol.for("@reflect-metadata:registry") : void 0;
+        var metadataRegistry = GetOrCreateMetadataRegistry();
+        var metadataProvider = CreateMetadataProvider(metadataRegistry);
+        function decorate(decorators, target, propertyKey, attributes) {
+          if (!IsUndefined(propertyKey)) {
+            if (!IsArray(decorators))
+              throw new TypeError();
+            if (!IsObject(target))
+              throw new TypeError();
+            if (!IsObject(attributes) && !IsUndefined(attributes) && !IsNull(attributes))
+              throw new TypeError();
+            if (IsNull(attributes))
+              attributes = void 0;
+            propertyKey = ToPropertyKey(propertyKey);
+            return DecorateProperty(decorators, target, propertyKey, attributes);
+          } else {
+            if (!IsArray(decorators))
+              throw new TypeError();
+            if (!IsConstructor(target))
+              throw new TypeError();
+            return DecorateConstructor(decorators, target);
+          }
+        }
+        __name(decorate, "decorate");
+        exporter("decorate", decorate);
+        function metadata(metadataKey, metadataValue) {
+          function decorator(target, propertyKey) {
+            if (!IsObject(target))
+              throw new TypeError();
+            if (!IsUndefined(propertyKey) && !IsPropertyKey(propertyKey))
+              throw new TypeError();
+            OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+          }
+          __name(decorator, "decorator");
+          return decorator;
+        }
+        __name(metadata, "metadata");
+        exporter("metadata", metadata);
+        function defineMetadata(metadataKey, metadataValue, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryDefineOwnMetadata(metadataKey, metadataValue, target, propertyKey);
+        }
+        __name(defineMetadata, "defineMetadata");
+        exporter("defineMetadata", defineMetadata);
+        function hasMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryHasMetadata(metadataKey, target, propertyKey);
+        }
+        __name(hasMetadata, "hasMetadata");
+        exporter("hasMetadata", hasMetadata);
+        function hasOwnMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryHasOwnMetadata(metadataKey, target, propertyKey);
+        }
+        __name(hasOwnMetadata, "hasOwnMetadata");
+        exporter("hasOwnMetadata", hasOwnMetadata);
+        function getMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryGetMetadata(metadataKey, target, propertyKey);
+        }
+        __name(getMetadata, "getMetadata");
+        exporter("getMetadata", getMetadata);
+        function getOwnMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryGetOwnMetadata(metadataKey, target, propertyKey);
+        }
+        __name(getOwnMetadata, "getOwnMetadata");
+        exporter("getOwnMetadata", getOwnMetadata);
+        function getMetadataKeys(target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryMetadataKeys(target, propertyKey);
+        }
+        __name(getMetadataKeys, "getMetadataKeys");
+        exporter("getMetadataKeys", getMetadataKeys);
+        function getOwnMetadataKeys(target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          return OrdinaryOwnMetadataKeys(target, propertyKey);
+        }
+        __name(getOwnMetadataKeys, "getOwnMetadataKeys");
+        exporter("getOwnMetadataKeys", getOwnMetadataKeys);
+        function deleteMetadata(metadataKey, target, propertyKey) {
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          if (!IsObject(target))
+            throw new TypeError();
+          if (!IsUndefined(propertyKey))
+            propertyKey = ToPropertyKey(propertyKey);
+          var provider = GetMetadataProvider(
+            target,
+            propertyKey,
+            /*Create*/
+            false
+          );
+          if (IsUndefined(provider))
+            return false;
+          return provider.OrdinaryDeleteMetadata(metadataKey, target, propertyKey);
+        }
+        __name(deleteMetadata, "deleteMetadata");
+        exporter("deleteMetadata", deleteMetadata);
+        function DecorateConstructor(decorators, target) {
+          for (var i2 = decorators.length - 1; i2 >= 0; --i2) {
+            var decorator = decorators[i2];
+            var decorated = decorator(target);
+            if (!IsUndefined(decorated) && !IsNull(decorated)) {
+              if (!IsConstructor(decorated))
+                throw new TypeError();
+              target = decorated;
+            }
+          }
+          return target;
+        }
+        __name(DecorateConstructor, "DecorateConstructor");
+        function DecorateProperty(decorators, target, propertyKey, descriptor) {
+          for (var i2 = decorators.length - 1; i2 >= 0; --i2) {
+            var decorator = decorators[i2];
+            var decorated = decorator(target, propertyKey, descriptor);
+            if (!IsUndefined(decorated) && !IsNull(decorated)) {
+              if (!IsObject(decorated))
+                throw new TypeError();
+              descriptor = decorated;
+            }
+          }
+          return descriptor;
+        }
+        __name(DecorateProperty, "DecorateProperty");
+        function OrdinaryHasMetadata(MetadataKey, O, P) {
+          var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
+          if (hasOwn2)
+            return true;
+          var parent = OrdinaryGetPrototypeOf(O);
+          if (!IsNull(parent))
+            return OrdinaryHasMetadata(MetadataKey, parent, P);
+          return false;
+        }
+        __name(OrdinaryHasMetadata, "OrdinaryHasMetadata");
+        function OrdinaryHasOwnMetadata(MetadataKey, O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*Create*/
+            false
+          );
+          if (IsUndefined(provider))
+            return false;
+          return ToBoolean(provider.OrdinaryHasOwnMetadata(MetadataKey, O, P));
+        }
+        __name(OrdinaryHasOwnMetadata, "OrdinaryHasOwnMetadata");
+        function OrdinaryGetMetadata(MetadataKey, O, P) {
+          var hasOwn2 = OrdinaryHasOwnMetadata(MetadataKey, O, P);
+          if (hasOwn2)
+            return OrdinaryGetOwnMetadata(MetadataKey, O, P);
+          var parent = OrdinaryGetPrototypeOf(O);
+          if (!IsNull(parent))
+            return OrdinaryGetMetadata(MetadataKey, parent, P);
+          return void 0;
+        }
+        __name(OrdinaryGetMetadata, "OrdinaryGetMetadata");
+        function OrdinaryGetOwnMetadata(MetadataKey, O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*Create*/
+            false
+          );
+          if (IsUndefined(provider))
+            return;
+          return provider.OrdinaryGetOwnMetadata(MetadataKey, O, P);
+        }
+        __name(OrdinaryGetOwnMetadata, "OrdinaryGetOwnMetadata");
+        function OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*Create*/
+            true
+          );
+          provider.OrdinaryDefineOwnMetadata(MetadataKey, MetadataValue, O, P);
+        }
+        __name(OrdinaryDefineOwnMetadata, "OrdinaryDefineOwnMetadata");
+        function OrdinaryMetadataKeys(O, P) {
+          var ownKeys = OrdinaryOwnMetadataKeys(O, P);
+          var parent = OrdinaryGetPrototypeOf(O);
+          if (parent === null)
+            return ownKeys;
+          var parentKeys = OrdinaryMetadataKeys(parent, P);
+          if (parentKeys.length <= 0)
+            return ownKeys;
+          if (ownKeys.length <= 0)
+            return parentKeys;
+          var set = new _Set();
+          var keys = [];
+          for (var _i = 0, ownKeys_1 = ownKeys; _i < ownKeys_1.length; _i++) {
+            var key = ownKeys_1[_i];
+            var hasKey = set.has(key);
+            if (!hasKey) {
+              set.add(key);
+              keys.push(key);
+            }
+          }
+          for (var _a3 = 0, parentKeys_1 = parentKeys; _a3 < parentKeys_1.length; _a3++) {
+            var key = parentKeys_1[_a3];
+            var hasKey = set.has(key);
+            if (!hasKey) {
+              set.add(key);
+              keys.push(key);
+            }
+          }
+          return keys;
+        }
+        __name(OrdinaryMetadataKeys, "OrdinaryMetadataKeys");
+        function OrdinaryOwnMetadataKeys(O, P) {
+          var provider = GetMetadataProvider(
+            O,
+            P,
+            /*create*/
+            false
+          );
+          if (!provider) {
+            return [];
+          }
+          return provider.OrdinaryOwnMetadataKeys(O, P);
+        }
+        __name(OrdinaryOwnMetadataKeys, "OrdinaryOwnMetadataKeys");
+        function Type(x) {
+          if (x === null)
+            return 1;
+          switch (typeof x) {
+            case "undefined":
+              return 0;
+            case "boolean":
+              return 2;
+            case "string":
+              return 3;
+            case "symbol":
+              return 4;
+            case "number":
+              return 5;
+            case "object":
+              return x === null ? 1 : 6;
+            default:
+              return 6;
+          }
+        }
+        __name(Type, "Type");
+        function IsUndefined(x) {
+          return x === void 0;
+        }
+        __name(IsUndefined, "IsUndefined");
+        function IsNull(x) {
+          return x === null;
+        }
+        __name(IsNull, "IsNull");
+        function IsSymbol(x) {
+          return typeof x === "symbol";
+        }
+        __name(IsSymbol, "IsSymbol");
+        function IsObject(x) {
+          return typeof x === "object" ? x !== null : typeof x === "function";
+        }
+        __name(IsObject, "IsObject");
+        function ToPrimitive(input, PreferredType) {
+          switch (Type(input)) {
+            case 0:
+              return input;
+            case 1:
+              return input;
+            case 2:
+              return input;
+            case 3:
+              return input;
+            case 4:
+              return input;
+            case 5:
+              return input;
+          }
+          var hint = PreferredType === 3 ? "string" : PreferredType === 5 ? "number" : "default";
+          var exoticToPrim = GetMethod(input, toPrimitiveSymbol);
+          if (exoticToPrim !== void 0) {
+            var result = exoticToPrim.call(input, hint);
+            if (IsObject(result))
+              throw new TypeError();
+            return result;
+          }
+          return OrdinaryToPrimitive(input, hint === "default" ? "number" : hint);
+        }
+        __name(ToPrimitive, "ToPrimitive");
+        function OrdinaryToPrimitive(O, hint) {
+          if (hint === "string") {
+            var toString_1 = O.toString;
+            if (IsCallable(toString_1)) {
+              var result = toString_1.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+            var valueOf = O.valueOf;
+            if (IsCallable(valueOf)) {
+              var result = valueOf.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+          } else {
+            var valueOf = O.valueOf;
+            if (IsCallable(valueOf)) {
+              var result = valueOf.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+            var toString_2 = O.toString;
+            if (IsCallable(toString_2)) {
+              var result = toString_2.call(O);
+              if (!IsObject(result))
+                return result;
+            }
+          }
+          throw new TypeError();
+        }
+        __name(OrdinaryToPrimitive, "OrdinaryToPrimitive");
+        function ToBoolean(argument) {
+          return !!argument;
+        }
+        __name(ToBoolean, "ToBoolean");
+        function ToString(argument) {
+          return "" + argument;
+        }
+        __name(ToString, "ToString");
+        function ToPropertyKey(argument) {
+          var key = ToPrimitive(
+            argument,
+            3
+            /* String */
+          );
+          if (IsSymbol(key))
+            return key;
+          return ToString(key);
+        }
+        __name(ToPropertyKey, "ToPropertyKey");
+        function IsArray(argument) {
+          return Array.isArray ? Array.isArray(argument) : argument instanceof Object ? argument instanceof Array : Object.prototype.toString.call(argument) === "[object Array]";
+        }
+        __name(IsArray, "IsArray");
+        function IsCallable(argument) {
+          return typeof argument === "function";
+        }
+        __name(IsCallable, "IsCallable");
+        function IsConstructor(argument) {
+          return typeof argument === "function";
+        }
+        __name(IsConstructor, "IsConstructor");
+        function IsPropertyKey(argument) {
+          switch (Type(argument)) {
+            case 3:
+              return true;
+            case 4:
+              return true;
+            default:
+              return false;
+          }
+        }
+        __name(IsPropertyKey, "IsPropertyKey");
+        function SameValueZero(x, y) {
+          return x === y || x !== x && y !== y;
+        }
+        __name(SameValueZero, "SameValueZero");
+        function GetMethod(V2, P) {
+          var func = V2[P];
+          if (func === void 0 || func === null)
+            return void 0;
+          if (!IsCallable(func))
+            throw new TypeError();
+          return func;
+        }
+        __name(GetMethod, "GetMethod");
+        function GetIterator(obj) {
+          var method = GetMethod(obj, iteratorSymbol);
+          if (!IsCallable(method))
+            throw new TypeError();
+          var iterator = method.call(obj);
+          if (!IsObject(iterator))
+            throw new TypeError();
+          return iterator;
+        }
+        __name(GetIterator, "GetIterator");
+        function IteratorValue(iterResult) {
+          return iterResult.value;
+        }
+        __name(IteratorValue, "IteratorValue");
+        function IteratorStep(iterator) {
+          var result = iterator.next();
+          return result.done ? false : result;
+        }
+        __name(IteratorStep, "IteratorStep");
+        function IteratorClose(iterator) {
+          var f2 = iterator["return"];
+          if (f2)
+            f2.call(iterator);
+        }
+        __name(IteratorClose, "IteratorClose");
+        function OrdinaryGetPrototypeOf(O) {
+          var proto = Object.getPrototypeOf(O);
+          if (typeof O !== "function" || O === functionPrototype)
+            return proto;
+          if (proto !== functionPrototype)
+            return proto;
+          var prototype = O.prototype;
+          var prototypeProto = prototype && Object.getPrototypeOf(prototype);
+          if (prototypeProto == null || prototypeProto === Object.prototype)
+            return proto;
+          var constructor = prototypeProto.constructor;
+          if (typeof constructor !== "function")
+            return proto;
+          if (constructor === O)
+            return proto;
+          return constructor;
+        }
+        __name(OrdinaryGetPrototypeOf, "OrdinaryGetPrototypeOf");
+        function CreateMetadataRegistry() {
+          var fallback;
+          if (!IsUndefined(registrySymbol) && typeof root.Reflect !== "undefined" && !(registrySymbol in root.Reflect) && typeof root.Reflect.defineMetadata === "function") {
+            fallback = CreateFallbackProvider(root.Reflect);
+          }
+          var first;
+          var second2;
+          var rest;
+          var targetProviderMap = new _WeakMap();
+          var registry2 = {
+            registerProvider,
+            getProvider,
+            setProvider
+          };
+          return registry2;
+          function registerProvider(provider) {
+            if (!Object.isExtensible(registry2)) {
+              throw new Error("Cannot add provider to a frozen registry.");
+            }
+            switch (true) {
+              case fallback === provider:
+                break;
+              case IsUndefined(first):
+                first = provider;
+                break;
+              case first === provider:
+                break;
+              case IsUndefined(second2):
+                second2 = provider;
+                break;
+              case second2 === provider:
+                break;
+              default:
+                if (rest === void 0)
+                  rest = new _Set();
+                rest.add(provider);
+                break;
+            }
+          }
+          __name(registerProvider, "registerProvider");
+          function getProviderNoCache(O, P) {
+            if (!IsUndefined(first)) {
+              if (first.isProviderFor(O, P))
+                return first;
+              if (!IsUndefined(second2)) {
+                if (second2.isProviderFor(O, P))
+                  return first;
+                if (!IsUndefined(rest)) {
+                  var iterator = GetIterator(rest);
+                  while (true) {
+                    var next = IteratorStep(iterator);
+                    if (!next) {
+                      return void 0;
+                    }
+                    var provider = IteratorValue(next);
+                    if (provider.isProviderFor(O, P)) {
+                      IteratorClose(iterator);
+                      return provider;
+                    }
+                  }
+                }
+              }
+            }
+            if (!IsUndefined(fallback) && fallback.isProviderFor(O, P)) {
+              return fallback;
+            }
+            return void 0;
+          }
+          __name(getProviderNoCache, "getProviderNoCache");
+          function getProvider(O, P) {
+            var providerMap = targetProviderMap.get(O);
+            var provider;
+            if (!IsUndefined(providerMap)) {
+              provider = providerMap.get(P);
+            }
+            if (!IsUndefined(provider)) {
+              return provider;
+            }
+            provider = getProviderNoCache(O, P);
+            if (!IsUndefined(provider)) {
+              if (IsUndefined(providerMap)) {
+                providerMap = new _Map();
+                targetProviderMap.set(O, providerMap);
+              }
+              providerMap.set(P, provider);
+            }
+            return provider;
+          }
+          __name(getProvider, "getProvider");
+          function hasProvider(provider) {
+            if (IsUndefined(provider))
+              throw new TypeError();
+            return first === provider || second2 === provider || !IsUndefined(rest) && rest.has(provider);
+          }
+          __name(hasProvider, "hasProvider");
+          function setProvider(O, P, provider) {
+            if (!hasProvider(provider)) {
+              throw new Error("Metadata provider not registered.");
+            }
+            var existingProvider = getProvider(O, P);
+            if (existingProvider !== provider) {
+              if (!IsUndefined(existingProvider)) {
+                return false;
+              }
+              var providerMap = targetProviderMap.get(O);
+              if (IsUndefined(providerMap)) {
+                providerMap = new _Map();
+                targetProviderMap.set(O, providerMap);
+              }
+              providerMap.set(P, provider);
+            }
+            return true;
+          }
+          __name(setProvider, "setProvider");
+        }
+        __name(CreateMetadataRegistry, "CreateMetadataRegistry");
+        function GetOrCreateMetadataRegistry() {
+          var metadataRegistry2;
+          if (!IsUndefined(registrySymbol) && IsObject(root.Reflect) && Object.isExtensible(root.Reflect)) {
+            metadataRegistry2 = root.Reflect[registrySymbol];
+          }
+          if (IsUndefined(metadataRegistry2)) {
+            metadataRegistry2 = CreateMetadataRegistry();
+          }
+          if (!IsUndefined(registrySymbol) && IsObject(root.Reflect) && Object.isExtensible(root.Reflect)) {
+            Object.defineProperty(root.Reflect, registrySymbol, {
+              enumerable: false,
+              configurable: false,
+              writable: false,
+              value: metadataRegistry2
+            });
+          }
+          return metadataRegistry2;
+        }
+        __name(GetOrCreateMetadataRegistry, "GetOrCreateMetadataRegistry");
+        function CreateMetadataProvider(registry2) {
+          var metadata2 = new _WeakMap();
+          var provider = {
+            isProviderFor: /* @__PURE__ */ __name(function(O, P) {
+              var targetMetadata = metadata2.get(O);
+              if (IsUndefined(targetMetadata))
+                return false;
+              return targetMetadata.has(P);
+            }, "isProviderFor"),
+            OrdinaryDefineOwnMetadata: OrdinaryDefineOwnMetadata2,
+            OrdinaryHasOwnMetadata: OrdinaryHasOwnMetadata2,
+            OrdinaryGetOwnMetadata: OrdinaryGetOwnMetadata2,
+            OrdinaryOwnMetadataKeys: OrdinaryOwnMetadataKeys2,
+            OrdinaryDeleteMetadata
+          };
+          metadataRegistry.registerProvider(provider);
+          return provider;
+          function GetOrCreateMetadataMap(O, P, Create) {
+            var targetMetadata = metadata2.get(O);
+            var createdTargetMetadata = false;
+            if (IsUndefined(targetMetadata)) {
+              if (!Create)
+                return void 0;
+              targetMetadata = new _Map();
+              metadata2.set(O, targetMetadata);
+              createdTargetMetadata = true;
+            }
+            var metadataMap = targetMetadata.get(P);
+            if (IsUndefined(metadataMap)) {
+              if (!Create)
+                return void 0;
+              metadataMap = new _Map();
+              targetMetadata.set(P, metadataMap);
+              if (!registry2.setProvider(O, P, provider)) {
+                targetMetadata.delete(P);
+                if (createdTargetMetadata) {
+                  metadata2.delete(O);
+                }
+                throw new Error("Wrong provider for target.");
+              }
+            }
+            return metadataMap;
+          }
+          __name(GetOrCreateMetadataMap, "GetOrCreateMetadataMap");
+          function OrdinaryHasOwnMetadata2(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return false;
+            return ToBoolean(metadataMap.has(MetadataKey));
+          }
+          __name(OrdinaryHasOwnMetadata2, "OrdinaryHasOwnMetadata");
+          function OrdinaryGetOwnMetadata2(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return void 0;
+            return metadataMap.get(MetadataKey);
+          }
+          __name(OrdinaryGetOwnMetadata2, "OrdinaryGetOwnMetadata");
+          function OrdinaryDefineOwnMetadata2(MetadataKey, MetadataValue, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              true
+            );
+            metadataMap.set(MetadataKey, MetadataValue);
+          }
+          __name(OrdinaryDefineOwnMetadata2, "OrdinaryDefineOwnMetadata");
+          function OrdinaryOwnMetadataKeys2(O, P) {
+            var keys = [];
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return keys;
+            var keysObj = metadataMap.keys();
+            var iterator = GetIterator(keysObj);
+            var k = 0;
+            while (true) {
+              var next = IteratorStep(iterator);
+              if (!next) {
+                keys.length = k;
+                return keys;
+              }
+              var nextValue = IteratorValue(next);
+              try {
+                keys[k] = nextValue;
+              } catch (e2) {
+                try {
+                  IteratorClose(iterator);
+                } finally {
+                  throw e2;
+                }
+              }
+              k++;
+            }
+          }
+          __name(OrdinaryOwnMetadataKeys2, "OrdinaryOwnMetadataKeys");
+          function OrdinaryDeleteMetadata(MetadataKey, O, P) {
+            var metadataMap = GetOrCreateMetadataMap(
+              O,
+              P,
+              /*Create*/
+              false
+            );
+            if (IsUndefined(metadataMap))
+              return false;
+            if (!metadataMap.delete(MetadataKey))
+              return false;
+            if (metadataMap.size === 0) {
+              var targetMetadata = metadata2.get(O);
+              if (!IsUndefined(targetMetadata)) {
+                targetMetadata.delete(P);
+                if (targetMetadata.size === 0) {
+                  metadata2.delete(targetMetadata);
+                }
+              }
+            }
+            return true;
+          }
+          __name(OrdinaryDeleteMetadata, "OrdinaryDeleteMetadata");
+        }
+        __name(CreateMetadataProvider, "CreateMetadataProvider");
+        function CreateFallbackProvider(reflect) {
+          var defineMetadata2 = reflect.defineMetadata, hasOwnMetadata2 = reflect.hasOwnMetadata, getOwnMetadata2 = reflect.getOwnMetadata, getOwnMetadataKeys2 = reflect.getOwnMetadataKeys, deleteMetadata2 = reflect.deleteMetadata;
+          var metadataOwner = new _WeakMap();
+          var provider = {
+            isProviderFor: /* @__PURE__ */ __name(function(O, P) {
+              var metadataPropertySet = metadataOwner.get(O);
+              if (!IsUndefined(metadataPropertySet) && metadataPropertySet.has(P)) {
+                return true;
+              }
+              if (getOwnMetadataKeys2(O, P).length) {
+                if (IsUndefined(metadataPropertySet)) {
+                  metadataPropertySet = new _Set();
+                  metadataOwner.set(O, metadataPropertySet);
+                }
+                metadataPropertySet.add(P);
+                return true;
+              }
+              return false;
+            }, "isProviderFor"),
+            OrdinaryDefineOwnMetadata: defineMetadata2,
+            OrdinaryHasOwnMetadata: hasOwnMetadata2,
+            OrdinaryGetOwnMetadata: getOwnMetadata2,
+            OrdinaryOwnMetadataKeys: getOwnMetadataKeys2,
+            OrdinaryDeleteMetadata: deleteMetadata2
+          };
+          return provider;
+        }
+        __name(CreateFallbackProvider, "CreateFallbackProvider");
+        function GetMetadataProvider(O, P, Create) {
+          var registeredProvider = metadataRegistry.getProvider(O, P);
+          if (!IsUndefined(registeredProvider)) {
+            return registeredProvider;
+          }
+          if (Create) {
+            if (metadataRegistry.setProvider(O, P, metadataProvider)) {
+              return metadataProvider;
+            }
+            throw new Error("Illegal state.");
+          }
+          return void 0;
+        }
+        __name(GetMetadataProvider, "GetMetadataProvider");
+        function CreateMapPolyfill() {
+          var cacheSentinel = {};
+          var arraySentinel = [];
+          var MapIterator = (
+            /** @class */
+            (function() {
+              function MapIterator2(keys, values, selector) {
+                this._index = 0;
+                this._keys = keys;
+                this._values = values;
+                this._selector = selector;
+              }
+              __name(MapIterator2, "MapIterator");
+              MapIterator2.prototype["@@iterator"] = function() {
+                return this;
+              };
+              MapIterator2.prototype[iteratorSymbol] = function() {
+                return this;
+              };
+              MapIterator2.prototype.next = function() {
+                var index = this._index;
+                if (index >= 0 && index < this._keys.length) {
+                  var result = this._selector(this._keys[index], this._values[index]);
+                  if (index + 1 >= this._keys.length) {
+                    this._index = -1;
+                    this._keys = arraySentinel;
+                    this._values = arraySentinel;
+                  } else {
+                    this._index++;
+                  }
+                  return { value: result, done: false };
+                }
+                return { value: void 0, done: true };
+              };
+              MapIterator2.prototype.throw = function(error) {
+                if (this._index >= 0) {
+                  this._index = -1;
+                  this._keys = arraySentinel;
+                  this._values = arraySentinel;
+                }
+                throw error;
+              };
+              MapIterator2.prototype.return = function(value2) {
+                if (this._index >= 0) {
+                  this._index = -1;
+                  this._keys = arraySentinel;
+                  this._values = arraySentinel;
+                }
+                return { value: value2, done: true };
+              };
+              return MapIterator2;
+            })()
+          );
+          var Map2 = (
+            /** @class */
+            (function() {
+              function Map3() {
+                this._keys = [];
+                this._values = [];
+                this._cacheKey = cacheSentinel;
+                this._cacheIndex = -2;
+              }
+              __name(Map3, "Map");
+              Object.defineProperty(Map3.prototype, "size", {
+                get: /* @__PURE__ */ __name(function() {
+                  return this._keys.length;
+                }, "get"),
+                enumerable: true,
+                configurable: true
+              });
+              Map3.prototype.has = function(key) {
+                return this._find(
+                  key,
+                  /*insert*/
+                  false
+                ) >= 0;
+              };
+              Map3.prototype.get = function(key) {
+                var index = this._find(
+                  key,
+                  /*insert*/
+                  false
+                );
+                return index >= 0 ? this._values[index] : void 0;
+              };
+              Map3.prototype.set = function(key, value2) {
+                var index = this._find(
+                  key,
+                  /*insert*/
+                  true
+                );
+                this._values[index] = value2;
+                return this;
+              };
+              Map3.prototype.delete = function(key) {
+                var index = this._find(
+                  key,
+                  /*insert*/
+                  false
+                );
+                if (index >= 0) {
+                  var size = this._keys.length;
+                  for (var i2 = index + 1; i2 < size; i2++) {
+                    this._keys[i2 - 1] = this._keys[i2];
+                    this._values[i2 - 1] = this._values[i2];
+                  }
+                  this._keys.length--;
+                  this._values.length--;
+                  if (SameValueZero(key, this._cacheKey)) {
+                    this._cacheKey = cacheSentinel;
+                    this._cacheIndex = -2;
+                  }
+                  return true;
+                }
+                return false;
+              };
+              Map3.prototype.clear = function() {
+                this._keys.length = 0;
+                this._values.length = 0;
+                this._cacheKey = cacheSentinel;
+                this._cacheIndex = -2;
+              };
+              Map3.prototype.keys = function() {
+                return new MapIterator(this._keys, this._values, getKey);
+              };
+              Map3.prototype.values = function() {
+                return new MapIterator(this._keys, this._values, getValue);
+              };
+              Map3.prototype.entries = function() {
+                return new MapIterator(this._keys, this._values, getEntry);
+              };
+              Map3.prototype["@@iterator"] = function() {
+                return this.entries();
+              };
+              Map3.prototype[iteratorSymbol] = function() {
+                return this.entries();
+              };
+              Map3.prototype._find = function(key, insert) {
+                if (!SameValueZero(this._cacheKey, key)) {
+                  this._cacheIndex = -1;
+                  for (var i2 = 0; i2 < this._keys.length; i2++) {
+                    if (SameValueZero(this._keys[i2], key)) {
+                      this._cacheIndex = i2;
+                      break;
+                    }
+                  }
+                }
+                if (this._cacheIndex < 0 && insert) {
+                  this._cacheIndex = this._keys.length;
+                  this._keys.push(key);
+                  this._values.push(void 0);
+                }
+                return this._cacheIndex;
+              };
+              return Map3;
+            })()
+          );
+          return Map2;
+          function getKey(key, _) {
+            return key;
+          }
+          __name(getKey, "getKey");
+          function getValue(_, value2) {
+            return value2;
+          }
+          __name(getValue, "getValue");
+          function getEntry(key, value2) {
+            return [key, value2];
+          }
+          __name(getEntry, "getEntry");
+        }
+        __name(CreateMapPolyfill, "CreateMapPolyfill");
+        function CreateSetPolyfill() {
+          var Set3 = (
+            /** @class */
+            (function() {
+              function Set4() {
+                this._map = new _Map();
+              }
+              __name(Set4, "Set");
+              Object.defineProperty(Set4.prototype, "size", {
+                get: /* @__PURE__ */ __name(function() {
+                  return this._map.size;
+                }, "get"),
+                enumerable: true,
+                configurable: true
+              });
+              Set4.prototype.has = function(value2) {
+                return this._map.has(value2);
+              };
+              Set4.prototype.add = function(value2) {
+                return this._map.set(value2, value2), this;
+              };
+              Set4.prototype.delete = function(value2) {
+                return this._map.delete(value2);
+              };
+              Set4.prototype.clear = function() {
+                this._map.clear();
+              };
+              Set4.prototype.keys = function() {
+                return this._map.keys();
+              };
+              Set4.prototype.values = function() {
+                return this._map.keys();
+              };
+              Set4.prototype.entries = function() {
+                return this._map.entries();
+              };
+              Set4.prototype["@@iterator"] = function() {
+                return this.keys();
+              };
+              Set4.prototype[iteratorSymbol] = function() {
+                return this.keys();
+              };
+              return Set4;
+            })()
+          );
+          return Set3;
+        }
+        __name(CreateSetPolyfill, "CreateSetPolyfill");
+        function CreateWeakMapPolyfill() {
+          var UUID_SIZE = 16;
+          var keys = HashMap.create();
+          var rootKey = CreateUniqueKey();
+          return (
+            /** @class */
+            (function() {
+              function WeakMap2() {
+                this._key = CreateUniqueKey();
+              }
+              __name(WeakMap2, "WeakMap");
+              WeakMap2.prototype.has = function(target) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  false
+                );
+                return table !== void 0 ? HashMap.has(table, this._key) : false;
+              };
+              WeakMap2.prototype.get = function(target) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  false
+                );
+                return table !== void 0 ? HashMap.get(table, this._key) : void 0;
+              };
+              WeakMap2.prototype.set = function(target, value2) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  true
+                );
+                table[this._key] = value2;
+                return this;
+              };
+              WeakMap2.prototype.delete = function(target) {
+                var table = GetOrCreateWeakMapTable(
+                  target,
+                  /*create*/
+                  false
+                );
+                return table !== void 0 ? delete table[this._key] : false;
+              };
+              WeakMap2.prototype.clear = function() {
+                this._key = CreateUniqueKey();
+              };
+              return WeakMap2;
+            })()
+          );
+          function CreateUniqueKey() {
+            var key;
+            do
+              key = "@@WeakMap@@" + CreateUUID();
+            while (HashMap.has(keys, key));
+            keys[key] = true;
+            return key;
+          }
+          __name(CreateUniqueKey, "CreateUniqueKey");
+          function GetOrCreateWeakMapTable(target, create4) {
+            if (!hasOwn.call(target, rootKey)) {
+              if (!create4)
+                return void 0;
+              Object.defineProperty(target, rootKey, { value: HashMap.create() });
+            }
+            return target[rootKey];
+          }
+          __name(GetOrCreateWeakMapTable, "GetOrCreateWeakMapTable");
+          function FillRandomBytes(buffer, size) {
+            for (var i2 = 0; i2 < size; ++i2)
+              buffer[i2] = Math.random() * 255 | 0;
+            return buffer;
+          }
+          __name(FillRandomBytes, "FillRandomBytes");
+          function GenRandomBytes(size) {
+            if (typeof Uint8Array === "function") {
+              var array = new Uint8Array(size);
+              if (typeof crypto !== "undefined") {
+                crypto.getRandomValues(array);
+              } else if (typeof msCrypto !== "undefined") {
+                msCrypto.getRandomValues(array);
+              } else {
+                FillRandomBytes(array, size);
+              }
+              return array;
+            }
+            return FillRandomBytes(new Array(size), size);
+          }
+          __name(GenRandomBytes, "GenRandomBytes");
+          function CreateUUID() {
+            var data = GenRandomBytes(UUID_SIZE);
+            data[6] = data[6] & 79 | 64;
+            data[8] = data[8] & 191 | 128;
+            var result = "";
+            for (var offset = 0; offset < UUID_SIZE; ++offset) {
+              var byte = data[offset];
+              if (offset === 4 || offset === 6 || offset === 8)
+                result += "-";
+              if (byte < 16)
+                result += "0";
+              result += byte.toString(16).toLowerCase();
+            }
+            return result;
+          }
+          __name(CreateUUID, "CreateUUID");
+        }
+        __name(CreateWeakMapPolyfill, "CreateWeakMapPolyfill");
+        function MakeDictionary(obj) {
+          obj.__ = void 0;
+          delete obj.__;
+          return obj;
+        }
+        __name(MakeDictionary, "MakeDictionary");
+      });
+    })(Reflect2 || (Reflect2 = {}));
+  }
+});
+
+// node_modules/pvtsutils/build/index.js
+var require_build = __commonJS({
+  "node_modules/pvtsutils/build/index.js"(exports) {
+    "use strict";
+    var ARRAY_BUFFER_NAME = "[object ArrayBuffer]";
+    var BufferSourceConverter6 = class _BufferSourceConverter {
+      static {
+        __name(this, "BufferSourceConverter");
+      }
+      static isArrayBuffer(data) {
+        return Object.prototype.toString.call(data) === ARRAY_BUFFER_NAME;
+      }
+      static toArrayBuffer(data) {
+        if (this.isArrayBuffer(data)) {
+          return data;
+        }
+        if (data.byteLength === data.buffer.byteLength) {
+          return data.buffer;
+        }
+        if (data.byteOffset === 0 && data.byteLength === data.buffer.byteLength) {
+          return data.buffer;
+        }
+        return this.toUint8Array(data.buffer).slice(data.byteOffset, data.byteOffset + data.byteLength).buffer;
+      }
+      static toUint8Array(data) {
+        return this.toView(data, Uint8Array);
+      }
+      static toView(data, type) {
+        if (data.constructor === type) {
+          return data;
+        }
+        if (this.isArrayBuffer(data)) {
+          return new type(data);
+        }
+        if (this.isArrayBufferView(data)) {
+          return new type(data.buffer, data.byteOffset, data.byteLength);
+        }
+        throw new TypeError("The provided value is not of type '(ArrayBuffer or ArrayBufferView)'");
+      }
+      static isBufferSource(data) {
+        return this.isArrayBufferView(data) || this.isArrayBuffer(data);
+      }
+      static isArrayBufferView(data) {
+        return ArrayBuffer.isView(data) || data && this.isArrayBuffer(data.buffer);
+      }
+      static isEqual(a2, b) {
+        const aView = _BufferSourceConverter.toUint8Array(a2);
+        const bView = _BufferSourceConverter.toUint8Array(b);
+        if (aView.length !== bView.byteLength) {
+          return false;
+        }
+        for (let i2 = 0; i2 < aView.length; i2++) {
+          if (aView[i2] !== bView[i2]) {
+            return false;
+          }
+        }
+        return true;
+      }
+      static concat(...args) {
+        let buffers;
+        if (Array.isArray(args[0]) && !(args[1] instanceof Function)) {
+          buffers = args[0];
+        } else if (Array.isArray(args[0]) && args[1] instanceof Function) {
+          buffers = args[0];
+        } else {
+          if (args[args.length - 1] instanceof Function) {
+            buffers = args.slice(0, args.length - 1);
+          } else {
+            buffers = args;
+          }
+        }
+        let size = 0;
+        for (const buffer of buffers) {
+          size += buffer.byteLength;
+        }
+        const res = new Uint8Array(size);
+        let offset = 0;
+        for (const buffer of buffers) {
+          const view = this.toUint8Array(buffer);
+          res.set(view, offset);
+          offset += view.length;
+        }
+        if (args[args.length - 1] instanceof Function) {
+          return this.toView(res, args[args.length - 1]);
+        }
+        return res.buffer;
+      }
+    };
+    var STRING_TYPE = "string";
+    var HEX_REGEX = /^[0-9a-f\s]+$/i;
+    var BASE64_REGEX = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+    var BASE64URL_REGEX = /^[a-zA-Z0-9-_]+$/;
+    var Utf8Converter = class {
+      static {
+        __name(this, "Utf8Converter");
+      }
+      static fromString(text) {
+        const s2 = unescape(encodeURIComponent(text));
+        const uintArray = new Uint8Array(s2.length);
+        for (let i2 = 0; i2 < s2.length; i2++) {
+          uintArray[i2] = s2.charCodeAt(i2);
+        }
+        return uintArray.buffer;
+      }
+      static toString(buffer) {
+        const buf = BufferSourceConverter6.toUint8Array(buffer);
+        let encodedString = "";
+        for (let i2 = 0; i2 < buf.length; i2++) {
+          encodedString += String.fromCharCode(buf[i2]);
+        }
+        const decodedString = decodeURIComponent(escape(encodedString));
+        return decodedString;
+      }
+    };
+    var Utf16Converter = class {
+      static {
+        __name(this, "Utf16Converter");
+      }
+      static toString(buffer, littleEndian = false) {
+        const arrayBuffer = BufferSourceConverter6.toArrayBuffer(buffer);
+        const dataView = new DataView(arrayBuffer);
+        let res = "";
+        for (let i2 = 0; i2 < arrayBuffer.byteLength; i2 += 2) {
+          const code4 = dataView.getUint16(i2, littleEndian);
+          res += String.fromCharCode(code4);
+        }
+        return res;
+      }
+      static fromString(text, littleEndian = false) {
+        const res = new ArrayBuffer(text.length * 2);
+        const dataView = new DataView(res);
+        for (let i2 = 0; i2 < text.length; i2++) {
+          dataView.setUint16(i2 * 2, text.charCodeAt(i2), littleEndian);
+        }
+        return res;
+      }
+    };
+    var Convert5 = class _Convert {
+      static {
+        __name(this, "Convert");
+      }
+      static isHex(data) {
+        return typeof data === STRING_TYPE && HEX_REGEX.test(data);
+      }
+      static isBase64(data) {
+        return typeof data === STRING_TYPE && BASE64_REGEX.test(data);
+      }
+      static isBase64Url(data) {
+        return typeof data === STRING_TYPE && BASE64URL_REGEX.test(data);
+      }
+      static ToString(buffer, enc = "utf8") {
+        const buf = BufferSourceConverter6.toUint8Array(buffer);
+        switch (enc.toLowerCase()) {
+          case "utf8":
+            return this.ToUtf8String(buf);
+          case "binary":
+            return this.ToBinary(buf);
+          case "hex":
+            return this.ToHex(buf);
+          case "base64":
+            return this.ToBase64(buf);
+          case "base64url":
+            return this.ToBase64Url(buf);
+          case "utf16le":
+            return Utf16Converter.toString(buf, true);
+          case "utf16":
+          case "utf16be":
+            return Utf16Converter.toString(buf);
+          default:
+            throw new Error(`Unknown type of encoding '${enc}'`);
+        }
+      }
+      static FromString(str, enc = "utf8") {
+        if (!str) {
+          return new ArrayBuffer(0);
+        }
+        switch (enc.toLowerCase()) {
+          case "utf8":
+            return this.FromUtf8String(str);
+          case "binary":
+            return this.FromBinary(str);
+          case "hex":
+            return this.FromHex(str);
+          case "base64":
+            return this.FromBase64(str);
+          case "base64url":
+            return this.FromBase64Url(str);
+          case "utf16le":
+            return Utf16Converter.fromString(str, true);
+          case "utf16":
+          case "utf16be":
+            return Utf16Converter.fromString(str);
+          default:
+            throw new Error(`Unknown type of encoding '${enc}'`);
+        }
+      }
+      static ToBase64(buffer) {
+        const buf = BufferSourceConverter6.toUint8Array(buffer);
+        if (typeof btoa !== "undefined") {
+          const binary = this.ToString(buf, "binary");
+          return btoa(binary);
+        } else {
+          return Buffer.from(buf).toString("base64");
+        }
+      }
+      static FromBase64(base642) {
+        const formatted = this.formatString(base642);
+        if (!formatted) {
+          return new ArrayBuffer(0);
+        }
+        if (!_Convert.isBase64(formatted)) {
+          throw new TypeError("Argument 'base64Text' is not Base64 encoded");
+        }
+        if (typeof atob !== "undefined") {
+          return this.FromBinary(atob(formatted));
+        } else {
+          return new Uint8Array(Buffer.from(formatted, "base64")).buffer;
+        }
+      }
+      static FromBase64Url(base64url2) {
+        const formatted = this.formatString(base64url2);
+        if (!formatted) {
+          return new ArrayBuffer(0);
+        }
+        if (!_Convert.isBase64Url(formatted)) {
+          throw new TypeError("Argument 'base64url' is not Base64Url encoded");
+        }
+        return this.FromBase64(this.Base64Padding(formatted.replace(/\-/g, "+").replace(/\_/g, "/")));
+      }
+      static ToBase64Url(data) {
+        return this.ToBase64(data).replace(/\+/g, "-").replace(/\//g, "_").replace(/\=/g, "");
+      }
+      static FromUtf8String(text, encoding = _Convert.DEFAULT_UTF8_ENCODING) {
+        switch (encoding) {
+          case "ascii":
+            return this.FromBinary(text);
+          case "utf8":
+            return Utf8Converter.fromString(text);
+          case "utf16":
+          case "utf16be":
+            return Utf16Converter.fromString(text);
+          case "utf16le":
+          case "usc2":
+            return Utf16Converter.fromString(text, true);
+          default:
+            throw new Error(`Unknown type of encoding '${encoding}'`);
+        }
+      }
+      static ToUtf8String(buffer, encoding = _Convert.DEFAULT_UTF8_ENCODING) {
+        switch (encoding) {
+          case "ascii":
+            return this.ToBinary(buffer);
+          case "utf8":
+            return Utf8Converter.toString(buffer);
+          case "utf16":
+          case "utf16be":
+            return Utf16Converter.toString(buffer);
+          case "utf16le":
+          case "usc2":
+            return Utf16Converter.toString(buffer, true);
+          default:
+            throw new Error(`Unknown type of encoding '${encoding}'`);
+        }
+      }
+      static FromBinary(text) {
+        const stringLength = text.length;
+        const resultView = new Uint8Array(stringLength);
+        for (let i2 = 0; i2 < stringLength; i2++) {
+          resultView[i2] = text.charCodeAt(i2);
+        }
+        return resultView.buffer;
+      }
+      static ToBinary(buffer) {
+        const buf = BufferSourceConverter6.toUint8Array(buffer);
+        let res = "";
+        for (let i2 = 0; i2 < buf.length; i2++) {
+          res += String.fromCharCode(buf[i2]);
+        }
+        return res;
+      }
+      static ToHex(buffer) {
+        const buf = BufferSourceConverter6.toUint8Array(buffer);
+        let result = "";
+        const len = buf.length;
+        for (let i2 = 0; i2 < len; i2++) {
+          const byte = buf[i2];
+          if (byte < 16) {
+            result += "0";
+          }
+          result += byte.toString(16);
+        }
+        return result;
+      }
+      static FromHex(hexString) {
+        let formatted = this.formatString(hexString);
+        if (!formatted) {
+          return new ArrayBuffer(0);
+        }
+        if (!_Convert.isHex(formatted)) {
+          throw new TypeError("Argument 'hexString' is not HEX encoded");
+        }
+        if (formatted.length % 2) {
+          formatted = `0${formatted}`;
+        }
+        const res = new Uint8Array(formatted.length / 2);
+        for (let i2 = 0; i2 < formatted.length; i2 = i2 + 2) {
+          const c2 = formatted.slice(i2, i2 + 2);
+          res[i2 / 2] = parseInt(c2, 16);
+        }
+        return res.buffer;
+      }
+      static ToUtf16String(buffer, littleEndian = false) {
+        return Utf16Converter.toString(buffer, littleEndian);
+      }
+      static FromUtf16String(text, littleEndian = false) {
+        return Utf16Converter.fromString(text, littleEndian);
+      }
+      static Base64Padding(base642) {
+        const padCount = 4 - base642.length % 4;
+        if (padCount < 4) {
+          for (let i2 = 0; i2 < padCount; i2++) {
+            base642 += "=";
+          }
+        }
+        return base642;
+      }
+      static formatString(data) {
+        return (data === null || data === void 0 ? void 0 : data.replace(/[\n\r\t ]/g, "")) || "";
+      }
+    };
+    Convert5.DEFAULT_UTF8_ENCODING = "utf8";
+    function assign(target, ...sources) {
+      const res = arguments[0];
+      for (let i2 = 1; i2 < arguments.length; i2++) {
+        const obj = arguments[i2];
+        for (const prop in obj) {
+          res[prop] = obj[prop];
+        }
+      }
+      return res;
+    }
+    __name(assign, "assign");
+    function combine2(...buf) {
+      const totalByteLength = buf.map((item) => item.byteLength).reduce((prev, cur) => prev + cur);
+      const res = new Uint8Array(totalByteLength);
+      let currentPos = 0;
+      buf.map((item) => new Uint8Array(item)).forEach((arr) => {
+        for (const item2 of arr) {
+          res[currentPos++] = item2;
+        }
+      });
+      return res.buffer;
+    }
+    __name(combine2, "combine");
+    function isEqual3(bytes1, bytes2) {
+      if (!(bytes1 && bytes2)) {
+        return false;
+      }
+      if (bytes1.byteLength !== bytes2.byteLength) {
+        return false;
+      }
+      const b1 = new Uint8Array(bytes1);
+      const b2 = new Uint8Array(bytes2);
+      for (let i2 = 0; i2 < bytes1.byteLength; i2++) {
+        if (b1[i2] !== b2[i2]) {
+          return false;
+        }
+      }
+      return true;
+    }
+    __name(isEqual3, "isEqual");
+    exports.BufferSourceConverter = BufferSourceConverter6;
+    exports.Convert = Convert5;
+    exports.assign = assign;
+    exports.combine = combine2;
+    exports.isEqual = isEqual3;
+  }
+});
+
 // node_modules/p-queue/node_modules/eventemitter3/index.js
 var require_eventemitter3 = __commonJS({
   "node_modules/p-queue/node_modules/eventemitter3/index.js"(exports, module) {
@@ -266,15 +1807,15 @@ var require_eventemitter3 = __commonJS({
     }
     __name(EventEmitter3, "EventEmitter");
     EventEmitter3.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
-      var names = [], events, name3;
-      if (this._eventsCount === 0) return names;
+      var names2 = [], events, name3;
+      if (this._eventsCount === 0) return names2;
       for (name3 in events = this._events) {
-        if (has.call(events, name3)) names.push(prefix ? name3.slice(1) : name3);
+        if (has.call(events, name3)) names2.push(prefix ? name3.slice(1) : name3);
       }
       if (Object.getOwnPropertySymbols) {
-        return names.concat(Object.getOwnPropertySymbols(events));
+        return names2.concat(Object.getOwnPropertySymbols(events));
       }
-      return names;
+      return names2;
     }, "eventNames");
     EventEmitter3.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
       var evt = prefix ? prefix + event : event, handlers = this._events[evt];
@@ -480,15 +2021,15 @@ var require_eventemitter32 = __commonJS({
     }
     __name(EventEmitter3, "EventEmitter");
     EventEmitter3.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
-      var names = [], events, name3;
-      if (this._eventsCount === 0) return names;
+      var names2 = [], events, name3;
+      if (this._eventsCount === 0) return names2;
       for (name3 in events = this._events) {
-        if (has.call(events, name3)) names.push(prefix ? name3.slice(1) : name3);
+        if (has.call(events, name3)) names2.push(prefix ? name3.slice(1) : name3);
       }
       if (Object.getOwnPropertySymbols) {
-        return names.concat(Object.getOwnPropertySymbols(events));
+        return names2.concat(Object.getOwnPropertySymbols(events));
       }
-      return names;
+      return names2;
     }, "eventNames");
     EventEmitter3.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
       var evt = prefix ? prefix + event : event, handlers = this._events[evt];
@@ -802,6 +2343,13 @@ var InvalidMessageError = class extends Error {
   constructor(message2 = "Invalid message") {
     super(message2);
     this.name = "InvalidMessageError";
+  }
+};
+var ProtocolError = class extends Error {
+  static name = "ProtocolError";
+  constructor(message2 = "Protocol error") {
+    super(message2);
+    this.name = "ProtocolError";
   }
 };
 var TimeoutError = class extends Error {
@@ -1457,6 +3005,16 @@ var base36upper = baseX({
   alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 });
 
+// node_modules/multiformats/dist/src/hashes/digest.js
+var digest_exports = {};
+__export(digest_exports, {
+  Digest: () => Digest,
+  create: () => create,
+  decode: () => decode4,
+  equals: () => equals2,
+  hasCode: () => hasCode
+});
+
 // node_modules/multiformats/dist/src/vendor/varint.js
 var encode_1 = encode2;
 var MSB = 128;
@@ -1584,6 +3142,10 @@ var Digest = class {
     this.bytes = bytes;
   }
 };
+function hasCode(digest2, code4) {
+  return digest2.code === code4;
+}
+__name(hasCode, "hasCode");
 
 // node_modules/multiformats/dist/src/cid.js
 function format(link, base3) {
@@ -1683,9 +3245,9 @@ var CID = class _CID {
   equals(other) {
     return _CID.equals(this, other);
   }
-  static equals(self, other) {
+  static equals(self2, other) {
     const unknown = other;
-    return unknown != null && self.code === unknown.code && self.version === unknown.version && equals2(self.multihash, unknown.multihash);
+    return unknown != null && self2.code === unknown.code && self2.version === unknown.version && equals2(self2.multihash, unknown.multihash);
   }
   toString(base3) {
     return format(this, base3);
@@ -3175,16 +4737,16 @@ function ahash(h) {
   anumber(h.blockLen);
 }
 __name(ahash, "ahash");
-function aexists(instance, checkFinished = true) {
-  if (instance.destroyed)
+function aexists(instance2, checkFinished = true) {
+  if (instance2.destroyed)
     throw new Error("Hash instance has been destroyed");
-  if (checkFinished && instance.finished)
+  if (checkFinished && instance2.finished)
     throw new Error("Hash#digest() has already been called");
 }
 __name(aexists, "aexists");
-function aoutput(out, instance) {
+function aoutput(out, instance2) {
   abytes(out, void 0, "digestInto() output");
-  const min = instance.outputLen;
+  const min = instance2.outputLen;
   if (out.length < min) {
     throw new Error('"digestInto() output" expected to be of length >=' + min);
   }
@@ -6778,9 +8340,9 @@ var __KeyTypeValues;
   };
 })(KeyType || (KeyType = {}));
 var PublicKey;
-(function(PublicKey2) {
+(function(PublicKey3) {
   let _codec;
-  PublicKey2.codec = () => {
+  PublicKey3.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -6822,17 +8384,17 @@ var PublicKey;
     }
     return _codec;
   };
-  PublicKey2.encode = (obj) => {
-    return encodeMessage(obj, PublicKey2.codec());
+  PublicKey3.encode = (obj) => {
+    return encodeMessage(obj, PublicKey3.codec());
   };
-  PublicKey2.decode = (buf, opts) => {
-    return decodeMessage(buf, PublicKey2.codec(), opts);
+  PublicKey3.decode = (buf, opts) => {
+    return decodeMessage(buf, PublicKey3.codec(), opts);
   };
 })(PublicKey || (PublicKey = {}));
 var PrivateKey;
-(function(PrivateKey2) {
+(function(PrivateKey3) {
   let _codec;
-  PrivateKey2.codec = () => {
+  PrivateKey3.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -6874,11 +8436,11 @@ var PrivateKey;
     }
     return _codec;
   };
-  PrivateKey2.encode = (obj) => {
-    return encodeMessage(obj, PrivateKey2.codec());
+  PrivateKey3.encode = (obj) => {
+    return encodeMessage(obj, PrivateKey3.codec());
   };
-  PrivateKey2.decode = (buf, opts) => {
-    return decodeMessage(buf, PrivateKey2.codec(), opts);
+  PrivateKey3.decode = (buf, opts) => {
+    return decodeMessage(buf, PrivateKey3.codec(), opts);
   };
 })(PrivateKey || (PrivateKey = {}));
 
@@ -8466,6 +10028,34 @@ function toCurve(curve) {
   throw new InvalidParametersError("Unsupported curve, should be P-256, P-384 or P-521");
 }
 __name(toCurve, "toCurve");
+async function privateKeyToCryptoKeyPair(privateKey) {
+  if (privateKey.type === "RSA") {
+    return {
+      privateKey: await crypto.subtle.importKey("jwk", privateKey.jwk, {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: { name: "SHA-256" }
+      }, true, ["sign"]),
+      publicKey: await crypto.subtle.importKey("jwk", privateKey.publicKey.jwk, {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: { name: "SHA-256" }
+      }, true, ["verify"])
+    };
+  }
+  if (privateKey.type === "ECDSA") {
+    return {
+      privateKey: await crypto.subtle.importKey("jwk", privateKey.jwk, {
+        name: "ECDSA",
+        namedCurve: privateKey.jwk.crv ?? "P-256"
+      }, true, ["sign"]),
+      publicKey: await crypto.subtle.importKey("jwk", privateKey.publicKey.jwk, {
+        name: "ECDSA",
+        namedCurve: privateKey.publicKey.jwk.crv ?? "P-256"
+      }, true, ["verify"])
+    };
+  }
+  throw new InvalidParametersError("Only RSA and ECDSA keys are supported");
+}
+__name(privateKeyToCryptoKeyPair, "privateKeyToCryptoKeyPair");
 
 // node_modules/p-defer/index.js
 function pDefer() {
@@ -12951,12 +14541,12 @@ function setup(env) {
       if (!debug.enabled) {
         return;
       }
-      const self = debug;
+      const self2 = debug;
       const curr = Number(/* @__PURE__ */ new Date());
       const ms = curr - (prevTime || curr);
-      self.diff = ms;
-      self.prev = prevTime;
-      self.curr = curr;
+      self2.diff = ms;
+      self2.prev = prevTime;
+      self2.curr = curr;
       prevTime = curr;
       args[0] = createDebug.coerce(args[0]);
       if (typeof args[0] !== "string") {
@@ -12971,15 +14561,15 @@ function setup(env) {
         const formatter = createDebug.formatters[format2];
         if (typeof formatter === "function") {
           const val = args[index];
-          match = formatter.call(self, val);
+          match = formatter.call(self2, val);
           args.splice(index, 1);
           index--;
         }
         return match;
       });
-      createDebug.formatArgs.call(self, args);
-      const logFn = self.log || createDebug.log;
-      logFn.apply(self, args);
+      createDebug.formatArgs.call(self2, args);
+      const logFn = self2.log || createDebug.log;
+      logFn.apply(self2, args);
     }
     __name(debug, "debug");
     debug.namespace = namespace;
@@ -13248,6 +14838,54 @@ var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters
 
 // node_modules/weald/dist/src/index.js
 var src_default2 = browser_default;
+
+// node_modules/delay/index.js
+var createAbortError = /* @__PURE__ */ __name(() => {
+  const error = new Error("Delay aborted");
+  error.name = "AbortError";
+  return error;
+}, "createAbortError");
+var clearMethods = /* @__PURE__ */ new WeakMap();
+function createDelay({ clearTimeout: defaultClear, setTimeout: defaultSet } = {}) {
+  return (milliseconds, { value: value2, signal } = {}) => {
+    if (signal?.aborted) {
+      return Promise.reject(createAbortError());
+    }
+    let timeoutId;
+    let settle;
+    let rejectFunction;
+    const clear = defaultClear ?? clearTimeout;
+    const signalListener = /* @__PURE__ */ __name(() => {
+      clear(timeoutId);
+      rejectFunction(createAbortError());
+    }, "signalListener");
+    const cleanup = /* @__PURE__ */ __name(() => {
+      if (signal) {
+        signal.removeEventListener("abort", signalListener);
+      }
+    }, "cleanup");
+    const delayPromise = new Promise((resolve, reject) => {
+      settle = /* @__PURE__ */ __name(() => {
+        cleanup();
+        resolve(value2);
+      }, "settle");
+      rejectFunction = reject;
+      timeoutId = (defaultSet ?? setTimeout)(settle, milliseconds);
+    });
+    if (signal) {
+      signal.addEventListener("abort", signalListener, { once: true });
+    }
+    clearMethods.set(delayPromise, () => {
+      clear(timeoutId);
+      timeoutId = null;
+      settle();
+    });
+    return delayPromise;
+  };
+}
+__name(createDelay, "createDelay");
+var delay = createDelay();
+var delay_default = delay;
 
 // node_modules/@libp2p/utils/dist/src/peer-queue.js
 var PeerQueue = class extends Queue {
@@ -13606,16 +15244,16 @@ function abytes2(value2, length3, title = "") {
   return value2;
 }
 __name(abytes2, "abytes");
-function aexists2(instance, checkFinished = true) {
-  if (instance.destroyed)
+function aexists2(instance2, checkFinished = true) {
+  if (instance2.destroyed)
     throw new Error("Hash instance has been destroyed");
-  if (checkFinished && instance.finished)
+  if (checkFinished && instance2.finished)
     throw new Error("Hash#digest() has already been called");
 }
 __name(aexists2, "aexists");
-function aoutput2(out, instance) {
+function aoutput2(out, instance2) {
   abytes2(out, void 0, "output");
-  const min = instance.outputLen;
+  const min = instance2.outputLen;
   if (out.length < min) {
     throw new Error("digestInto() expects output buffer of length at least " + min);
   }
@@ -14365,16 +16003,16 @@ function ahash2(h) {
   anumber3(h.blockLen);
 }
 __name(ahash2, "ahash");
-function aexists3(instance, checkFinished = true) {
-  if (instance.destroyed)
+function aexists3(instance2, checkFinished = true) {
+  if (instance2.destroyed)
     throw new Error("Hash instance has been destroyed");
-  if (checkFinished && instance.finished)
+  if (checkFinished && instance2.finished)
     throw new Error("Hash#digest() has already been called");
 }
 __name(aexists3, "aexists");
-function aoutput3(out, instance) {
+function aoutput3(out, instance2) {
   abytes3(out, void 0, "digestInto() output");
-  const min = instance.outputLen;
+  const min = instance2.outputLen;
   if (out.length < min) {
     throw new Error('"digestInto() output" expected to be of length >=' + min);
   }
@@ -15867,7 +17505,7 @@ __name(toMessageStream, "toMessageStream");
 
 // node_modules/@chainsafe/libp2p-noise/dist/src/performHandshake.js
 async function performHandshakeInitiator(init, options) {
-  const { log: log3, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log4, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto2,
@@ -15876,24 +17514,24 @@ async function performHandshakeInitiator(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log3);
-  log3.trace("Stage 0 - Initiator starting to send first message.");
+  logLocalStaticKeys(xx.s, log4);
+  log4.trace("Stage 0 - Initiator starting to send first message.");
   await connection.write(xx.writeMessageA(ZEROLEN), options);
-  log3.trace("Stage 0 - Initiator finished sending first message.");
-  logLocalEphemeralKeys(xx.e, log3);
-  log3.trace("Stage 1 - Initiator waiting to receive first message from responder...");
+  log4.trace("Stage 0 - Initiator finished sending first message.");
+  logLocalEphemeralKeys(xx.e, log4);
+  log4.trace("Stage 1 - Initiator waiting to receive first message from responder...");
   const plaintext = xx.readMessageB(await connection.read(options));
-  log3.trace("Stage 1 - Initiator received the message.");
-  logRemoteEphemeralKey(xx.re, log3);
-  logRemoteStaticKey(xx.rs, log3);
-  log3.trace("Initiator going to check remote's signature...");
+  log4.trace("Stage 1 - Initiator received the message.");
+  logRemoteEphemeralKey(xx.re, log4);
+  logRemoteStaticKey(xx.rs, log4);
+  log4.trace("Initiator going to check remote's signature...");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
-  log3.trace("All good with the signature!");
-  log3.trace("Stage 2 - Initiator sending third handshake message.");
+  log4.trace("All good with the signature!");
+  log4.trace("Stage 2 - Initiator sending third handshake message.");
   await connection.write(xx.writeMessageC(payload), options);
-  log3.trace("Stage 2 - Initiator sent message with signed payload.");
+  log4.trace("Stage 2 - Initiator sent message with signed payload.");
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log3);
+  logCipherState(cs1, cs2, log4);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs1.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -15902,7 +17540,7 @@ async function performHandshakeInitiator(init, options) {
 }
 __name(performHandshakeInitiator, "performHandshakeInitiator");
 async function performHandshakeResponder(init, options) {
-  const { log: log3, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log4, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto2,
@@ -15911,21 +17549,21 @@ async function performHandshakeResponder(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log3);
-  log3.trace("Stage 0 - Responder waiting to receive first message.");
+  logLocalStaticKeys(xx.s, log4);
+  log4.trace("Stage 0 - Responder waiting to receive first message.");
   xx.readMessageA(await connection.read(options));
-  log3.trace("Stage 0 - Responder received first message.");
-  logRemoteEphemeralKey(xx.re, log3);
-  log3.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
+  log4.trace("Stage 0 - Responder received first message.");
+  logRemoteEphemeralKey(xx.re, log4);
+  log4.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
   await connection.write(xx.writeMessageB(payload), options);
-  log3.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
-  logLocalEphemeralKeys(xx.e, log3);
-  log3.trace("Stage 2 - Responder waiting for third handshake message...");
+  log4.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
+  logLocalEphemeralKeys(xx.e, log4);
+  log4.trace("Stage 2 - Responder waiting for third handshake message...");
   const plaintext = xx.readMessageC(await connection.read(options));
-  log3.trace("Stage 2 - Responder received the message, finished handshake.");
+  log4.trace("Stage 2 - Responder received the message, finished handshake.");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log3);
+  logCipherState(cs1, cs2, log4);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs2.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -15980,13 +17618,13 @@ var Noise = class {
    * @param options.signal - Used to abort the operation
    */
   async secureOutbound(connection, options) {
-    const log3 = connection.log?.newScope("noise") ?? this.log;
+    const log4 = connection.log?.newScope("noise") ?? this.log;
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
       lengthDecoder: uint16BEDecode,
       maxDataLength: NOISE_MSG_MAX_LENGTH_BYTES
     });
-    const handshake = await this.performHandshakeInitiator(wrappedConnection, this.components.privateKey, log3, options?.remotePeer?.publicKey, options);
+    const handshake = await this.performHandshakeInitiator(wrappedConnection, this.components.privateKey, log4, options?.remotePeer?.publicKey, options);
     const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey);
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
@@ -16021,13 +17659,13 @@ var Noise = class {
    * @param options.signal - Used to abort the operation
    */
   async secureInbound(connection, options) {
-    const log3 = connection.log?.newScope("noise") ?? this.log;
+    const log4 = connection.log?.newScope("noise") ?? this.log;
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
       lengthDecoder: uint16BEDecode,
       maxDataLength: NOISE_MSG_MAX_LENGTH_BYTES
     });
-    const handshake = await this.performHandshakeResponder(wrappedConnection, this.components.privateKey, log3, options?.remotePeer?.publicKey, options);
+    const handshake = await this.performHandshakeResponder(wrappedConnection, this.components.privateKey, log4, options?.remotePeer?.publicKey, options);
     const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey);
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
@@ -16039,7 +17677,7 @@ var Noise = class {
   /**
    * Perform XX handshake as initiator.
    */
-  async performHandshakeInitiator(connection, privateKey, log3, remoteIdentityKey, options) {
+  async performHandshakeInitiator(connection, privateKey, log4, remoteIdentityKey, options) {
     let result;
     const streamMuxers = options?.skipStreamMuxerNegotiation === true ? [] : [...this.components.upgrader.getStreamMuxers().keys()];
     try {
@@ -16047,7 +17685,7 @@ var Noise = class {
         connection,
         privateKey,
         remoteIdentityKey,
-        log: log3.newScope("xxhandshake"),
+        log: log4.newScope("xxhandshake"),
         crypto: this.crypto,
         prologue: this.prologue,
         s: this.staticKey,
@@ -16067,7 +17705,7 @@ var Noise = class {
   /**
    * Perform XX handshake as responder.
    */
-  async performHandshakeResponder(connection, privateKey, log3, remoteIdentityKey, options) {
+  async performHandshakeResponder(connection, privateKey, log4, remoteIdentityKey, options) {
     let result;
     const streamMuxers = options?.skipStreamMuxerNegotiation === true ? [] : [...this.components.upgrader.getStreamMuxers().keys()];
     try {
@@ -16075,7 +17713,7 @@ var Noise = class {
         connection,
         privateKey,
         remoteIdentityKey,
-        log: log3.newScope("xxhandshake"),
+        log: log4.newScope("xxhandshake"),
         crypto: this.crypto,
         prologue: this.prologue,
         s: this.staticKey,
@@ -16160,7 +17798,7 @@ var GoAwayCode;
 var HEADER_LENGTH = 12;
 
 // node_modules/@chainsafe/libp2p-yamux/dist/src/errors.js
-var ProtocolError = class extends Error {
+var ProtocolError2 = class extends Error {
   static name = "ProtocolError";
   reason;
   constructor(message2, reason) {
@@ -16173,49 +17811,49 @@ function isProtocolError(err) {
   return err?.reason !== null;
 }
 __name(isProtocolError, "isProtocolError");
-var InvalidFrameError = class extends ProtocolError {
+var InvalidFrameError = class extends ProtocolError2 {
   static name = "InvalidFrameError";
   constructor(message2 = "The frame was invalid") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "InvalidFrameError";
   }
 };
-var UnRequestedPingError = class extends ProtocolError {
+var UnRequestedPingError = class extends ProtocolError2 {
   static name = "UnRequestedPingError";
   constructor(message2 = "Un-requested ping error") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "UnRequestedPingError";
   }
 };
-var NotMatchingPingError = class extends ProtocolError {
+var NotMatchingPingError = class extends ProtocolError2 {
   static name = "NotMatchingPingError";
   constructor(message2 = "Not matching ping error") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "NotMatchingPingError";
   }
 };
-var StreamAlreadyExistsError = class extends ProtocolError {
+var StreamAlreadyExistsError = class extends ProtocolError2 {
   static name = "StreamAlreadyExistsError";
   constructor(message2 = "Stream already exists") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "StreamAlreadyExistsError";
   }
 };
-var DecodeInvalidVersionError = class extends ProtocolError {
+var DecodeInvalidVersionError = class extends ProtocolError2 {
   static name = "DecodeInvalidVersionError";
   constructor(message2 = "Decode invalid version") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "DecodeInvalidVersionError";
   }
 };
-var BothClientsError = class extends ProtocolError {
+var BothClientsError = class extends ProtocolError2 {
   static name = "BothClientsError";
   constructor(message2 = "Both clients") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "BothClientsError";
   }
 };
-var ReceiveWindowExceededError = class extends ProtocolError {
+var ReceiveWindowExceededError = class extends ProtocolError2 {
   static name = "ReceiveWindowExceededError";
   constructor(message2 = "Receive window exceeded") {
     super(message2, GoAwayCode.ProtocolError);
@@ -18151,18 +19789,18 @@ var LimitTracker = class {
     }
     const output = {};
     if (this.bytes != null) {
-      const self = this;
+      const self2 = this;
       Object.defineProperty(output, "bytes", {
         get() {
-          return self.bytes;
+          return self2.bytes;
         }
       });
     }
     if (this.expires != null) {
-      const self = this;
+      const self2 = this;
       Object.defineProperty(output, "seconds", {
         get() {
-          return Math.round(((self.expires ?? 0) - Date.now()) / 1e3);
+          return Math.round(((self2.expires ?? 0) - Date.now()) / 1e3);
         }
       });
     }
@@ -19378,6 +21016,368 @@ function circuitRelayTransport(init = {}) {
 }
 __name(circuitRelayTransport, "circuitRelayTransport");
 
+// node_modules/@libp2p/dcutr/dist/src/pb/message.js
+var HolePunch;
+(function(HolePunch2) {
+  let Type;
+  (function(Type2) {
+    Type2["UNUSED"] = "UNUSED";
+    Type2["CONNECT"] = "CONNECT";
+    Type2["SYNC"] = "SYNC";
+  })(Type = HolePunch2.Type || (HolePunch2.Type = {}));
+  let __TypeValues;
+  (function(__TypeValues2) {
+    __TypeValues2[__TypeValues2["UNUSED"] = 0] = "UNUSED";
+    __TypeValues2[__TypeValues2["CONNECT"] = 100] = "CONNECT";
+    __TypeValues2[__TypeValues2["SYNC"] = 300] = "SYNC";
+  })(__TypeValues || (__TypeValues = {}));
+  (function(Type2) {
+    Type2.codec = () => {
+      return enumeration(__TypeValues);
+    };
+  })(Type = HolePunch2.Type || (HolePunch2.Type = {}));
+  let _codec;
+  HolePunch2.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork();
+        }
+        if (obj.type != null) {
+          w.uint32(8);
+          HolePunch2.Type.codec().encode(obj.type, w);
+        }
+        if (obj.observedAddresses != null) {
+          for (const value2 of obj.observedAddresses) {
+            w.uint32(18);
+            w.bytes(value2);
+          }
+        }
+        if (opts.lengthDelimited !== false) {
+          w.ldelim();
+        }
+      }, (reader, length3, opts = {}) => {
+        const obj = {
+          observedAddresses: []
+        };
+        const end = length3 == null ? reader.len : reader.pos + length3;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1: {
+              obj.type = HolePunch2.Type.codec().decode(reader);
+              break;
+            }
+            case 2: {
+              if (opts.limits?.observedAddresses != null && obj.observedAddresses.length === opts.limits.observedAddresses) {
+                throw new MaxLengthError('Decode error - map field "observedAddresses" had too many elements');
+              }
+              obj.observedAddresses.push(reader.bytes());
+              break;
+            }
+            default: {
+              reader.skipType(tag & 7);
+              break;
+            }
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  HolePunch2.encode = (obj) => {
+    return encodeMessage(obj, HolePunch2.codec());
+  };
+  HolePunch2.decode = (buf, opts) => {
+    return decodeMessage(buf, HolePunch2.codec(), opts);
+  };
+})(HolePunch || (HolePunch = {}));
+
+// node_modules/@libp2p/dcutr/dist/src/utils.js
+function isPublicAndDialable(ma, transportManager) {
+  if (Circuit.matches(ma)) {
+    return false;
+  }
+  const transport = transportManager.dialTransportForMultiaddr(ma);
+  if (transport == null) {
+    return false;
+  }
+  if (DNS.matches(ma)) {
+    return true;
+  }
+  if (!IP.matches(ma)) {
+    return false;
+  }
+  return !isPrivate(ma);
+}
+__name(isPublicAndDialable, "isPublicAndDialable");
+
+// node_modules/@libp2p/dcutr/dist/src/dcutr.js
+var MAX_DCUTR_MESSAGE_SIZE = 1024 * 4;
+var DCUTR_DIAL_PRIORITY = 100;
+var defaultValues = {
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L27
+  timeout: 5e3,
+  // https://github.com/libp2p/go-libp2p/blob/8d2e54e1637041d5cf4fac1e531287560bd1f4ac/p2p/protocol/holepunch/holepuncher.go#L28
+  retries: 3,
+  maxInboundStreams: 1,
+  maxOutboundStreams: 1
+};
+var DefaultDCUtRService = class {
+  static {
+    __name(this, "DefaultDCUtRService");
+  }
+  started;
+  timeout;
+  retries;
+  maxInboundStreams;
+  maxOutboundStreams;
+  peerStore;
+  registrar;
+  connectionManager;
+  addressManager;
+  transportManager;
+  topologyId;
+  log;
+  constructor(components, init) {
+    this.log = components.logger.forComponent("libp2p:dcutr");
+    this.started = false;
+    this.peerStore = components.peerStore;
+    this.registrar = components.registrar;
+    this.addressManager = components.addressManager;
+    this.connectionManager = components.connectionManager;
+    this.transportManager = components.transportManager;
+    this.timeout = init.timeout ?? defaultValues.timeout;
+    this.retries = init.retries ?? defaultValues.retries;
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams;
+    this.handleIncomingUpgrade = this.handleIncomingUpgrade.bind(this);
+  }
+  [Symbol.toStringTag] = "@libp2p/dcutr";
+  [serviceDependencies] = [
+    "@libp2p/identify"
+  ];
+  isStarted() {
+    return this.started;
+  }
+  async start() {
+    if (this.started) {
+      return;
+    }
+    this.topologyId = await this.registrar.register(multicodec, {
+      notifyOnLimitedConnection: true,
+      onConnect: /* @__PURE__ */ __name((peerId, connection) => {
+        if (!Circuit.exactMatch(connection.remoteAddr)) {
+          return;
+        }
+        if (connection.direction !== "inbound") {
+          return;
+        }
+        this.upgradeInbound(connection).catch((err) => {
+          this.log.error("error during outgoing DCUtR attempt - %e", err);
+        });
+      }, "onConnect")
+    });
+    await this.registrar.handle(multicodec, this.handleIncomingUpgrade, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnLimitedConnection: true
+    });
+    this.started = true;
+  }
+  async stop() {
+    await this.registrar.unhandle(multicodec);
+    if (this.topologyId != null) {
+      this.registrar.unregister(this.topologyId);
+    }
+    this.started = false;
+  }
+  /**
+   * Perform the inbound connection upgrade as B
+   *
+   * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
+   */
+  async upgradeInbound(relayedConnection) {
+    if (await this.attemptUnilateralConnectionUpgrade(relayedConnection)) {
+      return;
+    }
+    let stream;
+    for (let i2 = 0; i2 < this.retries; i2++) {
+      const options = {
+        signal: AbortSignal.timeout(this.timeout)
+      };
+      try {
+        stream = await relayedConnection.newStream([multicodec], {
+          signal: options.signal,
+          runOnLimitedConnection: true
+        });
+        const pb = pbStream(stream, {
+          maxDataLength: MAX_DCUTR_MESSAGE_SIZE
+        }).pb(HolePunch);
+        this.log("B sending connect to %p", relayedConnection.remotePeer);
+        const connectTimer = Date.now();
+        await pb.write({
+          type: HolePunch.Type.CONNECT,
+          observedAddresses: this.addressManager.getAddresses().map((ma) => ma.bytes)
+        }, options);
+        this.log("B receiving connect from %p", relayedConnection.remotePeer);
+        const connect2 = await pb.read(options);
+        if (connect2.type !== HolePunch.Type.CONNECT) {
+          this.log("A sent wrong message type");
+          throw new InvalidMessageError("DCUtR message type was incorrect");
+        }
+        const multiaddrs = this.getDialableMultiaddrs(connect2.observedAddresses);
+        if (multiaddrs.length === 0) {
+          this.log("A did not have any dialable multiaddrs");
+          throw new InvalidMessageError("DCUtR connect message had no multiaddrs");
+        }
+        const rtt = Date.now() - connectTimer;
+        this.log("A sending sync, rtt %dms", rtt);
+        await pb.write({
+          type: HolePunch.Type.SYNC,
+          observedAddresses: []
+        }, options);
+        this.log("A waiting for half RTT");
+        await delay_default(rtt / 2);
+        this.log("B dialing", multiaddrs);
+        const conn = await this.connectionManager.openConnection(multiaddrs, {
+          signal: options.signal,
+          priority: DCUTR_DIAL_PRIORITY,
+          force: true,
+          initiator: false
+        });
+        this.log("DCUtR to %p succeeded to address %a, closing relayed connection", relayedConnection.remotePeer, conn.remoteAddr);
+        await relayedConnection.close(options);
+        break;
+      } catch (err) {
+        this.log.error("error while attempting DCUtR on attempt %d of %d - %e", i2 + 1, this.retries, err);
+        stream?.abort(err);
+        if (i2 === this.retries) {
+          throw err;
+        }
+      } finally {
+        if (stream != null) {
+          await stream.close(options);
+        }
+      }
+    }
+  }
+  /**
+   * This is performed when A has dialed B via a relay but A also has a public
+   * address that B can dial directly
+   */
+  async attemptUnilateralConnectionUpgrade(relayedConnection) {
+    const peerInfo = await this.peerStore.get(relayedConnection.remotePeer);
+    const publicAddresses = peerInfo.addresses.map((address) => {
+      const ma = address.multiaddr;
+      if (ma.getComponents().find((c2) => c2.code === CODE_P2P)?.value == null) {
+        return ma.encapsulate(`/p2p/${relayedConnection.remotePeer}`);
+      }
+      return ma;
+    }).filter((ma) => {
+      return isPublicAndDialable(ma, this.transportManager);
+    });
+    if (publicAddresses.length > 0) {
+      const signal = AbortSignal.timeout(this.timeout);
+      try {
+        this.log("attempting unilateral connection upgrade to %a", publicAddresses);
+        const connection = await this.connectionManager.openConnection(publicAddresses, {
+          signal,
+          force: true
+        });
+        if (Circuit.exactMatch(connection.remoteAddr)) {
+          throw new Error("Could not open a new, non-limited, connection");
+        }
+        this.log("unilateral connection upgrade to %p succeeded via %a, closing relayed connection", relayedConnection.remotePeer, connection.remoteAddr);
+        await relayedConnection.close({
+          signal
+        });
+        return true;
+      } catch (err) {
+        this.log.error("unilateral connection upgrade to %p on addresses %a failed - %e", relayedConnection.remotePeer, publicAddresses, err);
+      }
+    } else {
+      this.log("peer %p has no public addresses, not attempting unilateral connection upgrade", relayedConnection.remotePeer);
+    }
+    return false;
+  }
+  /**
+   * Perform the connection upgrade as A
+   *
+   * @see https://github.com/libp2p/specs/blob/master/relay/DCUtR.md#the-protocol
+   */
+  async handleIncomingUpgrade(stream, relayedConnection) {
+    const options = {
+      signal: AbortSignal.timeout(this.timeout)
+    };
+    const pb = pbStream(stream, {
+      maxDataLength: MAX_DCUTR_MESSAGE_SIZE
+    }).pb(HolePunch);
+    this.log("A receiving connect");
+    const connect2 = await pb.read(options);
+    if (connect2.type !== HolePunch.Type.CONNECT) {
+      this.log("B sent wrong message type");
+      throw new InvalidMessageError("DCUtR message type was incorrect");
+    }
+    if (connect2.observedAddresses.length === 0) {
+      this.log("B sent no multiaddrs");
+      throw new InvalidMessageError("DCUtR connect message had no multiaddrs");
+    }
+    const multiaddrs = this.getDialableMultiaddrs(connect2.observedAddresses);
+    if (multiaddrs.length === 0) {
+      this.log("B had no dialable multiaddrs in %o", connect2.observedAddresses.map((b) => multiaddr(b)));
+      throw new InvalidMessageError("DCUtR connect message had no dialable multiaddrs");
+    }
+    this.log("A sending connect");
+    await pb.write({
+      type: HolePunch.Type.CONNECT,
+      observedAddresses: this.addressManager.getAddresses().map((ma) => ma.bytes)
+    });
+    this.log("A receiving sync");
+    const sync = await pb.read(options);
+    if (sync.type !== HolePunch.Type.SYNC) {
+      throw new InvalidMessageError("DCUtR message type was incorrect");
+    }
+    this.log("A dialing", multiaddrs);
+    const connection = await this.connectionManager.openConnection(multiaddrs, {
+      signal: options.signal,
+      priority: DCUTR_DIAL_PRIORITY,
+      force: true
+    });
+    this.log("DCUtR to %p succeeded via %a, closing relayed connection", relayedConnection.remotePeer, connection.remoteAddr);
+    await relayedConnection.close(options);
+    await stream.close(options);
+  }
+  /**
+   * Takes the `addr` and converts it to a Multiaddr if possible
+   */
+  getDialableMultiaddrs(addrs) {
+    const output = [];
+    for (const addr of addrs) {
+      if (addr == null || addr.length === 0) {
+        continue;
+      }
+      try {
+        const ma = multiaddr(addr);
+        if (!isPublicAndDialable(ma, this.transportManager)) {
+          continue;
+        }
+        output.push(ma);
+      } catch {
+      }
+    }
+    return output;
+  }
+};
+
+// node_modules/@libp2p/dcutr/dist/src/index.js
+var multicodec = "/libp2p/dcutr";
+function dcutr(init = {}) {
+  return (components) => new DefaultDCUtRService(components, init);
+}
+__name(dcutr, "dcutr");
+
 // node_modules/it-drain/dist/src/index.js
 function isAsyncIterable2(thing) {
   return thing[Symbol.asyncIterator] != null;
@@ -19515,9 +21515,12 @@ __name(parallel, "parallel");
 // node_modules/@libp2p/identify/dist/src/consts.js
 var IDENTIFY_PROTOCOL_VERSION = "0.1.0";
 var MULTICODEC_IDENTIFY_PROTOCOL_NAME = "id";
+var MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME = "id/push";
 var MULTICODEC_IDENTIFY_PROTOCOL_VERSION = "1.0.0";
+var MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION = "1.0.0";
 var MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8;
 var MAX_PUSH_CONCURRENCY = 32;
+var PUSH_DEBOUNCE_MS = 1e3;
 
 // node_modules/@libp2p/identify/dist/src/pb/message.js
 var Identify;
@@ -19627,7 +21630,7 @@ var Identify;
 })(Identify || (Identify = {}));
 
 // node_modules/@libp2p/identify/dist/src/utils.js
-var defaultValues = {
+var defaultValues2 = {
   protocolPrefix: "ipfs",
   timeout: 5e3,
   maxInboundStreams: 1,
@@ -19648,8 +21651,8 @@ function getCleanMultiaddr(addr) {
   }
 }
 __name(getCleanMultiaddr, "getCleanMultiaddr");
-async function consumeIdentifyMessage(peerStore, events, log3, connection, message2) {
-  log3("received identify from %p", connection.remotePeer);
+async function consumeIdentifyMessage(peerStore, events, log4, connection, message2) {
+  log4("received identify from %p", connection.remotePeer);
   if (message2 == null) {
     throw new InvalidMessageError("message was null or undefined");
   }
@@ -19673,7 +21676,7 @@ async function consumeIdentifyMessage(peerStore, events, log3, connection, messa
   }
   let output;
   if (message2.signedPeerRecord != null) {
-    log3.trace("received signedPeerRecord from %p", connection.remotePeer);
+    log4.trace("received signedPeerRecord from %p", connection.remotePeer);
     let peerRecordEnvelope2 = message2.signedPeerRecord;
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope2, PeerRecord2.DOMAIN);
     let peerRecord = PeerRecord2.createFromProtobuf(envelope.payload);
@@ -19698,7 +21701,7 @@ async function consumeIdentifyMessage(peerStore, events, log3, connection, messa
         const storedEnvelope = RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope);
         const storedRecord = PeerRecord2.createFromProtobuf(storedEnvelope.payload);
         if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-          log3("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
+          log4("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
           peerRecord = storedRecord;
           peerRecordEnvelope2 = existingPeer.peerRecordEnvelope;
         }
@@ -19714,9 +21717,9 @@ async function consumeIdentifyMessage(peerStore, events, log3, connection, messa
       addresses: peerRecord.multiaddrs
     };
   } else {
-    log3("%p did not send a signed peer record", connection.remotePeer);
+    log4("%p did not send a signed peer record", connection.remotePeer);
   }
-  log3.trace("patching %p with", connection.remotePeer, peer);
+  log4.trace("patching %p with", connection.remotePeer, peer);
   await peerStore.patch(connection.remotePeer, peer);
   if (message2.agentVersion != null || message2.protocolVersion != null) {
     const metadata = {};
@@ -19726,7 +21729,7 @@ async function consumeIdentifyMessage(peerStore, events, log3, connection, messa
     if (message2.protocolVersion != null) {
       metadata.ProtocolVersion = fromString2(message2.protocolVersion);
     }
-    log3.trace("merging %p metadata", connection.remotePeer, metadata);
+    log4.trace("merging %p metadata", connection.remotePeer, metadata);
     await peerStore.merge(connection.remotePeer, {
       metadata
     });
@@ -19766,14 +21769,14 @@ var AbstractIdentify = class {
     this.started = false;
     this.components = components;
     this.log = init.log;
-    this.timeout = init.timeout ?? defaultValues.timeout;
-    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues.maxInboundStreams;
-    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams;
-    this.maxMessageSize = init.maxMessageSize ?? defaultValues.maxMessageSize;
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses;
-    this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues.runOnLimitedConnection;
+    this.timeout = init.timeout ?? defaultValues2.timeout;
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultValues2.maxInboundStreams;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues2.maxOutboundStreams;
+    this.maxMessageSize = init.maxMessageSize ?? defaultValues2.maxMessageSize;
+    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues2.maxObservedAddresses;
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues2.runOnLimitedConnection;
     this.host = {
-      protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
+      protocolVersion: `${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
       agentVersion: components.nodeInfo.userAgent
     };
     this.handleProtocol = this.handleProtocol.bind(this);
@@ -19804,6 +21807,123 @@ var AbstractIdentify = class {
   }
 };
 
+// node_modules/@libp2p/identify/dist/src/identify-push.js
+var IdentifyPush = class extends AbstractIdentify {
+  static {
+    __name(this, "IdentifyPush");
+  }
+  connectionManager;
+  concurrency;
+  _push;
+  constructor(components, init = {}) {
+    super(components, {
+      ...init,
+      protocol: `/${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION}`,
+      log: components.logger.forComponent("libp2p:identify-push")
+    });
+    this.connectionManager = components.connectionManager;
+    this.concurrency = init.concurrency ?? defaultValues2.concurrency;
+    this._push = debounce(this.sendPushMessage.bind(this), init.debounce ?? PUSH_DEBOUNCE_MS);
+    if (init.runOnSelfUpdate ?? defaultValues2.runOnSelfUpdate) {
+      components.events.addEventListener("self:peer:update", (evt) => {
+        this.push().catch((err) => {
+          this.log.error("error pushing updates to peers - %e", err);
+        });
+      });
+    }
+  }
+  [serviceCapabilities] = [
+    "@libp2p/identify-push"
+  ];
+  /**
+   * Calls `push` on all peer connections
+   */
+  async push() {
+    this._push();
+  }
+  async sendPushMessage() {
+    if (!this.isStarted()) {
+      return;
+    }
+    try {
+      const listenAddresses = this.components.addressManager.getAddresses().map((ma) => ma.decapsulateCode(CODE_P2P));
+      const peerRecord = new PeerRecord2({
+        peerId: this.components.peerId,
+        multiaddrs: listenAddresses
+      });
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.components.privateKey);
+      const supportedProtocols = this.components.registrar.getProtocols();
+      const peer = await this.components.peerStore.get(this.components.peerId);
+      const agentVersion = toString2(peer.metadata.get("AgentVersion") ?? fromString2(this.host.agentVersion));
+      const protocolVersion = toString2(peer.metadata.get("ProtocolVersion") ?? fromString2(this.host.protocolVersion));
+      const self2 = this;
+      async function* pushToConnections() {
+        for (const connection of self2.connectionManager.getConnections()) {
+          const peer2 = await self2.components.peerStore.get(connection.remotePeer);
+          if (!peer2.protocols.includes(self2.protocol)) {
+            continue;
+          }
+          yield async () => {
+            let stream;
+            const signal = AbortSignal.timeout(self2.timeout);
+            setMaxListeners(Infinity, signal);
+            try {
+              stream = await connection.newStream(self2.protocol, {
+                signal,
+                runOnLimitedConnection: self2.runOnLimitedConnection
+              });
+              const pb = pbStream(stream, {
+                maxDataLength: self2.maxMessageSize
+              }).pb(Identify);
+              await pb.write({
+                listenAddrs: listenAddresses.map((ma) => ma.bytes),
+                signedPeerRecord: signedPeerRecord.marshal(),
+                protocols: supportedProtocols,
+                agentVersion,
+                protocolVersion
+              }, {
+                signal
+              });
+              await stream.close({
+                signal
+              });
+            } catch (err) {
+              const log4 = stream?.log.newScope("identify-push");
+              log4?.error("could not push identify update to peer", err);
+              stream?.abort(err);
+            }
+          };
+        }
+      }
+      __name(pushToConnections, "pushToConnections");
+      await src_default3(parallel(pushToConnections(), {
+        concurrency: this.concurrency
+      }));
+    } catch (err) {
+      this.log.error("error pushing updates to peers - %e", err);
+    }
+  }
+  /**
+   * Reads the Identify Push message from the given `connection`
+   */
+  async handleProtocol(stream, connection) {
+    const log4 = stream.log.newScope("identify-push");
+    if (this.components.peerId.equals(connection.remotePeer)) {
+      throw new Error("received push from ourselves?");
+    }
+    const options = {
+      signal: AbortSignal.timeout(this.timeout)
+    };
+    const pb = pbStream(stream, {
+      maxDataLength: this.maxMessageSize
+    }).pb(Identify);
+    const message2 = await pb.read(options);
+    await stream.close(options);
+    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log4, connection, message2);
+    log4.trace("handled push from %p", connection.remotePeer);
+  }
+};
+
 // node_modules/@libp2p/identify/dist/src/identify.js
 var Identify2 = class extends AbstractIdentify {
   static {
@@ -19812,10 +21932,10 @@ var Identify2 = class extends AbstractIdentify {
   constructor(components, init = {}) {
     super(components, {
       ...init,
-      protocol: `/${init.protocolPrefix ?? defaultValues.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
+      protocol: `/${init.protocolPrefix ?? defaultValues2.protocolPrefix}/${MULTICODEC_IDENTIFY_PROTOCOL_NAME}/${MULTICODEC_IDENTIFY_PROTOCOL_VERSION}`,
       log: components.logger.forComponent("libp2p:identify")
     });
-    if (init.runOnConnectionOpen ?? defaultValues.runOnConnectionOpen) {
+    if (init.runOnConnectionOpen ?? defaultValues2.runOnConnectionOpen) {
       components.events.addEventListener("connection:open", (evt) => {
         const connection = evt.detail;
         this.identify(connection).catch(() => {
@@ -19828,7 +21948,7 @@ var Identify2 = class extends AbstractIdentify {
   ];
   async _identify(connection, options = {}) {
     let stream;
-    let log3;
+    let log4;
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout);
       setMaxListeners(Infinity, signal);
@@ -19843,7 +21963,7 @@ var Identify2 = class extends AbstractIdentify {
         ...options,
         runOnLimitedConnection: this.runOnLimitedConnection
       });
-      log3 = stream.log.newScope("identify");
+      log4 = stream.log.newScope("identify");
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
       }).pb(Identify);
@@ -19851,7 +21971,7 @@ var Identify2 = class extends AbstractIdentify {
       await pb.unwrap().unwrap().close(options);
       return message2;
     } catch (err) {
-      log3?.error("identify failed - %e", err);
+      log4?.error("identify failed - %e", err);
       stream?.abort(err);
       throw err;
     }
@@ -19899,8 +22019,8 @@ var Identify2 = class extends AbstractIdentify {
    * to the requesting peer over the given `connection`
    */
   async handleProtocol(stream, connection) {
-    const log3 = stream.log.newScope("identify");
-    log3("responding to identify");
+    const log4 = stream.log.newScope("identify");
+    log4("responding to identify");
     const signal = AbortSignal.timeout(this.timeout);
     setMaxListeners(Infinity, signal);
     const peerData = await this.components.peerStore.get(this.components.peerId, {
@@ -19923,7 +22043,7 @@ var Identify2 = class extends AbstractIdentify {
       observedAddr = void 0;
     }
     const pb = pbStream(stream).pb(Identify);
-    log3("send response");
+    log4("send response");
     await pb.write({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
@@ -19935,7 +22055,7 @@ var Identify2 = class extends AbstractIdentify {
     }, {
       signal
     });
-    log3("close write");
+    log4("close write");
     await pb.unwrap().unwrap().close({
       signal
     });
@@ -19947,6 +22067,10 @@ function identify(init = {}) {
   return (components) => new Identify2(components, init);
 }
 __name(identify, "identify");
+function identifyPush(init = {}) {
+  return (components) => new IdentifyPush(components, init);
+}
+__name(identifyPush, "identifyPush");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-public/pb/message.js
 var Message;
@@ -20029,6 +22153,7 @@ var DEFAULT_ICE_SERVERS = [
   "stun:stun.services.mozilla.com:3478"
 ];
 var UFRAG_ALPHABET = Array.from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
+var UFRAG_PREFIX = "libp2p+webrtc+v1/";
 var MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024;
 var MAX_MESSAGE_SIZE = 16 * 1024;
 function calculateProtobufOverhead(maxMessageSize = MAX_MESSAGE_SIZE) {
@@ -20044,6 +22169,10 @@ var PROTOBUF_OVERHEAD = calculateProtobufOverhead();
 var DEFAULT_FIN_ACK_TIMEOUT = 1e4;
 var MUXER_PROTOCOL = "/webrtc";
 var SIGNALING_PROTOCOL = "/webrtc-signaling/0.0.1";
+var DEFAULT_CERTIFICATE_DATASTORE_KEY = "/libp2p/webrtc-direct/certificate";
+var DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME = "webrtc-direct-certificate-private-key";
+var DEFAULT_CERTIFICATE_LIFESPAN = 12096e5;
+var DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD = 864e5;
 
 // node_modules/@libp2p/webrtc/node_modules/it-length-prefixed/dist/src/constants.js
 var MAX_LENGTH_LENGTH = 8;
@@ -20451,8 +22580,8 @@ function detect(userAgent2) {
 }
 __name(detect, "detect");
 function matchUserAgent(ua) {
-  return ua !== "" && userAgentRules.reduce(function(matched, _a) {
-    var browser2 = _a[0], regex = _a[1];
+  return ua !== "" && userAgentRules.reduce(function(matched, _a3) {
+    var browser2 = _a3[0], regex = _a3[1];
     if (matched) {
       return matched;
     }
@@ -20489,7 +22618,7 @@ function parseUserAgent(ua) {
 __name(parseUserAgent, "parseUserAgent");
 function detectOS(ua) {
   for (var ii = 0, count = operatingSystemRules.length; ii < count; ii++) {
-    var _a = operatingSystemRules[ii], os = _a[0], regex = _a[1];
+    var _a3 = operatingSystemRules[ii], os = _a3[0], regex = _a3[1];
     var match = regex.exec(ua);
     if (match) {
       return os;
@@ -20528,6 +22657,9 @@ async function getRtcConfiguration(config) {
   return config;
 }
 __name(getRtcConfiguration, "getRtcConfiguration");
+var genUfrag = /* @__PURE__ */ __name((len = 32) => {
+  return UFRAG_PREFIX + [...Array(len)].map(() => UFRAG_ALPHABET.at(Math.floor(Math.random() * UFRAG_ALPHABET.length))).join("");
+}, "genUfrag");
 
 // node_modules/@libp2p/webrtc/dist/src/stream.js
 var WebRTCStream = class extends AbstractStream {
@@ -20871,7 +23003,7 @@ var toMultiaddrConnection = /* @__PURE__ */ __name((init) => {
 }, "toMultiaddrConnection");
 
 // node_modules/@libp2p/webrtc/dist/src/webrtc/index.browser.js
-var RTCPeerConnection = globalThis.RTCPeerConnection;
+var RTCPeerConnection2 = globalThis.RTCPeerConnection;
 var RTCSessionDescription = globalThis.RTCSessionDescription;
 var RTCIceCandidate = globalThis.RTCIceCandidate;
 
@@ -20892,6 +23024,33 @@ var SDPHandshakeFailedError = class extends WebRTCTransportError {
   constructor(message2 = "SDP handshake failed") {
     super(message2);
     this.name = "SDPHandshakeFailedError";
+  }
+};
+var InvalidFingerprintError = class extends WebRTCTransportError {
+  static {
+    __name(this, "InvalidFingerprintError");
+  }
+  constructor(fingerprint, source) {
+    super(`Invalid fingerprint "${fingerprint}" within ${source}`);
+    this.name = "WebRTC/InvalidFingerprintError";
+  }
+};
+var UnimplementedError = class extends WebRTCTransportError {
+  static {
+    __name(this, "UnimplementedError");
+  }
+  constructor(methodName) {
+    super(`A method (${methodName}) was called though it has been intentionally left unimplemented.`);
+    this.name = "WebRTC/UnimplementedError";
+  }
+};
+var UnsupportedHashAlgorithmError = class extends WebRTCTransportError {
+  static {
+    __name(this, "UnsupportedHashAlgorithmError");
+  }
+  constructor(algo) {
+    super(`unsupported hash algorithm code: ${algo} please see the codes at https://github.com/multiformats/multicodec/blob/master/table.csv `);
+    this.name = "WebRTC/UnsupportedHashAlgorithmError";
   }
 };
 
@@ -21043,10 +23202,10 @@ function getRemotePeer(ma) {
 __name(getRemotePeer, "getRemotePeer");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/initiate-connection.js
-async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log3, logger: logger3, onProgress }) {
+async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log4, logger: logger3, onProgress }) {
   const { circuitAddress, targetPeer } = splitAddr(ma);
   metrics?.dialerEvents.increment({ open: true });
-  log3.trace("dialing circuit address: %a", circuitAddress);
+  log4.trace("dialing circuit address: %a", circuitAddress);
   const connections = connectionManager.getConnections(targetPeer);
   let connection;
   if (connections.length === 0) {
@@ -21065,7 +23224,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
     runOnLimitedConnection: true
   });
   const messageStream = pbStream(stream).pb(Message2);
-  const peerConnection = new RTCPeerConnection(rtcConfiguration);
+  const peerConnection = new RTCPeerConnection2(rtcConfiguration);
   peerConnection.addEventListener("connectionstatechange", () => {
     switch (peerConnection.connectionState) {
       case "closed":
@@ -21084,81 +23243,81 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
     const channel = peerConnection.createDataChannel("init");
     peerConnection.onicecandidate = ({ candidate }) => {
       if (peerConnection.connectionState === "connected") {
-        log3.trace("ignore new ice candidate as peer connection is already connected");
+        log4.trace("ignore new ice candidate as peer connection is already connected");
         return;
       }
       if (candidate == null || candidate?.candidate === "") {
-        log3.trace("initiator detected end of ICE candidates");
+        log4.trace("initiator detected end of ICE candidates");
         return;
       }
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log3.trace("initiator sending ICE candidate %o", candidate);
+      log4.trace("initiator sending ICE candidate %o", candidate);
       void messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log3.error("error sending ICE candidate - %e", err);
+        log4.error("error sending ICE candidate - %e", err);
       });
     };
     peerConnection.onicecandidateerror = (event) => {
-      log3.error("initiator ICE candidate error", event);
+      log4.error("initiator ICE candidate error", event);
     };
     const offerSdp = await peerConnection.createOffer().catch((err) => {
-      log3.error("could not execute createOffer - %e", err);
+      log4.error("could not execute createOffer - %e", err);
       throw new SDPHandshakeFailedError("Failed to set createOffer");
     });
-    log3.trace("initiator send SDP offer %s", offerSdp.sdp);
+    log4.trace("initiator send SDP offer %s", offerSdp.sdp);
     onProgress?.(new CustomProgressEvent("webrtc:send-sdp-offer"));
     await messageStream.write({ type: Message2.Type.SDP_OFFER, data: offerSdp.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(offerSdp).catch((err) => {
-      log3.error("could not execute setLocalDescription - %e", err);
+      log4.error("could not execute setLocalDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set localDescription");
     });
     onProgress?.(new CustomProgressEvent("webrtc:read-sdp-answer"));
-    log3.trace("initiator read SDP answer");
+    log4.trace("initiator read SDP answer");
     const answerMessage = await messageStream.read({
       signal
     });
     if (answerMessage.type !== Message2.Type.SDP_ANSWER) {
       throw new SDPHandshakeFailedError("Remote should send an SDP answer");
     }
-    log3.trace("initiator received SDP answer %s", answerMessage.data);
+    log4.trace("initiator received SDP answer %s", answerMessage.data);
     const answerSdp = new RTCSessionDescription({ type: "answer", sdp: answerMessage.data });
     await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
-      log3.error("could not execute setRemoteDescription - %e", err);
+      log4.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
     });
-    log3.trace("initiator read candidates until connected");
+    log4.trace("initiator read candidates until connected");
     onProgress?.(new CustomProgressEvent("webrtc:read-ice-candidates"));
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "initiator",
       signal,
-      log: log3,
+      log: log4,
       onProgress
     });
-    log3.trace("initiator connected");
+    log4.trace("initiator connected");
     if (channel.readyState !== "open") {
-      log3.trace("wait for init channel to open");
+      log4.trace("wait for init channel to open");
       await pEvent(channel, "open", {
         signal
       });
     }
-    log3.trace("closing init channel");
+    log4.trace("closing init channel");
     channel.close();
-    log3.trace("waiting for init channel to close");
+    log4.trace("waiting for init channel to close");
     await pEvent(channel, "close", {
       signal
     });
     onProgress?.(new CustomProgressEvent("webrtc:close-signaling-stream"));
-    log3.trace("closing signaling channel");
+    log4.trace("closing signaling channel");
     await stream.close({
       signal
     });
-    log3.trace("initiator connected to remote address %s", ma);
+    log4.trace("initiator connected to remote address %s", ma);
     return {
       remoteAddress: ma,
       // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
@@ -21166,7 +23325,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
       muxerFactory
     };
   } catch (err) {
-    log3.error("outgoing signaling error - %e", err);
+    log4.error("outgoing signaling error - %e", err);
     peerConnection.close();
     stream.abort(err);
     throw err;
@@ -21221,76 +23380,76 @@ var WebRTCPeerListener = class _WebRTCPeerListener extends TypedEventEmitter {
 };
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler.js
-async function handleIncomingStream(stream, connection, { peerConnection, signal, log: log3 }) {
-  log3.trace("new inbound signaling stream");
+async function handleIncomingStream(stream, connection, { peerConnection, signal, log: log4 }) {
+  log4.trace("new inbound signaling stream");
   const messageStream = pbStream(stream).pb(Message2);
   try {
     peerConnection.onicecandidate = ({ candidate }) => {
       if (peerConnection.connectionState === "connected") {
-        log3.trace("ignore new ice candidate as peer connection is already connected");
+        log4.trace("ignore new ice candidate as peer connection is already connected");
         return;
       }
       if (candidate == null || candidate?.candidate === "") {
-        log3.trace("recipient detected end of ICE candidates");
+        log4.trace("recipient detected end of ICE candidates");
         return;
       }
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log3.trace("recipient sending ICE candidate %s", data);
+      log4.trace("recipient sending ICE candidate %s", data);
       messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log3.error("error sending ICE candidate - %e", err);
+        log4.error("error sending ICE candidate - %e", err);
       });
     };
-    log3.trace("recipient read SDP offer");
+    log4.trace("recipient read SDP offer");
     const pbOffer = await messageStream.read({
       signal
     });
     if (pbOffer.type !== Message2.Type.SDP_OFFER) {
       throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? "undefined"} `);
     }
-    log3.trace("recipient received SDP offer %s", pbOffer.data);
+    log4.trace("recipient received SDP offer %s", pbOffer.data);
     const offer = new RTCSessionDescription({
       type: "offer",
       sdp: pbOffer.data
     });
     await peerConnection.setRemoteDescription(offer).catch((err) => {
-      log3.error("could not execute setRemoteDescription - %e", err);
+      log4.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
     });
     const answer = await peerConnection.createAnswer().catch((err) => {
-      log3.error("could not execute createAnswer - %e", err);
+      log4.error("could not execute createAnswer - %e", err);
       throw new SDPHandshakeFailedError("Failed to create answer");
     });
-    log3.trace("recipient send SDP answer %s", answer.sdp);
+    log4.trace("recipient send SDP answer %s", answer.sdp);
     await messageStream.write({ type: Message2.Type.SDP_ANSWER, data: answer.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(answer).catch((err) => {
-      log3.error("could not execute setLocalDescription - %e", err);
+      log4.error("could not execute setLocalDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set localDescription");
     });
-    log3.trace("recipient read candidates until connected");
+    log4.trace("recipient read candidates until connected");
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "recipient",
       signal,
-      log: log3
+      log: log4
     });
   } catch (err) {
     if (peerConnection.connectionState !== "connected") {
-      log3.error("error while handling signaling stream from peer %a - %e", connection.remoteAddr, err);
+      log4.error("error while handling signaling stream from peer %a - %e", connection.remoteAddr, err);
       peerConnection.close();
       throw err;
     } else {
-      log3("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
+      log4("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
     }
   }
   const remotePeer = getRemotePeer(connection.remoteAddr);
   const remoteAddress = multiaddr(`/webrtc/p2p/${remotePeer}`);
-  log3.trace("recipient connected to remote address %s", remoteAddress);
+  log4.trace("recipient connected to remote address %s", remoteAddress);
   return {
     remoteAddress,
     remotePeer
@@ -21414,7 +23573,7 @@ var WebRTCTransport = class {
     return connection;
   }
   async _onProtocol(stream, connection, signal) {
-    const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration));
+    const peerConnection = new RTCPeerConnection2(await getRtcConfiguration(this.init.rtcConfiguration));
     peerConnection.addEventListener("connectionstatechange", () => {
       switch (peerConnection.connectionState) {
         case "closed":
@@ -21483,7 +23642,12688 @@ function splitAddr(ma) {
 }
 __name(splitAddr, "splitAddr");
 
+// node_modules/@peculiar/x509/build/x509.es.js
+var import_reflect_metadata = __toESM(require_Reflect());
+
+// node_modules/asn1js/build/index.es.js
+var index_es_exports = {};
+__export(index_es_exports, {
+  Any: () => Any,
+  BaseBlock: () => BaseBlock,
+  BaseStringBlock: () => BaseStringBlock,
+  BitString: () => BitString,
+  BmpString: () => BmpString,
+  Boolean: () => Boolean2,
+  CharacterString: () => CharacterString,
+  Choice: () => Choice,
+  Constructed: () => Constructed,
+  DATE: () => DATE,
+  DateTime: () => DateTime,
+  Duration: () => Duration,
+  EndOfContent: () => EndOfContent,
+  Enumerated: () => Enumerated,
+  GeneralString: () => GeneralString,
+  GeneralizedTime: () => GeneralizedTime,
+  GraphicString: () => GraphicString,
+  HexBlock: () => HexBlock,
+  IA5String: () => IA5String,
+  Integer: () => Integer,
+  Null: () => Null,
+  NumericString: () => NumericString,
+  ObjectIdentifier: () => ObjectIdentifier,
+  OctetString: () => OctetString,
+  Primitive: () => Primitive,
+  PrintableString: () => PrintableString,
+  RawData: () => RawData,
+  RelativeObjectIdentifier: () => RelativeObjectIdentifier,
+  Repeated: () => Repeated,
+  Sequence: () => Sequence,
+  Set: () => Set2,
+  TIME: () => TIME,
+  TeletexString: () => TeletexString,
+  TimeOfDay: () => TimeOfDay,
+  UTCTime: () => UTCTime,
+  UniversalString: () => UniversalString,
+  Utf8String: () => Utf8String,
+  ValueBlock: () => ValueBlock,
+  VideotexString: () => VideotexString,
+  ViewWriter: () => ViewWriter,
+  VisibleString: () => VisibleString,
+  compareSchema: () => compareSchema,
+  fromBER: () => fromBER,
+  verifySchema: () => verifySchema
+});
+var pvtsutils = __toESM(require_build());
+
+// node_modules/pvutils/build/utils.es.js
+function utilFromBase(inputBuffer, inputBase) {
+  let result = 0;
+  if (inputBuffer.length === 1) {
+    return inputBuffer[0];
+  }
+  for (let i2 = inputBuffer.length - 1; i2 >= 0; i2--) {
+    result += inputBuffer[inputBuffer.length - 1 - i2] * Math.pow(2, inputBase * i2);
+  }
+  return result;
+}
+__name(utilFromBase, "utilFromBase");
+function utilToBase(value2, base3, reserved = -1) {
+  const internalReserved = reserved;
+  let internalValue = value2;
+  let result = 0;
+  let biggest = Math.pow(2, base3);
+  for (let i2 = 1; i2 < 8; i2++) {
+    if (value2 < biggest) {
+      let retBuf;
+      if (internalReserved < 0) {
+        retBuf = new ArrayBuffer(i2);
+        result = i2;
+      } else {
+        if (internalReserved < i2) {
+          return new ArrayBuffer(0);
+        }
+        retBuf = new ArrayBuffer(internalReserved);
+        result = internalReserved;
+      }
+      const retView = new Uint8Array(retBuf);
+      for (let j = i2 - 1; j >= 0; j--) {
+        const basis = Math.pow(2, j * base3);
+        retView[result - j - 1] = Math.floor(internalValue / basis);
+        internalValue -= retView[result - j - 1] * basis;
+      }
+      return retBuf;
+    }
+    biggest *= Math.pow(2, base3);
+  }
+  return new ArrayBuffer(0);
+}
+__name(utilToBase, "utilToBase");
+function utilConcatView(...views) {
+  let outputLength = 0;
+  let prevLength = 0;
+  for (const view of views) {
+    outputLength += view.length;
+  }
+  const retBuf = new ArrayBuffer(outputLength);
+  const retView = new Uint8Array(retBuf);
+  for (const view of views) {
+    retView.set(view, prevLength);
+    prevLength += view.length;
+  }
+  return retView;
+}
+__name(utilConcatView, "utilConcatView");
+function utilDecodeTC() {
+  const buf = new Uint8Array(this.valueHex);
+  if (this.valueHex.byteLength >= 2) {
+    const condition1 = buf[0] === 255 && buf[1] & 128;
+    const condition2 = buf[0] === 0 && (buf[1] & 128) === 0;
+    if (condition1 || condition2) {
+      this.warnings.push("Needlessly long format");
+    }
+  }
+  const bigIntBuffer = new ArrayBuffer(this.valueHex.byteLength);
+  const bigIntView = new Uint8Array(bigIntBuffer);
+  for (let i2 = 0; i2 < this.valueHex.byteLength; i2++) {
+    bigIntView[i2] = 0;
+  }
+  bigIntView[0] = buf[0] & 128;
+  const bigInt = utilFromBase(bigIntView, 8);
+  const smallIntBuffer = new ArrayBuffer(this.valueHex.byteLength);
+  const smallIntView = new Uint8Array(smallIntBuffer);
+  for (let j = 0; j < this.valueHex.byteLength; j++) {
+    smallIntView[j] = buf[j];
+  }
+  smallIntView[0] &= 127;
+  const smallInt = utilFromBase(smallIntView, 8);
+  return smallInt - bigInt;
+}
+__name(utilDecodeTC, "utilDecodeTC");
+function utilEncodeTC(value2) {
+  const modValue = value2 < 0 ? value2 * -1 : value2;
+  let bigInt = 128;
+  for (let i2 = 1; i2 < 8; i2++) {
+    if (modValue <= bigInt) {
+      if (value2 < 0) {
+        const smallInt = bigInt - modValue;
+        const retBuf2 = utilToBase(smallInt, 8, i2);
+        const retView2 = new Uint8Array(retBuf2);
+        retView2[0] |= 128;
+        return retBuf2;
+      }
+      let retBuf = utilToBase(modValue, 8, i2);
+      let retView = new Uint8Array(retBuf);
+      if (retView[0] & 128) {
+        const tempBuf = retBuf.slice(0);
+        const tempView = new Uint8Array(tempBuf);
+        retBuf = new ArrayBuffer(retBuf.byteLength + 1);
+        retView = new Uint8Array(retBuf);
+        for (let k = 0; k < tempBuf.byteLength; k++) {
+          retView[k + 1] = tempView[k];
+        }
+        retView[0] = 0;
+      }
+      return retBuf;
+    }
+    bigInt *= Math.pow(2, 8);
+  }
+  return new ArrayBuffer(0);
+}
+__name(utilEncodeTC, "utilEncodeTC");
+function isEqualBuffer(inputBuffer1, inputBuffer2) {
+  if (inputBuffer1.byteLength !== inputBuffer2.byteLength) {
+    return false;
+  }
+  const view1 = new Uint8Array(inputBuffer1);
+  const view2 = new Uint8Array(inputBuffer2);
+  for (let i2 = 0; i2 < view1.length; i2++) {
+    if (view1[i2] !== view2[i2]) {
+      return false;
+    }
+  }
+  return true;
+}
+__name(isEqualBuffer, "isEqualBuffer");
+function padNumber(inputNumber, fullLength) {
+  const str = inputNumber.toString(10);
+  if (fullLength < str.length) {
+    return "";
+  }
+  const dif = fullLength - str.length;
+  const padding = new Array(dif);
+  for (let i2 = 0; i2 < dif; i2++) {
+    padding[i2] = "0";
+  }
+  const paddingString = padding.join("");
+  return paddingString.concat(str);
+}
+__name(padNumber, "padNumber");
+var log2 = Math.log(2);
+
+// node_modules/asn1js/build/index.es.js
+function assertBigInt() {
+  if (typeof BigInt === "undefined") {
+    throw new Error("BigInt is not defined. Your environment doesn't implement BigInt.");
+  }
+}
+__name(assertBigInt, "assertBigInt");
+function concat2(buffers) {
+  let outputLength = 0;
+  let prevLength = 0;
+  for (let i2 = 0; i2 < buffers.length; i2++) {
+    const buffer = buffers[i2];
+    outputLength += buffer.byteLength;
+  }
+  const retView = new Uint8Array(outputLength);
+  for (let i2 = 0; i2 < buffers.length; i2++) {
+    const buffer = buffers[i2];
+    retView.set(new Uint8Array(buffer), prevLength);
+    prevLength += buffer.byteLength;
+  }
+  return retView.buffer;
+}
+__name(concat2, "concat");
+function checkBufferParams(baseBlock, inputBuffer, inputOffset, inputLength) {
+  if (!(inputBuffer instanceof Uint8Array)) {
+    baseBlock.error = "Wrong parameter: inputBuffer must be 'Uint8Array'";
+    return false;
+  }
+  if (!inputBuffer.byteLength) {
+    baseBlock.error = "Wrong parameter: inputBuffer has zero length";
+    return false;
+  }
+  if (inputOffset < 0) {
+    baseBlock.error = "Wrong parameter: inputOffset less than zero";
+    return false;
+  }
+  if (inputLength < 0) {
+    baseBlock.error = "Wrong parameter: inputLength less than zero";
+    return false;
+  }
+  if (inputBuffer.byteLength - inputOffset - inputLength < 0) {
+    baseBlock.error = "End of input reached before message was fully decoded (inconsistent offset and length values)";
+    return false;
+  }
+  return true;
+}
+__name(checkBufferParams, "checkBufferParams");
+var ViewWriter = class {
+  static {
+    __name(this, "ViewWriter");
+  }
+  constructor() {
+    this.items = [];
+  }
+  write(buf) {
+    this.items.push(buf);
+  }
+  final() {
+    return concat2(this.items);
+  }
+};
+var powers2 = [new Uint8Array([1])];
+var digitsString = "0123456789";
+var NAME = "name";
+var VALUE_HEX_VIEW = "valueHexView";
+var IS_HEX_ONLY = "isHexOnly";
+var ID_BLOCK = "idBlock";
+var TAG_CLASS = "tagClass";
+var TAG_NUMBER = "tagNumber";
+var IS_CONSTRUCTED = "isConstructed";
+var FROM_BER = "fromBER";
+var TO_BER = "toBER";
+var LOCAL = "local";
+var EMPTY_STRING = "";
+var EMPTY_BUFFER2 = new ArrayBuffer(0);
+var EMPTY_VIEW = new Uint8Array(0);
+var END_OF_CONTENT_NAME = "EndOfContent";
+var OCTET_STRING_NAME = "OCTET STRING";
+var BIT_STRING_NAME = "BIT STRING";
+function HexBlock(BaseClass) {
+  var _a3;
+  return _a3 = class Some extends BaseClass {
+    static {
+      __name(this, "Some");
+    }
+    get valueHex() {
+      return this.valueHexView.slice().buffer;
+    }
+    set valueHex(value2) {
+      this.valueHexView = new Uint8Array(value2);
+    }
+    constructor(...args) {
+      var _b;
+      super(...args);
+      const params = args[0] || {};
+      this.isHexOnly = (_b = params.isHexOnly) !== null && _b !== void 0 ? _b : false;
+      this.valueHexView = params.valueHex ? pvtsutils.BufferSourceConverter.toUint8Array(params.valueHex) : EMPTY_VIEW;
+    }
+    fromBER(inputBuffer, inputOffset, inputLength) {
+      const view = inputBuffer instanceof ArrayBuffer ? new Uint8Array(inputBuffer) : inputBuffer;
+      if (!checkBufferParams(this, view, inputOffset, inputLength)) {
+        return -1;
+      }
+      const endLength = inputOffset + inputLength;
+      this.valueHexView = view.subarray(inputOffset, endLength);
+      if (!this.valueHexView.length) {
+        this.warnings.push("Zero buffer length");
+        return inputOffset;
+      }
+      this.blockLength = inputLength;
+      return endLength;
+    }
+    toBER(sizeOnly = false) {
+      if (!this.isHexOnly) {
+        this.error = "Flag 'isHexOnly' is not set, abort";
+        return EMPTY_BUFFER2;
+      }
+      if (sizeOnly) {
+        return new ArrayBuffer(this.valueHexView.byteLength);
+      }
+      return this.valueHexView.byteLength === this.valueHexView.buffer.byteLength ? this.valueHexView.buffer : this.valueHexView.slice().buffer;
+    }
+    toJSON() {
+      return {
+        ...super.toJSON(),
+        isHexOnly: this.isHexOnly,
+        valueHex: pvtsutils.Convert.ToHex(this.valueHexView)
+      };
+    }
+  }, _a3.NAME = "hexBlock", _a3;
+}
+__name(HexBlock, "HexBlock");
+var LocalBaseBlock = class {
+  static {
+    __name(this, "LocalBaseBlock");
+  }
+  static blockName() {
+    return this.NAME;
+  }
+  get valueBeforeDecode() {
+    return this.valueBeforeDecodeView.slice().buffer;
+  }
+  set valueBeforeDecode(value2) {
+    this.valueBeforeDecodeView = new Uint8Array(value2);
+  }
+  constructor({ blockLength = 0, error = EMPTY_STRING, warnings = [], valueBeforeDecode = EMPTY_VIEW } = {}) {
+    this.blockLength = blockLength;
+    this.error = error;
+    this.warnings = warnings;
+    this.valueBeforeDecodeView = pvtsutils.BufferSourceConverter.toUint8Array(valueBeforeDecode);
+  }
+  toJSON() {
+    return {
+      blockName: this.constructor.NAME,
+      blockLength: this.blockLength,
+      error: this.error,
+      warnings: this.warnings,
+      valueBeforeDecode: pvtsutils.Convert.ToHex(this.valueBeforeDecodeView)
+    };
+  }
+};
+LocalBaseBlock.NAME = "baseBlock";
+var ValueBlock = class extends LocalBaseBlock {
+  static {
+    __name(this, "ValueBlock");
+  }
+  fromBER(_inputBuffer, _inputOffset, _inputLength) {
+    throw TypeError("User need to make a specific function in a class which extends 'ValueBlock'");
+  }
+  toBER(_sizeOnly, _writer) {
+    throw TypeError("User need to make a specific function in a class which extends 'ValueBlock'");
+  }
+};
+ValueBlock.NAME = "valueBlock";
+var LocalIdentificationBlock = class extends HexBlock(LocalBaseBlock) {
+  static {
+    __name(this, "LocalIdentificationBlock");
+  }
+  constructor({ idBlock = {} } = {}) {
+    var _a3, _b, _c, _d;
+    super();
+    if (idBlock) {
+      this.isHexOnly = (_a3 = idBlock.isHexOnly) !== null && _a3 !== void 0 ? _a3 : false;
+      this.valueHexView = idBlock.valueHex ? pvtsutils.BufferSourceConverter.toUint8Array(idBlock.valueHex) : EMPTY_VIEW;
+      this.tagClass = (_b = idBlock.tagClass) !== null && _b !== void 0 ? _b : -1;
+      this.tagNumber = (_c = idBlock.tagNumber) !== null && _c !== void 0 ? _c : -1;
+      this.isConstructed = (_d = idBlock.isConstructed) !== null && _d !== void 0 ? _d : false;
+    } else {
+      this.tagClass = -1;
+      this.tagNumber = -1;
+      this.isConstructed = false;
+    }
+  }
+  toBER(sizeOnly = false) {
+    let firstOctet = 0;
+    switch (this.tagClass) {
+      case 1:
+        firstOctet |= 0;
+        break;
+      case 2:
+        firstOctet |= 64;
+        break;
+      case 3:
+        firstOctet |= 128;
+        break;
+      case 4:
+        firstOctet |= 192;
+        break;
+      default:
+        this.error = "Unknown tag class";
+        return EMPTY_BUFFER2;
+    }
+    if (this.isConstructed)
+      firstOctet |= 32;
+    if (this.tagNumber < 31 && !this.isHexOnly) {
+      const retView2 = new Uint8Array(1);
+      if (!sizeOnly) {
+        let number = this.tagNumber;
+        number &= 31;
+        firstOctet |= number;
+        retView2[0] = firstOctet;
+      }
+      return retView2.buffer;
+    }
+    if (!this.isHexOnly) {
+      const encodedBuf = utilToBase(this.tagNumber, 7);
+      const encodedView = new Uint8Array(encodedBuf);
+      const size = encodedBuf.byteLength;
+      const retView2 = new Uint8Array(size + 1);
+      retView2[0] = firstOctet | 31;
+      if (!sizeOnly) {
+        for (let i2 = 0; i2 < size - 1; i2++)
+          retView2[i2 + 1] = encodedView[i2] | 128;
+        retView2[size] = encodedView[size - 1];
+      }
+      return retView2.buffer;
+    }
+    const retView = new Uint8Array(this.valueHexView.byteLength + 1);
+    retView[0] = firstOctet | 31;
+    if (!sizeOnly) {
+      const curView = this.valueHexView;
+      for (let i2 = 0; i2 < curView.length - 1; i2++)
+        retView[i2 + 1] = curView[i2] | 128;
+      retView[this.valueHexView.byteLength] = curView[curView.length - 1];
+    }
+    return retView.buffer;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const inputView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, inputView, inputOffset, inputLength)) {
+      return -1;
+    }
+    const intBuffer = inputView.subarray(inputOffset, inputOffset + inputLength);
+    if (intBuffer.length === 0) {
+      this.error = "Zero buffer length";
+      return -1;
+    }
+    const tagClassMask = intBuffer[0] & 192;
+    switch (tagClassMask) {
+      case 0:
+        this.tagClass = 1;
+        break;
+      case 64:
+        this.tagClass = 2;
+        break;
+      case 128:
+        this.tagClass = 3;
+        break;
+      case 192:
+        this.tagClass = 4;
+        break;
+      default:
+        this.error = "Unknown tag class";
+        return -1;
+    }
+    this.isConstructed = (intBuffer[0] & 32) === 32;
+    this.isHexOnly = false;
+    const tagNumberMask = intBuffer[0] & 31;
+    if (tagNumberMask !== 31) {
+      this.tagNumber = tagNumberMask;
+      this.blockLength = 1;
+    } else {
+      let count = 1;
+      let intTagNumberBuffer = this.valueHexView = new Uint8Array(255);
+      let tagNumberBufferMaxLength = 255;
+      while (intBuffer[count] & 128) {
+        intTagNumberBuffer[count - 1] = intBuffer[count] & 127;
+        count++;
+        if (count >= intBuffer.length) {
+          this.error = "End of input reached before message was fully decoded";
+          return -1;
+        }
+        if (count === tagNumberBufferMaxLength) {
+          tagNumberBufferMaxLength += 255;
+          const tempBufferView2 = new Uint8Array(tagNumberBufferMaxLength);
+          for (let i2 = 0; i2 < intTagNumberBuffer.length; i2++)
+            tempBufferView2[i2] = intTagNumberBuffer[i2];
+          intTagNumberBuffer = this.valueHexView = new Uint8Array(tagNumberBufferMaxLength);
+        }
+      }
+      this.blockLength = count + 1;
+      intTagNumberBuffer[count - 1] = intBuffer[count] & 127;
+      const tempBufferView = new Uint8Array(count);
+      for (let i2 = 0; i2 < count; i2++)
+        tempBufferView[i2] = intTagNumberBuffer[i2];
+      intTagNumberBuffer = this.valueHexView = new Uint8Array(count);
+      intTagNumberBuffer.set(tempBufferView);
+      if (this.blockLength <= 9)
+        this.tagNumber = utilFromBase(intTagNumberBuffer, 7);
+      else {
+        this.isHexOnly = true;
+        this.warnings.push("Tag too long, represented as hex-coded");
+      }
+    }
+    if (this.tagClass === 1 && this.isConstructed) {
+      switch (this.tagNumber) {
+        case 1:
+        case 2:
+        case 5:
+        case 6:
+        case 9:
+        case 13:
+        case 14:
+        case 23:
+        case 24:
+        case 31:
+        case 32:
+        case 33:
+        case 34:
+          this.error = "Constructed encoding used for primitive type";
+          return -1;
+      }
+    }
+    return inputOffset + this.blockLength;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      tagClass: this.tagClass,
+      tagNumber: this.tagNumber,
+      isConstructed: this.isConstructed
+    };
+  }
+};
+LocalIdentificationBlock.NAME = "identificationBlock";
+var LocalLengthBlock = class extends LocalBaseBlock {
+  static {
+    __name(this, "LocalLengthBlock");
+  }
+  constructor({ lenBlock = {} } = {}) {
+    var _a3, _b, _c;
+    super();
+    this.isIndefiniteForm = (_a3 = lenBlock.isIndefiniteForm) !== null && _a3 !== void 0 ? _a3 : false;
+    this.longFormUsed = (_b = lenBlock.longFormUsed) !== null && _b !== void 0 ? _b : false;
+    this.length = (_c = lenBlock.length) !== null && _c !== void 0 ? _c : 0;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const view = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, view, inputOffset, inputLength)) {
+      return -1;
+    }
+    const intBuffer = view.subarray(inputOffset, inputOffset + inputLength);
+    if (intBuffer.length === 0) {
+      this.error = "Zero buffer length";
+      return -1;
+    }
+    if (intBuffer[0] === 255) {
+      this.error = "Length block 0xFF is reserved by standard";
+      return -1;
+    }
+    this.isIndefiniteForm = intBuffer[0] === 128;
+    if (this.isIndefiniteForm) {
+      this.blockLength = 1;
+      return inputOffset + this.blockLength;
+    }
+    this.longFormUsed = !!(intBuffer[0] & 128);
+    if (this.longFormUsed === false) {
+      this.length = intBuffer[0];
+      this.blockLength = 1;
+      return inputOffset + this.blockLength;
+    }
+    const count = intBuffer[0] & 127;
+    if (count > 8) {
+      this.error = "Too big integer";
+      return -1;
+    }
+    if (count + 1 > intBuffer.length) {
+      this.error = "End of input reached before message was fully decoded";
+      return -1;
+    }
+    const lenOffset = inputOffset + 1;
+    const lengthBufferView = view.subarray(lenOffset, lenOffset + count);
+    if (lengthBufferView[count - 1] === 0)
+      this.warnings.push("Needlessly long encoded length");
+    this.length = utilFromBase(lengthBufferView, 8);
+    if (this.longFormUsed && this.length <= 127)
+      this.warnings.push("Unnecessary usage of long length form");
+    this.blockLength = count + 1;
+    return inputOffset + this.blockLength;
+  }
+  toBER(sizeOnly = false) {
+    let retBuf;
+    let retView;
+    if (this.length > 127)
+      this.longFormUsed = true;
+    if (this.isIndefiniteForm) {
+      retBuf = new ArrayBuffer(1);
+      if (sizeOnly === false) {
+        retView = new Uint8Array(retBuf);
+        retView[0] = 128;
+      }
+      return retBuf;
+    }
+    if (this.longFormUsed) {
+      const encodedBuf = utilToBase(this.length, 8);
+      if (encodedBuf.byteLength > 127) {
+        this.error = "Too big length";
+        return EMPTY_BUFFER2;
+      }
+      retBuf = new ArrayBuffer(encodedBuf.byteLength + 1);
+      if (sizeOnly)
+        return retBuf;
+      const encodedView = new Uint8Array(encodedBuf);
+      retView = new Uint8Array(retBuf);
+      retView[0] = encodedBuf.byteLength | 128;
+      for (let i2 = 0; i2 < encodedBuf.byteLength; i2++)
+        retView[i2 + 1] = encodedView[i2];
+      return retBuf;
+    }
+    retBuf = new ArrayBuffer(1);
+    if (sizeOnly === false) {
+      retView = new Uint8Array(retBuf);
+      retView[0] = this.length;
+    }
+    return retBuf;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      isIndefiniteForm: this.isIndefiniteForm,
+      longFormUsed: this.longFormUsed,
+      length: this.length
+    };
+  }
+};
+LocalLengthBlock.NAME = "lengthBlock";
+var typeStore = {};
+var BaseBlock = class extends LocalBaseBlock {
+  static {
+    __name(this, "BaseBlock");
+  }
+  constructor({ name: name3 = EMPTY_STRING, optional: optional2 = false, primitiveSchema, ...parameters } = {}, valueBlockType) {
+    super(parameters);
+    this.name = name3;
+    this.optional = optional2;
+    if (primitiveSchema) {
+      this.primitiveSchema = primitiveSchema;
+    }
+    this.idBlock = new LocalIdentificationBlock(parameters);
+    this.lenBlock = new LocalLengthBlock(parameters);
+    this.valueBlock = valueBlockType ? new valueBlockType(parameters) : new ValueBlock(parameters);
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const resultOffset = this.valueBlock.fromBER(inputBuffer, inputOffset, this.lenBlock.isIndefiniteForm ? inputLength : this.lenBlock.length);
+    if (resultOffset === -1) {
+      this.error = this.valueBlock.error;
+      return resultOffset;
+    }
+    if (!this.idBlock.error.length)
+      this.blockLength += this.idBlock.blockLength;
+    if (!this.lenBlock.error.length)
+      this.blockLength += this.lenBlock.blockLength;
+    if (!this.valueBlock.error.length)
+      this.blockLength += this.valueBlock.blockLength;
+    return resultOffset;
+  }
+  toBER(sizeOnly, writer) {
+    const _writer = writer || new ViewWriter();
+    if (!writer) {
+      prepareIndefiniteForm(this);
+    }
+    const idBlockBuf = this.idBlock.toBER(sizeOnly);
+    _writer.write(idBlockBuf);
+    if (this.lenBlock.isIndefiniteForm) {
+      _writer.write(new Uint8Array([128]).buffer);
+      this.valueBlock.toBER(sizeOnly, _writer);
+      _writer.write(new ArrayBuffer(2));
+    } else {
+      const valueBlockBuf = this.valueBlock.toBER(sizeOnly);
+      this.lenBlock.length = valueBlockBuf.byteLength;
+      const lenBlockBuf = this.lenBlock.toBER(sizeOnly);
+      _writer.write(lenBlockBuf);
+      _writer.write(valueBlockBuf);
+    }
+    if (!writer) {
+      return _writer.final();
+    }
+    return EMPTY_BUFFER2;
+  }
+  toJSON() {
+    const object = {
+      ...super.toJSON(),
+      idBlock: this.idBlock.toJSON(),
+      lenBlock: this.lenBlock.toJSON(),
+      valueBlock: this.valueBlock.toJSON(),
+      name: this.name,
+      optional: this.optional
+    };
+    if (this.primitiveSchema)
+      object.primitiveSchema = this.primitiveSchema.toJSON();
+    return object;
+  }
+  toString(encoding = "ascii") {
+    if (encoding === "ascii") {
+      return this.onAsciiEncoding();
+    }
+    return pvtsutils.Convert.ToHex(this.toBER());
+  }
+  onAsciiEncoding() {
+    const name3 = this.constructor.NAME;
+    const value2 = pvtsutils.Convert.ToHex(this.valueBlock.valueBeforeDecodeView);
+    return `${name3} : ${value2}`;
+  }
+  isEqual(other) {
+    if (this === other) {
+      return true;
+    }
+    if (!(other instanceof this.constructor)) {
+      return false;
+    }
+    const thisRaw = this.toBER();
+    const otherRaw = other.toBER();
+    return isEqualBuffer(thisRaw, otherRaw);
+  }
+};
+BaseBlock.NAME = "BaseBlock";
+function prepareIndefiniteForm(baseBlock) {
+  var _a3;
+  if (baseBlock instanceof typeStore.Constructed) {
+    for (const value2 of baseBlock.valueBlock.value) {
+      if (prepareIndefiniteForm(value2)) {
+        baseBlock.lenBlock.isIndefiniteForm = true;
+      }
+    }
+  }
+  return !!((_a3 = baseBlock.lenBlock) === null || _a3 === void 0 ? void 0 : _a3.isIndefiniteForm);
+}
+__name(prepareIndefiniteForm, "prepareIndefiniteForm");
+var BaseStringBlock = class extends BaseBlock {
+  static {
+    __name(this, "BaseStringBlock");
+  }
+  getValue() {
+    return this.valueBlock.value;
+  }
+  setValue(value2) {
+    this.valueBlock.value = value2;
+  }
+  constructor({ value: value2 = EMPTY_STRING, ...parameters } = {}, stringValueBlockType) {
+    super(parameters, stringValueBlockType);
+    if (value2) {
+      this.fromString(value2);
+    }
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const resultOffset = this.valueBlock.fromBER(inputBuffer, inputOffset, this.lenBlock.isIndefiniteForm ? inputLength : this.lenBlock.length);
+    if (resultOffset === -1) {
+      this.error = this.valueBlock.error;
+      return resultOffset;
+    }
+    this.fromBuffer(this.valueBlock.valueHexView);
+    if (!this.idBlock.error.length)
+      this.blockLength += this.idBlock.blockLength;
+    if (!this.lenBlock.error.length)
+      this.blockLength += this.lenBlock.blockLength;
+    if (!this.valueBlock.error.length)
+      this.blockLength += this.valueBlock.blockLength;
+    return resultOffset;
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME} : '${this.valueBlock.value}'`;
+  }
+};
+BaseStringBlock.NAME = "BaseStringBlock";
+var LocalPrimitiveValueBlock = class extends HexBlock(ValueBlock) {
+  static {
+    __name(this, "LocalPrimitiveValueBlock");
+  }
+  constructor({ isHexOnly = true, ...parameters } = {}) {
+    super(parameters);
+    this.isHexOnly = isHexOnly;
+  }
+};
+LocalPrimitiveValueBlock.NAME = "PrimitiveValueBlock";
+var _a$w;
+var Primitive = class extends BaseBlock {
+  static {
+    __name(this, "Primitive");
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalPrimitiveValueBlock);
+    this.idBlock.isConstructed = false;
+  }
+};
+_a$w = Primitive;
+(() => {
+  typeStore.Primitive = _a$w;
+})();
+Primitive.NAME = "PRIMITIVE";
+function localChangeType(inputObject, newType) {
+  if (inputObject instanceof newType) {
+    return inputObject;
+  }
+  const newObject = new newType();
+  newObject.idBlock = inputObject.idBlock;
+  newObject.lenBlock = inputObject.lenBlock;
+  newObject.warnings = inputObject.warnings;
+  newObject.valueBeforeDecodeView = inputObject.valueBeforeDecodeView;
+  return newObject;
+}
+__name(localChangeType, "localChangeType");
+function localFromBER(inputBuffer, inputOffset = 0, inputLength = inputBuffer.length) {
+  const incomingOffset = inputOffset;
+  let returnObject = new BaseBlock({}, ValueBlock);
+  const baseBlock = new LocalBaseBlock();
+  if (!checkBufferParams(baseBlock, inputBuffer, inputOffset, inputLength)) {
+    returnObject.error = baseBlock.error;
+    return {
+      offset: -1,
+      result: returnObject
+    };
+  }
+  const intBuffer = inputBuffer.subarray(inputOffset, inputOffset + inputLength);
+  if (!intBuffer.length) {
+    returnObject.error = "Zero buffer length";
+    return {
+      offset: -1,
+      result: returnObject
+    };
+  }
+  let resultOffset = returnObject.idBlock.fromBER(inputBuffer, inputOffset, inputLength);
+  if (returnObject.idBlock.warnings.length) {
+    returnObject.warnings.concat(returnObject.idBlock.warnings);
+  }
+  if (resultOffset === -1) {
+    returnObject.error = returnObject.idBlock.error;
+    return {
+      offset: -1,
+      result: returnObject
+    };
+  }
+  inputOffset = resultOffset;
+  inputLength -= returnObject.idBlock.blockLength;
+  resultOffset = returnObject.lenBlock.fromBER(inputBuffer, inputOffset, inputLength);
+  if (returnObject.lenBlock.warnings.length) {
+    returnObject.warnings.concat(returnObject.lenBlock.warnings);
+  }
+  if (resultOffset === -1) {
+    returnObject.error = returnObject.lenBlock.error;
+    return {
+      offset: -1,
+      result: returnObject
+    };
+  }
+  inputOffset = resultOffset;
+  inputLength -= returnObject.lenBlock.blockLength;
+  if (!returnObject.idBlock.isConstructed && returnObject.lenBlock.isIndefiniteForm) {
+    returnObject.error = "Indefinite length form used for primitive encoding form";
+    return {
+      offset: -1,
+      result: returnObject
+    };
+  }
+  let newASN1Type = BaseBlock;
+  switch (returnObject.idBlock.tagClass) {
+    case 1:
+      if (returnObject.idBlock.tagNumber >= 37 && returnObject.idBlock.isHexOnly === false) {
+        returnObject.error = "UNIVERSAL 37 and upper tags are reserved by ASN.1 standard";
+        return {
+          offset: -1,
+          result: returnObject
+        };
+      }
+      switch (returnObject.idBlock.tagNumber) {
+        case 0:
+          if (returnObject.idBlock.isConstructed && returnObject.lenBlock.length > 0) {
+            returnObject.error = "Type [UNIVERSAL 0] is reserved";
+            return {
+              offset: -1,
+              result: returnObject
+            };
+          }
+          newASN1Type = typeStore.EndOfContent;
+          break;
+        case 1:
+          newASN1Type = typeStore.Boolean;
+          break;
+        case 2:
+          newASN1Type = typeStore.Integer;
+          break;
+        case 3:
+          newASN1Type = typeStore.BitString;
+          break;
+        case 4:
+          newASN1Type = typeStore.OctetString;
+          break;
+        case 5:
+          newASN1Type = typeStore.Null;
+          break;
+        case 6:
+          newASN1Type = typeStore.ObjectIdentifier;
+          break;
+        case 10:
+          newASN1Type = typeStore.Enumerated;
+          break;
+        case 12:
+          newASN1Type = typeStore.Utf8String;
+          break;
+        case 13:
+          newASN1Type = typeStore.RelativeObjectIdentifier;
+          break;
+        case 14:
+          newASN1Type = typeStore.TIME;
+          break;
+        case 15:
+          returnObject.error = "[UNIVERSAL 15] is reserved by ASN.1 standard";
+          return {
+            offset: -1,
+            result: returnObject
+          };
+        case 16:
+          newASN1Type = typeStore.Sequence;
+          break;
+        case 17:
+          newASN1Type = typeStore.Set;
+          break;
+        case 18:
+          newASN1Type = typeStore.NumericString;
+          break;
+        case 19:
+          newASN1Type = typeStore.PrintableString;
+          break;
+        case 20:
+          newASN1Type = typeStore.TeletexString;
+          break;
+        case 21:
+          newASN1Type = typeStore.VideotexString;
+          break;
+        case 22:
+          newASN1Type = typeStore.IA5String;
+          break;
+        case 23:
+          newASN1Type = typeStore.UTCTime;
+          break;
+        case 24:
+          newASN1Type = typeStore.GeneralizedTime;
+          break;
+        case 25:
+          newASN1Type = typeStore.GraphicString;
+          break;
+        case 26:
+          newASN1Type = typeStore.VisibleString;
+          break;
+        case 27:
+          newASN1Type = typeStore.GeneralString;
+          break;
+        case 28:
+          newASN1Type = typeStore.UniversalString;
+          break;
+        case 29:
+          newASN1Type = typeStore.CharacterString;
+          break;
+        case 30:
+          newASN1Type = typeStore.BmpString;
+          break;
+        case 31:
+          newASN1Type = typeStore.DATE;
+          break;
+        case 32:
+          newASN1Type = typeStore.TimeOfDay;
+          break;
+        case 33:
+          newASN1Type = typeStore.DateTime;
+          break;
+        case 34:
+          newASN1Type = typeStore.Duration;
+          break;
+        default: {
+          const newObject = returnObject.idBlock.isConstructed ? new typeStore.Constructed() : new typeStore.Primitive();
+          newObject.idBlock = returnObject.idBlock;
+          newObject.lenBlock = returnObject.lenBlock;
+          newObject.warnings = returnObject.warnings;
+          returnObject = newObject;
+        }
+      }
+      break;
+    case 2:
+    case 3:
+    case 4:
+    default: {
+      newASN1Type = returnObject.idBlock.isConstructed ? typeStore.Constructed : typeStore.Primitive;
+    }
+  }
+  returnObject = localChangeType(returnObject, newASN1Type);
+  resultOffset = returnObject.fromBER(inputBuffer, inputOffset, returnObject.lenBlock.isIndefiniteForm ? inputLength : returnObject.lenBlock.length);
+  returnObject.valueBeforeDecodeView = inputBuffer.subarray(incomingOffset, incomingOffset + returnObject.blockLength);
+  return {
+    offset: resultOffset,
+    result: returnObject
+  };
+}
+__name(localFromBER, "localFromBER");
+function fromBER(inputBuffer) {
+  if (!inputBuffer.byteLength) {
+    const result = new BaseBlock({}, ValueBlock);
+    result.error = "Input buffer has zero length";
+    return {
+      offset: -1,
+      result
+    };
+  }
+  return localFromBER(pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer).slice(), 0, inputBuffer.byteLength);
+}
+__name(fromBER, "fromBER");
+function checkLen(indefiniteLength, length3) {
+  if (indefiniteLength) {
+    return 1;
+  }
+  return length3;
+}
+__name(checkLen, "checkLen");
+var LocalConstructedValueBlock = class extends ValueBlock {
+  static {
+    __name(this, "LocalConstructedValueBlock");
+  }
+  constructor({ value: value2 = [], isIndefiniteForm = false, ...parameters } = {}) {
+    super(parameters);
+    this.value = value2;
+    this.isIndefiniteForm = isIndefiniteForm;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const view = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, view, inputOffset, inputLength)) {
+      return -1;
+    }
+    this.valueBeforeDecodeView = view.subarray(inputOffset, inputOffset + inputLength);
+    if (this.valueBeforeDecodeView.length === 0) {
+      this.warnings.push("Zero buffer length");
+      return inputOffset;
+    }
+    let currentOffset = inputOffset;
+    while (checkLen(this.isIndefiniteForm, inputLength) > 0) {
+      const returnObject = localFromBER(view, currentOffset, inputLength);
+      if (returnObject.offset === -1) {
+        this.error = returnObject.result.error;
+        this.warnings.concat(returnObject.result.warnings);
+        return -1;
+      }
+      currentOffset = returnObject.offset;
+      this.blockLength += returnObject.result.blockLength;
+      inputLength -= returnObject.result.blockLength;
+      this.value.push(returnObject.result);
+      if (this.isIndefiniteForm && returnObject.result.constructor.NAME === END_OF_CONTENT_NAME) {
+        break;
+      }
+    }
+    if (this.isIndefiniteForm) {
+      if (this.value[this.value.length - 1].constructor.NAME === END_OF_CONTENT_NAME) {
+        this.value.pop();
+      } else {
+        this.warnings.push("No EndOfContent block encoded");
+      }
+    }
+    return currentOffset;
+  }
+  toBER(sizeOnly, writer) {
+    const _writer = writer || new ViewWriter();
+    for (let i2 = 0; i2 < this.value.length; i2++) {
+      this.value[i2].toBER(sizeOnly, _writer);
+    }
+    if (!writer) {
+      return _writer.final();
+    }
+    return EMPTY_BUFFER2;
+  }
+  toJSON() {
+    const object = {
+      ...super.toJSON(),
+      isIndefiniteForm: this.isIndefiniteForm,
+      value: []
+    };
+    for (const value2 of this.value) {
+      object.value.push(value2.toJSON());
+    }
+    return object;
+  }
+};
+LocalConstructedValueBlock.NAME = "ConstructedValueBlock";
+var _a$v;
+var Constructed = class extends BaseBlock {
+  static {
+    __name(this, "Constructed");
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalConstructedValueBlock);
+    this.idBlock.isConstructed = true;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    this.valueBlock.isIndefiniteForm = this.lenBlock.isIndefiniteForm;
+    const resultOffset = this.valueBlock.fromBER(inputBuffer, inputOffset, this.lenBlock.isIndefiniteForm ? inputLength : this.lenBlock.length);
+    if (resultOffset === -1) {
+      this.error = this.valueBlock.error;
+      return resultOffset;
+    }
+    if (!this.idBlock.error.length)
+      this.blockLength += this.idBlock.blockLength;
+    if (!this.lenBlock.error.length)
+      this.blockLength += this.lenBlock.blockLength;
+    if (!this.valueBlock.error.length)
+      this.blockLength += this.valueBlock.blockLength;
+    return resultOffset;
+  }
+  onAsciiEncoding() {
+    const values = [];
+    for (const value2 of this.valueBlock.value) {
+      values.push(value2.toString("ascii").split("\n").map((o2) => `  ${o2}`).join("\n"));
+    }
+    const blockName = this.idBlock.tagClass === 3 ? `[${this.idBlock.tagNumber}]` : this.constructor.NAME;
+    return values.length ? `${blockName} :
+${values.join("\n")}` : `${blockName} :`;
+  }
+};
+_a$v = Constructed;
+(() => {
+  typeStore.Constructed = _a$v;
+})();
+Constructed.NAME = "CONSTRUCTED";
+var LocalEndOfContentValueBlock = class extends ValueBlock {
+  static {
+    __name(this, "LocalEndOfContentValueBlock");
+  }
+  fromBER(inputBuffer, inputOffset, _inputLength) {
+    return inputOffset;
+  }
+  toBER(_sizeOnly) {
+    return EMPTY_BUFFER2;
+  }
+};
+LocalEndOfContentValueBlock.override = "EndOfContentValueBlock";
+var _a$u;
+var EndOfContent = class extends BaseBlock {
+  static {
+    __name(this, "EndOfContent");
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalEndOfContentValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 0;
+  }
+};
+_a$u = EndOfContent;
+(() => {
+  typeStore.EndOfContent = _a$u;
+})();
+EndOfContent.NAME = END_OF_CONTENT_NAME;
+var _a$t;
+var Null = class extends BaseBlock {
+  static {
+    __name(this, "Null");
+  }
+  constructor(parameters = {}) {
+    super(parameters, ValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 5;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    if (this.lenBlock.length > 0)
+      this.warnings.push("Non-zero length of value block for Null type");
+    if (!this.idBlock.error.length)
+      this.blockLength += this.idBlock.blockLength;
+    if (!this.lenBlock.error.length)
+      this.blockLength += this.lenBlock.blockLength;
+    this.blockLength += inputLength;
+    if (inputOffset + inputLength > inputBuffer.byteLength) {
+      this.error = "End of input reached before message was fully decoded (inconsistent offset and length values)";
+      return -1;
+    }
+    return inputOffset + inputLength;
+  }
+  toBER(sizeOnly, writer) {
+    const retBuf = new ArrayBuffer(2);
+    if (!sizeOnly) {
+      const retView = new Uint8Array(retBuf);
+      retView[0] = 5;
+      retView[1] = 0;
+    }
+    if (writer) {
+      writer.write(retBuf);
+    }
+    return retBuf;
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME}`;
+  }
+};
+_a$t = Null;
+(() => {
+  typeStore.Null = _a$t;
+})();
+Null.NAME = "NULL";
+var LocalBooleanValueBlock = class extends HexBlock(ValueBlock) {
+  static {
+    __name(this, "LocalBooleanValueBlock");
+  }
+  get value() {
+    for (const octet of this.valueHexView) {
+      if (octet > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+  set value(value2) {
+    this.valueHexView[0] = value2 ? 255 : 0;
+  }
+  constructor({ value: value2, ...parameters } = {}) {
+    super(parameters);
+    if (parameters.valueHex) {
+      this.valueHexView = pvtsutils.BufferSourceConverter.toUint8Array(parameters.valueHex);
+    } else {
+      this.valueHexView = new Uint8Array(1);
+    }
+    if (value2) {
+      this.value = value2;
+    }
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const inputView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, inputView, inputOffset, inputLength)) {
+      return -1;
+    }
+    this.valueHexView = inputView.subarray(inputOffset, inputOffset + inputLength);
+    if (inputLength > 1)
+      this.warnings.push("Boolean value encoded in more then 1 octet");
+    this.isHexOnly = true;
+    utilDecodeTC.call(this);
+    this.blockLength = inputLength;
+    return inputOffset + inputLength;
+  }
+  toBER() {
+    return this.valueHexView.slice();
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      value: this.value
+    };
+  }
+};
+LocalBooleanValueBlock.NAME = "BooleanValueBlock";
+var _a$s;
+var Boolean2 = class extends BaseBlock {
+  static {
+    __name(this, "Boolean");
+  }
+  getValue() {
+    return this.valueBlock.value;
+  }
+  setValue(value2) {
+    this.valueBlock.value = value2;
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalBooleanValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 1;
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME} : ${this.getValue}`;
+  }
+};
+_a$s = Boolean2;
+(() => {
+  typeStore.Boolean = _a$s;
+})();
+Boolean2.NAME = "BOOLEAN";
+var LocalOctetStringValueBlock = class extends HexBlock(LocalConstructedValueBlock) {
+  static {
+    __name(this, "LocalOctetStringValueBlock");
+  }
+  constructor({ isConstructed = false, ...parameters } = {}) {
+    super(parameters);
+    this.isConstructed = isConstructed;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    let resultOffset = 0;
+    if (this.isConstructed) {
+      this.isHexOnly = false;
+      resultOffset = LocalConstructedValueBlock.prototype.fromBER.call(this, inputBuffer, inputOffset, inputLength);
+      if (resultOffset === -1)
+        return resultOffset;
+      for (let i2 = 0; i2 < this.value.length; i2++) {
+        const currentBlockName = this.value[i2].constructor.NAME;
+        if (currentBlockName === END_OF_CONTENT_NAME) {
+          if (this.isIndefiniteForm)
+            break;
+          else {
+            this.error = "EndOfContent is unexpected, OCTET STRING may consists of OCTET STRINGs only";
+            return -1;
+          }
+        }
+        if (currentBlockName !== OCTET_STRING_NAME) {
+          this.error = "OCTET STRING may consists of OCTET STRINGs only";
+          return -1;
+        }
+      }
+    } else {
+      this.isHexOnly = true;
+      resultOffset = super.fromBER(inputBuffer, inputOffset, inputLength);
+      this.blockLength = inputLength;
+    }
+    return resultOffset;
+  }
+  toBER(sizeOnly, writer) {
+    if (this.isConstructed)
+      return LocalConstructedValueBlock.prototype.toBER.call(this, sizeOnly, writer);
+    return sizeOnly ? new ArrayBuffer(this.valueHexView.byteLength) : this.valueHexView.slice().buffer;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      isConstructed: this.isConstructed
+    };
+  }
+};
+LocalOctetStringValueBlock.NAME = "OctetStringValueBlock";
+var _a$r;
+var OctetString = class extends BaseBlock {
+  static {
+    __name(this, "OctetString");
+  }
+  constructor({ idBlock = {}, lenBlock = {}, ...parameters } = {}) {
+    var _b, _c;
+    (_b = parameters.isConstructed) !== null && _b !== void 0 ? _b : parameters.isConstructed = !!((_c = parameters.value) === null || _c === void 0 ? void 0 : _c.length);
+    super({
+      idBlock: {
+        isConstructed: parameters.isConstructed,
+        ...idBlock
+      },
+      lenBlock: {
+        ...lenBlock,
+        isIndefiniteForm: !!parameters.isIndefiniteForm
+      },
+      ...parameters
+    }, LocalOctetStringValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 4;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    this.valueBlock.isConstructed = this.idBlock.isConstructed;
+    this.valueBlock.isIndefiniteForm = this.lenBlock.isIndefiniteForm;
+    if (inputLength === 0) {
+      if (this.idBlock.error.length === 0)
+        this.blockLength += this.idBlock.blockLength;
+      if (this.lenBlock.error.length === 0)
+        this.blockLength += this.lenBlock.blockLength;
+      return inputOffset;
+    }
+    if (!this.valueBlock.isConstructed) {
+      const view = inputBuffer instanceof ArrayBuffer ? new Uint8Array(inputBuffer) : inputBuffer;
+      const buf = view.subarray(inputOffset, inputOffset + inputLength);
+      try {
+        if (buf.byteLength) {
+          const asn = localFromBER(buf, 0, buf.byteLength);
+          if (asn.offset !== -1 && asn.offset === inputLength) {
+            this.valueBlock.value = [asn.result];
+          }
+        }
+      } catch {
+      }
+    }
+    return super.fromBER(inputBuffer, inputOffset, inputLength);
+  }
+  onAsciiEncoding() {
+    if (this.valueBlock.isConstructed || this.valueBlock.value && this.valueBlock.value.length) {
+      return Constructed.prototype.onAsciiEncoding.call(this);
+    }
+    const name3 = this.constructor.NAME;
+    const value2 = pvtsutils.Convert.ToHex(this.valueBlock.valueHexView);
+    return `${name3} : ${value2}`;
+  }
+  getValue() {
+    if (!this.idBlock.isConstructed) {
+      return this.valueBlock.valueHexView.slice().buffer;
+    }
+    const array = [];
+    for (const content of this.valueBlock.value) {
+      if (content instanceof _a$r) {
+        array.push(content.valueBlock.valueHexView);
+      }
+    }
+    return pvtsutils.BufferSourceConverter.concat(array);
+  }
+};
+_a$r = OctetString;
+(() => {
+  typeStore.OctetString = _a$r;
+})();
+OctetString.NAME = OCTET_STRING_NAME;
+var LocalBitStringValueBlock = class extends HexBlock(LocalConstructedValueBlock) {
+  static {
+    __name(this, "LocalBitStringValueBlock");
+  }
+  constructor({ unusedBits = 0, isConstructed = false, ...parameters } = {}) {
+    super(parameters);
+    this.unusedBits = unusedBits;
+    this.isConstructed = isConstructed;
+    this.blockLength = this.valueHexView.byteLength;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    if (!inputLength) {
+      return inputOffset;
+    }
+    let resultOffset = -1;
+    if (this.isConstructed) {
+      resultOffset = LocalConstructedValueBlock.prototype.fromBER.call(this, inputBuffer, inputOffset, inputLength);
+      if (resultOffset === -1)
+        return resultOffset;
+      for (const value2 of this.value) {
+        const currentBlockName = value2.constructor.NAME;
+        if (currentBlockName === END_OF_CONTENT_NAME) {
+          if (this.isIndefiniteForm)
+            break;
+          else {
+            this.error = "EndOfContent is unexpected, BIT STRING may consists of BIT STRINGs only";
+            return -1;
+          }
+        }
+        if (currentBlockName !== BIT_STRING_NAME) {
+          this.error = "BIT STRING may consists of BIT STRINGs only";
+          return -1;
+        }
+        const valueBlock = value2.valueBlock;
+        if (this.unusedBits > 0 && valueBlock.unusedBits > 0) {
+          this.error = 'Using of "unused bits" inside constructive BIT STRING allowed for least one only';
+          return -1;
+        }
+        this.unusedBits = valueBlock.unusedBits;
+      }
+      return resultOffset;
+    }
+    const inputView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, inputView, inputOffset, inputLength)) {
+      return -1;
+    }
+    const intBuffer = inputView.subarray(inputOffset, inputOffset + inputLength);
+    this.unusedBits = intBuffer[0];
+    if (this.unusedBits > 7) {
+      this.error = "Unused bits for BitString must be in range 0-7";
+      return -1;
+    }
+    if (!this.unusedBits) {
+      const buf = intBuffer.subarray(1);
+      try {
+        if (buf.byteLength) {
+          const asn = localFromBER(buf, 0, buf.byteLength);
+          if (asn.offset !== -1 && asn.offset === inputLength - 1) {
+            this.value = [asn.result];
+          }
+        }
+      } catch {
+      }
+    }
+    this.valueHexView = intBuffer.subarray(1);
+    this.blockLength = intBuffer.length;
+    return inputOffset + inputLength;
+  }
+  toBER(sizeOnly, writer) {
+    if (this.isConstructed) {
+      return LocalConstructedValueBlock.prototype.toBER.call(this, sizeOnly, writer);
+    }
+    if (sizeOnly) {
+      return new ArrayBuffer(this.valueHexView.byteLength + 1);
+    }
+    if (!this.valueHexView.byteLength) {
+      return EMPTY_BUFFER2;
+    }
+    const retView = new Uint8Array(this.valueHexView.length + 1);
+    retView[0] = this.unusedBits;
+    retView.set(this.valueHexView, 1);
+    return retView.buffer;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      unusedBits: this.unusedBits,
+      isConstructed: this.isConstructed
+    };
+  }
+};
+LocalBitStringValueBlock.NAME = "BitStringValueBlock";
+var _a$q;
+var BitString = class extends BaseBlock {
+  static {
+    __name(this, "BitString");
+  }
+  constructor({ idBlock = {}, lenBlock = {}, ...parameters } = {}) {
+    var _b, _c;
+    (_b = parameters.isConstructed) !== null && _b !== void 0 ? _b : parameters.isConstructed = !!((_c = parameters.value) === null || _c === void 0 ? void 0 : _c.length);
+    super({
+      idBlock: {
+        isConstructed: parameters.isConstructed,
+        ...idBlock
+      },
+      lenBlock: {
+        ...lenBlock,
+        isIndefiniteForm: !!parameters.isIndefiniteForm
+      },
+      ...parameters
+    }, LocalBitStringValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 3;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    this.valueBlock.isConstructed = this.idBlock.isConstructed;
+    this.valueBlock.isIndefiniteForm = this.lenBlock.isIndefiniteForm;
+    return super.fromBER(inputBuffer, inputOffset, inputLength);
+  }
+  onAsciiEncoding() {
+    if (this.valueBlock.isConstructed || this.valueBlock.value && this.valueBlock.value.length) {
+      return Constructed.prototype.onAsciiEncoding.call(this);
+    } else {
+      const bits = [];
+      const valueHex = this.valueBlock.valueHexView;
+      for (const byte of valueHex) {
+        bits.push(byte.toString(2).padStart(8, "0"));
+      }
+      const bitsStr = bits.join("");
+      const name3 = this.constructor.NAME;
+      const value2 = bitsStr.substring(0, bitsStr.length - this.valueBlock.unusedBits);
+      return `${name3} : ${value2}`;
+    }
+  }
+};
+_a$q = BitString;
+(() => {
+  typeStore.BitString = _a$q;
+})();
+BitString.NAME = BIT_STRING_NAME;
+var _a$p;
+function viewAdd(first, second2) {
+  const c2 = new Uint8Array([0]);
+  const firstView = new Uint8Array(first);
+  const secondView = new Uint8Array(second2);
+  let firstViewCopy = firstView.slice(0);
+  const firstViewCopyLength = firstViewCopy.length - 1;
+  const secondViewCopy = secondView.slice(0);
+  const secondViewCopyLength = secondViewCopy.length - 1;
+  let value2 = 0;
+  const max = secondViewCopyLength < firstViewCopyLength ? firstViewCopyLength : secondViewCopyLength;
+  let counter = 0;
+  for (let i2 = max; i2 >= 0; i2--, counter++) {
+    switch (true) {
+      case counter < secondViewCopy.length:
+        value2 = firstViewCopy[firstViewCopyLength - counter] + secondViewCopy[secondViewCopyLength - counter] + c2[0];
+        break;
+      default:
+        value2 = firstViewCopy[firstViewCopyLength - counter] + c2[0];
+    }
+    c2[0] = value2 / 10;
+    switch (true) {
+      case counter >= firstViewCopy.length:
+        firstViewCopy = utilConcatView(new Uint8Array([value2 % 10]), firstViewCopy);
+        break;
+      default:
+        firstViewCopy[firstViewCopyLength - counter] = value2 % 10;
+    }
+  }
+  if (c2[0] > 0)
+    firstViewCopy = utilConcatView(c2, firstViewCopy);
+  return firstViewCopy;
+}
+__name(viewAdd, "viewAdd");
+function power2(n2) {
+  if (n2 >= powers2.length) {
+    for (let p2 = powers2.length; p2 <= n2; p2++) {
+      const c2 = new Uint8Array([0]);
+      let digits = powers2[p2 - 1].slice(0);
+      for (let i2 = digits.length - 1; i2 >= 0; i2--) {
+        const newValue = new Uint8Array([(digits[i2] << 1) + c2[0]]);
+        c2[0] = newValue[0] / 10;
+        digits[i2] = newValue[0] % 10;
+      }
+      if (c2[0] > 0)
+        digits = utilConcatView(c2, digits);
+      powers2.push(digits);
+    }
+  }
+  return powers2[n2];
+}
+__name(power2, "power2");
+function viewSub(first, second2) {
+  let b = 0;
+  const firstView = new Uint8Array(first);
+  const secondView = new Uint8Array(second2);
+  const firstViewCopy = firstView.slice(0);
+  const firstViewCopyLength = firstViewCopy.length - 1;
+  const secondViewCopy = secondView.slice(0);
+  const secondViewCopyLength = secondViewCopy.length - 1;
+  let value2;
+  let counter = 0;
+  for (let i2 = secondViewCopyLength; i2 >= 0; i2--, counter++) {
+    value2 = firstViewCopy[firstViewCopyLength - counter] - secondViewCopy[secondViewCopyLength - counter] - b;
+    switch (true) {
+      case value2 < 0:
+        b = 1;
+        firstViewCopy[firstViewCopyLength - counter] = value2 + 10;
+        break;
+      default:
+        b = 0;
+        firstViewCopy[firstViewCopyLength - counter] = value2;
+    }
+  }
+  if (b > 0) {
+    for (let i2 = firstViewCopyLength - secondViewCopyLength + 1; i2 >= 0; i2--, counter++) {
+      value2 = firstViewCopy[firstViewCopyLength - counter] - b;
+      if (value2 < 0) {
+        b = 1;
+        firstViewCopy[firstViewCopyLength - counter] = value2 + 10;
+      } else {
+        b = 0;
+        firstViewCopy[firstViewCopyLength - counter] = value2;
+        break;
+      }
+    }
+  }
+  return firstViewCopy.slice();
+}
+__name(viewSub, "viewSub");
+var LocalIntegerValueBlock = class extends HexBlock(ValueBlock) {
+  static {
+    __name(this, "LocalIntegerValueBlock");
+  }
+  setValueHex() {
+    if (this.valueHexView.length >= 4) {
+      this.warnings.push("Too big Integer for decoding, hex only");
+      this.isHexOnly = true;
+      this._valueDec = 0;
+    } else {
+      this.isHexOnly = false;
+      if (this.valueHexView.length > 0) {
+        this._valueDec = utilDecodeTC.call(this);
+      }
+    }
+  }
+  constructor({ value: value2, ...parameters } = {}) {
+    super(parameters);
+    this._valueDec = 0;
+    if (parameters.valueHex) {
+      this.setValueHex();
+    }
+    if (value2 !== void 0) {
+      this.valueDec = value2;
+    }
+  }
+  set valueDec(v) {
+    this._valueDec = v;
+    this.isHexOnly = false;
+    this.valueHexView = new Uint8Array(utilEncodeTC(v));
+  }
+  get valueDec() {
+    return this._valueDec;
+  }
+  fromDER(inputBuffer, inputOffset, inputLength, expectedLength = 0) {
+    const offset = this.fromBER(inputBuffer, inputOffset, inputLength);
+    if (offset === -1)
+      return offset;
+    const view = this.valueHexView;
+    if (view[0] === 0 && (view[1] & 128) !== 0) {
+      this.valueHexView = view.subarray(1);
+    } else {
+      if (expectedLength !== 0) {
+        if (view.length < expectedLength) {
+          if (expectedLength - view.length > 1)
+            expectedLength = view.length + 1;
+          this.valueHexView = view.subarray(expectedLength - view.length);
+        }
+      }
+    }
+    return offset;
+  }
+  toDER(sizeOnly = false) {
+    const view = this.valueHexView;
+    switch (true) {
+      case (view[0] & 128) !== 0:
+        {
+          const updatedView = new Uint8Array(this.valueHexView.length + 1);
+          updatedView[0] = 0;
+          updatedView.set(view, 1);
+          this.valueHexView = updatedView;
+        }
+        break;
+      case (view[0] === 0 && (view[1] & 128) === 0):
+        {
+          this.valueHexView = this.valueHexView.subarray(1);
+        }
+        break;
+    }
+    return this.toBER(sizeOnly);
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const resultOffset = super.fromBER(inputBuffer, inputOffset, inputLength);
+    if (resultOffset === -1) {
+      return resultOffset;
+    }
+    this.setValueHex();
+    return resultOffset;
+  }
+  toBER(sizeOnly) {
+    return sizeOnly ? new ArrayBuffer(this.valueHexView.length) : this.valueHexView.slice().buffer;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      valueDec: this.valueDec
+    };
+  }
+  toString() {
+    const firstBit = this.valueHexView.length * 8 - 1;
+    let digits = new Uint8Array(this.valueHexView.length * 8 / 3);
+    let bitNumber = 0;
+    let currentByte;
+    const asn1View = this.valueHexView;
+    let result = "";
+    let flag = false;
+    for (let byteNumber = asn1View.byteLength - 1; byteNumber >= 0; byteNumber--) {
+      currentByte = asn1View[byteNumber];
+      for (let i2 = 0; i2 < 8; i2++) {
+        if ((currentByte & 1) === 1) {
+          switch (bitNumber) {
+            case firstBit:
+              digits = viewSub(power2(bitNumber), digits);
+              result = "-";
+              break;
+            default:
+              digits = viewAdd(digits, power2(bitNumber));
+          }
+        }
+        bitNumber++;
+        currentByte >>= 1;
+      }
+    }
+    for (let i2 = 0; i2 < digits.length; i2++) {
+      if (digits[i2])
+        flag = true;
+      if (flag)
+        result += digitsString.charAt(digits[i2]);
+    }
+    if (flag === false)
+      result += digitsString.charAt(0);
+    return result;
+  }
+};
+_a$p = LocalIntegerValueBlock;
+LocalIntegerValueBlock.NAME = "IntegerValueBlock";
+(() => {
+  Object.defineProperty(_a$p.prototype, "valueHex", {
+    set: /* @__PURE__ */ __name(function(v) {
+      this.valueHexView = new Uint8Array(v);
+      this.setValueHex();
+    }, "set"),
+    get: /* @__PURE__ */ __name(function() {
+      return this.valueHexView.slice().buffer;
+    }, "get")
+  });
+})();
+var _a$o;
+var Integer = class extends BaseBlock {
+  static {
+    __name(this, "Integer");
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalIntegerValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 2;
+  }
+  toBigInt() {
+    assertBigInt();
+    return BigInt(this.valueBlock.toString());
+  }
+  static fromBigInt(value2) {
+    assertBigInt();
+    const bigIntValue = BigInt(value2);
+    const writer = new ViewWriter();
+    const hex = bigIntValue.toString(16).replace(/^-/, "");
+    const view = new Uint8Array(pvtsutils.Convert.FromHex(hex));
+    if (bigIntValue < 0) {
+      const first = new Uint8Array(view.length + (view[0] & 128 ? 1 : 0));
+      first[0] |= 128;
+      const firstInt = BigInt(`0x${pvtsutils.Convert.ToHex(first)}`);
+      const secondInt = firstInt + bigIntValue;
+      const second2 = pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromHex(secondInt.toString(16)));
+      second2[0] |= 128;
+      writer.write(second2);
+    } else {
+      if (view[0] & 128) {
+        writer.write(new Uint8Array([0]));
+      }
+      writer.write(view);
+    }
+    const res = new _a$o({ valueHex: writer.final() });
+    return res;
+  }
+  convertToDER() {
+    const integer2 = new _a$o({ valueHex: this.valueBlock.valueHexView });
+    integer2.valueBlock.toDER();
+    return integer2;
+  }
+  convertFromDER() {
+    return new _a$o({
+      valueHex: this.valueBlock.valueHexView[0] === 0 ? this.valueBlock.valueHexView.subarray(1) : this.valueBlock.valueHexView
+    });
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME} : ${this.valueBlock.toString()}`;
+  }
+};
+_a$o = Integer;
+(() => {
+  typeStore.Integer = _a$o;
+})();
+Integer.NAME = "INTEGER";
+var _a$n;
+var Enumerated = class extends Integer {
+  static {
+    __name(this, "Enumerated");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 10;
+  }
+};
+_a$n = Enumerated;
+(() => {
+  typeStore.Enumerated = _a$n;
+})();
+Enumerated.NAME = "ENUMERATED";
+var LocalSidValueBlock = class extends HexBlock(ValueBlock) {
+  static {
+    __name(this, "LocalSidValueBlock");
+  }
+  constructor({ valueDec = -1, isFirstSid = false, ...parameters } = {}) {
+    super(parameters);
+    this.valueDec = valueDec;
+    this.isFirstSid = isFirstSid;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    if (!inputLength) {
+      return inputOffset;
+    }
+    const inputView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, inputView, inputOffset, inputLength)) {
+      return -1;
+    }
+    const intBuffer = inputView.subarray(inputOffset, inputOffset + inputLength);
+    this.valueHexView = new Uint8Array(inputLength);
+    for (let i2 = 0; i2 < inputLength; i2++) {
+      this.valueHexView[i2] = intBuffer[i2] & 127;
+      this.blockLength++;
+      if ((intBuffer[i2] & 128) === 0)
+        break;
+    }
+    const tempView = new Uint8Array(this.blockLength);
+    for (let i2 = 0; i2 < this.blockLength; i2++) {
+      tempView[i2] = this.valueHexView[i2];
+    }
+    this.valueHexView = tempView;
+    if ((intBuffer[this.blockLength - 1] & 128) !== 0) {
+      this.error = "End of input reached before message was fully decoded";
+      return -1;
+    }
+    if (this.valueHexView[0] === 0)
+      this.warnings.push("Needlessly long format of SID encoding");
+    if (this.blockLength <= 8)
+      this.valueDec = utilFromBase(this.valueHexView, 7);
+    else {
+      this.isHexOnly = true;
+      this.warnings.push("Too big SID for decoding, hex only");
+    }
+    return inputOffset + this.blockLength;
+  }
+  set valueBigInt(value2) {
+    assertBigInt();
+    let bits = BigInt(value2).toString(2);
+    while (bits.length % 7) {
+      bits = "0" + bits;
+    }
+    const bytes = new Uint8Array(bits.length / 7);
+    for (let i2 = 0; i2 < bytes.length; i2++) {
+      bytes[i2] = parseInt(bits.slice(i2 * 7, i2 * 7 + 7), 2) + (i2 + 1 < bytes.length ? 128 : 0);
+    }
+    this.fromBER(bytes.buffer, 0, bytes.length);
+  }
+  toBER(sizeOnly) {
+    if (this.isHexOnly) {
+      if (sizeOnly)
+        return new ArrayBuffer(this.valueHexView.byteLength);
+      const curView = this.valueHexView;
+      const retView2 = new Uint8Array(this.blockLength);
+      for (let i2 = 0; i2 < this.blockLength - 1; i2++)
+        retView2[i2] = curView[i2] | 128;
+      retView2[this.blockLength - 1] = curView[this.blockLength - 1];
+      return retView2.buffer;
+    }
+    const encodedBuf = utilToBase(this.valueDec, 7);
+    if (encodedBuf.byteLength === 0) {
+      this.error = "Error during encoding SID value";
+      return EMPTY_BUFFER2;
+    }
+    const retView = new Uint8Array(encodedBuf.byteLength);
+    if (!sizeOnly) {
+      const encodedView = new Uint8Array(encodedBuf);
+      const len = encodedBuf.byteLength - 1;
+      for (let i2 = 0; i2 < len; i2++)
+        retView[i2] = encodedView[i2] | 128;
+      retView[len] = encodedView[len];
+    }
+    return retView;
+  }
+  toString() {
+    let result = "";
+    if (this.isHexOnly)
+      result = pvtsutils.Convert.ToHex(this.valueHexView);
+    else {
+      if (this.isFirstSid) {
+        let sidValue = this.valueDec;
+        if (this.valueDec <= 39)
+          result = "0.";
+        else {
+          if (this.valueDec <= 79) {
+            result = "1.";
+            sidValue -= 40;
+          } else {
+            result = "2.";
+            sidValue -= 80;
+          }
+        }
+        result += sidValue.toString();
+      } else
+        result = this.valueDec.toString();
+    }
+    return result;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      valueDec: this.valueDec,
+      isFirstSid: this.isFirstSid
+    };
+  }
+};
+LocalSidValueBlock.NAME = "sidBlock";
+var LocalObjectIdentifierValueBlock = class extends ValueBlock {
+  static {
+    __name(this, "LocalObjectIdentifierValueBlock");
+  }
+  constructor({ value: value2 = EMPTY_STRING, ...parameters } = {}) {
+    super(parameters);
+    this.value = [];
+    if (value2) {
+      this.fromString(value2);
+    }
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    let resultOffset = inputOffset;
+    while (inputLength > 0) {
+      const sidBlock = new LocalSidValueBlock();
+      resultOffset = sidBlock.fromBER(inputBuffer, resultOffset, inputLength);
+      if (resultOffset === -1) {
+        this.blockLength = 0;
+        this.error = sidBlock.error;
+        return resultOffset;
+      }
+      if (this.value.length === 0)
+        sidBlock.isFirstSid = true;
+      this.blockLength += sidBlock.blockLength;
+      inputLength -= sidBlock.blockLength;
+      this.value.push(sidBlock);
+    }
+    return resultOffset;
+  }
+  toBER(sizeOnly) {
+    const retBuffers = [];
+    for (let i2 = 0; i2 < this.value.length; i2++) {
+      const valueBuf = this.value[i2].toBER(sizeOnly);
+      if (valueBuf.byteLength === 0) {
+        this.error = this.value[i2].error;
+        return EMPTY_BUFFER2;
+      }
+      retBuffers.push(valueBuf);
+    }
+    return concat2(retBuffers);
+  }
+  fromString(string2) {
+    this.value = [];
+    let pos1 = 0;
+    let pos2 = 0;
+    let sid = "";
+    let flag = false;
+    do {
+      pos2 = string2.indexOf(".", pos1);
+      if (pos2 === -1)
+        sid = string2.substring(pos1);
+      else
+        sid = string2.substring(pos1, pos2);
+      pos1 = pos2 + 1;
+      if (flag) {
+        const sidBlock = this.value[0];
+        let plus = 0;
+        switch (sidBlock.valueDec) {
+          case 0:
+            break;
+          case 1:
+            plus = 40;
+            break;
+          case 2:
+            plus = 80;
+            break;
+          default:
+            this.value = [];
+            return;
+        }
+        const parsedSID = parseInt(sid, 10);
+        if (isNaN(parsedSID))
+          return;
+        sidBlock.valueDec = parsedSID + plus;
+        flag = false;
+      } else {
+        const sidBlock = new LocalSidValueBlock();
+        if (sid > Number.MAX_SAFE_INTEGER) {
+          assertBigInt();
+          const sidValue = BigInt(sid);
+          sidBlock.valueBigInt = sidValue;
+        } else {
+          sidBlock.valueDec = parseInt(sid, 10);
+          if (isNaN(sidBlock.valueDec))
+            return;
+        }
+        if (!this.value.length) {
+          sidBlock.isFirstSid = true;
+          flag = true;
+        }
+        this.value.push(sidBlock);
+      }
+    } while (pos2 !== -1);
+  }
+  toString() {
+    let result = "";
+    let isHexOnly = false;
+    for (let i2 = 0; i2 < this.value.length; i2++) {
+      isHexOnly = this.value[i2].isHexOnly;
+      let sidStr = this.value[i2].toString();
+      if (i2 !== 0)
+        result = `${result}.`;
+      if (isHexOnly) {
+        sidStr = `{${sidStr}}`;
+        if (this.value[i2].isFirstSid)
+          result = `2.{${sidStr} - 80}`;
+        else
+          result += sidStr;
+      } else
+        result += sidStr;
+    }
+    return result;
+  }
+  toJSON() {
+    const object = {
+      ...super.toJSON(),
+      value: this.toString(),
+      sidArray: []
+    };
+    for (let i2 = 0; i2 < this.value.length; i2++) {
+      object.sidArray.push(this.value[i2].toJSON());
+    }
+    return object;
+  }
+};
+LocalObjectIdentifierValueBlock.NAME = "ObjectIdentifierValueBlock";
+var _a$m;
+var ObjectIdentifier = class extends BaseBlock {
+  static {
+    __name(this, "ObjectIdentifier");
+  }
+  getValue() {
+    return this.valueBlock.toString();
+  }
+  setValue(value2) {
+    this.valueBlock.fromString(value2);
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalObjectIdentifierValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 6;
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME} : ${this.valueBlock.toString() || "empty"}`;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      value: this.getValue()
+    };
+  }
+};
+_a$m = ObjectIdentifier;
+(() => {
+  typeStore.ObjectIdentifier = _a$m;
+})();
+ObjectIdentifier.NAME = "OBJECT IDENTIFIER";
+var LocalRelativeSidValueBlock = class extends HexBlock(LocalBaseBlock) {
+  static {
+    __name(this, "LocalRelativeSidValueBlock");
+  }
+  constructor({ valueDec = 0, ...parameters } = {}) {
+    super(parameters);
+    this.valueDec = valueDec;
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    if (inputLength === 0)
+      return inputOffset;
+    const inputView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    if (!checkBufferParams(this, inputView, inputOffset, inputLength))
+      return -1;
+    const intBuffer = inputView.subarray(inputOffset, inputOffset + inputLength);
+    this.valueHexView = new Uint8Array(inputLength);
+    for (let i2 = 0; i2 < inputLength; i2++) {
+      this.valueHexView[i2] = intBuffer[i2] & 127;
+      this.blockLength++;
+      if ((intBuffer[i2] & 128) === 0)
+        break;
+    }
+    const tempView = new Uint8Array(this.blockLength);
+    for (let i2 = 0; i2 < this.blockLength; i2++)
+      tempView[i2] = this.valueHexView[i2];
+    this.valueHexView = tempView;
+    if ((intBuffer[this.blockLength - 1] & 128) !== 0) {
+      this.error = "End of input reached before message was fully decoded";
+      return -1;
+    }
+    if (this.valueHexView[0] === 0)
+      this.warnings.push("Needlessly long format of SID encoding");
+    if (this.blockLength <= 8)
+      this.valueDec = utilFromBase(this.valueHexView, 7);
+    else {
+      this.isHexOnly = true;
+      this.warnings.push("Too big SID for decoding, hex only");
+    }
+    return inputOffset + this.blockLength;
+  }
+  toBER(sizeOnly) {
+    if (this.isHexOnly) {
+      if (sizeOnly)
+        return new ArrayBuffer(this.valueHexView.byteLength);
+      const curView = this.valueHexView;
+      const retView2 = new Uint8Array(this.blockLength);
+      for (let i2 = 0; i2 < this.blockLength - 1; i2++)
+        retView2[i2] = curView[i2] | 128;
+      retView2[this.blockLength - 1] = curView[this.blockLength - 1];
+      return retView2.buffer;
+    }
+    const encodedBuf = utilToBase(this.valueDec, 7);
+    if (encodedBuf.byteLength === 0) {
+      this.error = "Error during encoding SID value";
+      return EMPTY_BUFFER2;
+    }
+    const retView = new Uint8Array(encodedBuf.byteLength);
+    if (!sizeOnly) {
+      const encodedView = new Uint8Array(encodedBuf);
+      const len = encodedBuf.byteLength - 1;
+      for (let i2 = 0; i2 < len; i2++)
+        retView[i2] = encodedView[i2] | 128;
+      retView[len] = encodedView[len];
+    }
+    return retView.buffer;
+  }
+  toString() {
+    let result = "";
+    if (this.isHexOnly)
+      result = pvtsutils.Convert.ToHex(this.valueHexView);
+    else {
+      result = this.valueDec.toString();
+    }
+    return result;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      valueDec: this.valueDec
+    };
+  }
+};
+LocalRelativeSidValueBlock.NAME = "relativeSidBlock";
+var LocalRelativeObjectIdentifierValueBlock = class extends ValueBlock {
+  static {
+    __name(this, "LocalRelativeObjectIdentifierValueBlock");
+  }
+  constructor({ value: value2 = EMPTY_STRING, ...parameters } = {}) {
+    super(parameters);
+    this.value = [];
+    if (value2) {
+      this.fromString(value2);
+    }
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    let resultOffset = inputOffset;
+    while (inputLength > 0) {
+      const sidBlock = new LocalRelativeSidValueBlock();
+      resultOffset = sidBlock.fromBER(inputBuffer, resultOffset, inputLength);
+      if (resultOffset === -1) {
+        this.blockLength = 0;
+        this.error = sidBlock.error;
+        return resultOffset;
+      }
+      this.blockLength += sidBlock.blockLength;
+      inputLength -= sidBlock.blockLength;
+      this.value.push(sidBlock);
+    }
+    return resultOffset;
+  }
+  toBER(sizeOnly, _writer) {
+    const retBuffers = [];
+    for (let i2 = 0; i2 < this.value.length; i2++) {
+      const valueBuf = this.value[i2].toBER(sizeOnly);
+      if (valueBuf.byteLength === 0) {
+        this.error = this.value[i2].error;
+        return EMPTY_BUFFER2;
+      }
+      retBuffers.push(valueBuf);
+    }
+    return concat2(retBuffers);
+  }
+  fromString(string2) {
+    this.value = [];
+    let pos1 = 0;
+    let pos2 = 0;
+    let sid = "";
+    do {
+      pos2 = string2.indexOf(".", pos1);
+      if (pos2 === -1)
+        sid = string2.substring(pos1);
+      else
+        sid = string2.substring(pos1, pos2);
+      pos1 = pos2 + 1;
+      const sidBlock = new LocalRelativeSidValueBlock();
+      sidBlock.valueDec = parseInt(sid, 10);
+      if (isNaN(sidBlock.valueDec))
+        return true;
+      this.value.push(sidBlock);
+    } while (pos2 !== -1);
+    return true;
+  }
+  toString() {
+    let result = "";
+    let isHexOnly = false;
+    for (let i2 = 0; i2 < this.value.length; i2++) {
+      isHexOnly = this.value[i2].isHexOnly;
+      let sidStr = this.value[i2].toString();
+      if (i2 !== 0)
+        result = `${result}.`;
+      if (isHexOnly) {
+        sidStr = `{${sidStr}}`;
+        result += sidStr;
+      } else
+        result += sidStr;
+    }
+    return result;
+  }
+  toJSON() {
+    const object = {
+      ...super.toJSON(),
+      value: this.toString(),
+      sidArray: []
+    };
+    for (let i2 = 0; i2 < this.value.length; i2++)
+      object.sidArray.push(this.value[i2].toJSON());
+    return object;
+  }
+};
+LocalRelativeObjectIdentifierValueBlock.NAME = "RelativeObjectIdentifierValueBlock";
+var _a$l;
+var RelativeObjectIdentifier = class extends BaseBlock {
+  static {
+    __name(this, "RelativeObjectIdentifier");
+  }
+  getValue() {
+    return this.valueBlock.toString();
+  }
+  setValue(value2) {
+    this.valueBlock.fromString(value2);
+  }
+  constructor(parameters = {}) {
+    super(parameters, LocalRelativeObjectIdentifierValueBlock);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 13;
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME} : ${this.valueBlock.toString() || "empty"}`;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      value: this.getValue()
+    };
+  }
+};
+_a$l = RelativeObjectIdentifier;
+(() => {
+  typeStore.RelativeObjectIdentifier = _a$l;
+})();
+RelativeObjectIdentifier.NAME = "RelativeObjectIdentifier";
+var _a$k;
+var Sequence = class extends Constructed {
+  static {
+    __name(this, "Sequence");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 16;
+  }
+};
+_a$k = Sequence;
+(() => {
+  typeStore.Sequence = _a$k;
+})();
+Sequence.NAME = "SEQUENCE";
+var _a$j;
+var Set2 = class extends Constructed {
+  static {
+    __name(this, "Set");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 17;
+  }
+};
+_a$j = Set2;
+(() => {
+  typeStore.Set = _a$j;
+})();
+Set2.NAME = "SET";
+var LocalStringValueBlock = class extends HexBlock(ValueBlock) {
+  static {
+    __name(this, "LocalStringValueBlock");
+  }
+  constructor({ ...parameters } = {}) {
+    super(parameters);
+    this.isHexOnly = true;
+    this.value = EMPTY_STRING;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      value: this.value
+    };
+  }
+};
+LocalStringValueBlock.NAME = "StringValueBlock";
+var LocalSimpleStringValueBlock = class extends LocalStringValueBlock {
+  static {
+    __name(this, "LocalSimpleStringValueBlock");
+  }
+};
+LocalSimpleStringValueBlock.NAME = "SimpleStringValueBlock";
+var LocalSimpleStringBlock = class extends BaseStringBlock {
+  static {
+    __name(this, "LocalSimpleStringBlock");
+  }
+  constructor({ ...parameters } = {}) {
+    super(parameters, LocalSimpleStringValueBlock);
+  }
+  fromBuffer(inputBuffer) {
+    this.valueBlock.value = String.fromCharCode.apply(null, pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer));
+  }
+  fromString(inputString) {
+    const strLen = inputString.length;
+    const view = this.valueBlock.valueHexView = new Uint8Array(strLen);
+    for (let i2 = 0; i2 < strLen; i2++)
+      view[i2] = inputString.charCodeAt(i2);
+    this.valueBlock.value = inputString;
+  }
+};
+LocalSimpleStringBlock.NAME = "SIMPLE STRING";
+var LocalUtf8StringValueBlock = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "LocalUtf8StringValueBlock");
+  }
+  fromBuffer(inputBuffer) {
+    this.valueBlock.valueHexView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+    try {
+      this.valueBlock.value = pvtsutils.Convert.ToUtf8String(inputBuffer);
+    } catch (ex) {
+      this.warnings.push(`Error during "decodeURIComponent": ${ex}, using raw string`);
+      this.valueBlock.value = pvtsutils.Convert.ToBinary(inputBuffer);
+    }
+  }
+  fromString(inputString) {
+    this.valueBlock.valueHexView = new Uint8Array(pvtsutils.Convert.FromUtf8String(inputString));
+    this.valueBlock.value = inputString;
+  }
+};
+LocalUtf8StringValueBlock.NAME = "Utf8StringValueBlock";
+var _a$i;
+var Utf8String = class extends LocalUtf8StringValueBlock {
+  static {
+    __name(this, "Utf8String");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 12;
+  }
+};
+_a$i = Utf8String;
+(() => {
+  typeStore.Utf8String = _a$i;
+})();
+Utf8String.NAME = "UTF8String";
+var LocalBmpStringValueBlock = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "LocalBmpStringValueBlock");
+  }
+  fromBuffer(inputBuffer) {
+    this.valueBlock.value = pvtsutils.Convert.ToUtf16String(inputBuffer);
+    this.valueBlock.valueHexView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer);
+  }
+  fromString(inputString) {
+    this.valueBlock.value = inputString;
+    this.valueBlock.valueHexView = new Uint8Array(pvtsutils.Convert.FromUtf16String(inputString));
+  }
+};
+LocalBmpStringValueBlock.NAME = "BmpStringValueBlock";
+var _a$h;
+var BmpString = class extends LocalBmpStringValueBlock {
+  static {
+    __name(this, "BmpString");
+  }
+  constructor({ ...parameters } = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 30;
+  }
+};
+_a$h = BmpString;
+(() => {
+  typeStore.BmpString = _a$h;
+})();
+BmpString.NAME = "BMPString";
+var LocalUniversalStringValueBlock = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "LocalUniversalStringValueBlock");
+  }
+  fromBuffer(inputBuffer) {
+    const copyBuffer = ArrayBuffer.isView(inputBuffer) ? inputBuffer.slice().buffer : inputBuffer.slice(0);
+    const valueView = new Uint8Array(copyBuffer);
+    for (let i2 = 0; i2 < valueView.length; i2 += 4) {
+      valueView[i2] = valueView[i2 + 3];
+      valueView[i2 + 1] = valueView[i2 + 2];
+      valueView[i2 + 2] = 0;
+      valueView[i2 + 3] = 0;
+    }
+    this.valueBlock.value = String.fromCharCode.apply(null, new Uint32Array(copyBuffer));
+  }
+  fromString(inputString) {
+    const strLength = inputString.length;
+    const valueHexView = this.valueBlock.valueHexView = new Uint8Array(strLength * 4);
+    for (let i2 = 0; i2 < strLength; i2++) {
+      const codeBuf = utilToBase(inputString.charCodeAt(i2), 8);
+      const codeView = new Uint8Array(codeBuf);
+      if (codeView.length > 4)
+        continue;
+      const dif = 4 - codeView.length;
+      for (let j = codeView.length - 1; j >= 0; j--)
+        valueHexView[i2 * 4 + j + dif] = codeView[j];
+    }
+    this.valueBlock.value = inputString;
+  }
+};
+LocalUniversalStringValueBlock.NAME = "UniversalStringValueBlock";
+var _a$g;
+var UniversalString = class extends LocalUniversalStringValueBlock {
+  static {
+    __name(this, "UniversalString");
+  }
+  constructor({ ...parameters } = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 28;
+  }
+};
+_a$g = UniversalString;
+(() => {
+  typeStore.UniversalString = _a$g;
+})();
+UniversalString.NAME = "UniversalString";
+var _a$f;
+var NumericString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "NumericString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 18;
+  }
+};
+_a$f = NumericString;
+(() => {
+  typeStore.NumericString = _a$f;
+})();
+NumericString.NAME = "NumericString";
+var _a$e;
+var PrintableString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "PrintableString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 19;
+  }
+};
+_a$e = PrintableString;
+(() => {
+  typeStore.PrintableString = _a$e;
+})();
+PrintableString.NAME = "PrintableString";
+var _a$d;
+var TeletexString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "TeletexString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 20;
+  }
+};
+_a$d = TeletexString;
+(() => {
+  typeStore.TeletexString = _a$d;
+})();
+TeletexString.NAME = "TeletexString";
+var _a$c;
+var VideotexString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "VideotexString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 21;
+  }
+};
+_a$c = VideotexString;
+(() => {
+  typeStore.VideotexString = _a$c;
+})();
+VideotexString.NAME = "VideotexString";
+var _a$b;
+var IA5String = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "IA5String");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 22;
+  }
+};
+_a$b = IA5String;
+(() => {
+  typeStore.IA5String = _a$b;
+})();
+IA5String.NAME = "IA5String";
+var _a$a;
+var GraphicString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "GraphicString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 25;
+  }
+};
+_a$a = GraphicString;
+(() => {
+  typeStore.GraphicString = _a$a;
+})();
+GraphicString.NAME = "GraphicString";
+var _a$9;
+var VisibleString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "VisibleString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 26;
+  }
+};
+_a$9 = VisibleString;
+(() => {
+  typeStore.VisibleString = _a$9;
+})();
+VisibleString.NAME = "VisibleString";
+var _a$8;
+var GeneralString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "GeneralString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 27;
+  }
+};
+_a$8 = GeneralString;
+(() => {
+  typeStore.GeneralString = _a$8;
+})();
+GeneralString.NAME = "GeneralString";
+var _a$7;
+var CharacterString = class extends LocalSimpleStringBlock {
+  static {
+    __name(this, "CharacterString");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 29;
+  }
+};
+_a$7 = CharacterString;
+(() => {
+  typeStore.CharacterString = _a$7;
+})();
+CharacterString.NAME = "CharacterString";
+var _a$6;
+var UTCTime = class extends VisibleString {
+  static {
+    __name(this, "UTCTime");
+  }
+  constructor({ value: value2, valueDate, ...parameters } = {}) {
+    super(parameters);
+    this.year = 0;
+    this.month = 0;
+    this.day = 0;
+    this.hour = 0;
+    this.minute = 0;
+    this.second = 0;
+    if (value2) {
+      this.fromString(value2);
+      this.valueBlock.valueHexView = new Uint8Array(value2.length);
+      for (let i2 = 0; i2 < value2.length; i2++)
+        this.valueBlock.valueHexView[i2] = value2.charCodeAt(i2);
+    }
+    if (valueDate) {
+      this.fromDate(valueDate);
+      this.valueBlock.valueHexView = new Uint8Array(this.toBuffer());
+    }
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 23;
+  }
+  fromBuffer(inputBuffer) {
+    this.fromString(String.fromCharCode.apply(null, pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer)));
+  }
+  toBuffer() {
+    const str = this.toString();
+    const buffer = new ArrayBuffer(str.length);
+    const view = new Uint8Array(buffer);
+    for (let i2 = 0; i2 < str.length; i2++)
+      view[i2] = str.charCodeAt(i2);
+    return buffer;
+  }
+  fromDate(inputDate) {
+    this.year = inputDate.getUTCFullYear();
+    this.month = inputDate.getUTCMonth() + 1;
+    this.day = inputDate.getUTCDate();
+    this.hour = inputDate.getUTCHours();
+    this.minute = inputDate.getUTCMinutes();
+    this.second = inputDate.getUTCSeconds();
+  }
+  toDate() {
+    return new Date(Date.UTC(this.year, this.month - 1, this.day, this.hour, this.minute, this.second));
+  }
+  fromString(inputString) {
+    const parser2 = /(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})Z/ig;
+    const parserArray = parser2.exec(inputString);
+    if (parserArray === null) {
+      this.error = "Wrong input string for conversion";
+      return;
+    }
+    const year = parseInt(parserArray[1], 10);
+    if (year >= 50)
+      this.year = 1900 + year;
+    else
+      this.year = 2e3 + year;
+    this.month = parseInt(parserArray[2], 10);
+    this.day = parseInt(parserArray[3], 10);
+    this.hour = parseInt(parserArray[4], 10);
+    this.minute = parseInt(parserArray[5], 10);
+    this.second = parseInt(parserArray[6], 10);
+  }
+  toString(encoding = "iso") {
+    if (encoding === "iso") {
+      const outputArray = new Array(7);
+      outputArray[0] = padNumber(this.year < 2e3 ? this.year - 1900 : this.year - 2e3, 2);
+      outputArray[1] = padNumber(this.month, 2);
+      outputArray[2] = padNumber(this.day, 2);
+      outputArray[3] = padNumber(this.hour, 2);
+      outputArray[4] = padNumber(this.minute, 2);
+      outputArray[5] = padNumber(this.second, 2);
+      outputArray[6] = "Z";
+      return outputArray.join("");
+    }
+    return super.toString(encoding);
+  }
+  onAsciiEncoding() {
+    return `${this.constructor.NAME} : ${this.toDate().toISOString()}`;
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      year: this.year,
+      month: this.month,
+      day: this.day,
+      hour: this.hour,
+      minute: this.minute,
+      second: this.second
+    };
+  }
+};
+_a$6 = UTCTime;
+(() => {
+  typeStore.UTCTime = _a$6;
+})();
+UTCTime.NAME = "UTCTime";
+var _a$5;
+var GeneralizedTime = class extends UTCTime {
+  static {
+    __name(this, "GeneralizedTime");
+  }
+  constructor(parameters = {}) {
+    var _b;
+    super(parameters);
+    (_b = this.millisecond) !== null && _b !== void 0 ? _b : this.millisecond = 0;
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 24;
+  }
+  fromDate(inputDate) {
+    super.fromDate(inputDate);
+    this.millisecond = inputDate.getUTCMilliseconds();
+  }
+  toDate() {
+    const utcDate = Date.UTC(this.year, this.month - 1, this.day, this.hour, this.minute, this.second, this.millisecond);
+    return new Date(utcDate);
+  }
+  fromString(inputString) {
+    let isUTC = false;
+    let timeString = "";
+    let dateTimeString = "";
+    let fractionPart = 0;
+    let parser2;
+    let hourDifference = 0;
+    let minuteDifference = 0;
+    if (inputString[inputString.length - 1] === "Z") {
+      timeString = inputString.substring(0, inputString.length - 1);
+      isUTC = true;
+    } else {
+      const number = new Number(inputString[inputString.length - 1]);
+      if (isNaN(number.valueOf()))
+        throw new Error("Wrong input string for conversion");
+      timeString = inputString;
+    }
+    if (isUTC) {
+      if (timeString.indexOf("+") !== -1)
+        throw new Error("Wrong input string for conversion");
+      if (timeString.indexOf("-") !== -1)
+        throw new Error("Wrong input string for conversion");
+    } else {
+      let multiplier = 1;
+      let differencePosition = timeString.indexOf("+");
+      let differenceString = "";
+      if (differencePosition === -1) {
+        differencePosition = timeString.indexOf("-");
+        multiplier = -1;
+      }
+      if (differencePosition !== -1) {
+        differenceString = timeString.substring(differencePosition + 1);
+        timeString = timeString.substring(0, differencePosition);
+        if (differenceString.length !== 2 && differenceString.length !== 4)
+          throw new Error("Wrong input string for conversion");
+        let number = parseInt(differenceString.substring(0, 2), 10);
+        if (isNaN(number.valueOf()))
+          throw new Error("Wrong input string for conversion");
+        hourDifference = multiplier * number;
+        if (differenceString.length === 4) {
+          number = parseInt(differenceString.substring(2, 4), 10);
+          if (isNaN(number.valueOf()))
+            throw new Error("Wrong input string for conversion");
+          minuteDifference = multiplier * number;
+        }
+      }
+    }
+    let fractionPointPosition = timeString.indexOf(".");
+    if (fractionPointPosition === -1)
+      fractionPointPosition = timeString.indexOf(",");
+    if (fractionPointPosition !== -1) {
+      const fractionPartCheck = new Number(`0${timeString.substring(fractionPointPosition)}`);
+      if (isNaN(fractionPartCheck.valueOf()))
+        throw new Error("Wrong input string for conversion");
+      fractionPart = fractionPartCheck.valueOf();
+      dateTimeString = timeString.substring(0, fractionPointPosition);
+    } else
+      dateTimeString = timeString;
+    switch (true) {
+      case dateTimeString.length === 8:
+        parser2 = /(\d{4})(\d{2})(\d{2})/ig;
+        if (fractionPointPosition !== -1)
+          throw new Error("Wrong input string for conversion");
+        break;
+      case dateTimeString.length === 10:
+        parser2 = /(\d{4})(\d{2})(\d{2})(\d{2})/ig;
+        if (fractionPointPosition !== -1) {
+          let fractionResult = 60 * fractionPart;
+          this.minute = Math.floor(fractionResult);
+          fractionResult = 60 * (fractionResult - this.minute);
+          this.second = Math.floor(fractionResult);
+          fractionResult = 1e3 * (fractionResult - this.second);
+          this.millisecond = Math.floor(fractionResult);
+        }
+        break;
+      case dateTimeString.length === 12:
+        parser2 = /(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})/ig;
+        if (fractionPointPosition !== -1) {
+          let fractionResult = 60 * fractionPart;
+          this.second = Math.floor(fractionResult);
+          fractionResult = 1e3 * (fractionResult - this.second);
+          this.millisecond = Math.floor(fractionResult);
+        }
+        break;
+      case dateTimeString.length === 14:
+        parser2 = /(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/ig;
+        if (fractionPointPosition !== -1) {
+          const fractionResult = 1e3 * fractionPart;
+          this.millisecond = Math.floor(fractionResult);
+        }
+        break;
+      default:
+        throw new Error("Wrong input string for conversion");
+    }
+    const parserArray = parser2.exec(dateTimeString);
+    if (parserArray === null)
+      throw new Error("Wrong input string for conversion");
+    for (let j = 1; j < parserArray.length; j++) {
+      switch (j) {
+        case 1:
+          this.year = parseInt(parserArray[j], 10);
+          break;
+        case 2:
+          this.month = parseInt(parserArray[j], 10);
+          break;
+        case 3:
+          this.day = parseInt(parserArray[j], 10);
+          break;
+        case 4:
+          this.hour = parseInt(parserArray[j], 10) + hourDifference;
+          break;
+        case 5:
+          this.minute = parseInt(parserArray[j], 10) + minuteDifference;
+          break;
+        case 6:
+          this.second = parseInt(parserArray[j], 10);
+          break;
+        default:
+          throw new Error("Wrong input string for conversion");
+      }
+    }
+    if (isUTC === false) {
+      const tempDate = new Date(this.year, this.month, this.day, this.hour, this.minute, this.second, this.millisecond);
+      this.year = tempDate.getUTCFullYear();
+      this.month = tempDate.getUTCMonth();
+      this.day = tempDate.getUTCDay();
+      this.hour = tempDate.getUTCHours();
+      this.minute = tempDate.getUTCMinutes();
+      this.second = tempDate.getUTCSeconds();
+      this.millisecond = tempDate.getUTCMilliseconds();
+    }
+  }
+  toString(encoding = "iso") {
+    if (encoding === "iso") {
+      const outputArray = [];
+      outputArray.push(padNumber(this.year, 4));
+      outputArray.push(padNumber(this.month, 2));
+      outputArray.push(padNumber(this.day, 2));
+      outputArray.push(padNumber(this.hour, 2));
+      outputArray.push(padNumber(this.minute, 2));
+      outputArray.push(padNumber(this.second, 2));
+      if (this.millisecond !== 0) {
+        outputArray.push(".");
+        outputArray.push(padNumber(this.millisecond, 3));
+      }
+      outputArray.push("Z");
+      return outputArray.join("");
+    }
+    return super.toString(encoding);
+  }
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      millisecond: this.millisecond
+    };
+  }
+};
+_a$5 = GeneralizedTime;
+(() => {
+  typeStore.GeneralizedTime = _a$5;
+})();
+GeneralizedTime.NAME = "GeneralizedTime";
+var _a$4;
+var DATE = class extends Utf8String {
+  static {
+    __name(this, "DATE");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 31;
+  }
+};
+_a$4 = DATE;
+(() => {
+  typeStore.DATE = _a$4;
+})();
+DATE.NAME = "DATE";
+var _a$3;
+var TimeOfDay = class extends Utf8String {
+  static {
+    __name(this, "TimeOfDay");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 32;
+  }
+};
+_a$3 = TimeOfDay;
+(() => {
+  typeStore.TimeOfDay = _a$3;
+})();
+TimeOfDay.NAME = "TimeOfDay";
+var _a$2;
+var DateTime = class extends Utf8String {
+  static {
+    __name(this, "DateTime");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 33;
+  }
+};
+_a$2 = DateTime;
+(() => {
+  typeStore.DateTime = _a$2;
+})();
+DateTime.NAME = "DateTime";
+var _a$1;
+var Duration = class extends Utf8String {
+  static {
+    __name(this, "Duration");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 34;
+  }
+};
+_a$1 = Duration;
+(() => {
+  typeStore.Duration = _a$1;
+})();
+Duration.NAME = "Duration";
+var _a;
+var TIME = class extends Utf8String {
+  static {
+    __name(this, "TIME");
+  }
+  constructor(parameters = {}) {
+    super(parameters);
+    this.idBlock.tagClass = 1;
+    this.idBlock.tagNumber = 14;
+  }
+};
+_a = TIME;
+(() => {
+  typeStore.TIME = _a;
+})();
+TIME.NAME = "TIME";
+var Any = class {
+  static {
+    __name(this, "Any");
+  }
+  constructor({ name: name3 = EMPTY_STRING, optional: optional2 = false } = {}) {
+    this.name = name3;
+    this.optional = optional2;
+  }
+};
+var Choice = class extends Any {
+  static {
+    __name(this, "Choice");
+  }
+  constructor({ value: value2 = [], ...parameters } = {}) {
+    super(parameters);
+    this.value = value2;
+  }
+};
+var Repeated = class extends Any {
+  static {
+    __name(this, "Repeated");
+  }
+  constructor({ value: value2 = new Any(), local = false, ...parameters } = {}) {
+    super(parameters);
+    this.value = value2;
+    this.local = local;
+  }
+};
+var RawData = class {
+  static {
+    __name(this, "RawData");
+  }
+  get data() {
+    return this.dataView.slice().buffer;
+  }
+  set data(value2) {
+    this.dataView = pvtsutils.BufferSourceConverter.toUint8Array(value2);
+  }
+  constructor({ data = EMPTY_VIEW } = {}) {
+    this.dataView = pvtsutils.BufferSourceConverter.toUint8Array(data);
+  }
+  fromBER(inputBuffer, inputOffset, inputLength) {
+    const endLength = inputOffset + inputLength;
+    this.dataView = pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer).subarray(inputOffset, endLength);
+    return endLength;
+  }
+  toBER(_sizeOnly) {
+    return this.dataView.slice().buffer;
+  }
+};
+function compareSchema(root, inputData, inputSchema) {
+  if (inputSchema instanceof Choice) {
+    for (const element of inputSchema.value) {
+      const result = compareSchema(root, inputData, element);
+      if (result.verified) {
+        return {
+          verified: true,
+          result: root
+        };
+      }
+    }
+    {
+      const _result = {
+        verified: false,
+        result: { error: "Wrong values for Choice type" }
+      };
+      if (inputSchema.hasOwnProperty(NAME))
+        _result.name = inputSchema.name;
+      return _result;
+    }
+  }
+  if (inputSchema instanceof Any) {
+    if (inputSchema.hasOwnProperty(NAME))
+      root[inputSchema.name] = inputData;
+    return {
+      verified: true,
+      result: root
+    };
+  }
+  if (root instanceof Object === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong root object" }
+    };
+  }
+  if (inputData instanceof Object === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 data" }
+    };
+  }
+  if (inputSchema instanceof Object === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (ID_BLOCK in inputSchema === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (FROM_BER in inputSchema.idBlock === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (TO_BER in inputSchema.idBlock === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  const encodedId = inputSchema.idBlock.toBER(false);
+  if (encodedId.byteLength === 0) {
+    return {
+      verified: false,
+      result: { error: "Error encoding idBlock for ASN.1 schema" }
+    };
+  }
+  const decodedOffset = inputSchema.idBlock.fromBER(encodedId, 0, encodedId.byteLength);
+  if (decodedOffset === -1) {
+    return {
+      verified: false,
+      result: { error: "Error decoding idBlock for ASN.1 schema" }
+    };
+  }
+  if (inputSchema.idBlock.hasOwnProperty(TAG_CLASS) === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (inputSchema.idBlock.tagClass !== inputData.idBlock.tagClass) {
+    return {
+      verified: false,
+      result: root
+    };
+  }
+  if (inputSchema.idBlock.hasOwnProperty(TAG_NUMBER) === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (inputSchema.idBlock.tagNumber !== inputData.idBlock.tagNumber) {
+    return {
+      verified: false,
+      result: root
+    };
+  }
+  if (inputSchema.idBlock.hasOwnProperty(IS_CONSTRUCTED) === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (inputSchema.idBlock.isConstructed !== inputData.idBlock.isConstructed) {
+    return {
+      verified: false,
+      result: root
+    };
+  }
+  if (!(IS_HEX_ONLY in inputSchema.idBlock)) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema" }
+    };
+  }
+  if (inputSchema.idBlock.isHexOnly !== inputData.idBlock.isHexOnly) {
+    return {
+      verified: false,
+      result: root
+    };
+  }
+  if (inputSchema.idBlock.isHexOnly) {
+    if (VALUE_HEX_VIEW in inputSchema.idBlock === false) {
+      return {
+        verified: false,
+        result: { error: "Wrong ASN.1 schema" }
+      };
+    }
+    const schemaView = inputSchema.idBlock.valueHexView;
+    const asn1View = inputData.idBlock.valueHexView;
+    if (schemaView.length !== asn1View.length) {
+      return {
+        verified: false,
+        result: root
+      };
+    }
+    for (let i2 = 0; i2 < schemaView.length; i2++) {
+      if (schemaView[i2] !== asn1View[1]) {
+        return {
+          verified: false,
+          result: root
+        };
+      }
+    }
+  }
+  if (inputSchema.name) {
+    inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+    if (inputSchema.name)
+      root[inputSchema.name] = inputData;
+  }
+  if (inputSchema instanceof typeStore.Constructed) {
+    let admission = 0;
+    let result = {
+      verified: false,
+      result: { error: "Unknown error" }
+    };
+    let maxLength = inputSchema.valueBlock.value.length;
+    if (maxLength > 0) {
+      if (inputSchema.valueBlock.value[0] instanceof Repeated) {
+        maxLength = inputData.valueBlock.value.length;
+      }
+    }
+    if (maxLength === 0) {
+      return {
+        verified: true,
+        result: root
+      };
+    }
+    if (inputData.valueBlock.value.length === 0 && inputSchema.valueBlock.value.length !== 0) {
+      let _optional = true;
+      for (let i2 = 0; i2 < inputSchema.valueBlock.value.length; i2++)
+        _optional = _optional && (inputSchema.valueBlock.value[i2].optional || false);
+      if (_optional) {
+        return {
+          verified: true,
+          result: root
+        };
+      }
+      if (inputSchema.name) {
+        inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+        if (inputSchema.name)
+          delete root[inputSchema.name];
+      }
+      root.error = "Inconsistent object length";
+      return {
+        verified: false,
+        result: root
+      };
+    }
+    for (let i2 = 0; i2 < maxLength; i2++) {
+      if (i2 - admission >= inputData.valueBlock.value.length) {
+        if (inputSchema.valueBlock.value[i2].optional === false) {
+          const _result = {
+            verified: false,
+            result: root
+          };
+          root.error = "Inconsistent length between ASN.1 data and schema";
+          if (inputSchema.name) {
+            inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+            if (inputSchema.name) {
+              delete root[inputSchema.name];
+              _result.name = inputSchema.name;
+            }
+          }
+          return _result;
+        }
+      } else {
+        if (inputSchema.valueBlock.value[0] instanceof Repeated) {
+          result = compareSchema(root, inputData.valueBlock.value[i2], inputSchema.valueBlock.value[0].value);
+          if (result.verified === false) {
+            if (inputSchema.valueBlock.value[0].optional)
+              admission++;
+            else {
+              if (inputSchema.name) {
+                inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+                if (inputSchema.name)
+                  delete root[inputSchema.name];
+              }
+              return result;
+            }
+          }
+          if (NAME in inputSchema.valueBlock.value[0] && inputSchema.valueBlock.value[0].name.length > 0) {
+            let arrayRoot = {};
+            if (LOCAL in inputSchema.valueBlock.value[0] && inputSchema.valueBlock.value[0].local)
+              arrayRoot = inputData;
+            else
+              arrayRoot = root;
+            if (typeof arrayRoot[inputSchema.valueBlock.value[0].name] === "undefined")
+              arrayRoot[inputSchema.valueBlock.value[0].name] = [];
+            arrayRoot[inputSchema.valueBlock.value[0].name].push(inputData.valueBlock.value[i2]);
+          }
+        } else {
+          result = compareSchema(root, inputData.valueBlock.value[i2 - admission], inputSchema.valueBlock.value[i2]);
+          if (result.verified === false) {
+            if (inputSchema.valueBlock.value[i2].optional)
+              admission++;
+            else {
+              if (inputSchema.name) {
+                inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+                if (inputSchema.name)
+                  delete root[inputSchema.name];
+              }
+              return result;
+            }
+          }
+        }
+      }
+    }
+    if (result.verified === false) {
+      const _result = {
+        verified: false,
+        result: root
+      };
+      if (inputSchema.name) {
+        inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+        if (inputSchema.name) {
+          delete root[inputSchema.name];
+          _result.name = inputSchema.name;
+        }
+      }
+      return _result;
+    }
+    return {
+      verified: true,
+      result: root
+    };
+  }
+  if (inputSchema.primitiveSchema && VALUE_HEX_VIEW in inputData.valueBlock) {
+    const asn1 = localFromBER(inputData.valueBlock.valueHexView);
+    if (asn1.offset === -1) {
+      const _result = {
+        verified: false,
+        result: asn1.result
+      };
+      if (inputSchema.name) {
+        inputSchema.name = inputSchema.name.replace(/^\s+|\s+$/g, EMPTY_STRING);
+        if (inputSchema.name) {
+          delete root[inputSchema.name];
+          _result.name = inputSchema.name;
+        }
+      }
+      return _result;
+    }
+    return compareSchema(root, asn1.result, inputSchema.primitiveSchema);
+  }
+  return {
+    verified: true,
+    result: root
+  };
+}
+__name(compareSchema, "compareSchema");
+function verifySchema(inputBuffer, inputSchema) {
+  if (inputSchema instanceof Object === false) {
+    return {
+      verified: false,
+      result: { error: "Wrong ASN.1 schema type" }
+    };
+  }
+  const asn1 = localFromBER(pvtsutils.BufferSourceConverter.toUint8Array(inputBuffer));
+  if (asn1.offset === -1) {
+    return {
+      verified: false,
+      result: asn1.result
+    };
+  }
+  return compareSchema(asn1.result, asn1.result, inputSchema);
+}
+__name(verifySchema, "verifySchema");
+
+// node_modules/@peculiar/asn1-schema/build/es2015/enums.js
+var AsnTypeTypes;
+(function(AsnTypeTypes2) {
+  AsnTypeTypes2[AsnTypeTypes2["Sequence"] = 0] = "Sequence";
+  AsnTypeTypes2[AsnTypeTypes2["Set"] = 1] = "Set";
+  AsnTypeTypes2[AsnTypeTypes2["Choice"] = 2] = "Choice";
+})(AsnTypeTypes || (AsnTypeTypes = {}));
+var AsnPropTypes;
+(function(AsnPropTypes2) {
+  AsnPropTypes2[AsnPropTypes2["Any"] = 1] = "Any";
+  AsnPropTypes2[AsnPropTypes2["Boolean"] = 2] = "Boolean";
+  AsnPropTypes2[AsnPropTypes2["OctetString"] = 3] = "OctetString";
+  AsnPropTypes2[AsnPropTypes2["BitString"] = 4] = "BitString";
+  AsnPropTypes2[AsnPropTypes2["Integer"] = 5] = "Integer";
+  AsnPropTypes2[AsnPropTypes2["Enumerated"] = 6] = "Enumerated";
+  AsnPropTypes2[AsnPropTypes2["ObjectIdentifier"] = 7] = "ObjectIdentifier";
+  AsnPropTypes2[AsnPropTypes2["Utf8String"] = 8] = "Utf8String";
+  AsnPropTypes2[AsnPropTypes2["BmpString"] = 9] = "BmpString";
+  AsnPropTypes2[AsnPropTypes2["UniversalString"] = 10] = "UniversalString";
+  AsnPropTypes2[AsnPropTypes2["NumericString"] = 11] = "NumericString";
+  AsnPropTypes2[AsnPropTypes2["PrintableString"] = 12] = "PrintableString";
+  AsnPropTypes2[AsnPropTypes2["TeletexString"] = 13] = "TeletexString";
+  AsnPropTypes2[AsnPropTypes2["VideotexString"] = 14] = "VideotexString";
+  AsnPropTypes2[AsnPropTypes2["IA5String"] = 15] = "IA5String";
+  AsnPropTypes2[AsnPropTypes2["GraphicString"] = 16] = "GraphicString";
+  AsnPropTypes2[AsnPropTypes2["VisibleString"] = 17] = "VisibleString";
+  AsnPropTypes2[AsnPropTypes2["GeneralString"] = 18] = "GeneralString";
+  AsnPropTypes2[AsnPropTypes2["CharacterString"] = 19] = "CharacterString";
+  AsnPropTypes2[AsnPropTypes2["UTCTime"] = 20] = "UTCTime";
+  AsnPropTypes2[AsnPropTypes2["GeneralizedTime"] = 21] = "GeneralizedTime";
+  AsnPropTypes2[AsnPropTypes2["DATE"] = 22] = "DATE";
+  AsnPropTypes2[AsnPropTypes2["TimeOfDay"] = 23] = "TimeOfDay";
+  AsnPropTypes2[AsnPropTypes2["DateTime"] = 24] = "DateTime";
+  AsnPropTypes2[AsnPropTypes2["Duration"] = 25] = "Duration";
+  AsnPropTypes2[AsnPropTypes2["TIME"] = 26] = "TIME";
+  AsnPropTypes2[AsnPropTypes2["Null"] = 27] = "Null";
+})(AsnPropTypes || (AsnPropTypes = {}));
+
+// node_modules/@peculiar/asn1-schema/build/es2015/types/bit_string.js
+var import_pvtsutils = __toESM(require_build());
+var BitString2 = class {
+  static {
+    __name(this, "BitString");
+  }
+  constructor(params, unusedBits = 0) {
+    this.unusedBits = 0;
+    this.value = new ArrayBuffer(0);
+    if (params) {
+      if (typeof params === "number") {
+        this.fromNumber(params);
+      } else if (import_pvtsutils.BufferSourceConverter.isBufferSource(params)) {
+        this.unusedBits = unusedBits;
+        this.value = import_pvtsutils.BufferSourceConverter.toArrayBuffer(params);
+      } else {
+        throw TypeError("Unsupported type of 'params' argument for BitString");
+      }
+    }
+  }
+  fromASN(asn) {
+    if (!(asn instanceof BitString)) {
+      throw new TypeError("Argument 'asn' is not instance of ASN.1 BitString");
+    }
+    this.unusedBits = asn.valueBlock.unusedBits;
+    this.value = asn.valueBlock.valueHex;
+    return this;
+  }
+  toASN() {
+    return new BitString({ unusedBits: this.unusedBits, valueHex: this.value });
+  }
+  toSchema(name3) {
+    return new BitString({ name: name3 });
+  }
+  toNumber() {
+    let res = "";
+    const uintArray = new Uint8Array(this.value);
+    for (const octet of uintArray) {
+      res += octet.toString(2).padStart(8, "0");
+    }
+    res = res.split("").reverse().join("");
+    if (this.unusedBits) {
+      res = res.slice(this.unusedBits).padStart(this.unusedBits, "0");
+    }
+    return parseInt(res, 2);
+  }
+  fromNumber(value2) {
+    let bits = value2.toString(2);
+    const octetSize = bits.length + 7 >> 3;
+    this.unusedBits = (octetSize << 3) - bits.length;
+    const octets = new Uint8Array(octetSize);
+    bits = bits.padStart(octetSize << 3, "0").split("").reverse().join("");
+    let index = 0;
+    while (index < octetSize) {
+      octets[index] = parseInt(bits.slice(index << 3, (index << 3) + 8), 2);
+      index++;
+    }
+    this.value = octets.buffer;
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/types/octet_string.js
+var import_pvtsutils2 = __toESM(require_build());
+var OctetString2 = class {
+  static {
+    __name(this, "OctetString");
+  }
+  get byteLength() {
+    return this.buffer.byteLength;
+  }
+  get byteOffset() {
+    return 0;
+  }
+  constructor(param) {
+    if (typeof param === "number") {
+      this.buffer = new ArrayBuffer(param);
+    } else {
+      if (import_pvtsutils2.BufferSourceConverter.isBufferSource(param)) {
+        this.buffer = import_pvtsutils2.BufferSourceConverter.toArrayBuffer(param);
+      } else if (Array.isArray(param)) {
+        this.buffer = new Uint8Array(param);
+      } else {
+        this.buffer = new ArrayBuffer(0);
+      }
+    }
+  }
+  fromASN(asn) {
+    if (!(asn instanceof OctetString)) {
+      throw new TypeError("Argument 'asn' is not instance of ASN.1 OctetString");
+    }
+    this.buffer = asn.valueBlock.valueHex;
+    return this;
+  }
+  toASN() {
+    return new OctetString({ valueHex: this.buffer });
+  }
+  toSchema(name3) {
+    return new OctetString({ name: name3 });
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/converters.js
+var AsnAnyConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2 instanceof Null ? null : value2.valueBeforeDecodeView, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => {
+    if (value2 === null) {
+      return new Null();
+    }
+    const schema = fromBER(value2);
+    if (schema.result.error) {
+      throw new Error(schema.result.error);
+    }
+    return schema.result;
+  }, "toASN")
+};
+var AsnIntegerConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.valueHexView.byteLength >= 4 ? value2.valueBlock.toString() : value2.valueBlock.valueDec, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new Integer({ value: +value2 }), "toASN")
+};
+var AsnEnumeratedConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.valueDec, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new Enumerated({ value: value2 }), "toASN")
+};
+var AsnIntegerArrayBufferConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.valueHexView, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new Integer({ valueHex: value2 }), "toASN")
+};
+var AsnBitStringConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.valueHexView, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new BitString({ valueHex: value2 }), "toASN")
+};
+var AsnObjectIdentifierConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.toString(), "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new ObjectIdentifier({ value: value2 }), "toASN")
+};
+var AsnBooleanConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.value, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new Boolean2({ value: value2 }), "toASN")
+};
+var AsnOctetStringConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.valueHexView, "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new OctetString({ valueHex: value2 }), "toASN")
+};
+var AsnConstructedOctetStringConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => new OctetString2(value2.getValue()), "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => value2.toASN(), "toASN")
+};
+function createStringConverter(Asn1Type) {
+  return {
+    fromASN: /* @__PURE__ */ __name((value2) => value2.valueBlock.value, "fromASN"),
+    toASN: /* @__PURE__ */ __name((value2) => new Asn1Type({ value: value2 }), "toASN")
+  };
+}
+__name(createStringConverter, "createStringConverter");
+var AsnUtf8StringConverter = createStringConverter(Utf8String);
+var AsnBmpStringConverter = createStringConverter(BmpString);
+var AsnUniversalStringConverter = createStringConverter(UniversalString);
+var AsnNumericStringConverter = createStringConverter(NumericString);
+var AsnPrintableStringConverter = createStringConverter(PrintableString);
+var AsnTeletexStringConverter = createStringConverter(TeletexString);
+var AsnVideotexStringConverter = createStringConverter(VideotexString);
+var AsnIA5StringConverter = createStringConverter(IA5String);
+var AsnGraphicStringConverter = createStringConverter(GraphicString);
+var AsnVisibleStringConverter = createStringConverter(VisibleString);
+var AsnGeneralStringConverter = createStringConverter(GeneralString);
+var AsnCharacterStringConverter = createStringConverter(CharacterString);
+var AsnUTCTimeConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.toDate(), "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new UTCTime({ valueDate: value2 }), "toASN")
+};
+var AsnGeneralizedTimeConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => value2.toDate(), "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => new GeneralizedTime({ valueDate: value2 }), "toASN")
+};
+var AsnNullConverter = {
+  fromASN: /* @__PURE__ */ __name(() => null, "fromASN"),
+  toASN: /* @__PURE__ */ __name(() => {
+    return new Null();
+  }, "toASN")
+};
+function defaultConverter(type) {
+  switch (type) {
+    case AsnPropTypes.Any:
+      return AsnAnyConverter;
+    case AsnPropTypes.BitString:
+      return AsnBitStringConverter;
+    case AsnPropTypes.BmpString:
+      return AsnBmpStringConverter;
+    case AsnPropTypes.Boolean:
+      return AsnBooleanConverter;
+    case AsnPropTypes.CharacterString:
+      return AsnCharacterStringConverter;
+    case AsnPropTypes.Enumerated:
+      return AsnEnumeratedConverter;
+    case AsnPropTypes.GeneralString:
+      return AsnGeneralStringConverter;
+    case AsnPropTypes.GeneralizedTime:
+      return AsnGeneralizedTimeConverter;
+    case AsnPropTypes.GraphicString:
+      return AsnGraphicStringConverter;
+    case AsnPropTypes.IA5String:
+      return AsnIA5StringConverter;
+    case AsnPropTypes.Integer:
+      return AsnIntegerConverter;
+    case AsnPropTypes.Null:
+      return AsnNullConverter;
+    case AsnPropTypes.NumericString:
+      return AsnNumericStringConverter;
+    case AsnPropTypes.ObjectIdentifier:
+      return AsnObjectIdentifierConverter;
+    case AsnPropTypes.OctetString:
+      return AsnOctetStringConverter;
+    case AsnPropTypes.PrintableString:
+      return AsnPrintableStringConverter;
+    case AsnPropTypes.TeletexString:
+      return AsnTeletexStringConverter;
+    case AsnPropTypes.UTCTime:
+      return AsnUTCTimeConverter;
+    case AsnPropTypes.UniversalString:
+      return AsnUniversalStringConverter;
+    case AsnPropTypes.Utf8String:
+      return AsnUtf8StringConverter;
+    case AsnPropTypes.VideotexString:
+      return AsnVideotexStringConverter;
+    case AsnPropTypes.VisibleString:
+      return AsnVisibleStringConverter;
+    default:
+      return null;
+  }
+}
+__name(defaultConverter, "defaultConverter");
+
+// node_modules/@peculiar/asn1-schema/build/es2015/helper.js
+function isConvertible(target) {
+  if (typeof target === "function" && target.prototype) {
+    if (target.prototype.toASN && target.prototype.fromASN) {
+      return true;
+    } else {
+      return isConvertible(target.prototype);
+    }
+  } else {
+    return !!(target && typeof target === "object" && "toASN" in target && "fromASN" in target);
+  }
+}
+__name(isConvertible, "isConvertible");
+function isTypeOfArray(target) {
+  var _a3;
+  if (target) {
+    const proto = Object.getPrototypeOf(target);
+    if (((_a3 = proto === null || proto === void 0 ? void 0 : proto.prototype) === null || _a3 === void 0 ? void 0 : _a3.constructor) === Array) {
+      return true;
+    }
+    return isTypeOfArray(proto);
+  }
+  return false;
+}
+__name(isTypeOfArray, "isTypeOfArray");
+function isArrayEqual(bytes1, bytes2) {
+  if (!(bytes1 && bytes2)) {
+    return false;
+  }
+  if (bytes1.byteLength !== bytes2.byteLength) {
+    return false;
+  }
+  const b1 = new Uint8Array(bytes1);
+  const b2 = new Uint8Array(bytes2);
+  for (let i2 = 0; i2 < bytes1.byteLength; i2++) {
+    if (b1[i2] !== b2[i2]) {
+      return false;
+    }
+  }
+  return true;
+}
+__name(isArrayEqual, "isArrayEqual");
+
+// node_modules/@peculiar/asn1-schema/build/es2015/schema.js
+var AsnSchemaStorage = class {
+  static {
+    __name(this, "AsnSchemaStorage");
+  }
+  constructor() {
+    this.items = /* @__PURE__ */ new WeakMap();
+  }
+  has(target) {
+    return this.items.has(target);
+  }
+  get(target, checkSchema = false) {
+    const schema = this.items.get(target);
+    if (!schema) {
+      throw new Error(`Cannot get schema for '${target.prototype.constructor.name}' target`);
+    }
+    if (checkSchema && !schema.schema) {
+      throw new Error(`Schema '${target.prototype.constructor.name}' doesn't contain ASN.1 schema. Call 'AsnSchemaStorage.cache'.`);
+    }
+    return schema;
+  }
+  cache(target) {
+    const schema = this.get(target);
+    if (!schema.schema) {
+      schema.schema = this.create(target, true);
+    }
+  }
+  createDefault(target) {
+    const schema = { type: AsnTypeTypes.Sequence, items: {} };
+    const parentSchema = this.findParentSchema(target);
+    if (parentSchema) {
+      Object.assign(schema, parentSchema);
+      schema.items = Object.assign({}, schema.items, parentSchema.items);
+    }
+    return schema;
+  }
+  create(target, useNames) {
+    const schema = this.items.get(target) || this.createDefault(target);
+    const asn1Value = [];
+    for (const key in schema.items) {
+      const item = schema.items[key];
+      const name3 = useNames ? key : "";
+      let asn1Item;
+      if (typeof item.type === "number") {
+        const Asn1TypeName = AsnPropTypes[item.type];
+        const Asn1Type = index_es_exports[Asn1TypeName];
+        if (!Asn1Type) {
+          throw new Error(`Cannot get ASN1 class by name '${Asn1TypeName}'`);
+        }
+        asn1Item = new Asn1Type({ name: name3 });
+      } else if (isConvertible(item.type)) {
+        const instance2 = new item.type();
+        asn1Item = instance2.toSchema(name3);
+      } else if (item.optional) {
+        const itemSchema = this.get(item.type);
+        if (itemSchema.type === AsnTypeTypes.Choice) {
+          asn1Item = new Any({ name: name3 });
+        } else {
+          asn1Item = this.create(item.type, false);
+          asn1Item.name = name3;
+        }
+      } else {
+        asn1Item = new Any({ name: name3 });
+      }
+      const optional2 = !!item.optional || item.defaultValue !== void 0;
+      if (item.repeated) {
+        asn1Item.name = "";
+        const Container = item.repeated === "set" ? Set2 : Sequence;
+        asn1Item = new Container({
+          name: "",
+          value: [new Repeated({ name: name3, value: asn1Item })]
+        });
+      }
+      if (item.context !== null && item.context !== void 0) {
+        if (item.implicit) {
+          if (typeof item.type === "number" || isConvertible(item.type)) {
+            const Container = item.repeated ? Constructed : Primitive;
+            asn1Value.push(new Container({ name: name3, optional: optional2, idBlock: { tagClass: 3, tagNumber: item.context } }));
+          } else {
+            this.cache(item.type);
+            const isRepeated = !!item.repeated;
+            let value2 = !isRepeated ? this.get(item.type, true).schema : asn1Item;
+            value2 = "valueBlock" in value2 ? value2.valueBlock.value : value2.value;
+            asn1Value.push(new Constructed({
+              name: !isRepeated ? name3 : "",
+              optional: optional2,
+              idBlock: { tagClass: 3, tagNumber: item.context },
+              value: value2
+            }));
+          }
+        } else {
+          asn1Value.push(new Constructed({
+            optional: optional2,
+            idBlock: { tagClass: 3, tagNumber: item.context },
+            value: [asn1Item]
+          }));
+        }
+      } else {
+        asn1Item.optional = optional2;
+        asn1Value.push(asn1Item);
+      }
+    }
+    switch (schema.type) {
+      case AsnTypeTypes.Sequence:
+        return new Sequence({ value: asn1Value, name: "" });
+      case AsnTypeTypes.Set:
+        return new Set2({ value: asn1Value, name: "" });
+      case AsnTypeTypes.Choice:
+        return new Choice({ value: asn1Value, name: "" });
+      default:
+        throw new Error(`Unsupported ASN1 type in use`);
+    }
+  }
+  set(target, schema) {
+    this.items.set(target, schema);
+    return this;
+  }
+  findParentSchema(target) {
+    const parent = Object.getPrototypeOf(target);
+    if (parent) {
+      const schema = this.items.get(parent);
+      return schema || this.findParentSchema(parent);
+    }
+    return null;
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/storage.js
+var schemaStorage = new AsnSchemaStorage();
+
+// node_modules/@peculiar/asn1-schema/build/es2015/decorators.js
+var AsnType = /* @__PURE__ */ __name((options) => (target) => {
+  let schema;
+  if (!schemaStorage.has(target)) {
+    schema = schemaStorage.createDefault(target);
+    schemaStorage.set(target, schema);
+  } else {
+    schema = schemaStorage.get(target);
+  }
+  Object.assign(schema, options);
+}, "AsnType");
+var AsnProp = /* @__PURE__ */ __name((options) => (target, propertyKey) => {
+  let schema;
+  if (!schemaStorage.has(target.constructor)) {
+    schema = schemaStorage.createDefault(target.constructor);
+    schemaStorage.set(target.constructor, schema);
+  } else {
+    schema = schemaStorage.get(target.constructor);
+  }
+  const copyOptions = Object.assign({}, options);
+  if (typeof copyOptions.type === "number" && !copyOptions.converter) {
+    const defaultConverter2 = defaultConverter(options.type);
+    if (!defaultConverter2) {
+      throw new Error(`Cannot get default converter for property '${propertyKey}' of ${target.constructor.name}`);
+    }
+    copyOptions.converter = defaultConverter2;
+  }
+  copyOptions.raw = options.raw;
+  schema.items[propertyKey] = copyOptions;
+}, "AsnProp");
+
+// node_modules/@peculiar/asn1-schema/build/es2015/errors/schema_validation.js
+var AsnSchemaValidationError = class extends Error {
+  static {
+    __name(this, "AsnSchemaValidationError");
+  }
+  constructor() {
+    super(...arguments);
+    this.schemas = [];
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/parser.js
+var AsnParser = class {
+  static {
+    __name(this, "AsnParser");
+  }
+  static parse(data, target) {
+    const asn1Parsed = fromBER(data);
+    if (asn1Parsed.result.error) {
+      throw new Error(asn1Parsed.result.error);
+    }
+    const res = this.fromASN(asn1Parsed.result, target);
+    return res;
+  }
+  static fromASN(asn1Schema, target) {
+    try {
+      if (isConvertible(target)) {
+        const value2 = new target();
+        return value2.fromASN(asn1Schema);
+      }
+      const schema = schemaStorage.get(target);
+      schemaStorage.cache(target);
+      let targetSchema = schema.schema;
+      const choiceResult = this.handleChoiceTypes(asn1Schema, schema, target, targetSchema);
+      if (choiceResult === null || choiceResult === void 0 ? void 0 : choiceResult.result) {
+        return choiceResult.result;
+      }
+      if (choiceResult === null || choiceResult === void 0 ? void 0 : choiceResult.targetSchema) {
+        targetSchema = choiceResult.targetSchema;
+      }
+      const sequenceResult = this.handleSequenceTypes(asn1Schema, schema, target, targetSchema);
+      if (sequenceResult && "isManualMapping" in sequenceResult) {
+        return sequenceResult.result;
+      }
+      const asn1ComparedSchema = sequenceResult;
+      const res = new target();
+      if (isTypeOfArray(target)) {
+        return this.handleArrayTypes(asn1Schema, schema, target);
+      }
+      this.processSchemaItems(schema, asn1ComparedSchema, res);
+      return res;
+    } catch (error) {
+      if (error instanceof AsnSchemaValidationError) {
+        error.schemas.push(target.name);
+      }
+      throw error;
+    }
+  }
+  static handleChoiceTypes(asn1Schema, schema, target, targetSchema) {
+    if (asn1Schema.constructor === Constructed && schema.type === AsnTypeTypes.Choice && asn1Schema.idBlock.tagClass === 3) {
+      for (const key in schema.items) {
+        const schemaItem = schema.items[key];
+        if (schemaItem.context === asn1Schema.idBlock.tagNumber && schemaItem.implicit) {
+          if (typeof schemaItem.type === "function" && schemaStorage.has(schemaItem.type)) {
+            const fieldSchema = schemaStorage.get(schemaItem.type);
+            if (fieldSchema && fieldSchema.type === AsnTypeTypes.Sequence) {
+              const newSeq = new Sequence();
+              if ("value" in asn1Schema.valueBlock && Array.isArray(asn1Schema.valueBlock.value) && "value" in newSeq.valueBlock) {
+                newSeq.valueBlock.value = asn1Schema.valueBlock.value;
+                const fieldValue = this.fromASN(newSeq, schemaItem.type);
+                const res = new target();
+                res[key] = fieldValue;
+                return { result: res };
+              }
+            }
+          }
+        }
+      }
+    } else if (asn1Schema.constructor === Constructed && schema.type !== AsnTypeTypes.Choice) {
+      const newTargetSchema = new Constructed({
+        idBlock: {
+          tagClass: 3,
+          tagNumber: asn1Schema.idBlock.tagNumber
+        },
+        value: schema.schema.valueBlock.value
+      });
+      for (const key in schema.items) {
+        delete asn1Schema[key];
+      }
+      return { targetSchema: newTargetSchema };
+    }
+    return null;
+  }
+  static handleSequenceTypes(asn1Schema, schema, target, targetSchema) {
+    if (schema.type === AsnTypeTypes.Sequence) {
+      const optionalChoiceFields = Object.keys(schema.items).filter((key) => {
+        const item = schema.items[key];
+        return item.optional && typeof item.type === "function" && schemaStorage.has(item.type) && schemaStorage.get(item.type).type === AsnTypeTypes.Choice;
+      });
+      if (optionalChoiceFields.length > 0 && "value" in asn1Schema.valueBlock && Array.isArray(asn1Schema.valueBlock.value) && target.name === "CertReqMsg") {
+        return this.handleManualMapping(asn1Schema, schema, target);
+      }
+      const asn1ComparedSchema = compareSchema({}, asn1Schema, targetSchema);
+      if (!asn1ComparedSchema.verified) {
+        throw new AsnSchemaValidationError(`Data does not match to ${target.name} ASN1 schema.${asn1ComparedSchema.result.error ? ` ${asn1ComparedSchema.result.error}` : ""}`);
+      }
+      return asn1ComparedSchema;
+    } else {
+      const asn1ComparedSchema = compareSchema({}, asn1Schema, targetSchema);
+      if (!asn1ComparedSchema.verified) {
+        throw new AsnSchemaValidationError(`Data does not match to ${target.name} ASN1 schema.${asn1ComparedSchema.result.error ? ` ${asn1ComparedSchema.result.error}` : ""}`);
+      }
+      return asn1ComparedSchema;
+    }
+  }
+  static handleManualMapping(asn1Schema, schema, target) {
+    const res = new target();
+    const asn1Elements = asn1Schema.valueBlock.value;
+    const schemaKeys = Object.keys(schema.items);
+    let asn1Index = 0;
+    for (let i2 = 0; i2 < schemaKeys.length; i2++) {
+      const key = schemaKeys[i2];
+      const schemaItem = schema.items[key];
+      if (asn1Index >= asn1Elements.length)
+        break;
+      if (schemaItem.repeated) {
+        res[key] = this.processRepeatedField(asn1Elements, asn1Index, schemaItem);
+        break;
+      } else if (typeof schemaItem.type === "number") {
+        res[key] = this.processPrimitiveField(asn1Elements[asn1Index], schemaItem);
+        asn1Index++;
+      } else if (this.isOptionalChoiceField(schemaItem)) {
+        const result = this.processOptionalChoiceField(asn1Elements[asn1Index], schemaItem);
+        if (result.processed) {
+          res[key] = result.value;
+          asn1Index++;
+        }
+      } else {
+        res[key] = this.fromASN(asn1Elements[asn1Index], schemaItem.type);
+        asn1Index++;
+      }
+    }
+    return { result: res, verified: true, isManualMapping: true };
+  }
+  static processRepeatedField(asn1Elements, asn1Index, schemaItem) {
+    let elementsToProcess = asn1Elements.slice(asn1Index);
+    if (elementsToProcess.length === 1 && elementsToProcess[0].constructor.name === "Sequence") {
+      const seq = elementsToProcess[0];
+      if (seq.valueBlock && seq.valueBlock.value && Array.isArray(seq.valueBlock.value)) {
+        elementsToProcess = seq.valueBlock.value;
+      }
+    }
+    if (typeof schemaItem.type === "number") {
+      const converter = defaultConverter(schemaItem.type);
+      if (!converter)
+        throw new Error(`No converter for ASN.1 type ${schemaItem.type}`);
+      return elementsToProcess.filter((el) => el && el.valueBlock).map((el) => {
+        try {
+          return converter.fromASN(el);
+        } catch {
+          return void 0;
+        }
+      }).filter((v) => v !== void 0);
+    } else {
+      return elementsToProcess.filter((el) => el && el.valueBlock).map((el) => {
+        try {
+          return this.fromASN(el, schemaItem.type);
+        } catch {
+          return void 0;
+        }
+      }).filter((v) => v !== void 0);
+    }
+  }
+  static processPrimitiveField(asn1Element, schemaItem) {
+    const converter = defaultConverter(schemaItem.type);
+    if (!converter)
+      throw new Error(`No converter for ASN.1 type ${schemaItem.type}`);
+    return converter.fromASN(asn1Element);
+  }
+  static isOptionalChoiceField(schemaItem) {
+    return schemaItem.optional && typeof schemaItem.type === "function" && schemaStorage.has(schemaItem.type) && schemaStorage.get(schemaItem.type).type === AsnTypeTypes.Choice;
+  }
+  static processOptionalChoiceField(asn1Element, schemaItem) {
+    try {
+      const value2 = this.fromASN(asn1Element, schemaItem.type);
+      return { processed: true, value: value2 };
+    } catch (err) {
+      if (err instanceof AsnSchemaValidationError && /Wrong values for Choice type/.test(err.message)) {
+        return { processed: false };
+      }
+      throw err;
+    }
+  }
+  static handleArrayTypes(asn1Schema, schema, target) {
+    if (!("value" in asn1Schema.valueBlock && Array.isArray(asn1Schema.valueBlock.value))) {
+      throw new Error(`Cannot get items from the ASN.1 parsed value. ASN.1 object is not constructed.`);
+    }
+    const itemType = schema.itemType;
+    if (typeof itemType === "number") {
+      const converter = defaultConverter(itemType);
+      if (!converter) {
+        throw new Error(`Cannot get default converter for array item of ${target.name} ASN1 schema`);
+      }
+      return target.from(asn1Schema.valueBlock.value, (element) => converter.fromASN(element));
+    } else {
+      return target.from(asn1Schema.valueBlock.value, (element) => this.fromASN(element, itemType));
+    }
+  }
+  static processSchemaItems(schema, asn1ComparedSchema, res) {
+    for (const key in schema.items) {
+      const asn1SchemaValue = asn1ComparedSchema.result[key];
+      if (!asn1SchemaValue) {
+        continue;
+      }
+      const schemaItem = schema.items[key];
+      const schemaItemType = schemaItem.type;
+      let parsedValue;
+      if (typeof schemaItemType === "number" || isConvertible(schemaItemType)) {
+        parsedValue = this.processPrimitiveSchemaItem(asn1SchemaValue, schemaItem, schemaItemType);
+      } else {
+        parsedValue = this.processComplexSchemaItem(asn1SchemaValue, schemaItem, schemaItemType);
+      }
+      if (parsedValue && typeof parsedValue === "object" && "value" in parsedValue && "raw" in parsedValue) {
+        res[key] = parsedValue.value;
+        res[`${key}Raw`] = parsedValue.raw;
+      } else {
+        res[key] = parsedValue;
+      }
+    }
+  }
+  static processPrimitiveSchemaItem(asn1SchemaValue, schemaItem, schemaItemType) {
+    var _a3;
+    const converter = (_a3 = schemaItem.converter) !== null && _a3 !== void 0 ? _a3 : isConvertible(schemaItemType) ? new schemaItemType() : null;
+    if (!converter) {
+      throw new Error("Converter is empty");
+    }
+    if (schemaItem.repeated) {
+      return this.processRepeatedPrimitiveItem(asn1SchemaValue, schemaItem, converter);
+    } else {
+      return this.processSinglePrimitiveItem(asn1SchemaValue, schemaItem, schemaItemType, converter);
+    }
+  }
+  static processRepeatedPrimitiveItem(asn1SchemaValue, schemaItem, converter) {
+    if (schemaItem.implicit) {
+      const Container = schemaItem.repeated === "sequence" ? Sequence : Set2;
+      const newItem = new Container();
+      newItem.valueBlock = asn1SchemaValue.valueBlock;
+      const newItemAsn = fromBER(newItem.toBER(false));
+      if (newItemAsn.offset === -1) {
+        throw new Error(`Cannot parse the child item. ${newItemAsn.result.error}`);
+      }
+      if (!("value" in newItemAsn.result.valueBlock && Array.isArray(newItemAsn.result.valueBlock.value))) {
+        throw new Error("Cannot get items from the ASN.1 parsed value. ASN.1 object is not constructed.");
+      }
+      const value2 = newItemAsn.result.valueBlock.value;
+      return Array.from(value2, (element) => converter.fromASN(element));
+    } else {
+      return Array.from(asn1SchemaValue, (element) => converter.fromASN(element));
+    }
+  }
+  static processSinglePrimitiveItem(asn1SchemaValue, schemaItem, schemaItemType, converter) {
+    let value2 = asn1SchemaValue;
+    if (schemaItem.implicit) {
+      let newItem;
+      if (isConvertible(schemaItemType)) {
+        newItem = new schemaItemType().toSchema("");
+      } else {
+        const Asn1TypeName = AsnPropTypes[schemaItemType];
+        const Asn1Type = index_es_exports[Asn1TypeName];
+        if (!Asn1Type) {
+          throw new Error(`Cannot get '${Asn1TypeName}' class from asn1js module`);
+        }
+        newItem = new Asn1Type();
+      }
+      newItem.valueBlock = value2.valueBlock;
+      value2 = fromBER(newItem.toBER(false)).result;
+    }
+    return converter.fromASN(value2);
+  }
+  static processComplexSchemaItem(asn1SchemaValue, schemaItem, schemaItemType) {
+    if (schemaItem.repeated) {
+      if (!Array.isArray(asn1SchemaValue)) {
+        throw new Error("Cannot get list of items from the ASN.1 parsed value. ASN.1 value should be iterable.");
+      }
+      return Array.from(asn1SchemaValue, (element) => this.fromASN(element, schemaItemType));
+    } else {
+      const valueToProcess = this.handleImplicitTagging(asn1SchemaValue, schemaItem, schemaItemType);
+      if (this.isOptionalChoiceField(schemaItem)) {
+        try {
+          return this.fromASN(valueToProcess, schemaItemType);
+        } catch (err) {
+          if (err instanceof AsnSchemaValidationError && /Wrong values for Choice type/.test(err.message)) {
+            return void 0;
+          }
+          throw err;
+        }
+      } else {
+        const parsedValue = this.fromASN(valueToProcess, schemaItemType);
+        if (schemaItem.raw) {
+          return {
+            value: parsedValue,
+            raw: asn1SchemaValue.valueBeforeDecodeView
+          };
+        }
+        return parsedValue;
+      }
+    }
+  }
+  static handleImplicitTagging(asn1SchemaValue, schemaItem, schemaItemType) {
+    if (schemaItem.implicit && typeof schemaItem.context === "number") {
+      const schema = schemaStorage.get(schemaItemType);
+      if (schema.type === AsnTypeTypes.Sequence) {
+        const newSeq = new Sequence();
+        if ("value" in asn1SchemaValue.valueBlock && Array.isArray(asn1SchemaValue.valueBlock.value) && "value" in newSeq.valueBlock) {
+          newSeq.valueBlock.value = asn1SchemaValue.valueBlock.value;
+          return newSeq;
+        }
+      } else if (schema.type === AsnTypeTypes.Set) {
+        const newSet = new Set2();
+        if ("value" in asn1SchemaValue.valueBlock && Array.isArray(asn1SchemaValue.valueBlock.value) && "value" in newSet.valueBlock) {
+          newSet.valueBlock.value = asn1SchemaValue.valueBlock.value;
+          return newSet;
+        }
+      }
+    }
+    return asn1SchemaValue;
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/serializer.js
+var AsnSerializer = class _AsnSerializer {
+  static {
+    __name(this, "AsnSerializer");
+  }
+  static serialize(obj) {
+    if (obj instanceof BaseBlock) {
+      return obj.toBER(false);
+    }
+    return this.toASN(obj).toBER(false);
+  }
+  static toASN(obj) {
+    if (obj && typeof obj === "object" && isConvertible(obj)) {
+      return obj.toASN();
+    }
+    if (!(obj && typeof obj === "object")) {
+      throw new TypeError("Parameter 1 should be type of Object.");
+    }
+    const target = obj.constructor;
+    const schema = schemaStorage.get(target);
+    schemaStorage.cache(target);
+    let asn1Value = [];
+    if (schema.itemType) {
+      if (!Array.isArray(obj)) {
+        throw new TypeError("Parameter 1 should be type of Array.");
+      }
+      if (typeof schema.itemType === "number") {
+        const converter = defaultConverter(schema.itemType);
+        if (!converter) {
+          throw new Error(`Cannot get default converter for array item of ${target.name} ASN1 schema`);
+        }
+        asn1Value = obj.map((o2) => converter.toASN(o2));
+      } else {
+        asn1Value = obj.map((o2) => this.toAsnItem({ type: schema.itemType }, "[]", target, o2));
+      }
+    } else {
+      for (const key in schema.items) {
+        const schemaItem = schema.items[key];
+        const objProp = obj[key];
+        if (objProp === void 0 || schemaItem.defaultValue === objProp || typeof schemaItem.defaultValue === "object" && typeof objProp === "object" && isArrayEqual(this.serialize(schemaItem.defaultValue), this.serialize(objProp))) {
+          continue;
+        }
+        const asn1Item = _AsnSerializer.toAsnItem(schemaItem, key, target, objProp);
+        if (typeof schemaItem.context === "number") {
+          if (schemaItem.implicit) {
+            if (!schemaItem.repeated && (typeof schemaItem.type === "number" || isConvertible(schemaItem.type))) {
+              const value2 = {};
+              value2.valueHex = asn1Item instanceof Null ? asn1Item.valueBeforeDecodeView : asn1Item.valueBlock.toBER();
+              asn1Value.push(new Primitive({
+                optional: schemaItem.optional,
+                idBlock: {
+                  tagClass: 3,
+                  tagNumber: schemaItem.context
+                },
+                ...value2
+              }));
+            } else {
+              asn1Value.push(new Constructed({
+                optional: schemaItem.optional,
+                idBlock: {
+                  tagClass: 3,
+                  tagNumber: schemaItem.context
+                },
+                value: asn1Item.valueBlock.value
+              }));
+            }
+          } else {
+            asn1Value.push(new Constructed({
+              optional: schemaItem.optional,
+              idBlock: {
+                tagClass: 3,
+                tagNumber: schemaItem.context
+              },
+              value: [asn1Item]
+            }));
+          }
+        } else if (schemaItem.repeated) {
+          asn1Value = asn1Value.concat(asn1Item);
+        } else {
+          asn1Value.push(asn1Item);
+        }
+      }
+    }
+    let asnSchema;
+    switch (schema.type) {
+      case AsnTypeTypes.Sequence:
+        asnSchema = new Sequence({ value: asn1Value });
+        break;
+      case AsnTypeTypes.Set:
+        asnSchema = new Set2({ value: asn1Value });
+        break;
+      case AsnTypeTypes.Choice:
+        if (!asn1Value[0]) {
+          throw new Error(`Schema '${target.name}' has wrong data. Choice cannot be empty.`);
+        }
+        asnSchema = asn1Value[0];
+        break;
+    }
+    return asnSchema;
+  }
+  static toAsnItem(schemaItem, key, target, objProp) {
+    let asn1Item;
+    if (typeof schemaItem.type === "number") {
+      const converter = schemaItem.converter;
+      if (!converter) {
+        throw new Error(`Property '${key}' doesn't have converter for type ${AsnPropTypes[schemaItem.type]} in schema '${target.name}'`);
+      }
+      if (schemaItem.repeated) {
+        if (!Array.isArray(objProp)) {
+          throw new TypeError("Parameter 'objProp' should be type of Array.");
+        }
+        const items = Array.from(objProp, (element) => converter.toASN(element));
+        const Container = schemaItem.repeated === "sequence" ? Sequence : Set2;
+        asn1Item = new Container({
+          value: items
+        });
+      } else {
+        asn1Item = converter.toASN(objProp);
+      }
+    } else {
+      if (schemaItem.repeated) {
+        if (!Array.isArray(objProp)) {
+          throw new TypeError("Parameter 'objProp' should be type of Array.");
+        }
+        const items = Array.from(objProp, (element) => this.toASN(element));
+        const Container = schemaItem.repeated === "sequence" ? Sequence : Set2;
+        asn1Item = new Container({
+          value: items
+        });
+      } else {
+        asn1Item = this.toASN(objProp);
+      }
+    }
+    return asn1Item;
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/objects.js
+var AsnArray = class extends Array {
+  static {
+    __name(this, "AsnArray");
+  }
+  constructor(items = []) {
+    if (typeof items === "number") {
+      super(items);
+    } else {
+      super();
+      for (const item of items) {
+        this.push(item);
+      }
+    }
+  }
+};
+
+// node_modules/@peculiar/asn1-schema/build/es2015/convert.js
+var import_pvtsutils3 = __toESM(require_build());
+var AsnConvert = class _AsnConvert {
+  static {
+    __name(this, "AsnConvert");
+  }
+  static serialize(obj) {
+    return AsnSerializer.serialize(obj);
+  }
+  static parse(data, target) {
+    return AsnParser.parse(data, target);
+  }
+  static toString(data) {
+    const buf = import_pvtsutils3.BufferSourceConverter.isBufferSource(data) ? import_pvtsutils3.BufferSourceConverter.toArrayBuffer(data) : _AsnConvert.serialize(data);
+    const asn = fromBER(buf);
+    if (asn.offset === -1) {
+      throw new Error(`Cannot decode ASN.1 data. ${asn.result.error}`);
+    }
+    return asn.result.toString();
+  }
+};
+
+// node_modules/tslib/tslib.es6.mjs
+function __decorate(decorators, target, key, desc) {
+  var c2 = arguments.length, r2 = c2 < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d2;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r2 = Reflect.decorate(decorators, target, key, desc);
+  else for (var i2 = decorators.length - 1; i2 >= 0; i2--) if (d2 = decorators[i2]) r2 = (c2 < 3 ? d2(r2) : c2 > 3 ? d2(target, key, r2) : d2(target, key)) || r2;
+  return c2 > 3 && r2 && Object.defineProperty(target, key, r2), r2;
+}
+__name(__decorate, "__decorate");
+function __classPrivateFieldGet(receiver, state, kind, f2) {
+  if (kind === "a" && !f2) throw new TypeError("Private accessor was defined without a getter");
+  if (typeof state === "function" ? receiver !== state || !f2 : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+  return kind === "m" ? f2 : kind === "a" ? f2.call(receiver) : f2 ? f2.value : state.get(receiver);
+}
+__name(__classPrivateFieldGet, "__classPrivateFieldGet");
+function __classPrivateFieldSet(receiver, state, value2, kind, f2) {
+  if (kind === "m") throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f2) throw new TypeError("Private accessor was defined without a setter");
+  if (typeof state === "function" ? receiver !== state || !f2 : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+  return kind === "a" ? f2.call(receiver, value2) : f2 ? f2.value = value2 : state.set(receiver, value2), value2;
+}
+__name(__classPrivateFieldSet, "__classPrivateFieldSet");
+
+// node_modules/@peculiar/asn1-x509/build/es2015/ip_converter.js
+var import_pvtsutils4 = __toESM(require_build());
+var IpConverter = class {
+  static {
+    __name(this, "IpConverter");
+  }
+  static isIPv4(ip) {
+    return /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
+  }
+  static parseIPv4(ip) {
+    const parts = ip.split(".");
+    if (parts.length !== 4) {
+      throw new Error("Invalid IPv4 address");
+    }
+    return parts.map((part) => {
+      const num = parseInt(part, 10);
+      if (isNaN(num) || num < 0 || num > 255) {
+        throw new Error("Invalid IPv4 address part");
+      }
+      return num;
+    });
+  }
+  static parseIPv6(ip) {
+    const expandedIP = this.expandIPv6(ip);
+    const parts = expandedIP.split(":");
+    if (parts.length !== 8) {
+      throw new Error("Invalid IPv6 address");
+    }
+    return parts.reduce((bytes, part) => {
+      const num = parseInt(part, 16);
+      if (isNaN(num) || num < 0 || num > 65535) {
+        throw new Error("Invalid IPv6 address part");
+      }
+      bytes.push(num >> 8 & 255);
+      bytes.push(num & 255);
+      return bytes;
+    }, []);
+  }
+  static expandIPv6(ip) {
+    if (!ip.includes("::")) {
+      return ip;
+    }
+    const parts = ip.split("::");
+    if (parts.length > 2) {
+      throw new Error("Invalid IPv6 address");
+    }
+    const left = parts[0] ? parts[0].split(":") : [];
+    const right = parts[1] ? parts[1].split(":") : [];
+    const missing = 8 - (left.length + right.length);
+    if (missing < 0) {
+      throw new Error("Invalid IPv6 address");
+    }
+    return [...left, ...Array(missing).fill("0"), ...right].join(":");
+  }
+  static formatIPv6(bytes) {
+    const parts = [];
+    for (let i2 = 0; i2 < 16; i2 += 2) {
+      parts.push((bytes[i2] << 8 | bytes[i2 + 1]).toString(16));
+    }
+    return this.compressIPv6(parts.join(":"));
+  }
+  static compressIPv6(ip) {
+    const parts = ip.split(":");
+    let longestZeroStart = -1;
+    let longestZeroLength = 0;
+    let currentZeroStart = -1;
+    let currentZeroLength = 0;
+    for (let i2 = 0; i2 < parts.length; i2++) {
+      if (parts[i2] === "0") {
+        if (currentZeroStart === -1) {
+          currentZeroStart = i2;
+        }
+        currentZeroLength++;
+      } else {
+        if (currentZeroLength > longestZeroLength) {
+          longestZeroStart = currentZeroStart;
+          longestZeroLength = currentZeroLength;
+        }
+        currentZeroStart = -1;
+        currentZeroLength = 0;
+      }
+    }
+    if (currentZeroLength > longestZeroLength) {
+      longestZeroStart = currentZeroStart;
+      longestZeroLength = currentZeroLength;
+    }
+    if (longestZeroLength > 1) {
+      const before = parts.slice(0, longestZeroStart).join(":");
+      const after = parts.slice(longestZeroStart + longestZeroLength).join(":");
+      return `${before}::${after}`;
+    }
+    return ip;
+  }
+  static parseCIDR(text) {
+    const [addr, prefixStr] = text.split("/");
+    const prefix = parseInt(prefixStr, 10);
+    if (this.isIPv4(addr)) {
+      if (prefix < 0 || prefix > 32) {
+        throw new Error("Invalid IPv4 prefix length");
+      }
+      return [this.parseIPv4(addr), prefix];
+    } else {
+      if (prefix < 0 || prefix > 128) {
+        throw new Error("Invalid IPv6 prefix length");
+      }
+      return [this.parseIPv6(addr), prefix];
+    }
+  }
+  static decodeIP(value2) {
+    if (value2.length === 64 && parseInt(value2, 16) === 0) {
+      return "::/0";
+    }
+    if (value2.length !== 16) {
+      return value2;
+    }
+    const mask = parseInt(value2.slice(8), 16).toString(2).split("").reduce((a2, k) => a2 + +k, 0);
+    let ip = value2.slice(0, 8).replace(/(.{2})/g, (match) => `${parseInt(match, 16)}.`);
+    ip = ip.slice(0, -1);
+    return `${ip}/${mask}`;
+  }
+  static toString(buf) {
+    const uint8 = new Uint8Array(buf);
+    if (uint8.length === 4) {
+      return Array.from(uint8).join(".");
+    }
+    if (uint8.length === 16) {
+      return this.formatIPv6(uint8);
+    }
+    if (uint8.length === 8 || uint8.length === 32) {
+      const half = uint8.length / 2;
+      const addrBytes = uint8.slice(0, half);
+      const maskBytes = uint8.slice(half);
+      const isAllZeros = uint8.every((byte) => byte === 0);
+      if (isAllZeros) {
+        return uint8.length === 8 ? "0.0.0.0/0" : "::/0";
+      }
+      const prefixLen = maskBytes.reduce((a2, b) => a2 + (b.toString(2).match(/1/g) || []).length, 0);
+      if (uint8.length === 8) {
+        const addrStr = Array.from(addrBytes).join(".");
+        return `${addrStr}/${prefixLen}`;
+      } else {
+        const addrStr = this.formatIPv6(addrBytes);
+        return `${addrStr}/${prefixLen}`;
+      }
+    }
+    return this.decodeIP(import_pvtsutils4.Convert.ToHex(buf));
+  }
+  static fromString(text) {
+    if (text.includes("/")) {
+      const [addr, prefix] = this.parseCIDR(text);
+      const maskBytes = new Uint8Array(addr.length);
+      let bitsLeft = prefix;
+      for (let i2 = 0; i2 < maskBytes.length; i2++) {
+        if (bitsLeft >= 8) {
+          maskBytes[i2] = 255;
+          bitsLeft -= 8;
+        } else if (bitsLeft > 0) {
+          maskBytes[i2] = 255 << 8 - bitsLeft;
+          bitsLeft = 0;
+        }
+      }
+      const out = new Uint8Array(addr.length * 2);
+      out.set(addr, 0);
+      out.set(maskBytes, addr.length);
+      return out.buffer;
+    }
+    const bytes = this.isIPv4(text) ? this.parseIPv4(text) : this.parseIPv6(text);
+    return new Uint8Array(bytes).buffer;
+  }
+};
+
+// node_modules/@peculiar/asn1-x509/build/es2015/name.js
+var import_pvtsutils5 = __toESM(require_build());
+var RelativeDistinguishedName_1;
+var RDNSequence_1;
+var Name_1;
+var DirectoryString = class DirectoryString2 {
+  static {
+    __name(this, "DirectoryString");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+  toString() {
+    return this.bmpString || this.printableString || this.teletexString || this.universalString || this.utf8String || "";
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.TeletexString })
+], DirectoryString.prototype, "teletexString", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.PrintableString })
+], DirectoryString.prototype, "printableString", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.UniversalString })
+], DirectoryString.prototype, "universalString", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Utf8String })
+], DirectoryString.prototype, "utf8String", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BmpString })
+], DirectoryString.prototype, "bmpString", void 0);
+DirectoryString = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], DirectoryString);
+var AttributeValue = class AttributeValue2 extends DirectoryString {
+  static {
+    __name(this, "AttributeValue");
+  }
+  constructor(params = {}) {
+    super(params);
+    Object.assign(this, params);
+  }
+  toString() {
+    return this.ia5String || (this.anyValue ? import_pvtsutils5.Convert.ToHex(this.anyValue) : super.toString());
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String })
+], AttributeValue.prototype, "ia5String", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], AttributeValue.prototype, "anyValue", void 0);
+AttributeValue = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], AttributeValue);
+var AttributeTypeAndValue = class {
+  static {
+    __name(this, "AttributeTypeAndValue");
+  }
+  constructor(params = {}) {
+    this.type = "";
+    this.value = new AttributeValue();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], AttributeTypeAndValue.prototype, "type", void 0);
+__decorate([
+  AsnProp({ type: AttributeValue })
+], AttributeTypeAndValue.prototype, "value", void 0);
+var RelativeDistinguishedName = RelativeDistinguishedName_1 = class RelativeDistinguishedName2 extends AsnArray {
+  static {
+    __name(this, "RelativeDistinguishedName");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, RelativeDistinguishedName_1.prototype);
+  }
+};
+RelativeDistinguishedName = RelativeDistinguishedName_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: AttributeTypeAndValue })
+], RelativeDistinguishedName);
+var RDNSequence = RDNSequence_1 = class RDNSequence2 extends AsnArray {
+  static {
+    __name(this, "RDNSequence");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, RDNSequence_1.prototype);
+  }
+};
+RDNSequence = RDNSequence_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: RelativeDistinguishedName })
+], RDNSequence);
+var Name = Name_1 = class Name2 extends RDNSequence {
+  static {
+    __name(this, "Name");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, Name_1.prototype);
+  }
+};
+Name = Name_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], Name);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/general_name.js
+var AsnIpConverter = {
+  fromASN: /* @__PURE__ */ __name((value2) => IpConverter.toString(AsnOctetStringConverter.fromASN(value2)), "fromASN"),
+  toASN: /* @__PURE__ */ __name((value2) => AsnOctetStringConverter.toASN(IpConverter.fromString(value2)), "toASN")
+};
+var OtherName = class {
+  static {
+    __name(this, "OtherName");
+  }
+  constructor(params = {}) {
+    this.typeId = "";
+    this.value = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], OtherName.prototype, "typeId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 0 })
+], OtherName.prototype, "value", void 0);
+var EDIPartyName = class {
+  static {
+    __name(this, "EDIPartyName");
+  }
+  constructor(params = {}) {
+    this.partyName = new DirectoryString();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: DirectoryString, optional: true, context: 0, implicit: true })
+], EDIPartyName.prototype, "nameAssigner", void 0);
+__decorate([
+  AsnProp({ type: DirectoryString, context: 1, implicit: true })
+], EDIPartyName.prototype, "partyName", void 0);
+var GeneralName = class GeneralName2 {
+  static {
+    __name(this, "GeneralName");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: OtherName, context: 0, implicit: true })
+], GeneralName.prototype, "otherName", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String, context: 1, implicit: true })
+], GeneralName.prototype, "rfc822Name", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String, context: 2, implicit: true })
+], GeneralName.prototype, "dNSName", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 3, implicit: true })
+], GeneralName.prototype, "x400Address", void 0);
+__decorate([
+  AsnProp({ type: Name, context: 4, implicit: false })
+], GeneralName.prototype, "directoryName", void 0);
+__decorate([
+  AsnProp({ type: EDIPartyName, context: 5 })
+], GeneralName.prototype, "ediPartyName", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String, context: 6, implicit: true })
+], GeneralName.prototype, "uniformResourceIdentifier", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.OctetString,
+    context: 7,
+    implicit: true,
+    converter: AsnIpConverter
+  })
+], GeneralName.prototype, "iPAddress", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier, context: 8, implicit: true })
+], GeneralName.prototype, "registeredID", void 0);
+GeneralName = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], GeneralName);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/object_identifiers.js
+var id_pkix = "1.3.6.1.5.5.7";
+var id_pe = `${id_pkix}.1`;
+var id_qt = `${id_pkix}.2`;
+var id_kp = `${id_pkix}.3`;
+var id_ad = `${id_pkix}.48`;
+var id_qt_csp = `${id_qt}.1`;
+var id_qt_unotice = `${id_qt}.2`;
+var id_ad_ocsp = `${id_ad}.1`;
+var id_ad_caIssuers = `${id_ad}.2`;
+var id_ad_timeStamping = `${id_ad}.3`;
+var id_ad_caRepository = `${id_ad}.5`;
+var id_ce = "2.5.29";
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/authority_information_access.js
+var AuthorityInfoAccessSyntax_1;
+var id_pe_authorityInfoAccess = `${id_pe}.1`;
+var AccessDescription = class {
+  static {
+    __name(this, "AccessDescription");
+  }
+  constructor(params = {}) {
+    this.accessMethod = "";
+    this.accessLocation = new GeneralName();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], AccessDescription.prototype, "accessMethod", void 0);
+__decorate([
+  AsnProp({ type: GeneralName })
+], AccessDescription.prototype, "accessLocation", void 0);
+var AuthorityInfoAccessSyntax = AuthorityInfoAccessSyntax_1 = class AuthorityInfoAccessSyntax2 extends AsnArray {
+  static {
+    __name(this, "AuthorityInfoAccessSyntax");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, AuthorityInfoAccessSyntax_1.prototype);
+  }
+};
+AuthorityInfoAccessSyntax = AuthorityInfoAccessSyntax_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: AccessDescription })
+], AuthorityInfoAccessSyntax);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/authority_key_identifier.js
+var id_ce_authorityKeyIdentifier = `${id_ce}.35`;
+var KeyIdentifier = class extends OctetString2 {
+  static {
+    __name(this, "KeyIdentifier");
+  }
+};
+var AuthorityKeyIdentifier = class {
+  static {
+    __name(this, "AuthorityKeyIdentifier");
+  }
+  constructor(params = {}) {
+    if (params) {
+      Object.assign(this, params);
+    }
+  }
+};
+__decorate([
+  AsnProp({ type: KeyIdentifier, context: 0, optional: true, implicit: true })
+], AuthorityKeyIdentifier.prototype, "keyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: GeneralName, context: 1, optional: true, implicit: true, repeated: "sequence" })
+], AuthorityKeyIdentifier.prototype, "authorityCertIssuer", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Integer,
+    context: 2,
+    optional: true,
+    implicit: true,
+    converter: AsnIntegerArrayBufferConverter
+  })
+], AuthorityKeyIdentifier.prototype, "authorityCertSerialNumber", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/basic_constraints.js
+var id_ce_basicConstraints = `${id_ce}.19`;
+var BasicConstraints = class {
+  static {
+    __name(this, "BasicConstraints");
+  }
+  constructor(params = {}) {
+    this.cA = false;
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Boolean, defaultValue: false })
+], BasicConstraints.prototype, "cA", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, optional: true })
+], BasicConstraints.prototype, "pathLenConstraint", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/general_names.js
+var GeneralNames_1;
+var GeneralNames = GeneralNames_1 = class GeneralNames2 extends AsnArray {
+  static {
+    __name(this, "GeneralNames");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, GeneralNames_1.prototype);
+  }
+};
+GeneralNames = GeneralNames_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: GeneralName })
+], GeneralNames);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/certificate_issuer.js
+var CertificateIssuer_1;
+var id_ce_certificateIssuer = `${id_ce}.29`;
+var CertificateIssuer = CertificateIssuer_1 = class CertificateIssuer2 extends GeneralNames {
+  static {
+    __name(this, "CertificateIssuer");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, CertificateIssuer_1.prototype);
+  }
+};
+CertificateIssuer = CertificateIssuer_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], CertificateIssuer);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/certificate_policies.js
+var CertificatePolicies_1;
+var id_ce_certificatePolicies = `${id_ce}.32`;
+var id_ce_certificatePolicies_anyPolicy = `${id_ce_certificatePolicies}.0`;
+var DisplayText = class DisplayText2 {
+  static {
+    __name(this, "DisplayText");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+  toString() {
+    return this.ia5String || this.visibleString || this.bmpString || this.utf8String || "";
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String })
+], DisplayText.prototype, "ia5String", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.VisibleString })
+], DisplayText.prototype, "visibleString", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BmpString })
+], DisplayText.prototype, "bmpString", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Utf8String })
+], DisplayText.prototype, "utf8String", void 0);
+DisplayText = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], DisplayText);
+var NoticeReference = class {
+  static {
+    __name(this, "NoticeReference");
+  }
+  constructor(params = {}) {
+    this.organization = new DisplayText();
+    this.noticeNumbers = [];
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: DisplayText })
+], NoticeReference.prototype, "organization", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, repeated: "sequence" })
+], NoticeReference.prototype, "noticeNumbers", void 0);
+var UserNotice = class {
+  static {
+    __name(this, "UserNotice");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: NoticeReference, optional: true })
+], UserNotice.prototype, "noticeRef", void 0);
+__decorate([
+  AsnProp({ type: DisplayText, optional: true })
+], UserNotice.prototype, "explicitText", void 0);
+var Qualifier = class Qualifier2 {
+  static {
+    __name(this, "Qualifier");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String })
+], Qualifier.prototype, "cPSuri", void 0);
+__decorate([
+  AsnProp({ type: UserNotice })
+], Qualifier.prototype, "userNotice", void 0);
+Qualifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], Qualifier);
+var PolicyQualifierInfo = class {
+  static {
+    __name(this, "PolicyQualifierInfo");
+  }
+  constructor(params = {}) {
+    this.policyQualifierId = "";
+    this.qualifier = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], PolicyQualifierInfo.prototype, "policyQualifierId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], PolicyQualifierInfo.prototype, "qualifier", void 0);
+var PolicyInformation = class {
+  static {
+    __name(this, "PolicyInformation");
+  }
+  constructor(params = {}) {
+    this.policyIdentifier = "";
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], PolicyInformation.prototype, "policyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: PolicyQualifierInfo, repeated: "sequence", optional: true })
+], PolicyInformation.prototype, "policyQualifiers", void 0);
+var CertificatePolicies = CertificatePolicies_1 = class CertificatePolicies2 extends AsnArray {
+  static {
+    __name(this, "CertificatePolicies");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, CertificatePolicies_1.prototype);
+  }
+};
+CertificatePolicies = CertificatePolicies_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: PolicyInformation })
+], CertificatePolicies);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/crl_number.js
+var id_ce_cRLNumber = `${id_ce}.20`;
+var CRLNumber = class CRLNumber2 {
+  static {
+    __name(this, "CRLNumber");
+  }
+  constructor(value2 = 0) {
+    this.value = value2;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], CRLNumber.prototype, "value", void 0);
+CRLNumber = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], CRLNumber);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/crl_delta_indicator.js
+var id_ce_deltaCRLIndicator = `${id_ce}.27`;
+var BaseCRLNumber = class BaseCRLNumber2 extends CRLNumber {
+  static {
+    __name(this, "BaseCRLNumber");
+  }
+};
+BaseCRLNumber = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], BaseCRLNumber);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/crl_distribution_points.js
+var CRLDistributionPoints_1;
+var id_ce_cRLDistributionPoints = `${id_ce}.31`;
+var ReasonFlags;
+(function(ReasonFlags2) {
+  ReasonFlags2[ReasonFlags2["unused"] = 1] = "unused";
+  ReasonFlags2[ReasonFlags2["keyCompromise"] = 2] = "keyCompromise";
+  ReasonFlags2[ReasonFlags2["cACompromise"] = 4] = "cACompromise";
+  ReasonFlags2[ReasonFlags2["affiliationChanged"] = 8] = "affiliationChanged";
+  ReasonFlags2[ReasonFlags2["superseded"] = 16] = "superseded";
+  ReasonFlags2[ReasonFlags2["cessationOfOperation"] = 32] = "cessationOfOperation";
+  ReasonFlags2[ReasonFlags2["certificateHold"] = 64] = "certificateHold";
+  ReasonFlags2[ReasonFlags2["privilegeWithdrawn"] = 128] = "privilegeWithdrawn";
+  ReasonFlags2[ReasonFlags2["aACompromise"] = 256] = "aACompromise";
+})(ReasonFlags || (ReasonFlags = {}));
+var Reason = class extends BitString2 {
+  static {
+    __name(this, "Reason");
+  }
+  toJSON() {
+    const res = [];
+    const flags = this.toNumber();
+    if (flags & ReasonFlags.aACompromise) {
+      res.push("aACompromise");
+    }
+    if (flags & ReasonFlags.affiliationChanged) {
+      res.push("affiliationChanged");
+    }
+    if (flags & ReasonFlags.cACompromise) {
+      res.push("cACompromise");
+    }
+    if (flags & ReasonFlags.certificateHold) {
+      res.push("certificateHold");
+    }
+    if (flags & ReasonFlags.cessationOfOperation) {
+      res.push("cessationOfOperation");
+    }
+    if (flags & ReasonFlags.keyCompromise) {
+      res.push("keyCompromise");
+    }
+    if (flags & ReasonFlags.privilegeWithdrawn) {
+      res.push("privilegeWithdrawn");
+    }
+    if (flags & ReasonFlags.superseded) {
+      res.push("superseded");
+    }
+    if (flags & ReasonFlags.unused) {
+      res.push("unused");
+    }
+    return res;
+  }
+  toString() {
+    return `[${this.toJSON().join(", ")}]`;
+  }
+};
+var DistributionPointName = class DistributionPointName2 {
+  static {
+    __name(this, "DistributionPointName");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralName, context: 0, repeated: "sequence", implicit: true })
+], DistributionPointName.prototype, "fullName", void 0);
+__decorate([
+  AsnProp({ type: RelativeDistinguishedName, context: 1, implicit: true })
+], DistributionPointName.prototype, "nameRelativeToCRLIssuer", void 0);
+DistributionPointName = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], DistributionPointName);
+var DistributionPoint = class {
+  static {
+    __name(this, "DistributionPoint");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: DistributionPointName, context: 0, optional: true })
+], DistributionPoint.prototype, "distributionPoint", void 0);
+__decorate([
+  AsnProp({ type: Reason, context: 1, optional: true, implicit: true })
+], DistributionPoint.prototype, "reasons", void 0);
+__decorate([
+  AsnProp({ type: GeneralName, context: 2, optional: true, repeated: "sequence", implicit: true })
+], DistributionPoint.prototype, "cRLIssuer", void 0);
+var CRLDistributionPoints = CRLDistributionPoints_1 = class CRLDistributionPoints2 extends AsnArray {
+  static {
+    __name(this, "CRLDistributionPoints");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, CRLDistributionPoints_1.prototype);
+  }
+};
+CRLDistributionPoints = CRLDistributionPoints_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: DistributionPoint })
+], CRLDistributionPoints);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/crl_freshest.js
+var FreshestCRL_1;
+var id_ce_freshestCRL = `${id_ce}.46`;
+var FreshestCRL = FreshestCRL_1 = class FreshestCRL2 extends CRLDistributionPoints {
+  static {
+    __name(this, "FreshestCRL");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, FreshestCRL_1.prototype);
+  }
+};
+FreshestCRL = FreshestCRL_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: DistributionPoint })
+], FreshestCRL);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/crl_issuing_distribution_point.js
+var id_ce_issuingDistributionPoint = `${id_ce}.28`;
+var IssuingDistributionPoint = class _IssuingDistributionPoint {
+  static {
+    __name(this, "IssuingDistributionPoint");
+  }
+  constructor(params = {}) {
+    this.onlyContainsUserCerts = _IssuingDistributionPoint.ONLY;
+    this.onlyContainsCACerts = _IssuingDistributionPoint.ONLY;
+    this.indirectCRL = _IssuingDistributionPoint.ONLY;
+    this.onlyContainsAttributeCerts = _IssuingDistributionPoint.ONLY;
+    Object.assign(this, params);
+  }
+};
+IssuingDistributionPoint.ONLY = false;
+__decorate([
+  AsnProp({ type: DistributionPointName, context: 0, optional: true })
+], IssuingDistributionPoint.prototype, "distributionPoint", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Boolean,
+    context: 1,
+    defaultValue: IssuingDistributionPoint.ONLY,
+    implicit: true
+  })
+], IssuingDistributionPoint.prototype, "onlyContainsUserCerts", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Boolean,
+    context: 2,
+    defaultValue: IssuingDistributionPoint.ONLY,
+    implicit: true
+  })
+], IssuingDistributionPoint.prototype, "onlyContainsCACerts", void 0);
+__decorate([
+  AsnProp({ type: Reason, context: 3, optional: true, implicit: true })
+], IssuingDistributionPoint.prototype, "onlySomeReasons", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Boolean,
+    context: 4,
+    defaultValue: IssuingDistributionPoint.ONLY,
+    implicit: true
+  })
+], IssuingDistributionPoint.prototype, "indirectCRL", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Boolean,
+    context: 5,
+    defaultValue: IssuingDistributionPoint.ONLY,
+    implicit: true
+  })
+], IssuingDistributionPoint.prototype, "onlyContainsAttributeCerts", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/crl_reason.js
+var id_ce_cRLReasons = `${id_ce}.21`;
+var CRLReasons;
+(function(CRLReasons2) {
+  CRLReasons2[CRLReasons2["unspecified"] = 0] = "unspecified";
+  CRLReasons2[CRLReasons2["keyCompromise"] = 1] = "keyCompromise";
+  CRLReasons2[CRLReasons2["cACompromise"] = 2] = "cACompromise";
+  CRLReasons2[CRLReasons2["affiliationChanged"] = 3] = "affiliationChanged";
+  CRLReasons2[CRLReasons2["superseded"] = 4] = "superseded";
+  CRLReasons2[CRLReasons2["cessationOfOperation"] = 5] = "cessationOfOperation";
+  CRLReasons2[CRLReasons2["certificateHold"] = 6] = "certificateHold";
+  CRLReasons2[CRLReasons2["removeFromCRL"] = 8] = "removeFromCRL";
+  CRLReasons2[CRLReasons2["privilegeWithdrawn"] = 9] = "privilegeWithdrawn";
+  CRLReasons2[CRLReasons2["aACompromise"] = 10] = "aACompromise";
+})(CRLReasons || (CRLReasons = {}));
+var CRLReason = class CRLReason2 {
+  static {
+    __name(this, "CRLReason");
+  }
+  constructor(reason = CRLReasons.unspecified) {
+    this.reason = CRLReasons.unspecified;
+    this.reason = reason;
+  }
+  toJSON() {
+    return CRLReasons[this.reason];
+  }
+  toString() {
+    return this.toJSON();
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Enumerated })
+], CRLReason.prototype, "reason", void 0);
+CRLReason = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], CRLReason);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/extended_key_usage.js
+var ExtendedKeyUsage_1;
+var id_ce_extKeyUsage = `${id_ce}.37`;
+var ExtendedKeyUsage = ExtendedKeyUsage_1 = class ExtendedKeyUsage2 extends AsnArray {
+  static {
+    __name(this, "ExtendedKeyUsage");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, ExtendedKeyUsage_1.prototype);
+  }
+};
+ExtendedKeyUsage = ExtendedKeyUsage_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: AsnPropTypes.ObjectIdentifier })
+], ExtendedKeyUsage);
+var anyExtendedKeyUsage = `${id_ce_extKeyUsage}.0`;
+var id_kp_serverAuth = `${id_kp}.1`;
+var id_kp_clientAuth = `${id_kp}.2`;
+var id_kp_codeSigning = `${id_kp}.3`;
+var id_kp_emailProtection = `${id_kp}.4`;
+var id_kp_timeStamping = `${id_kp}.8`;
+var id_kp_OCSPSigning = `${id_kp}.9`;
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/inhibit_any_policy.js
+var id_ce_inhibitAnyPolicy = `${id_ce}.54`;
+var InhibitAnyPolicy = class InhibitAnyPolicy2 {
+  static {
+    __name(this, "InhibitAnyPolicy");
+  }
+  constructor(value2 = new ArrayBuffer(0)) {
+    this.value = value2;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], InhibitAnyPolicy.prototype, "value", void 0);
+InhibitAnyPolicy = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], InhibitAnyPolicy);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/invalidity_date.js
+var id_ce_invalidityDate = `${id_ce}.24`;
+var InvalidityDate = class InvalidityDate2 {
+  static {
+    __name(this, "InvalidityDate");
+  }
+  constructor(value2) {
+    this.value = /* @__PURE__ */ new Date();
+    if (value2) {
+      this.value = value2;
+    }
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime })
+], InvalidityDate.prototype, "value", void 0);
+InvalidityDate = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], InvalidityDate);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/issuer_alternative_name.js
+var IssueAlternativeName_1;
+var id_ce_issuerAltName = `${id_ce}.18`;
+var IssueAlternativeName = IssueAlternativeName_1 = class IssueAlternativeName2 extends GeneralNames {
+  static {
+    __name(this, "IssueAlternativeName");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, IssueAlternativeName_1.prototype);
+  }
+};
+IssueAlternativeName = IssueAlternativeName_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], IssueAlternativeName);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/key_usage.js
+var id_ce_keyUsage = `${id_ce}.15`;
+var KeyUsageFlags;
+(function(KeyUsageFlags3) {
+  KeyUsageFlags3[KeyUsageFlags3["digitalSignature"] = 1] = "digitalSignature";
+  KeyUsageFlags3[KeyUsageFlags3["nonRepudiation"] = 2] = "nonRepudiation";
+  KeyUsageFlags3[KeyUsageFlags3["keyEncipherment"] = 4] = "keyEncipherment";
+  KeyUsageFlags3[KeyUsageFlags3["dataEncipherment"] = 8] = "dataEncipherment";
+  KeyUsageFlags3[KeyUsageFlags3["keyAgreement"] = 16] = "keyAgreement";
+  KeyUsageFlags3[KeyUsageFlags3["keyCertSign"] = 32] = "keyCertSign";
+  KeyUsageFlags3[KeyUsageFlags3["cRLSign"] = 64] = "cRLSign";
+  KeyUsageFlags3[KeyUsageFlags3["encipherOnly"] = 128] = "encipherOnly";
+  KeyUsageFlags3[KeyUsageFlags3["decipherOnly"] = 256] = "decipherOnly";
+})(KeyUsageFlags || (KeyUsageFlags = {}));
+var KeyUsage = class extends BitString2 {
+  static {
+    __name(this, "KeyUsage");
+  }
+  toJSON() {
+    const flag = this.toNumber();
+    const res = [];
+    if (flag & KeyUsageFlags.cRLSign) {
+      res.push("crlSign");
+    }
+    if (flag & KeyUsageFlags.dataEncipherment) {
+      res.push("dataEncipherment");
+    }
+    if (flag & KeyUsageFlags.decipherOnly) {
+      res.push("decipherOnly");
+    }
+    if (flag & KeyUsageFlags.digitalSignature) {
+      res.push("digitalSignature");
+    }
+    if (flag & KeyUsageFlags.encipherOnly) {
+      res.push("encipherOnly");
+    }
+    if (flag & KeyUsageFlags.keyAgreement) {
+      res.push("keyAgreement");
+    }
+    if (flag & KeyUsageFlags.keyCertSign) {
+      res.push("keyCertSign");
+    }
+    if (flag & KeyUsageFlags.keyEncipherment) {
+      res.push("keyEncipherment");
+    }
+    if (flag & KeyUsageFlags.nonRepudiation) {
+      res.push("nonRepudiation");
+    }
+    return res;
+  }
+  toString() {
+    return `[${this.toJSON().join(", ")}]`;
+  }
+};
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/name_constraints.js
+var GeneralSubtrees_1;
+var id_ce_nameConstraints = `${id_ce}.30`;
+var GeneralSubtree = class {
+  static {
+    __name(this, "GeneralSubtree");
+  }
+  constructor(params = {}) {
+    this.base = new GeneralName();
+    this.minimum = 0;
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralName })
+], GeneralSubtree.prototype, "base", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, context: 0, defaultValue: 0, implicit: true })
+], GeneralSubtree.prototype, "minimum", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, context: 1, optional: true, implicit: true })
+], GeneralSubtree.prototype, "maximum", void 0);
+var GeneralSubtrees = GeneralSubtrees_1 = class GeneralSubtrees2 extends AsnArray {
+  static {
+    __name(this, "GeneralSubtrees");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, GeneralSubtrees_1.prototype);
+  }
+};
+GeneralSubtrees = GeneralSubtrees_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: GeneralSubtree })
+], GeneralSubtrees);
+var NameConstraints = class {
+  static {
+    __name(this, "NameConstraints");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralSubtrees, context: 0, optional: true, implicit: true })
+], NameConstraints.prototype, "permittedSubtrees", void 0);
+__decorate([
+  AsnProp({ type: GeneralSubtrees, context: 1, optional: true, implicit: true })
+], NameConstraints.prototype, "excludedSubtrees", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/policy_constraints.js
+var id_ce_policyConstraints = `${id_ce}.36`;
+var PolicyConstraints = class {
+  static {
+    __name(this, "PolicyConstraints");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Integer,
+    context: 0,
+    implicit: true,
+    optional: true,
+    converter: AsnIntegerArrayBufferConverter
+  })
+], PolicyConstraints.prototype, "requireExplicitPolicy", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Integer,
+    context: 1,
+    implicit: true,
+    optional: true,
+    converter: AsnIntegerArrayBufferConverter
+  })
+], PolicyConstraints.prototype, "inhibitPolicyMapping", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/policy_mappings.js
+var PolicyMappings_1;
+var id_ce_policyMappings = `${id_ce}.33`;
+var PolicyMapping = class {
+  static {
+    __name(this, "PolicyMapping");
+  }
+  constructor(params = {}) {
+    this.issuerDomainPolicy = "";
+    this.subjectDomainPolicy = "";
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], PolicyMapping.prototype, "issuerDomainPolicy", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], PolicyMapping.prototype, "subjectDomainPolicy", void 0);
+var PolicyMappings = PolicyMappings_1 = class PolicyMappings2 extends AsnArray {
+  static {
+    __name(this, "PolicyMappings");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, PolicyMappings_1.prototype);
+  }
+};
+PolicyMappings = PolicyMappings_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: PolicyMapping })
+], PolicyMappings);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/subject_alternative_name.js
+var SubjectAlternativeName_1;
+var id_ce_subjectAltName = `${id_ce}.17`;
+var SubjectAlternativeName = SubjectAlternativeName_1 = class SubjectAlternativeName2 extends GeneralNames {
+  static {
+    __name(this, "SubjectAlternativeName");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, SubjectAlternativeName_1.prototype);
+  }
+};
+SubjectAlternativeName = SubjectAlternativeName_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], SubjectAlternativeName);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/attribute.js
+var Attribute = class {
+  static {
+    __name(this, "Attribute");
+  }
+  constructor(params = {}) {
+    this.type = "";
+    this.values = [];
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], Attribute.prototype, "type", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, repeated: "set" })
+], Attribute.prototype, "values", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/subject_directory_attributes.js
+var SubjectDirectoryAttributes_1;
+var id_ce_subjectDirectoryAttributes = `${id_ce}.9`;
+var SubjectDirectoryAttributes = SubjectDirectoryAttributes_1 = class SubjectDirectoryAttributes2 extends AsnArray {
+  static {
+    __name(this, "SubjectDirectoryAttributes");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, SubjectDirectoryAttributes_1.prototype);
+  }
+};
+SubjectDirectoryAttributes = SubjectDirectoryAttributes_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: Attribute })
+], SubjectDirectoryAttributes);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/subject_key_identifier.js
+var id_ce_subjectKeyIdentifier = `${id_ce}.14`;
+var SubjectKeyIdentifier = class extends KeyIdentifier {
+  static {
+    __name(this, "SubjectKeyIdentifier");
+  }
+};
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/private_key_usage_period.js
+var id_ce_privateKeyUsagePeriod = `${id_ce}.16`;
+var PrivateKeyUsagePeriod = class {
+  static {
+    __name(this, "PrivateKeyUsagePeriod");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime, context: 0, implicit: true, optional: true })
+], PrivateKeyUsagePeriod.prototype, "notBefore", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime, context: 1, implicit: true, optional: true })
+], PrivateKeyUsagePeriod.prototype, "notAfter", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/entrust_version_info.js
+var EntrustInfoFlags;
+(function(EntrustInfoFlags2) {
+  EntrustInfoFlags2[EntrustInfoFlags2["keyUpdateAllowed"] = 1] = "keyUpdateAllowed";
+  EntrustInfoFlags2[EntrustInfoFlags2["newExtensions"] = 2] = "newExtensions";
+  EntrustInfoFlags2[EntrustInfoFlags2["pKIXCertificate"] = 4] = "pKIXCertificate";
+})(EntrustInfoFlags || (EntrustInfoFlags = {}));
+var EntrustInfo = class extends BitString2 {
+  static {
+    __name(this, "EntrustInfo");
+  }
+  toJSON() {
+    const res = [];
+    const flags = this.toNumber();
+    if (flags & EntrustInfoFlags.pKIXCertificate) {
+      res.push("pKIXCertificate");
+    }
+    if (flags & EntrustInfoFlags.newExtensions) {
+      res.push("newExtensions");
+    }
+    if (flags & EntrustInfoFlags.keyUpdateAllowed) {
+      res.push("keyUpdateAllowed");
+    }
+    return res;
+  }
+  toString() {
+    return `[${this.toJSON().join(", ")}]`;
+  }
+};
+var EntrustVersionInfo = class {
+  static {
+    __name(this, "EntrustVersionInfo");
+  }
+  constructor(params = {}) {
+    this.entrustVers = "";
+    this.entrustInfoFlags = new EntrustInfo();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralString })
+], EntrustVersionInfo.prototype, "entrustVers", void 0);
+__decorate([
+  AsnProp({ type: EntrustInfo })
+], EntrustVersionInfo.prototype, "entrustInfoFlags", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extensions/subject_info_access.js
+var SubjectInfoAccessSyntax_1;
+var id_pe_subjectInfoAccess = `${id_pe}.11`;
+var SubjectInfoAccessSyntax = SubjectInfoAccessSyntax_1 = class SubjectInfoAccessSyntax2 extends AsnArray {
+  static {
+    __name(this, "SubjectInfoAccessSyntax");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, SubjectInfoAccessSyntax_1.prototype);
+  }
+};
+SubjectInfoAccessSyntax = SubjectInfoAccessSyntax_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: AccessDescription })
+], SubjectInfoAccessSyntax);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/algorithm_identifier.js
+var pvtsutils2 = __toESM(require_build());
+var AlgorithmIdentifier = class _AlgorithmIdentifier {
+  static {
+    __name(this, "AlgorithmIdentifier");
+  }
+  constructor(params = {}) {
+    this.algorithm = "";
+    Object.assign(this, params);
+  }
+  isEqual(data) {
+    return data instanceof _AlgorithmIdentifier && data.algorithm == this.algorithm && (data.parameters && this.parameters && pvtsutils2.isEqual(data.parameters, this.parameters) || data.parameters === this.parameters);
+  }
+};
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.ObjectIdentifier
+  })
+], AlgorithmIdentifier.prototype, "algorithm", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Any,
+    optional: true
+  })
+], AlgorithmIdentifier.prototype, "parameters", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/subject_public_key_info.js
+var SubjectPublicKeyInfo = class {
+  static {
+    __name(this, "SubjectPublicKeyInfo");
+  }
+  constructor(params = {}) {
+    this.algorithm = new AlgorithmIdentifier();
+    this.subjectPublicKey = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], SubjectPublicKeyInfo.prototype, "algorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], SubjectPublicKeyInfo.prototype, "subjectPublicKey", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/time.js
+var Time = class Time2 {
+  static {
+    __name(this, "Time");
+  }
+  constructor(time) {
+    if (time) {
+      if (typeof time === "string" || typeof time === "number" || time instanceof Date) {
+        const date = new Date(time);
+        if (date.getUTCFullYear() > 2049) {
+          this.generalTime = date;
+        } else {
+          this.utcTime = date;
+        }
+      } else {
+        Object.assign(this, time);
+      }
+    }
+  }
+  getTime() {
+    const time = this.utcTime || this.generalTime;
+    if (!time) {
+      throw new Error("Cannot get time from CHOICE object");
+    }
+    return time;
+  }
+};
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.UTCTime
+  })
+], Time.prototype, "utcTime", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.GeneralizedTime
+  })
+], Time.prototype, "generalTime", void 0);
+Time = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], Time);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/validity.js
+var Validity = class {
+  static {
+    __name(this, "Validity");
+  }
+  constructor(params) {
+    this.notBefore = new Time(/* @__PURE__ */ new Date());
+    this.notAfter = new Time(/* @__PURE__ */ new Date());
+    if (params) {
+      this.notBefore = new Time(params.notBefore);
+      this.notAfter = new Time(params.notAfter);
+    }
+  }
+};
+__decorate([
+  AsnProp({ type: Time })
+], Validity.prototype, "notBefore", void 0);
+__decorate([
+  AsnProp({ type: Time })
+], Validity.prototype, "notAfter", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/extension.js
+var Extensions_1;
+var Extension = class _Extension {
+  static {
+    __name(this, "Extension");
+  }
+  constructor(params = {}) {
+    this.extnID = "";
+    this.critical = _Extension.CRITICAL;
+    this.extnValue = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+Extension.CRITICAL = false;
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], Extension.prototype, "extnID", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Boolean,
+    defaultValue: Extension.CRITICAL
+  })
+], Extension.prototype, "critical", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], Extension.prototype, "extnValue", void 0);
+var Extensions = Extensions_1 = class Extensions2 extends AsnArray {
+  static {
+    __name(this, "Extensions");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, Extensions_1.prototype);
+  }
+};
+Extensions = Extensions_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: Extension })
+], Extensions);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/types.js
+var Version;
+(function(Version3) {
+  Version3[Version3["v1"] = 0] = "v1";
+  Version3[Version3["v2"] = 1] = "v2";
+  Version3[Version3["v3"] = 2] = "v3";
+})(Version || (Version = {}));
+
+// node_modules/@peculiar/asn1-x509/build/es2015/tbs_certificate.js
+var TBSCertificate = class {
+  static {
+    __name(this, "TBSCertificate");
+  }
+  constructor(params = {}) {
+    this.version = Version.v1;
+    this.serialNumber = new ArrayBuffer(0);
+    this.signature = new AlgorithmIdentifier();
+    this.issuer = new Name();
+    this.validity = new Validity();
+    this.subject = new Name();
+    this.subjectPublicKeyInfo = new SubjectPublicKeyInfo();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Integer,
+    context: 0,
+    defaultValue: Version.v1
+  })
+], TBSCertificate.prototype, "version", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.Integer,
+    converter: AsnIntegerArrayBufferConverter
+  })
+], TBSCertificate.prototype, "serialNumber", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], TBSCertificate.prototype, "signature", void 0);
+__decorate([
+  AsnProp({ type: Name })
+], TBSCertificate.prototype, "issuer", void 0);
+__decorate([
+  AsnProp({ type: Validity })
+], TBSCertificate.prototype, "validity", void 0);
+__decorate([
+  AsnProp({ type: Name })
+], TBSCertificate.prototype, "subject", void 0);
+__decorate([
+  AsnProp({ type: SubjectPublicKeyInfo })
+], TBSCertificate.prototype, "subjectPublicKeyInfo", void 0);
+__decorate([
+  AsnProp({
+    type: AsnPropTypes.BitString,
+    context: 1,
+    implicit: true,
+    optional: true
+  })
+], TBSCertificate.prototype, "issuerUniqueID", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString, context: 2, implicit: true, optional: true })
+], TBSCertificate.prototype, "subjectUniqueID", void 0);
+__decorate([
+  AsnProp({ type: Extensions, context: 3, optional: true })
+], TBSCertificate.prototype, "extensions", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/certificate.js
+var Certificate = class {
+  static {
+    __name(this, "Certificate");
+  }
+  constructor(params = {}) {
+    this.tbsCertificate = new TBSCertificate();
+    this.signatureAlgorithm = new AlgorithmIdentifier();
+    this.signatureValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: TBSCertificate, raw: true })
+], Certificate.prototype, "tbsCertificate", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], Certificate.prototype, "signatureAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], Certificate.prototype, "signatureValue", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/tbs_cert_list.js
+var RevokedCertificate = class {
+  static {
+    __name(this, "RevokedCertificate");
+  }
+  constructor(params = {}) {
+    this.userCertificate = new ArrayBuffer(0);
+    this.revocationDate = new Time();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RevokedCertificate.prototype, "userCertificate", void 0);
+__decorate([
+  AsnProp({ type: Time })
+], RevokedCertificate.prototype, "revocationDate", void 0);
+__decorate([
+  AsnProp({ type: Extension, optional: true, repeated: "sequence" })
+], RevokedCertificate.prototype, "crlEntryExtensions", void 0);
+var TBSCertList = class {
+  static {
+    __name(this, "TBSCertList");
+  }
+  constructor(params = {}) {
+    this.signature = new AlgorithmIdentifier();
+    this.issuer = new Name();
+    this.thisUpdate = new Time();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, optional: true })
+], TBSCertList.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], TBSCertList.prototype, "signature", void 0);
+__decorate([
+  AsnProp({ type: Name })
+], TBSCertList.prototype, "issuer", void 0);
+__decorate([
+  AsnProp({ type: Time })
+], TBSCertList.prototype, "thisUpdate", void 0);
+__decorate([
+  AsnProp({ type: Time, optional: true })
+], TBSCertList.prototype, "nextUpdate", void 0);
+__decorate([
+  AsnProp({ type: RevokedCertificate, repeated: "sequence", optional: true })
+], TBSCertList.prototype, "revokedCertificates", void 0);
+__decorate([
+  AsnProp({ type: Extension, optional: true, context: 0, repeated: "sequence" })
+], TBSCertList.prototype, "crlExtensions", void 0);
+
+// node_modules/@peculiar/asn1-x509/build/es2015/certificate_list.js
+var CertificateList = class {
+  static {
+    __name(this, "CertificateList");
+  }
+  constructor(params = {}) {
+    this.tbsCertList = new TBSCertList();
+    this.signatureAlgorithm = new AlgorithmIdentifier();
+    this.signature = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: TBSCertList, raw: true })
+], CertificateList.prototype, "tbsCertList", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], CertificateList.prototype, "signatureAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], CertificateList.prototype, "signature", void 0);
+
+// node_modules/@peculiar/x509/build/x509.es.js
+var import_pvtsutils6 = __toESM(require_build());
+
+// node_modules/@peculiar/asn1-cms/build/es2015/issuer_and_serial_number.js
+var IssuerAndSerialNumber = class {
+  static {
+    __name(this, "IssuerAndSerialNumber");
+  }
+  constructor(params = {}) {
+    this.issuer = new Name();
+    this.serialNumber = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: Name })
+], IssuerAndSerialNumber.prototype, "issuer", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], IssuerAndSerialNumber.prototype, "serialNumber", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/signer_identifier.js
+var SignerIdentifier = class SignerIdentifier2 {
+  static {
+    __name(this, "SignerIdentifier");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: SubjectKeyIdentifier, context: 0, implicit: true })
+], SignerIdentifier.prototype, "subjectKeyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: IssuerAndSerialNumber })
+], SignerIdentifier.prototype, "issuerAndSerialNumber", void 0);
+SignerIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], SignerIdentifier);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/types.js
+var CMSVersion;
+(function(CMSVersion2) {
+  CMSVersion2[CMSVersion2["v0"] = 0] = "v0";
+  CMSVersion2[CMSVersion2["v1"] = 1] = "v1";
+  CMSVersion2[CMSVersion2["v2"] = 2] = "v2";
+  CMSVersion2[CMSVersion2["v3"] = 3] = "v3";
+  CMSVersion2[CMSVersion2["v4"] = 4] = "v4";
+  CMSVersion2[CMSVersion2["v5"] = 5] = "v5";
+})(CMSVersion || (CMSVersion = {}));
+var DigestAlgorithmIdentifier = class DigestAlgorithmIdentifier2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "DigestAlgorithmIdentifier");
+  }
+};
+DigestAlgorithmIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], DigestAlgorithmIdentifier);
+var SignatureAlgorithmIdentifier = class SignatureAlgorithmIdentifier2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "SignatureAlgorithmIdentifier");
+  }
+};
+SignatureAlgorithmIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], SignatureAlgorithmIdentifier);
+var KeyEncryptionAlgorithmIdentifier = class KeyEncryptionAlgorithmIdentifier2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "KeyEncryptionAlgorithmIdentifier");
+  }
+};
+KeyEncryptionAlgorithmIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], KeyEncryptionAlgorithmIdentifier);
+var ContentEncryptionAlgorithmIdentifier = class ContentEncryptionAlgorithmIdentifier2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "ContentEncryptionAlgorithmIdentifier");
+  }
+};
+ContentEncryptionAlgorithmIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], ContentEncryptionAlgorithmIdentifier);
+var MessageAuthenticationCodeAlgorithm = class MessageAuthenticationCodeAlgorithm2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "MessageAuthenticationCodeAlgorithm");
+  }
+};
+MessageAuthenticationCodeAlgorithm = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], MessageAuthenticationCodeAlgorithm);
+var KeyDerivationAlgorithmIdentifier = class KeyDerivationAlgorithmIdentifier2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "KeyDerivationAlgorithmIdentifier");
+  }
+};
+KeyDerivationAlgorithmIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], KeyDerivationAlgorithmIdentifier);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/attribute.js
+var Attribute2 = class {
+  static {
+    __name(this, "Attribute");
+  }
+  constructor(params = {}) {
+    this.attrType = "";
+    this.attrValues = [];
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], Attribute2.prototype, "attrType", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, repeated: "set" })
+], Attribute2.prototype, "attrValues", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/signer_info.js
+var SignerInfos_1;
+var SignerInfo = class {
+  static {
+    __name(this, "SignerInfo");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v0;
+    this.sid = new SignerIdentifier();
+    this.digestAlgorithm = new DigestAlgorithmIdentifier();
+    this.signatureAlgorithm = new SignatureAlgorithmIdentifier();
+    this.signature = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], SignerInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: SignerIdentifier })
+], SignerInfo.prototype, "sid", void 0);
+__decorate([
+  AsnProp({ type: DigestAlgorithmIdentifier })
+], SignerInfo.prototype, "digestAlgorithm", void 0);
+__decorate([
+  AsnProp({
+    type: Attribute2,
+    repeated: "set",
+    context: 0,
+    implicit: true,
+    optional: true,
+    raw: true
+  })
+], SignerInfo.prototype, "signedAttrs", void 0);
+__decorate([
+  AsnProp({ type: SignatureAlgorithmIdentifier })
+], SignerInfo.prototype, "signatureAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], SignerInfo.prototype, "signature", void 0);
+__decorate([
+  AsnProp({ type: Attribute2, repeated: "set", context: 1, implicit: true, optional: true })
+], SignerInfo.prototype, "unsignedAttrs", void 0);
+var SignerInfos = SignerInfos_1 = class SignerInfos2 extends AsnArray {
+  static {
+    __name(this, "SignerInfos");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, SignerInfos_1.prototype);
+  }
+};
+SignerInfos = SignerInfos_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: SignerInfo })
+], SignerInfos);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/attributes.js
+var SigningTime = class SigningTime2 extends Time {
+  static {
+    __name(this, "SigningTime");
+  }
+};
+SigningTime = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], SigningTime);
+var CounterSignature = class CounterSignature2 extends SignerInfo {
+  static {
+    __name(this, "CounterSignature");
+  }
+};
+CounterSignature = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], CounterSignature);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/aa_clear_attrs.js
+var ACClearAttrs = class {
+  static {
+    __name(this, "ACClearAttrs");
+  }
+  constructor(params = {}) {
+    this.acIssuer = new GeneralName();
+    this.acSerial = 0;
+    this.attrs = [];
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralName })
+], ACClearAttrs.prototype, "acIssuer", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], ACClearAttrs.prototype, "acSerial", void 0);
+__decorate([
+  AsnProp({ type: Attribute, repeated: "sequence" })
+], ACClearAttrs.prototype, "attrs", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/attr_spec.js
+var AttrSpec_1;
+var AttrSpec = AttrSpec_1 = class AttrSpec2 extends AsnArray {
+  static {
+    __name(this, "AttrSpec");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, AttrSpec_1.prototype);
+  }
+};
+AttrSpec = AttrSpec_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: AsnPropTypes.ObjectIdentifier })
+], AttrSpec);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/aa_controls.js
+var AAControls = class {
+  static {
+    __name(this, "AAControls");
+  }
+  constructor(params = {}) {
+    this.permitUnSpecified = true;
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, optional: true })
+], AAControls.prototype, "pathLenConstraint", void 0);
+__decorate([
+  AsnProp({ type: AttrSpec, implicit: true, context: 0, optional: true })
+], AAControls.prototype, "permittedAttrs", void 0);
+__decorate([
+  AsnProp({ type: AttrSpec, implicit: true, context: 1, optional: true })
+], AAControls.prototype, "excludedAttrs", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Boolean, defaultValue: true })
+], AAControls.prototype, "permitUnSpecified", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/issuer_serial.js
+var IssuerSerial = class {
+  static {
+    __name(this, "IssuerSerial");
+  }
+  constructor(params = {}) {
+    this.issuer = new GeneralNames();
+    this.serial = new ArrayBuffer(0);
+    this.issuerUID = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralNames })
+], IssuerSerial.prototype, "issuer", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], IssuerSerial.prototype, "serial", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString, optional: true })
+], IssuerSerial.prototype, "issuerUID", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/object_digest_info.js
+var DigestedObjectType;
+(function(DigestedObjectType2) {
+  DigestedObjectType2[DigestedObjectType2["publicKey"] = 0] = "publicKey";
+  DigestedObjectType2[DigestedObjectType2["publicKeyCert"] = 1] = "publicKeyCert";
+  DigestedObjectType2[DigestedObjectType2["otherObjectTypes"] = 2] = "otherObjectTypes";
+})(DigestedObjectType || (DigestedObjectType = {}));
+var ObjectDigestInfo = class {
+  static {
+    __name(this, "ObjectDigestInfo");
+  }
+  constructor(params = {}) {
+    this.digestedObjectType = DigestedObjectType.publicKey;
+    this.digestAlgorithm = new AlgorithmIdentifier();
+    this.objectDigest = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Enumerated })
+], ObjectDigestInfo.prototype, "digestedObjectType", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier, optional: true })
+], ObjectDigestInfo.prototype, "otherObjectTypeID", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], ObjectDigestInfo.prototype, "digestAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], ObjectDigestInfo.prototype, "objectDigest", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/v2_form.js
+var V2Form = class {
+  static {
+    __name(this, "V2Form");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralNames, optional: true })
+], V2Form.prototype, "issuerName", void 0);
+__decorate([
+  AsnProp({ type: IssuerSerial, context: 0, implicit: true, optional: true })
+], V2Form.prototype, "baseCertificateID", void 0);
+__decorate([
+  AsnProp({ type: ObjectDigestInfo, context: 1, implicit: true, optional: true })
+], V2Form.prototype, "objectDigestInfo", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/attr_cert_issuer.js
+var AttCertIssuer = class AttCertIssuer2 {
+  static {
+    __name(this, "AttCertIssuer");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralName, repeated: "sequence" })
+], AttCertIssuer.prototype, "v1Form", void 0);
+__decorate([
+  AsnProp({ type: V2Form, context: 0, implicit: true })
+], AttCertIssuer.prototype, "v2Form", void 0);
+AttCertIssuer = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], AttCertIssuer);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/attr_cert_validity_period.js
+var AttCertValidityPeriod = class {
+  static {
+    __name(this, "AttCertValidityPeriod");
+  }
+  constructor(params = {}) {
+    this.notBeforeTime = /* @__PURE__ */ new Date();
+    this.notAfterTime = /* @__PURE__ */ new Date();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime })
+], AttCertValidityPeriod.prototype, "notBeforeTime", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime })
+], AttCertValidityPeriod.prototype, "notAfterTime", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/holder.js
+var Holder = class {
+  static {
+    __name(this, "Holder");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: IssuerSerial, implicit: true, context: 0, optional: true })
+], Holder.prototype, "baseCertificateID", void 0);
+__decorate([
+  AsnProp({ type: GeneralNames, implicit: true, context: 1, optional: true })
+], Holder.prototype, "entityName", void 0);
+__decorate([
+  AsnProp({ type: ObjectDigestInfo, implicit: true, context: 2, optional: true })
+], Holder.prototype, "objectDigestInfo", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/attribute_certificate_info.js
+var AttCertVersion;
+(function(AttCertVersion2) {
+  AttCertVersion2[AttCertVersion2["v2"] = 1] = "v2";
+})(AttCertVersion || (AttCertVersion = {}));
+var AttributeCertificateInfo = class {
+  static {
+    __name(this, "AttributeCertificateInfo");
+  }
+  constructor(params = {}) {
+    this.version = AttCertVersion.v2;
+    this.holder = new Holder();
+    this.issuer = new AttCertIssuer();
+    this.signature = new AlgorithmIdentifier();
+    this.serialNumber = new ArrayBuffer(0);
+    this.attrCertValidityPeriod = new AttCertValidityPeriod();
+    this.attributes = [];
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], AttributeCertificateInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: Holder })
+], AttributeCertificateInfo.prototype, "holder", void 0);
+__decorate([
+  AsnProp({ type: AttCertIssuer })
+], AttributeCertificateInfo.prototype, "issuer", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], AttributeCertificateInfo.prototype, "signature", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], AttributeCertificateInfo.prototype, "serialNumber", void 0);
+__decorate([
+  AsnProp({ type: AttCertValidityPeriod })
+], AttributeCertificateInfo.prototype, "attrCertValidityPeriod", void 0);
+__decorate([
+  AsnProp({ type: Attribute, repeated: "sequence" })
+], AttributeCertificateInfo.prototype, "attributes", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString, optional: true })
+], AttributeCertificateInfo.prototype, "issuerUniqueID", void 0);
+__decorate([
+  AsnProp({ type: Extensions, optional: true })
+], AttributeCertificateInfo.prototype, "extensions", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/attribute_certificate.js
+var AttributeCertificate = class {
+  static {
+    __name(this, "AttributeCertificate");
+  }
+  constructor(params = {}) {
+    this.acinfo = new AttributeCertificateInfo();
+    this.signatureAlgorithm = new AlgorithmIdentifier();
+    this.signatureValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AttributeCertificateInfo })
+], AttributeCertificate.prototype, "acinfo", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], AttributeCertificate.prototype, "signatureAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], AttributeCertificate.prototype, "signatureValue", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/class_list.js
+var ClassListFlags;
+(function(ClassListFlags2) {
+  ClassListFlags2[ClassListFlags2["unmarked"] = 1] = "unmarked";
+  ClassListFlags2[ClassListFlags2["unclassified"] = 2] = "unclassified";
+  ClassListFlags2[ClassListFlags2["restricted"] = 4] = "restricted";
+  ClassListFlags2[ClassListFlags2["confidential"] = 8] = "confidential";
+  ClassListFlags2[ClassListFlags2["secret"] = 16] = "secret";
+  ClassListFlags2[ClassListFlags2["topSecret"] = 32] = "topSecret";
+})(ClassListFlags || (ClassListFlags = {}));
+var ClassList = class extends BitString2 {
+  static {
+    __name(this, "ClassList");
+  }
+};
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/security_category.js
+var SecurityCategory = class {
+  static {
+    __name(this, "SecurityCategory");
+  }
+  constructor(params = {}) {
+    this.type = "";
+    this.value = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier, implicit: true, context: 0 })
+], SecurityCategory.prototype, "type", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, implicit: true, context: 1 })
+], SecurityCategory.prototype, "value", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/clearance.js
+var Clearance = class {
+  static {
+    __name(this, "Clearance");
+  }
+  constructor(params = {}) {
+    this.policyId = "";
+    this.classList = new ClassList(ClassListFlags.unclassified);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], Clearance.prototype, "policyId", void 0);
+__decorate([
+  AsnProp({ type: ClassList, defaultValue: new ClassList(ClassListFlags.unclassified) })
+], Clearance.prototype, "classList", void 0);
+__decorate([
+  AsnProp({ type: SecurityCategory, repeated: "set" })
+], Clearance.prototype, "securityCategories", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/ietf_attr_syntax.js
+var IetfAttrSyntaxValueChoices = class {
+  static {
+    __name(this, "IetfAttrSyntaxValueChoices");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: OctetString2 })
+], IetfAttrSyntaxValueChoices.prototype, "cotets", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], IetfAttrSyntaxValueChoices.prototype, "oid", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Utf8String })
+], IetfAttrSyntaxValueChoices.prototype, "string", void 0);
+var IetfAttrSyntax = class {
+  static {
+    __name(this, "IetfAttrSyntax");
+  }
+  constructor(params = {}) {
+    this.values = [];
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralNames, implicit: true, context: 0, optional: true })
+], IetfAttrSyntax.prototype, "policyAuthority", void 0);
+__decorate([
+  AsnProp({ type: IetfAttrSyntaxValueChoices, repeated: "sequence" })
+], IetfAttrSyntax.prototype, "values", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/object_identifiers.js
+var id_pe_ac_auditIdentity = `${id_pe}.4`;
+var id_pe_aaControls = `${id_pe}.6`;
+var id_pe_ac_proxying = `${id_pe}.10`;
+var id_ce_targetInformation = `${id_ce}.55`;
+var id_aca = `${id_pkix}.10`;
+var id_aca_authenticationInfo = `${id_aca}.1`;
+var id_aca_accessIdentity = `${id_aca}.2`;
+var id_aca_chargingIdentity = `${id_aca}.3`;
+var id_aca_group = `${id_aca}.4`;
+var id_aca_encAttrs = `${id_aca}.6`;
+var id_at = "2.5.4";
+var id_at_role = `${id_at}.72`;
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/target.js
+var Targets_1;
+var TargetCert = class {
+  static {
+    __name(this, "TargetCert");
+  }
+  constructor(params = {}) {
+    this.targetCertificate = new IssuerSerial();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: IssuerSerial })
+], TargetCert.prototype, "targetCertificate", void 0);
+__decorate([
+  AsnProp({ type: GeneralName, optional: true })
+], TargetCert.prototype, "targetName", void 0);
+__decorate([
+  AsnProp({ type: ObjectDigestInfo, optional: true })
+], TargetCert.prototype, "certDigestInfo", void 0);
+var Target = class Target2 {
+  static {
+    __name(this, "Target");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralName, context: 0, implicit: true })
+], Target.prototype, "targetName", void 0);
+__decorate([
+  AsnProp({ type: GeneralName, context: 1, implicit: true })
+], Target.prototype, "targetGroup", void 0);
+__decorate([
+  AsnProp({ type: TargetCert, context: 2, implicit: true })
+], Target.prototype, "targetCert", void 0);
+Target = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], Target);
+var Targets = Targets_1 = class Targets2 extends AsnArray {
+  static {
+    __name(this, "Targets");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, Targets_1.prototype);
+  }
+};
+Targets = Targets_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: Target })
+], Targets);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/proxy_info.js
+var ProxyInfo_1;
+var ProxyInfo = ProxyInfo_1 = class ProxyInfo2 extends AsnArray {
+  static {
+    __name(this, "ProxyInfo");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, ProxyInfo_1.prototype);
+  }
+};
+ProxyInfo = ProxyInfo_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: Targets })
+], ProxyInfo);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/role_syntax.js
+var RoleSyntax = class {
+  static {
+    __name(this, "RoleSyntax");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralNames, implicit: true, context: 0, optional: true })
+], RoleSyntax.prototype, "roleAuthority", void 0);
+__decorate([
+  AsnProp({ type: GeneralName, implicit: true, context: 1 })
+], RoleSyntax.prototype, "roleName", void 0);
+
+// node_modules/@peculiar/asn1-x509-attr/build/es2015/svce_auth_info.js
+var SvceAuthInfo = class {
+  static {
+    __name(this, "SvceAuthInfo");
+  }
+  constructor(params = {}) {
+    this.service = new GeneralName();
+    this.ident = new GeneralName();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: GeneralName })
+], SvceAuthInfo.prototype, "service", void 0);
+__decorate([
+  AsnProp({ type: GeneralName })
+], SvceAuthInfo.prototype, "ident", void 0);
+__decorate([
+  AsnProp({ type: OctetString2, optional: true })
+], SvceAuthInfo.prototype, "authInfo", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/certificate_choices.js
+var CertificateSet_1;
+var OtherCertificateFormat = class {
+  static {
+    __name(this, "OtherCertificateFormat");
+  }
+  constructor(params = {}) {
+    this.otherCertFormat = "";
+    this.otherCert = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], OtherCertificateFormat.prototype, "otherCertFormat", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], OtherCertificateFormat.prototype, "otherCert", void 0);
+var CertificateChoices = class CertificateChoices2 {
+  static {
+    __name(this, "CertificateChoices");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: Certificate })
+], CertificateChoices.prototype, "certificate", void 0);
+__decorate([
+  AsnProp({ type: AttributeCertificate, context: 2, implicit: true })
+], CertificateChoices.prototype, "v2AttrCert", void 0);
+__decorate([
+  AsnProp({ type: OtherCertificateFormat, context: 3, implicit: true })
+], CertificateChoices.prototype, "other", void 0);
+CertificateChoices = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], CertificateChoices);
+var CertificateSet = CertificateSet_1 = class CertificateSet2 extends AsnArray {
+  static {
+    __name(this, "CertificateSet");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, CertificateSet_1.prototype);
+  }
+};
+CertificateSet = CertificateSet_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: CertificateChoices })
+], CertificateSet);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/content_info.js
+var ContentInfo = class {
+  static {
+    __name(this, "ContentInfo");
+  }
+  constructor(params = {}) {
+    this.contentType = "";
+    this.content = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], ContentInfo.prototype, "contentType", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 0 })
+], ContentInfo.prototype, "content", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/encapsulated_content_info.js
+var EncapsulatedContent = class EncapsulatedContent2 {
+  static {
+    __name(this, "EncapsulatedContent");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: OctetString2 })
+], EncapsulatedContent.prototype, "single", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], EncapsulatedContent.prototype, "any", void 0);
+EncapsulatedContent = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], EncapsulatedContent);
+var EncapsulatedContentInfo = class {
+  static {
+    __name(this, "EncapsulatedContentInfo");
+  }
+  constructor(params = {}) {
+    this.eContentType = "";
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], EncapsulatedContentInfo.prototype, "eContentType", void 0);
+__decorate([
+  AsnProp({ type: EncapsulatedContent, context: 0, optional: true })
+], EncapsulatedContentInfo.prototype, "eContent", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/encrypted_content_info.js
+var EncryptedContent = class EncryptedContent2 {
+  static {
+    __name(this, "EncryptedContent");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: OctetString2, context: 0, implicit: true, optional: true })
+], EncryptedContent.prototype, "value", void 0);
+__decorate([
+  AsnProp({
+    type: OctetString2,
+    converter: AsnConstructedOctetStringConverter,
+    context: 0,
+    implicit: true,
+    optional: true,
+    repeated: "sequence"
+  })
+], EncryptedContent.prototype, "constructedValue", void 0);
+EncryptedContent = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], EncryptedContent);
+var EncryptedContentInfo = class {
+  static {
+    __name(this, "EncryptedContentInfo");
+  }
+  constructor(params = {}) {
+    this.contentType = "";
+    this.contentEncryptionAlgorithm = new ContentEncryptionAlgorithmIdentifier();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], EncryptedContentInfo.prototype, "contentType", void 0);
+__decorate([
+  AsnProp({ type: ContentEncryptionAlgorithmIdentifier })
+], EncryptedContentInfo.prototype, "contentEncryptionAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: EncryptedContent, optional: true })
+], EncryptedContentInfo.prototype, "encryptedContent", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/other_key_attribute.js
+var OtherKeyAttribute = class {
+  static {
+    __name(this, "OtherKeyAttribute");
+  }
+  constructor(params = {}) {
+    this.keyAttrId = "";
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], OtherKeyAttribute.prototype, "keyAttrId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, optional: true })
+], OtherKeyAttribute.prototype, "keyAttr", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/key_agree_recipient_info.js
+var RecipientEncryptedKeys_1;
+var RecipientKeyIdentifier = class {
+  static {
+    __name(this, "RecipientKeyIdentifier");
+  }
+  constructor(params = {}) {
+    this.subjectKeyIdentifier = new SubjectKeyIdentifier();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: SubjectKeyIdentifier })
+], RecipientKeyIdentifier.prototype, "subjectKeyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime, optional: true })
+], RecipientKeyIdentifier.prototype, "date", void 0);
+__decorate([
+  AsnProp({ type: OtherKeyAttribute, optional: true })
+], RecipientKeyIdentifier.prototype, "other", void 0);
+var KeyAgreeRecipientIdentifier = class KeyAgreeRecipientIdentifier2 {
+  static {
+    __name(this, "KeyAgreeRecipientIdentifier");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: RecipientKeyIdentifier, context: 0, implicit: true, optional: true })
+], KeyAgreeRecipientIdentifier.prototype, "rKeyId", void 0);
+__decorate([
+  AsnProp({ type: IssuerAndSerialNumber, optional: true })
+], KeyAgreeRecipientIdentifier.prototype, "issuerAndSerialNumber", void 0);
+KeyAgreeRecipientIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], KeyAgreeRecipientIdentifier);
+var RecipientEncryptedKey = class {
+  static {
+    __name(this, "RecipientEncryptedKey");
+  }
+  constructor(params = {}) {
+    this.rid = new KeyAgreeRecipientIdentifier();
+    this.encryptedKey = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: KeyAgreeRecipientIdentifier })
+], RecipientEncryptedKey.prototype, "rid", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], RecipientEncryptedKey.prototype, "encryptedKey", void 0);
+var RecipientEncryptedKeys = RecipientEncryptedKeys_1 = class RecipientEncryptedKeys2 extends AsnArray {
+  static {
+    __name(this, "RecipientEncryptedKeys");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, RecipientEncryptedKeys_1.prototype);
+  }
+};
+RecipientEncryptedKeys = RecipientEncryptedKeys_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: RecipientEncryptedKey })
+], RecipientEncryptedKeys);
+var OriginatorPublicKey = class {
+  static {
+    __name(this, "OriginatorPublicKey");
+  }
+  constructor(params = {}) {
+    this.algorithm = new AlgorithmIdentifier();
+    this.publicKey = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], OriginatorPublicKey.prototype, "algorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], OriginatorPublicKey.prototype, "publicKey", void 0);
+var OriginatorIdentifierOrKey = class OriginatorIdentifierOrKey2 {
+  static {
+    __name(this, "OriginatorIdentifierOrKey");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: SubjectKeyIdentifier, context: 0, implicit: true, optional: true })
+], OriginatorIdentifierOrKey.prototype, "subjectKeyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: OriginatorPublicKey, context: 1, implicit: true, optional: true })
+], OriginatorIdentifierOrKey.prototype, "originatorKey", void 0);
+__decorate([
+  AsnProp({ type: IssuerAndSerialNumber, optional: true })
+], OriginatorIdentifierOrKey.prototype, "issuerAndSerialNumber", void 0);
+OriginatorIdentifierOrKey = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], OriginatorIdentifierOrKey);
+var KeyAgreeRecipientInfo = class {
+  static {
+    __name(this, "KeyAgreeRecipientInfo");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v3;
+    this.originator = new OriginatorIdentifierOrKey();
+    this.keyEncryptionAlgorithm = new KeyEncryptionAlgorithmIdentifier();
+    this.recipientEncryptedKeys = new RecipientEncryptedKeys();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], KeyAgreeRecipientInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: OriginatorIdentifierOrKey, context: 0 })
+], KeyAgreeRecipientInfo.prototype, "originator", void 0);
+__decorate([
+  AsnProp({ type: OctetString2, context: 1, optional: true })
+], KeyAgreeRecipientInfo.prototype, "ukm", void 0);
+__decorate([
+  AsnProp({ type: KeyEncryptionAlgorithmIdentifier })
+], KeyAgreeRecipientInfo.prototype, "keyEncryptionAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: RecipientEncryptedKeys })
+], KeyAgreeRecipientInfo.prototype, "recipientEncryptedKeys", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/key_trans_recipient_info.js
+var RecipientIdentifier = class RecipientIdentifier2 {
+  static {
+    __name(this, "RecipientIdentifier");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: SubjectKeyIdentifier, context: 0, implicit: true })
+], RecipientIdentifier.prototype, "subjectKeyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: IssuerAndSerialNumber })
+], RecipientIdentifier.prototype, "issuerAndSerialNumber", void 0);
+RecipientIdentifier = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], RecipientIdentifier);
+var KeyTransRecipientInfo = class {
+  static {
+    __name(this, "KeyTransRecipientInfo");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v0;
+    this.rid = new RecipientIdentifier();
+    this.keyEncryptionAlgorithm = new KeyEncryptionAlgorithmIdentifier();
+    this.encryptedKey = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], KeyTransRecipientInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: RecipientIdentifier })
+], KeyTransRecipientInfo.prototype, "rid", void 0);
+__decorate([
+  AsnProp({ type: KeyEncryptionAlgorithmIdentifier })
+], KeyTransRecipientInfo.prototype, "keyEncryptionAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], KeyTransRecipientInfo.prototype, "encryptedKey", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/kek_recipient_info.js
+var KEKIdentifier = class {
+  static {
+    __name(this, "KEKIdentifier");
+  }
+  constructor(params = {}) {
+    this.keyIdentifier = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: OctetString2 })
+], KEKIdentifier.prototype, "keyIdentifier", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime, optional: true })
+], KEKIdentifier.prototype, "date", void 0);
+__decorate([
+  AsnProp({ type: OtherKeyAttribute, optional: true })
+], KEKIdentifier.prototype, "other", void 0);
+var KEKRecipientInfo = class {
+  static {
+    __name(this, "KEKRecipientInfo");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v4;
+    this.kekid = new KEKIdentifier();
+    this.keyEncryptionAlgorithm = new KeyEncryptionAlgorithmIdentifier();
+    this.encryptedKey = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], KEKRecipientInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: KEKIdentifier })
+], KEKRecipientInfo.prototype, "kekid", void 0);
+__decorate([
+  AsnProp({ type: KeyEncryptionAlgorithmIdentifier })
+], KEKRecipientInfo.prototype, "keyEncryptionAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], KEKRecipientInfo.prototype, "encryptedKey", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/password_recipient_info.js
+var PasswordRecipientInfo = class {
+  static {
+    __name(this, "PasswordRecipientInfo");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v0;
+    this.keyEncryptionAlgorithm = new KeyEncryptionAlgorithmIdentifier();
+    this.encryptedKey = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], PasswordRecipientInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: KeyDerivationAlgorithmIdentifier, context: 0, optional: true })
+], PasswordRecipientInfo.prototype, "keyDerivationAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: KeyEncryptionAlgorithmIdentifier })
+], PasswordRecipientInfo.prototype, "keyEncryptionAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], PasswordRecipientInfo.prototype, "encryptedKey", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/recipient_info.js
+var OtherRecipientInfo = class {
+  static {
+    __name(this, "OtherRecipientInfo");
+  }
+  constructor(params = {}) {
+    this.oriType = "";
+    this.oriValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], OtherRecipientInfo.prototype, "oriType", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], OtherRecipientInfo.prototype, "oriValue", void 0);
+var RecipientInfo = class RecipientInfo2 {
+  static {
+    __name(this, "RecipientInfo");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: KeyTransRecipientInfo, optional: true })
+], RecipientInfo.prototype, "ktri", void 0);
+__decorate([
+  AsnProp({ type: KeyAgreeRecipientInfo, context: 1, implicit: true, optional: true })
+], RecipientInfo.prototype, "kari", void 0);
+__decorate([
+  AsnProp({ type: KEKRecipientInfo, context: 2, implicit: true, optional: true })
+], RecipientInfo.prototype, "kekri", void 0);
+__decorate([
+  AsnProp({ type: PasswordRecipientInfo, context: 3, implicit: true, optional: true })
+], RecipientInfo.prototype, "pwri", void 0);
+__decorate([
+  AsnProp({ type: OtherRecipientInfo, context: 4, implicit: true, optional: true })
+], RecipientInfo.prototype, "ori", void 0);
+RecipientInfo = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], RecipientInfo);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/recipient_infos.js
+var RecipientInfos_1;
+var RecipientInfos = RecipientInfos_1 = class RecipientInfos2 extends AsnArray {
+  static {
+    __name(this, "RecipientInfos");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, RecipientInfos_1.prototype);
+  }
+};
+RecipientInfos = RecipientInfos_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: RecipientInfo })
+], RecipientInfos);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/revocation_info_choice.js
+var RevocationInfoChoices_1;
+var id_ri = `${id_pkix}.16`;
+var id_ri_ocsp_response = `${id_ri}.2`;
+var id_ri_scvp = `${id_ri}.4`;
+var OtherRevocationInfoFormat = class {
+  static {
+    __name(this, "OtherRevocationInfoFormat");
+  }
+  constructor(params = {}) {
+    this.otherRevInfoFormat = "";
+    this.otherRevInfo = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], OtherRevocationInfoFormat.prototype, "otherRevInfoFormat", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], OtherRevocationInfoFormat.prototype, "otherRevInfo", void 0);
+var RevocationInfoChoice = class RevocationInfoChoice2 {
+  static {
+    __name(this, "RevocationInfoChoice");
+  }
+  constructor(params = {}) {
+    this.other = new OtherRevocationInfoFormat();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: OtherRevocationInfoFormat, context: 1, implicit: true })
+], RevocationInfoChoice.prototype, "other", void 0);
+RevocationInfoChoice = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], RevocationInfoChoice);
+var RevocationInfoChoices = RevocationInfoChoices_1 = class RevocationInfoChoices2 extends AsnArray {
+  static {
+    __name(this, "RevocationInfoChoices");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, RevocationInfoChoices_1.prototype);
+  }
+};
+RevocationInfoChoices = RevocationInfoChoices_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: RevocationInfoChoice })
+], RevocationInfoChoices);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/originator_info.js
+var OriginatorInfo = class {
+  static {
+    __name(this, "OriginatorInfo");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: CertificateSet, context: 0, implicit: true, optional: true })
+], OriginatorInfo.prototype, "certs", void 0);
+__decorate([
+  AsnProp({ type: RevocationInfoChoices, context: 1, implicit: true, optional: true })
+], OriginatorInfo.prototype, "crls", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/enveloped_data.js
+var UnprotectedAttributes_1;
+var UnprotectedAttributes = UnprotectedAttributes_1 = class UnprotectedAttributes2 extends AsnArray {
+  static {
+    __name(this, "UnprotectedAttributes");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, UnprotectedAttributes_1.prototype);
+  }
+};
+UnprotectedAttributes = UnprotectedAttributes_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: Attribute2 })
+], UnprotectedAttributes);
+var EnvelopedData = class {
+  static {
+    __name(this, "EnvelopedData");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v0;
+    this.recipientInfos = new RecipientInfos();
+    this.encryptedContentInfo = new EncryptedContentInfo();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], EnvelopedData.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: OriginatorInfo, context: 0, implicit: true, optional: true })
+], EnvelopedData.prototype, "originatorInfo", void 0);
+__decorate([
+  AsnProp({ type: RecipientInfos })
+], EnvelopedData.prototype, "recipientInfos", void 0);
+__decorate([
+  AsnProp({ type: EncryptedContentInfo })
+], EnvelopedData.prototype, "encryptedContentInfo", void 0);
+__decorate([
+  AsnProp({ type: UnprotectedAttributes, context: 1, implicit: true, optional: true })
+], EnvelopedData.prototype, "unprotectedAttrs", void 0);
+
+// node_modules/@peculiar/asn1-cms/build/es2015/object_identifiers.js
+var id_signedData = "1.2.840.113549.1.7.2";
+
+// node_modules/@peculiar/asn1-cms/build/es2015/signed_data.js
+var DigestAlgorithmIdentifiers_1;
+var DigestAlgorithmIdentifiers = DigestAlgorithmIdentifiers_1 = class DigestAlgorithmIdentifiers2 extends AsnArray {
+  static {
+    __name(this, "DigestAlgorithmIdentifiers");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, DigestAlgorithmIdentifiers_1.prototype);
+  }
+};
+DigestAlgorithmIdentifiers = DigestAlgorithmIdentifiers_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: DigestAlgorithmIdentifier })
+], DigestAlgorithmIdentifiers);
+var SignedData = class {
+  static {
+    __name(this, "SignedData");
+  }
+  constructor(params = {}) {
+    this.version = CMSVersion.v0;
+    this.digestAlgorithms = new DigestAlgorithmIdentifiers();
+    this.encapContentInfo = new EncapsulatedContentInfo();
+    this.signerInfos = new SignerInfos();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], SignedData.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: DigestAlgorithmIdentifiers })
+], SignedData.prototype, "digestAlgorithms", void 0);
+__decorate([
+  AsnProp({ type: EncapsulatedContentInfo })
+], SignedData.prototype, "encapContentInfo", void 0);
+__decorate([
+  AsnProp({ type: CertificateSet, context: 0, implicit: true, optional: true })
+], SignedData.prototype, "certificates", void 0);
+__decorate([
+  AsnProp({ type: RevocationInfoChoices, context: 1, implicit: true, optional: true })
+], SignedData.prototype, "crls", void 0);
+__decorate([
+  AsnProp({ type: SignerInfos })
+], SignedData.prototype, "signerInfos", void 0);
+
+// node_modules/@peculiar/asn1-ecc/build/es2015/object_identifiers.js
+var id_ecPublicKey = "1.2.840.10045.2.1";
+var id_ecdsaWithSHA1 = "1.2.840.10045.4.1";
+var id_ecdsaWithSHA224 = "1.2.840.10045.4.3.1";
+var id_ecdsaWithSHA256 = "1.2.840.10045.4.3.2";
+var id_ecdsaWithSHA384 = "1.2.840.10045.4.3.3";
+var id_ecdsaWithSHA512 = "1.2.840.10045.4.3.4";
+var id_secp256r1 = "1.2.840.10045.3.1.7";
+var id_secp384r1 = "1.3.132.0.34";
+var id_secp521r1 = "1.3.132.0.35";
+
+// node_modules/@peculiar/asn1-ecc/build/es2015/algorithms.js
+function create2(algorithm) {
+  return new AlgorithmIdentifier({ algorithm });
+}
+__name(create2, "create");
+var ecdsaWithSHA1 = create2(id_ecdsaWithSHA1);
+var ecdsaWithSHA224 = create2(id_ecdsaWithSHA224);
+var ecdsaWithSHA256 = create2(id_ecdsaWithSHA256);
+var ecdsaWithSHA384 = create2(id_ecdsaWithSHA384);
+var ecdsaWithSHA512 = create2(id_ecdsaWithSHA512);
+
+// node_modules/@peculiar/asn1-ecc/build/es2015/rfc3279.js
+var FieldID = class FieldID2 {
+  static {
+    __name(this, "FieldID");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], FieldID.prototype, "fieldType", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any })
+], FieldID.prototype, "parameters", void 0);
+FieldID = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], FieldID);
+var ECPoint = class extends OctetString2 {
+  static {
+    __name(this, "ECPoint");
+  }
+};
+var Curve = class Curve2 {
+  static {
+    __name(this, "Curve");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.OctetString })
+], Curve.prototype, "a", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.OctetString })
+], Curve.prototype, "b", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString, optional: true })
+], Curve.prototype, "seed", void 0);
+Curve = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], Curve);
+var ECPVer;
+(function(ECPVer2) {
+  ECPVer2[ECPVer2["ecpVer1"] = 1] = "ecpVer1";
+})(ECPVer || (ECPVer = {}));
+var SpecifiedECDomain = class SpecifiedECDomain2 {
+  static {
+    __name(this, "SpecifiedECDomain");
+  }
+  constructor(params = {}) {
+    this.version = ECPVer.ecpVer1;
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], SpecifiedECDomain.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: FieldID })
+], SpecifiedECDomain.prototype, "fieldID", void 0);
+__decorate([
+  AsnProp({ type: Curve })
+], SpecifiedECDomain.prototype, "curve", void 0);
+__decorate([
+  AsnProp({ type: ECPoint })
+], SpecifiedECDomain.prototype, "base", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], SpecifiedECDomain.prototype, "order", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, optional: true })
+], SpecifiedECDomain.prototype, "cofactor", void 0);
+SpecifiedECDomain = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], SpecifiedECDomain);
+
+// node_modules/@peculiar/asn1-ecc/build/es2015/ec_parameters.js
+var ECParameters = class ECParameters2 {
+  static {
+    __name(this, "ECParameters");
+  }
+  constructor(params = {}) {
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], ECParameters.prototype, "namedCurve", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Null })
+], ECParameters.prototype, "implicitCurve", void 0);
+__decorate([
+  AsnProp({ type: SpecifiedECDomain })
+], ECParameters.prototype, "specifiedCurve", void 0);
+ECParameters = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], ECParameters);
+
+// node_modules/@peculiar/asn1-ecc/build/es2015/ec_private_key.js
+var ECPrivateKey = class {
+  static {
+    __name(this, "ECPrivateKey");
+  }
+  constructor(params = {}) {
+    this.version = 1;
+    this.privateKey = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], ECPrivateKey.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], ECPrivateKey.prototype, "privateKey", void 0);
+__decorate([
+  AsnProp({ type: ECParameters, context: 0, optional: true })
+], ECPrivateKey.prototype, "parameters", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString, context: 1, optional: true })
+], ECPrivateKey.prototype, "publicKey", void 0);
+
+// node_modules/@peculiar/asn1-ecc/build/es2015/ec_signature_value.js
+var ECDSASigValue = class {
+  static {
+    __name(this, "ECDSASigValue");
+  }
+  constructor(params = {}) {
+    this.r = new ArrayBuffer(0);
+    this.s = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], ECDSASigValue.prototype, "r", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], ECDSASigValue.prototype, "s", void 0);
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/object_identifiers.js
+var id_pkcs_1 = "1.2.840.113549.1.1";
+var id_rsaEncryption = `${id_pkcs_1}.1`;
+var id_RSAES_OAEP = `${id_pkcs_1}.7`;
+var id_pSpecified = `${id_pkcs_1}.9`;
+var id_RSASSA_PSS = `${id_pkcs_1}.10`;
+var id_md2WithRSAEncryption = `${id_pkcs_1}.2`;
+var id_md5WithRSAEncryption = `${id_pkcs_1}.4`;
+var id_sha1WithRSAEncryption = `${id_pkcs_1}.5`;
+var id_sha224WithRSAEncryption = `${id_pkcs_1}.14`;
+var id_sha256WithRSAEncryption = `${id_pkcs_1}.11`;
+var id_sha384WithRSAEncryption = `${id_pkcs_1}.12`;
+var id_sha512WithRSAEncryption = `${id_pkcs_1}.13`;
+var id_sha512_224WithRSAEncryption = `${id_pkcs_1}.15`;
+var id_sha512_256WithRSAEncryption = `${id_pkcs_1}.16`;
+var id_sha1 = "1.3.14.3.2.26";
+var id_sha224 = "2.16.840.1.101.3.4.2.4";
+var id_sha256 = "2.16.840.1.101.3.4.2.1";
+var id_sha384 = "2.16.840.1.101.3.4.2.2";
+var id_sha512 = "2.16.840.1.101.3.4.2.3";
+var id_sha512_224 = "2.16.840.1.101.3.4.2.5";
+var id_sha512_256 = "2.16.840.1.101.3.4.2.6";
+var id_md2 = "1.2.840.113549.2.2";
+var id_md5 = "1.2.840.113549.2.5";
+var id_mgf1 = `${id_pkcs_1}.8`;
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/algorithms.js
+function create3(algorithm) {
+  return new AlgorithmIdentifier({ algorithm, parameters: null });
+}
+__name(create3, "create");
+var md2 = create3(id_md2);
+var md4 = create3(id_md5);
+var sha1 = create3(id_sha1);
+var sha224 = create3(id_sha224);
+var sha2564 = create3(id_sha256);
+var sha384 = create3(id_sha384);
+var sha5123 = create3(id_sha512);
+var sha512_224 = create3(id_sha512_224);
+var sha512_256 = create3(id_sha512_256);
+var mgf1SHA1 = new AlgorithmIdentifier({
+  algorithm: id_mgf1,
+  parameters: AsnConvert.serialize(sha1)
+});
+var pSpecifiedEmpty = new AlgorithmIdentifier({
+  algorithm: id_pSpecified,
+  parameters: AsnConvert.serialize(AsnOctetStringConverter.toASN(new Uint8Array([
+    218,
+    57,
+    163,
+    238,
+    94,
+    107,
+    75,
+    13,
+    50,
+    85,
+    191,
+    239,
+    149,
+    96,
+    24,
+    144,
+    175,
+    216,
+    7,
+    9
+  ]).buffer))
+});
+var rsaEncryption = create3(id_rsaEncryption);
+var md2WithRSAEncryption = create3(id_md2WithRSAEncryption);
+var md5WithRSAEncryption = create3(id_md5WithRSAEncryption);
+var sha1WithRSAEncryption = create3(id_sha1WithRSAEncryption);
+var sha224WithRSAEncryption = create3(id_sha512_224WithRSAEncryption);
+var sha256WithRSAEncryption = create3(id_sha512_256WithRSAEncryption);
+var sha384WithRSAEncryption = create3(id_sha384WithRSAEncryption);
+var sha512WithRSAEncryption = create3(id_sha512WithRSAEncryption);
+var sha512_224WithRSAEncryption = create3(id_sha512_224WithRSAEncryption);
+var sha512_256WithRSAEncryption = create3(id_sha512_256WithRSAEncryption);
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/parameters/rsaes_oaep.js
+var RsaEsOaepParams = class {
+  static {
+    __name(this, "RsaEsOaepParams");
+  }
+  constructor(params = {}) {
+    this.hashAlgorithm = new AlgorithmIdentifier(sha1);
+    this.maskGenAlgorithm = new AlgorithmIdentifier({
+      algorithm: id_mgf1,
+      parameters: AsnConvert.serialize(sha1)
+    });
+    this.pSourceAlgorithm = new AlgorithmIdentifier(pSpecifiedEmpty);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier, context: 0, defaultValue: sha1 })
+], RsaEsOaepParams.prototype, "hashAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier, context: 1, defaultValue: mgf1SHA1 })
+], RsaEsOaepParams.prototype, "maskGenAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier, context: 2, defaultValue: pSpecifiedEmpty })
+], RsaEsOaepParams.prototype, "pSourceAlgorithm", void 0);
+var RSAES_OAEP = new AlgorithmIdentifier({
+  algorithm: id_RSAES_OAEP,
+  parameters: AsnConvert.serialize(new RsaEsOaepParams())
+});
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/parameters/rsassa_pss.js
+var RsaSaPssParams = class {
+  static {
+    __name(this, "RsaSaPssParams");
+  }
+  constructor(params = {}) {
+    this.hashAlgorithm = new AlgorithmIdentifier(sha1);
+    this.maskGenAlgorithm = new AlgorithmIdentifier({
+      algorithm: id_mgf1,
+      parameters: AsnConvert.serialize(sha1)
+    });
+    this.saltLength = 20;
+    this.trailerField = 1;
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier, context: 0, defaultValue: sha1 })
+], RsaSaPssParams.prototype, "hashAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier, context: 1, defaultValue: mgf1SHA1 })
+], RsaSaPssParams.prototype, "maskGenAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, context: 2, defaultValue: 20 })
+], RsaSaPssParams.prototype, "saltLength", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, context: 3, defaultValue: 1 })
+], RsaSaPssParams.prototype, "trailerField", void 0);
+var RSASSA_PSS = new AlgorithmIdentifier({
+  algorithm: id_RSASSA_PSS,
+  parameters: AsnConvert.serialize(new RsaSaPssParams())
+});
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/parameters/rsassa_pkcs1_v1_5.js
+var DigestInfo = class {
+  static {
+    __name(this, "DigestInfo");
+  }
+  constructor(params = {}) {
+    this.digestAlgorithm = new AlgorithmIdentifier();
+    this.digest = new OctetString2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], DigestInfo.prototype, "digestAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], DigestInfo.prototype, "digest", void 0);
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/other_prime_info.js
+var OtherPrimeInfos_1;
+var OtherPrimeInfo = class {
+  static {
+    __name(this, "OtherPrimeInfo");
+  }
+  constructor(params = {}) {
+    this.prime = new ArrayBuffer(0);
+    this.exponent = new ArrayBuffer(0);
+    this.coefficient = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], OtherPrimeInfo.prototype, "prime", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], OtherPrimeInfo.prototype, "exponent", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], OtherPrimeInfo.prototype, "coefficient", void 0);
+var OtherPrimeInfos = OtherPrimeInfos_1 = class OtherPrimeInfos2 extends AsnArray {
+  static {
+    __name(this, "OtherPrimeInfos");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, OtherPrimeInfos_1.prototype);
+  }
+};
+OtherPrimeInfos = OtherPrimeInfos_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: OtherPrimeInfo })
+], OtherPrimeInfos);
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/rsa_private_key.js
+var RSAPrivateKey2 = class {
+  static {
+    __name(this, "RSAPrivateKey");
+  }
+  constructor(params = {}) {
+    this.version = 0;
+    this.modulus = new ArrayBuffer(0);
+    this.publicExponent = new ArrayBuffer(0);
+    this.privateExponent = new ArrayBuffer(0);
+    this.prime1 = new ArrayBuffer(0);
+    this.prime2 = new ArrayBuffer(0);
+    this.exponent1 = new ArrayBuffer(0);
+    this.exponent2 = new ArrayBuffer(0);
+    this.coefficient = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], RSAPrivateKey2.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "modulus", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "publicExponent", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "privateExponent", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "prime1", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "prime2", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "exponent1", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "exponent2", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPrivateKey2.prototype, "coefficient", void 0);
+__decorate([
+  AsnProp({ type: OtherPrimeInfos, optional: true })
+], RSAPrivateKey2.prototype, "otherPrimeInfos", void 0);
+
+// node_modules/@peculiar/asn1-rsa/build/es2015/rsa_public_key.js
+var RSAPublicKey2 = class {
+  static {
+    __name(this, "RSAPublicKey");
+  }
+  constructor(params = {}) {
+    this.modulus = new ArrayBuffer(0);
+    this.publicExponent = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPublicKey2.prototype, "modulus", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, converter: AsnIntegerArrayBufferConverter })
+], RSAPublicKey2.prototype, "publicExponent", void 0);
+
+// node_modules/tsyringe/dist/esm5/types/lifecycle.js
+var Lifecycle;
+(function(Lifecycle2) {
+  Lifecycle2[Lifecycle2["Transient"] = 0] = "Transient";
+  Lifecycle2[Lifecycle2["Singleton"] = 1] = "Singleton";
+  Lifecycle2[Lifecycle2["ResolutionScoped"] = 2] = "ResolutionScoped";
+  Lifecycle2[Lifecycle2["ContainerScoped"] = 3] = "ContainerScoped";
+})(Lifecycle || (Lifecycle = {}));
+var lifecycle_default = Lifecycle;
+
+// node_modules/tsyringe/node_modules/tslib/tslib.es6.js
+var extendStatics = /* @__PURE__ */ __name(function(d2, b) {
+  extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d3, b2) {
+    d3.__proto__ = b2;
+  } || function(d3, b2) {
+    for (var p2 in b2) if (b2.hasOwnProperty(p2)) d3[p2] = b2[p2];
+  };
+  return extendStatics(d2, b);
+}, "extendStatics");
+function __extends(d2, b) {
+  extendStatics(d2, b);
+  function __() {
+    this.constructor = d2;
+  }
+  __name(__, "__");
+  d2.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+__name(__extends, "__extends");
+function __awaiter(thisArg, _arguments, P, generator) {
+  function adopt(value2) {
+    return value2 instanceof P ? value2 : new P(function(resolve) {
+      resolve(value2);
+    });
+  }
+  __name(adopt, "adopt");
+  return new (P || (P = Promise))(function(resolve, reject) {
+    function fulfilled(value2) {
+      try {
+        step(generator.next(value2));
+      } catch (e2) {
+        reject(e2);
+      }
+    }
+    __name(fulfilled, "fulfilled");
+    function rejected(value2) {
+      try {
+        step(generator["throw"](value2));
+      } catch (e2) {
+        reject(e2);
+      }
+    }
+    __name(rejected, "rejected");
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    __name(step, "step");
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+}
+__name(__awaiter, "__awaiter");
+function __generator(thisArg, body) {
+  var _ = { label: 0, sent: /* @__PURE__ */ __name(function() {
+    if (t2[0] & 1) throw t2[1];
+    return t2[1];
+  }, "sent"), trys: [], ops: [] }, f2, y, t2, g;
+  return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+    return this;
+  }), g;
+  function verb(n2) {
+    return function(v) {
+      return step([n2, v]);
+    };
+  }
+  __name(verb, "verb");
+  function step(op) {
+    if (f2) throw new TypeError("Generator is already executing.");
+    while (_) try {
+      if (f2 = 1, y && (t2 = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t2 = y["return"]) && t2.call(y), 0) : y.next) && !(t2 = t2.call(y, op[1])).done) return t2;
+      if (y = 0, t2) op = [op[0] & 2, t2.value];
+      switch (op[0]) {
+        case 0:
+        case 1:
+          t2 = op;
+          break;
+        case 4:
+          _.label++;
+          return { value: op[1], done: false };
+        case 5:
+          _.label++;
+          y = op[1];
+          op = [0];
+          continue;
+        case 7:
+          op = _.ops.pop();
+          _.trys.pop();
+          continue;
+        default:
+          if (!(t2 = _.trys, t2 = t2.length > 0 && t2[t2.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+            _ = 0;
+            continue;
+          }
+          if (op[0] === 3 && (!t2 || op[1] > t2[0] && op[1] < t2[3])) {
+            _.label = op[1];
+            break;
+          }
+          if (op[0] === 6 && _.label < t2[1]) {
+            _.label = t2[1];
+            t2 = op;
+            break;
+          }
+          if (t2 && _.label < t2[2]) {
+            _.label = t2[2];
+            _.ops.push(op);
+            break;
+          }
+          if (t2[2]) _.ops.pop();
+          _.trys.pop();
+          continue;
+      }
+      op = body.call(thisArg, _);
+    } catch (e2) {
+      op = [6, e2];
+      y = 0;
+    } finally {
+      f2 = t2 = 0;
+    }
+    if (op[0] & 5) throw op[1];
+    return { value: op[0] ? op[1] : void 0, done: true };
+  }
+  __name(step, "step");
+}
+__name(__generator, "__generator");
+function __values(o2) {
+  var s2 = typeof Symbol === "function" && Symbol.iterator, m2 = s2 && o2[s2], i2 = 0;
+  if (m2) return m2.call(o2);
+  if (o2 && typeof o2.length === "number") return {
+    next: /* @__PURE__ */ __name(function() {
+      if (o2 && i2 >= o2.length) o2 = void 0;
+      return { value: o2 && o2[i2++], done: !o2 };
+    }, "next")
+  };
+  throw new TypeError(s2 ? "Object is not iterable." : "Symbol.iterator is not defined.");
+}
+__name(__values, "__values");
+function __read(o2, n2) {
+  var m2 = typeof Symbol === "function" && o2[Symbol.iterator];
+  if (!m2) return o2;
+  var i2 = m2.call(o2), r2, ar = [], e2;
+  try {
+    while ((n2 === void 0 || n2-- > 0) && !(r2 = i2.next()).done) ar.push(r2.value);
+  } catch (error) {
+    e2 = { error };
+  } finally {
+    try {
+      if (r2 && !r2.done && (m2 = i2["return"])) m2.call(i2);
+    } finally {
+      if (e2) throw e2.error;
+    }
+  }
+  return ar;
+}
+__name(__read, "__read");
+function __spread() {
+  for (var ar = [], i2 = 0; i2 < arguments.length; i2++)
+    ar = ar.concat(__read(arguments[i2]));
+  return ar;
+}
+__name(__spread, "__spread");
+
+// node_modules/tsyringe/dist/esm5/reflection-helpers.js
+var INJECTION_TOKEN_METADATA_KEY = "injectionTokens";
+function getParamInfo(target) {
+  var params = Reflect.getMetadata("design:paramtypes", target) || [];
+  var injectionTokens = Reflect.getOwnMetadata(INJECTION_TOKEN_METADATA_KEY, target) || {};
+  Object.keys(injectionTokens).forEach(function(key) {
+    params[+key] = injectionTokens[key];
+  });
+  return params;
+}
+__name(getParamInfo, "getParamInfo");
+
+// node_modules/tsyringe/dist/esm5/providers/class-provider.js
+function isClassProvider(provider) {
+  return !!provider.useClass;
+}
+__name(isClassProvider, "isClassProvider");
+
+// node_modules/tsyringe/dist/esm5/providers/factory-provider.js
+function isFactoryProvider(provider) {
+  return !!provider.useFactory;
+}
+__name(isFactoryProvider, "isFactoryProvider");
+
+// node_modules/tsyringe/dist/esm5/lazy-helpers.js
+var DelayedConstructor = (function() {
+  function DelayedConstructor2(wrap2) {
+    this.wrap = wrap2;
+    this.reflectMethods = [
+      "get",
+      "getPrototypeOf",
+      "setPrototypeOf",
+      "getOwnPropertyDescriptor",
+      "defineProperty",
+      "has",
+      "set",
+      "deleteProperty",
+      "apply",
+      "construct",
+      "ownKeys"
+    ];
+  }
+  __name(DelayedConstructor2, "DelayedConstructor");
+  DelayedConstructor2.prototype.createProxy = function(createObject) {
+    var _this = this;
+    var target = {};
+    var init = false;
+    var value2;
+    var delayedObject = /* @__PURE__ */ __name(function() {
+      if (!init) {
+        value2 = createObject(_this.wrap());
+        init = true;
+      }
+      return value2;
+    }, "delayedObject");
+    return new Proxy(target, this.createHandler(delayedObject));
+  };
+  DelayedConstructor2.prototype.createHandler = function(delayedObject) {
+    var handler = {};
+    var install = /* @__PURE__ */ __name(function(name3) {
+      handler[name3] = function() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          args[_i] = arguments[_i];
+        }
+        args[0] = delayedObject();
+        var method = Reflect[name3];
+        return method.apply(void 0, __spread(args));
+      };
+    }, "install");
+    this.reflectMethods.forEach(install);
+    return handler;
+  };
+  return DelayedConstructor2;
+})();
+
+// node_modules/tsyringe/dist/esm5/providers/injection-token.js
+function isNormalToken(token) {
+  return typeof token === "string" || typeof token === "symbol";
+}
+__name(isNormalToken, "isNormalToken");
+function isTokenDescriptor(descriptor) {
+  return typeof descriptor === "object" && "token" in descriptor && "multiple" in descriptor;
+}
+__name(isTokenDescriptor, "isTokenDescriptor");
+function isTransformDescriptor(descriptor) {
+  return typeof descriptor === "object" && "token" in descriptor && "transform" in descriptor;
+}
+__name(isTransformDescriptor, "isTransformDescriptor");
+function isConstructorToken(token) {
+  return typeof token === "function" || token instanceof DelayedConstructor;
+}
+__name(isConstructorToken, "isConstructorToken");
+
+// node_modules/tsyringe/dist/esm5/providers/token-provider.js
+function isTokenProvider(provider) {
+  return !!provider.useToken;
+}
+__name(isTokenProvider, "isTokenProvider");
+
+// node_modules/tsyringe/dist/esm5/providers/value-provider.js
+function isValueProvider(provider) {
+  return provider.useValue != void 0;
+}
+__name(isValueProvider, "isValueProvider");
+
+// node_modules/tsyringe/dist/esm5/providers/provider.js
+function isProvider(provider) {
+  return isClassProvider(provider) || isValueProvider(provider) || isTokenProvider(provider) || isFactoryProvider(provider);
+}
+__name(isProvider, "isProvider");
+
+// node_modules/tsyringe/dist/esm5/registry-base.js
+var RegistryBase = (function() {
+  function RegistryBase2() {
+    this._registryMap = /* @__PURE__ */ new Map();
+  }
+  __name(RegistryBase2, "RegistryBase");
+  RegistryBase2.prototype.entries = function() {
+    return this._registryMap.entries();
+  };
+  RegistryBase2.prototype.getAll = function(key) {
+    this.ensure(key);
+    return this._registryMap.get(key);
+  };
+  RegistryBase2.prototype.get = function(key) {
+    this.ensure(key);
+    var value2 = this._registryMap.get(key);
+    return value2[value2.length - 1] || null;
+  };
+  RegistryBase2.prototype.set = function(key, value2) {
+    this.ensure(key);
+    this._registryMap.get(key).push(value2);
+  };
+  RegistryBase2.prototype.setAll = function(key, value2) {
+    this._registryMap.set(key, value2);
+  };
+  RegistryBase2.prototype.has = function(key) {
+    this.ensure(key);
+    return this._registryMap.get(key).length > 0;
+  };
+  RegistryBase2.prototype.clear = function() {
+    this._registryMap.clear();
+  };
+  RegistryBase2.prototype.ensure = function(key) {
+    if (!this._registryMap.has(key)) {
+      this._registryMap.set(key, []);
+    }
+  };
+  return RegistryBase2;
+})();
+var registry_base_default = RegistryBase;
+
+// node_modules/tsyringe/dist/esm5/registry.js
+var Registry2 = (function(_super) {
+  __extends(Registry3, _super);
+  function Registry3() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  __name(Registry3, "Registry");
+  return Registry3;
+})(registry_base_default);
+var registry_default = Registry2;
+
+// node_modules/tsyringe/dist/esm5/resolution-context.js
+var ResolutionContext = /* @__PURE__ */ (function() {
+  function ResolutionContext2() {
+    this.scopedResolutions = /* @__PURE__ */ new Map();
+  }
+  __name(ResolutionContext2, "ResolutionContext");
+  return ResolutionContext2;
+})();
+var resolution_context_default = ResolutionContext;
+
+// node_modules/tsyringe/dist/esm5/error-helpers.js
+function formatDependency(params, idx) {
+  if (params === null) {
+    return "at position #" + idx;
+  }
+  var argName = params.split(",")[idx].trim();
+  return '"' + argName + '" at position #' + idx;
+}
+__name(formatDependency, "formatDependency");
+function composeErrorMessage(msg, e2, indent) {
+  if (indent === void 0) {
+    indent = "    ";
+  }
+  return __spread([msg], e2.message.split("\n").map(function(l2) {
+    return indent + l2;
+  })).join("\n");
+}
+__name(composeErrorMessage, "composeErrorMessage");
+function formatErrorCtor(ctor, paramIdx, error) {
+  var _a3 = __read(ctor.toString().match(/constructor\(([\w, ]+)\)/) || [], 2), _b = _a3[1], params = _b === void 0 ? null : _b;
+  var dep = formatDependency(params, paramIdx);
+  return composeErrorMessage("Cannot inject the dependency " + dep + ' of "' + ctor.name + '" constructor. Reason:', error);
+}
+__name(formatErrorCtor, "formatErrorCtor");
+
+// node_modules/tsyringe/dist/esm5/types/disposable.js
+function isDisposable(value2) {
+  if (typeof value2.dispose !== "function")
+    return false;
+  var disposeFun = value2.dispose;
+  if (disposeFun.length > 0) {
+    return false;
+  }
+  return true;
+}
+__name(isDisposable, "isDisposable");
+
+// node_modules/tsyringe/dist/esm5/interceptors.js
+var PreResolutionInterceptors = (function(_super) {
+  __extends(PreResolutionInterceptors2, _super);
+  function PreResolutionInterceptors2() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  __name(PreResolutionInterceptors2, "PreResolutionInterceptors");
+  return PreResolutionInterceptors2;
+})(registry_base_default);
+var PostResolutionInterceptors = (function(_super) {
+  __extends(PostResolutionInterceptors2, _super);
+  function PostResolutionInterceptors2() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  __name(PostResolutionInterceptors2, "PostResolutionInterceptors");
+  return PostResolutionInterceptors2;
+})(registry_base_default);
+var Interceptors = /* @__PURE__ */ (function() {
+  function Interceptors2() {
+    this.preResolution = new PreResolutionInterceptors();
+    this.postResolution = new PostResolutionInterceptors();
+  }
+  __name(Interceptors2, "Interceptors");
+  return Interceptors2;
+})();
+var interceptors_default = Interceptors;
+
+// node_modules/tsyringe/dist/esm5/dependency-container.js
+var typeInfo = /* @__PURE__ */ new Map();
+var InternalDependencyContainer = (function() {
+  function InternalDependencyContainer2(parent) {
+    this.parent = parent;
+    this._registry = new registry_default();
+    this.interceptors = new interceptors_default();
+    this.disposed = false;
+    this.disposables = /* @__PURE__ */ new Set();
+  }
+  __name(InternalDependencyContainer2, "InternalDependencyContainer");
+  InternalDependencyContainer2.prototype.register = function(token, providerOrConstructor, options) {
+    if (options === void 0) {
+      options = { lifecycle: lifecycle_default.Transient };
+    }
+    this.ensureNotDisposed();
+    var provider;
+    if (!isProvider(providerOrConstructor)) {
+      provider = { useClass: providerOrConstructor };
+    } else {
+      provider = providerOrConstructor;
+    }
+    if (isTokenProvider(provider)) {
+      var path = [token];
+      var tokenProvider = provider;
+      while (tokenProvider != null) {
+        var currentToken = tokenProvider.useToken;
+        if (path.includes(currentToken)) {
+          throw new Error("Token registration cycle detected! " + __spread(path, [currentToken]).join(" -> "));
+        }
+        path.push(currentToken);
+        var registration = this._registry.get(currentToken);
+        if (registration && isTokenProvider(registration.provider)) {
+          tokenProvider = registration.provider;
+        } else {
+          tokenProvider = null;
+        }
+      }
+    }
+    if (options.lifecycle === lifecycle_default.Singleton || options.lifecycle == lifecycle_default.ContainerScoped || options.lifecycle == lifecycle_default.ResolutionScoped) {
+      if (isValueProvider(provider) || isFactoryProvider(provider)) {
+        throw new Error('Cannot use lifecycle "' + lifecycle_default[options.lifecycle] + '" with ValueProviders or FactoryProviders');
+      }
+    }
+    this._registry.set(token, { provider, options });
+    return this;
+  };
+  InternalDependencyContainer2.prototype.registerType = function(from3, to) {
+    this.ensureNotDisposed();
+    if (isNormalToken(to)) {
+      return this.register(from3, {
+        useToken: to
+      });
+    }
+    return this.register(from3, {
+      useClass: to
+    });
+  };
+  InternalDependencyContainer2.prototype.registerInstance = function(token, instance2) {
+    this.ensureNotDisposed();
+    return this.register(token, {
+      useValue: instance2
+    });
+  };
+  InternalDependencyContainer2.prototype.registerSingleton = function(from3, to) {
+    this.ensureNotDisposed();
+    if (isNormalToken(from3)) {
+      if (isNormalToken(to)) {
+        return this.register(from3, {
+          useToken: to
+        }, { lifecycle: lifecycle_default.Singleton });
+      } else if (to) {
+        return this.register(from3, {
+          useClass: to
+        }, { lifecycle: lifecycle_default.Singleton });
+      }
+      throw new Error('Cannot register a type name as a singleton without a "to" token');
+    }
+    var useClass = from3;
+    if (to && !isNormalToken(to)) {
+      useClass = to;
+    }
+    return this.register(from3, {
+      useClass
+    }, { lifecycle: lifecycle_default.Singleton });
+  };
+  InternalDependencyContainer2.prototype.resolve = function(token, context, isOptional) {
+    if (context === void 0) {
+      context = new resolution_context_default();
+    }
+    if (isOptional === void 0) {
+      isOptional = false;
+    }
+    this.ensureNotDisposed();
+    var registration = this.getRegistration(token);
+    if (!registration && isNormalToken(token)) {
+      if (isOptional) {
+        return void 0;
+      }
+      throw new Error('Attempted to resolve unregistered dependency token: "' + token.toString() + '"');
+    }
+    this.executePreResolutionInterceptor(token, "Single");
+    if (registration) {
+      var result = this.resolveRegistration(registration, context);
+      this.executePostResolutionInterceptor(token, result, "Single");
+      return result;
+    }
+    if (isConstructorToken(token)) {
+      var result = this.construct(token, context);
+      this.executePostResolutionInterceptor(token, result, "Single");
+      return result;
+    }
+    throw new Error("Attempted to construct an undefined constructor. Could mean a circular dependency problem. Try using `delay` function.");
+  };
+  InternalDependencyContainer2.prototype.executePreResolutionInterceptor = function(token, resolutionType) {
+    var e_1, _a3;
+    if (this.interceptors.preResolution.has(token)) {
+      var remainingInterceptors = [];
+      try {
+        for (var _b = __values(this.interceptors.preResolution.getAll(token)), _c = _b.next(); !_c.done; _c = _b.next()) {
+          var interceptor = _c.value;
+          if (interceptor.options.frequency != "Once") {
+            remainingInterceptors.push(interceptor);
+          }
+          interceptor.callback(token, resolutionType);
+        }
+      } catch (e_1_1) {
+        e_1 = { error: e_1_1 };
+      } finally {
+        try {
+          if (_c && !_c.done && (_a3 = _b.return)) _a3.call(_b);
+        } finally {
+          if (e_1) throw e_1.error;
+        }
+      }
+      this.interceptors.preResolution.setAll(token, remainingInterceptors);
+    }
+  };
+  InternalDependencyContainer2.prototype.executePostResolutionInterceptor = function(token, result, resolutionType) {
+    var e_2, _a3;
+    if (this.interceptors.postResolution.has(token)) {
+      var remainingInterceptors = [];
+      try {
+        for (var _b = __values(this.interceptors.postResolution.getAll(token)), _c = _b.next(); !_c.done; _c = _b.next()) {
+          var interceptor = _c.value;
+          if (interceptor.options.frequency != "Once") {
+            remainingInterceptors.push(interceptor);
+          }
+          interceptor.callback(token, result, resolutionType);
+        }
+      } catch (e_2_1) {
+        e_2 = { error: e_2_1 };
+      } finally {
+        try {
+          if (_c && !_c.done && (_a3 = _b.return)) _a3.call(_b);
+        } finally {
+          if (e_2) throw e_2.error;
+        }
+      }
+      this.interceptors.postResolution.setAll(token, remainingInterceptors);
+    }
+  };
+  InternalDependencyContainer2.prototype.resolveRegistration = function(registration, context) {
+    this.ensureNotDisposed();
+    if (registration.options.lifecycle === lifecycle_default.ResolutionScoped && context.scopedResolutions.has(registration)) {
+      return context.scopedResolutions.get(registration);
+    }
+    var isSingleton = registration.options.lifecycle === lifecycle_default.Singleton;
+    var isContainerScoped = registration.options.lifecycle === lifecycle_default.ContainerScoped;
+    var returnInstance = isSingleton || isContainerScoped;
+    var resolved;
+    if (isValueProvider(registration.provider)) {
+      resolved = registration.provider.useValue;
+    } else if (isTokenProvider(registration.provider)) {
+      resolved = returnInstance ? registration.instance || (registration.instance = this.resolve(registration.provider.useToken, context)) : this.resolve(registration.provider.useToken, context);
+    } else if (isClassProvider(registration.provider)) {
+      resolved = returnInstance ? registration.instance || (registration.instance = this.construct(registration.provider.useClass, context)) : this.construct(registration.provider.useClass, context);
+    } else if (isFactoryProvider(registration.provider)) {
+      resolved = registration.provider.useFactory(this);
+    } else {
+      resolved = this.construct(registration.provider, context);
+    }
+    if (registration.options.lifecycle === lifecycle_default.ResolutionScoped) {
+      context.scopedResolutions.set(registration, resolved);
+    }
+    return resolved;
+  };
+  InternalDependencyContainer2.prototype.resolveAll = function(token, context, isOptional) {
+    var _this = this;
+    if (context === void 0) {
+      context = new resolution_context_default();
+    }
+    if (isOptional === void 0) {
+      isOptional = false;
+    }
+    this.ensureNotDisposed();
+    var registrations = this.getAllRegistrations(token);
+    if (!registrations && isNormalToken(token)) {
+      if (isOptional) {
+        return [];
+      }
+      throw new Error('Attempted to resolve unregistered dependency token: "' + token.toString() + '"');
+    }
+    this.executePreResolutionInterceptor(token, "All");
+    if (registrations) {
+      var result_1 = registrations.map(function(item) {
+        return _this.resolveRegistration(item, context);
+      });
+      this.executePostResolutionInterceptor(token, result_1, "All");
+      return result_1;
+    }
+    var result = [this.construct(token, context)];
+    this.executePostResolutionInterceptor(token, result, "All");
+    return result;
+  };
+  InternalDependencyContainer2.prototype.isRegistered = function(token, recursive) {
+    if (recursive === void 0) {
+      recursive = false;
+    }
+    this.ensureNotDisposed();
+    return this._registry.has(token) || recursive && (this.parent || false) && this.parent.isRegistered(token, true);
+  };
+  InternalDependencyContainer2.prototype.reset = function() {
+    this.ensureNotDisposed();
+    this._registry.clear();
+    this.interceptors.preResolution.clear();
+    this.interceptors.postResolution.clear();
+  };
+  InternalDependencyContainer2.prototype.clearInstances = function() {
+    var e_3, _a3;
+    this.ensureNotDisposed();
+    try {
+      for (var _b = __values(this._registry.entries()), _c = _b.next(); !_c.done; _c = _b.next()) {
+        var _d = __read(_c.value, 2), token = _d[0], registrations = _d[1];
+        this._registry.setAll(token, registrations.filter(function(registration) {
+          return !isValueProvider(registration.provider);
+        }).map(function(registration) {
+          registration.instance = void 0;
+          return registration;
+        }));
+      }
+    } catch (e_3_1) {
+      e_3 = { error: e_3_1 };
+    } finally {
+      try {
+        if (_c && !_c.done && (_a3 = _b.return)) _a3.call(_b);
+      } finally {
+        if (e_3) throw e_3.error;
+      }
+    }
+  };
+  InternalDependencyContainer2.prototype.createChildContainer = function() {
+    var e_4, _a3;
+    this.ensureNotDisposed();
+    var childContainer = new InternalDependencyContainer2(this);
+    try {
+      for (var _b = __values(this._registry.entries()), _c = _b.next(); !_c.done; _c = _b.next()) {
+        var _d = __read(_c.value, 2), token = _d[0], registrations = _d[1];
+        if (registrations.some(function(_a4) {
+          var options = _a4.options;
+          return options.lifecycle === lifecycle_default.ContainerScoped;
+        })) {
+          childContainer._registry.setAll(token, registrations.map(function(registration) {
+            if (registration.options.lifecycle === lifecycle_default.ContainerScoped) {
+              return {
+                provider: registration.provider,
+                options: registration.options
+              };
+            }
+            return registration;
+          }));
+        }
+      }
+    } catch (e_4_1) {
+      e_4 = { error: e_4_1 };
+    } finally {
+      try {
+        if (_c && !_c.done && (_a3 = _b.return)) _a3.call(_b);
+      } finally {
+        if (e_4) throw e_4.error;
+      }
+    }
+    return childContainer;
+  };
+  InternalDependencyContainer2.prototype.beforeResolution = function(token, callback, options) {
+    if (options === void 0) {
+      options = { frequency: "Always" };
+    }
+    this.interceptors.preResolution.set(token, {
+      callback,
+      options
+    });
+  };
+  InternalDependencyContainer2.prototype.afterResolution = function(token, callback, options) {
+    if (options === void 0) {
+      options = { frequency: "Always" };
+    }
+    this.interceptors.postResolution.set(token, {
+      callback,
+      options
+    });
+  };
+  InternalDependencyContainer2.prototype.dispose = function() {
+    return __awaiter(this, void 0, void 0, function() {
+      var promises;
+      return __generator(this, function(_a3) {
+        switch (_a3.label) {
+          case 0:
+            this.disposed = true;
+            promises = [];
+            this.disposables.forEach(function(disposable) {
+              var maybePromise = disposable.dispose();
+              if (maybePromise) {
+                promises.push(maybePromise);
+              }
+            });
+            return [4, Promise.all(promises)];
+          case 1:
+            _a3.sent();
+            return [2];
+        }
+      });
+    });
+  };
+  InternalDependencyContainer2.prototype.getRegistration = function(token) {
+    if (this.isRegistered(token)) {
+      return this._registry.get(token);
+    }
+    if (this.parent) {
+      return this.parent.getRegistration(token);
+    }
+    return null;
+  };
+  InternalDependencyContainer2.prototype.getAllRegistrations = function(token) {
+    if (this.isRegistered(token)) {
+      return this._registry.getAll(token);
+    }
+    if (this.parent) {
+      return this.parent.getAllRegistrations(token);
+    }
+    return null;
+  };
+  InternalDependencyContainer2.prototype.construct = function(ctor, context) {
+    var _this = this;
+    if (ctor instanceof DelayedConstructor) {
+      return ctor.createProxy(function(target) {
+        return _this.resolve(target, context);
+      });
+    }
+    var instance2 = (function() {
+      var paramInfo = typeInfo.get(ctor);
+      if (!paramInfo || paramInfo.length === 0) {
+        if (ctor.length === 0) {
+          return new ctor();
+        } else {
+          throw new Error('TypeInfo not known for "' + ctor.name + '"');
+        }
+      }
+      var params = paramInfo.map(_this.resolveParams(context, ctor));
+      return new (ctor.bind.apply(ctor, __spread([void 0], params)))();
+    })();
+    if (isDisposable(instance2)) {
+      this.disposables.add(instance2);
+    }
+    return instance2;
+  };
+  InternalDependencyContainer2.prototype.resolveParams = function(context, ctor) {
+    var _this = this;
+    return function(param, idx) {
+      var _a3, _b, _c;
+      try {
+        if (isTokenDescriptor(param)) {
+          if (isTransformDescriptor(param)) {
+            return param.multiple ? (_a3 = _this.resolve(param.transform)).transform.apply(_a3, __spread([_this.resolveAll(param.token, new resolution_context_default(), param.isOptional)], param.transformArgs)) : (_b = _this.resolve(param.transform)).transform.apply(_b, __spread([_this.resolve(param.token, context, param.isOptional)], param.transformArgs));
+          } else {
+            return param.multiple ? _this.resolveAll(param.token, new resolution_context_default(), param.isOptional) : _this.resolve(param.token, context, param.isOptional);
+          }
+        } else if (isTransformDescriptor(param)) {
+          return (_c = _this.resolve(param.transform, context)).transform.apply(_c, __spread([_this.resolve(param.token, context)], param.transformArgs));
+        }
+        return _this.resolve(param, context);
+      } catch (e2) {
+        throw new Error(formatErrorCtor(ctor, idx, e2));
+      }
+    };
+  };
+  InternalDependencyContainer2.prototype.ensureNotDisposed = function() {
+    if (this.disposed) {
+      throw new Error("This container has been disposed, you cannot interact with a disposed container");
+    }
+  };
+  return InternalDependencyContainer2;
+})();
+var instance = new InternalDependencyContainer();
+
+// node_modules/tsyringe/dist/esm5/decorators/injectable.js
+function injectable(options) {
+  return function(target) {
+    typeInfo.set(target, getParamInfo(target));
+    if (options && options.token) {
+      if (!Array.isArray(options.token)) {
+        instance.register(options.token, target);
+      } else {
+        options.token.forEach(function(token) {
+          instance.register(token, target);
+        });
+      }
+    }
+  };
+}
+__name(injectable, "injectable");
+var injectable_default = injectable;
+
+// node_modules/tsyringe/dist/esm5/index.js
+if (typeof Reflect === "undefined" || !Reflect.getMetadata) {
+  throw new Error(`tsyringe requires a reflect polyfill. Please add 'import "reflect-metadata"' to the top of your entry point.`);
+}
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/attribute.js
+var PKCS12AttrSet_1;
+var PKCS12Attribute = class {
+  static {
+    __name(this, "PKCS12Attribute");
+  }
+  constructor(params = {}) {
+    this.attrId = "";
+    this.attrValues = [];
+    Object.assign(params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], PKCS12Attribute.prototype, "attrId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, repeated: "set" })
+], PKCS12Attribute.prototype, "attrValues", void 0);
+var PKCS12AttrSet = PKCS12AttrSet_1 = class PKCS12AttrSet2 extends AsnArray {
+  static {
+    __name(this, "PKCS12AttrSet");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, PKCS12AttrSet_1.prototype);
+  }
+};
+PKCS12AttrSet = PKCS12AttrSet_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: PKCS12Attribute })
+], PKCS12AttrSet);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/authenticated_safe.js
+var AuthenticatedSafe_1;
+var AuthenticatedSafe = AuthenticatedSafe_1 = class AuthenticatedSafe2 extends AsnArray {
+  static {
+    __name(this, "AuthenticatedSafe");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, AuthenticatedSafe_1.prototype);
+  }
+};
+AuthenticatedSafe = AuthenticatedSafe_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: ContentInfo })
+], AuthenticatedSafe);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/object_identifiers.js
+var id_rsadsi = "1.2.840.113549";
+var id_pkcs = `${id_rsadsi}.1`;
+var id_pkcs_12 = `${id_pkcs}.12`;
+var id_pkcs_12PbeIds = `${id_pkcs_12}.1`;
+var id_pbeWithSHAAnd128BitRC4 = `${id_pkcs_12PbeIds}.1`;
+var id_pbeWithSHAAnd40BitRC4 = `${id_pkcs_12PbeIds}.2`;
+var id_pbeWithSHAAnd3_KeyTripleDES_CBC = `${id_pkcs_12PbeIds}.3`;
+var id_pbeWithSHAAnd2_KeyTripleDES_CBC = `${id_pkcs_12PbeIds}.4`;
+var id_pbeWithSHAAnd128BitRC2_CBC = `${id_pkcs_12PbeIds}.5`;
+var id_pbewithSHAAnd40BitRC2_CBC = `${id_pkcs_12PbeIds}.6`;
+var id_bagtypes = `${id_pkcs_12}.10.1`;
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/bags/types.js
+var id_keyBag = `${id_bagtypes}.1`;
+var id_pkcs8ShroudedKeyBag = `${id_bagtypes}.2`;
+var id_certBag = `${id_bagtypes}.3`;
+var id_CRLBag = `${id_bagtypes}.4`;
+var id_SecretBag = `${id_bagtypes}.5`;
+var id_SafeContents = `${id_bagtypes}.6`;
+var id_pkcs_9 = "1.2.840.113549.1.9";
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/bags/cert_bag.js
+var CertBag = class {
+  static {
+    __name(this, "CertBag");
+  }
+  constructor(params = {}) {
+    this.certId = "";
+    this.certValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], CertBag.prototype, "certId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 0 })
+], CertBag.prototype, "certValue", void 0);
+var id_certTypes = `${id_pkcs_9}.22`;
+var id_x509Certificate = `${id_certTypes}.1`;
+var id_sdsiCertificate = `${id_certTypes}.2`;
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/bags/crl_bag.js
+var CRLBag = class {
+  static {
+    __name(this, "CRLBag");
+  }
+  constructor(params = {}) {
+    this.crlId = "";
+    this.crltValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], CRLBag.prototype, "crlId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 0 })
+], CRLBag.prototype, "crltValue", void 0);
+var id_crlTypes = `${id_pkcs_9}.23`;
+var id_x509CRL = `${id_crlTypes}.1`;
+
+// node_modules/@peculiar/asn1-pkcs8/build/es2015/encrypted_private_key_info.js
+var EncryptedData = class extends OctetString2 {
+  static {
+    __name(this, "EncryptedData");
+  }
+};
+var EncryptedPrivateKeyInfo = class {
+  static {
+    __name(this, "EncryptedPrivateKeyInfo");
+  }
+  constructor(params = {}) {
+    this.encryptionAlgorithm = new AlgorithmIdentifier();
+    this.encryptedData = new EncryptedData();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], EncryptedPrivateKeyInfo.prototype, "encryptionAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: EncryptedData })
+], EncryptedPrivateKeyInfo.prototype, "encryptedData", void 0);
+
+// node_modules/@peculiar/asn1-pkcs8/build/es2015/private_key_info.js
+var Attributes_1;
+var Version2;
+(function(Version3) {
+  Version3[Version3["v1"] = 0] = "v1";
+})(Version2 || (Version2 = {}));
+var PrivateKey2 = class extends OctetString2 {
+  static {
+    __name(this, "PrivateKey");
+  }
+};
+var Attributes = Attributes_1 = class Attributes2 extends AsnArray {
+  static {
+    __name(this, "Attributes");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, Attributes_1.prototype);
+  }
+};
+Attributes = Attributes_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: Attribute })
+], Attributes);
+var PrivateKeyInfo = class {
+  static {
+    __name(this, "PrivateKeyInfo");
+  }
+  constructor(params = {}) {
+    this.version = Version2.v1;
+    this.privateKeyAlgorithm = new AlgorithmIdentifier();
+    this.privateKey = new PrivateKey2();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], PrivateKeyInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], PrivateKeyInfo.prototype, "privateKeyAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: PrivateKey2 })
+], PrivateKeyInfo.prototype, "privateKey", void 0);
+__decorate([
+  AsnProp({ type: Attributes, implicit: true, context: 0, optional: true })
+], PrivateKeyInfo.prototype, "attributes", void 0);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/bags/key_bag.js
+var KeyBag = class KeyBag2 extends PrivateKeyInfo {
+  static {
+    __name(this, "KeyBag");
+  }
+};
+KeyBag = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], KeyBag);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/bags/pkcs8_shrouded_key_bag.js
+var PKCS8ShroudedKeyBag = class PKCS8ShroudedKeyBag2 extends EncryptedPrivateKeyInfo {
+  static {
+    __name(this, "PKCS8ShroudedKeyBag");
+  }
+};
+PKCS8ShroudedKeyBag = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], PKCS8ShroudedKeyBag);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/bags/secret_bag.js
+var SecretBag = class {
+  static {
+    __name(this, "SecretBag");
+  }
+  constructor(params = {}) {
+    this.secretTypeId = "";
+    this.secretValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], SecretBag.prototype, "secretTypeId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 0 })
+], SecretBag.prototype, "secretValue", void 0);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/mac_data.js
+var MacData = class {
+  static {
+    __name(this, "MacData");
+  }
+  constructor(params = {}) {
+    this.mac = new DigestInfo();
+    this.macSalt = new OctetString2();
+    this.iterations = 1;
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: DigestInfo })
+], MacData.prototype, "mac", void 0);
+__decorate([
+  AsnProp({ type: OctetString2 })
+], MacData.prototype, "macSalt", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer, defaultValue: 1 })
+], MacData.prototype, "iterations", void 0);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/pfx.js
+var PFX = class {
+  static {
+    __name(this, "PFX");
+  }
+  constructor(params = {}) {
+    this.version = 3;
+    this.authSafe = new ContentInfo();
+    this.macData = new MacData();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], PFX.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: ContentInfo })
+], PFX.prototype, "authSafe", void 0);
+__decorate([
+  AsnProp({ type: MacData, optional: true })
+], PFX.prototype, "macData", void 0);
+
+// node_modules/@peculiar/asn1-pfx/build/es2015/safe_bag.js
+var SafeContents_1;
+var SafeBag = class {
+  static {
+    __name(this, "SafeBag");
+  }
+  constructor(params = {}) {
+    this.bagId = "";
+    this.bagValue = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], SafeBag.prototype, "bagId", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.Any, context: 0 })
+], SafeBag.prototype, "bagValue", void 0);
+__decorate([
+  AsnProp({ type: PKCS12Attribute, repeated: "set", optional: true })
+], SafeBag.prototype, "bagAttributes", void 0);
+var SafeContents = SafeContents_1 = class SafeContents2 extends AsnArray {
+  static {
+    __name(this, "SafeContents");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, SafeContents_1.prototype);
+  }
+};
+SafeContents = SafeContents_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: SafeBag })
+], SafeContents);
+
+// node_modules/@peculiar/asn1-pkcs9/build/es2015/index.js
+var ExtensionRequest_1;
+var ExtendedCertificateAttributes_1;
+var SMIMECapabilities_1;
+var id_pkcs9 = "1.2.840.113549.1.9";
+var id_pkcs9_mo = `${id_pkcs9}.0`;
+var id_pkcs9_oc = `${id_pkcs9}.24`;
+var id_pkcs9_at = `${id_pkcs9}.25`;
+var id_pkcs9_sx = `${id_pkcs9}.26`;
+var id_pkcs9_mr = `${id_pkcs9}.27`;
+var id_pkcs9_oc_pkcsEntity = `${id_pkcs9_oc}.1`;
+var id_pkcs9_oc_naturalPerson = `${id_pkcs9_oc}.2`;
+var id_pkcs9_at_emailAddress = `${id_pkcs9}.1`;
+var id_pkcs9_at_unstructuredName = `${id_pkcs9}.2`;
+var id_pkcs9_at_contentType = `${id_pkcs9}.3`;
+var id_pkcs9_at_messageDigest = `${id_pkcs9}.4`;
+var id_pkcs9_at_signingTime = `${id_pkcs9}.5`;
+var id_pkcs9_at_counterSignature = `${id_pkcs9}.6`;
+var id_pkcs9_at_challengePassword = `${id_pkcs9}.7`;
+var id_pkcs9_at_unstructuredAddress = `${id_pkcs9}.8`;
+var id_pkcs9_at_extendedCertificateAttributes = `${id_pkcs9}.9`;
+var id_pkcs9_at_signingDescription = `${id_pkcs9}.13`;
+var id_pkcs9_at_extensionRequest = `${id_pkcs9}.14`;
+var id_pkcs9_at_smimeCapabilities = `${id_pkcs9}.15`;
+var id_pkcs9_at_friendlyName = `${id_pkcs9}.20`;
+var id_pkcs9_at_localKeyId = `${id_pkcs9}.21`;
+var id_pkcs9_at_pkcs15Token = `${id_pkcs9_at}.1`;
+var id_pkcs9_at_encryptedPrivateKeyInfo = `${id_pkcs9_at}.2`;
+var id_pkcs9_at_randomNonce = `${id_pkcs9_at}.3`;
+var id_pkcs9_at_sequenceNumber = `${id_pkcs9_at}.4`;
+var id_pkcs9_at_pkcs7PDU = `${id_pkcs9_at}.5`;
+var id_ietf_at = `1.3.6.1.5.5.7.9`;
+var id_pkcs9_at_dateOfBirth = `${id_ietf_at}.1`;
+var id_pkcs9_at_placeOfBirth = `${id_ietf_at}.2`;
+var id_pkcs9_at_gender = `${id_ietf_at}.3`;
+var id_pkcs9_at_countryOfCitizenship = `${id_ietf_at}.4`;
+var id_pkcs9_at_countryOfResidence = `${id_ietf_at}.5`;
+var id_pkcs9_sx_pkcs9String = `${id_pkcs9_sx}.1`;
+var id_pkcs9_sx_signingTime = `${id_pkcs9_sx}.2`;
+var id_pkcs9_mr_caseIgnoreMatch = `${id_pkcs9_mr}.1`;
+var id_pkcs9_mr_signingTimeMatch = `${id_pkcs9_mr}.2`;
+var id_smime = `${id_pkcs9}.16`;
+var id_certTypes2 = `${id_pkcs9}.22`;
+var crlTypes = `${id_pkcs9}.23`;
+var id_at_pseudonym = `${id_at}.65`;
+var PKCS9String = class PKCS9String2 extends DirectoryString {
+  static {
+    __name(this, "PKCS9String");
+  }
+  constructor(params = {}) {
+    super(params);
+  }
+  toString() {
+    const o2 = {};
+    o2.toString();
+    return this.ia5String || super.toString();
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String })
+], PKCS9String.prototype, "ia5String", void 0);
+PKCS9String = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], PKCS9String);
+var Pkcs7PDU = class Pkcs7PDU2 extends ContentInfo {
+  static {
+    __name(this, "Pkcs7PDU");
+  }
+};
+Pkcs7PDU = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], Pkcs7PDU);
+var UserPKCS12 = class UserPKCS122 extends PFX {
+  static {
+    __name(this, "UserPKCS12");
+  }
+};
+UserPKCS12 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], UserPKCS12);
+var EncryptedPrivateKeyInfo2 = class EncryptedPrivateKeyInfo3 extends EncryptedPrivateKeyInfo {
+  static {
+    __name(this, "EncryptedPrivateKeyInfo");
+  }
+};
+EncryptedPrivateKeyInfo2 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], EncryptedPrivateKeyInfo2);
+var EmailAddress = class EmailAddress2 {
+  static {
+    __name(this, "EmailAddress");
+  }
+  constructor(value2 = "") {
+    this.value = value2;
+  }
+  toString() {
+    return this.value;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.IA5String })
+], EmailAddress.prototype, "value", void 0);
+EmailAddress = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], EmailAddress);
+var UnstructuredName = class UnstructuredName2 extends PKCS9String {
+  static {
+    __name(this, "UnstructuredName");
+  }
+};
+UnstructuredName = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], UnstructuredName);
+var UnstructuredAddress = class UnstructuredAddress2 extends DirectoryString {
+  static {
+    __name(this, "UnstructuredAddress");
+  }
+};
+UnstructuredAddress = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], UnstructuredAddress);
+var DateOfBirth = class DateOfBirth2 {
+  static {
+    __name(this, "DateOfBirth");
+  }
+  constructor(value2 = /* @__PURE__ */ new Date()) {
+    this.value = value2;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.GeneralizedTime })
+], DateOfBirth.prototype, "value", void 0);
+DateOfBirth = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], DateOfBirth);
+var PlaceOfBirth = class PlaceOfBirth2 extends DirectoryString {
+  static {
+    __name(this, "PlaceOfBirth");
+  }
+};
+PlaceOfBirth = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], PlaceOfBirth);
+var Gender = class Gender2 {
+  static {
+    __name(this, "Gender");
+  }
+  constructor(value2 = "M") {
+    this.value = value2;
+  }
+  toString() {
+    return this.value;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.PrintableString })
+], Gender.prototype, "value", void 0);
+Gender = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], Gender);
+var CountryOfCitizenship = class CountryOfCitizenship2 {
+  static {
+    __name(this, "CountryOfCitizenship");
+  }
+  constructor(value2 = "") {
+    this.value = value2;
+  }
+  toString() {
+    return this.value;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.PrintableString })
+], CountryOfCitizenship.prototype, "value", void 0);
+CountryOfCitizenship = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], CountryOfCitizenship);
+var CountryOfResidence = class CountryOfResidence2 extends CountryOfCitizenship {
+  static {
+    __name(this, "CountryOfResidence");
+  }
+};
+CountryOfResidence = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], CountryOfResidence);
+var Pseudonym = class Pseudonym2 extends DirectoryString {
+  static {
+    __name(this, "Pseudonym");
+  }
+};
+Pseudonym = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], Pseudonym);
+var ContentType = class ContentType2 {
+  static {
+    __name(this, "ContentType");
+  }
+  constructor(value2 = "") {
+    this.value = value2;
+  }
+  toString() {
+    return this.value;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.ObjectIdentifier })
+], ContentType.prototype, "value", void 0);
+ContentType = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], ContentType);
+var SigningTime3 = class SigningTime4 extends Time {
+  static {
+    __name(this, "SigningTime");
+  }
+};
+SigningTime3 = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], SigningTime3);
+var SequenceNumber = class SequenceNumber2 {
+  static {
+    __name(this, "SequenceNumber");
+  }
+  constructor(value2 = 0) {
+    this.value = value2;
+  }
+  toString() {
+    return this.value.toString();
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], SequenceNumber.prototype, "value", void 0);
+SequenceNumber = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], SequenceNumber);
+var CounterSignature3 = class CounterSignature4 extends SignerInfo {
+  static {
+    __name(this, "CounterSignature");
+  }
+};
+CounterSignature3 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], CounterSignature3);
+var ChallengePassword = class ChallengePassword2 extends DirectoryString {
+  static {
+    __name(this, "ChallengePassword");
+  }
+};
+ChallengePassword = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], ChallengePassword);
+var ExtensionRequest = ExtensionRequest_1 = class ExtensionRequest2 extends Extensions {
+  static {
+    __name(this, "ExtensionRequest");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, ExtensionRequest_1.prototype);
+  }
+};
+ExtensionRequest = ExtensionRequest_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], ExtensionRequest);
+var ExtendedCertificateAttributes = ExtendedCertificateAttributes_1 = class ExtendedCertificateAttributes2 extends AsnArray {
+  static {
+    __name(this, "ExtendedCertificateAttributes");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, ExtendedCertificateAttributes_1.prototype);
+  }
+};
+ExtendedCertificateAttributes = ExtendedCertificateAttributes_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Set, itemType: Attribute2 })
+], ExtendedCertificateAttributes);
+var FriendlyName = class FriendlyName2 {
+  static {
+    __name(this, "FriendlyName");
+  }
+  constructor(value2 = "") {
+    this.value = value2;
+  }
+  toString() {
+    return this.value;
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.BmpString })
+], FriendlyName.prototype, "value", void 0);
+FriendlyName = __decorate([
+  AsnType({ type: AsnTypeTypes.Choice })
+], FriendlyName);
+var SMIMECapability = class SMIMECapability2 extends AlgorithmIdentifier {
+  static {
+    __name(this, "SMIMECapability");
+  }
+};
+SMIMECapability = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence })
+], SMIMECapability);
+var SMIMECapabilities = SMIMECapabilities_1 = class SMIMECapabilities2 extends AsnArray {
+  static {
+    __name(this, "SMIMECapabilities");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, SMIMECapabilities_1.prototype);
+  }
+};
+SMIMECapabilities = SMIMECapabilities_1 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: SMIMECapability })
+], SMIMECapabilities);
+
+// node_modules/@peculiar/asn1-csr/build/es2015/attributes.js
+var Attributes_12;
+var Attributes3 = Attributes_12 = class Attributes4 extends AsnArray {
+  static {
+    __name(this, "Attributes");
+  }
+  constructor(items) {
+    super(items);
+    Object.setPrototypeOf(this, Attributes_12.prototype);
+  }
+};
+Attributes3 = Attributes_12 = __decorate([
+  AsnType({ type: AsnTypeTypes.Sequence, itemType: Attribute })
+], Attributes3);
+
+// node_modules/@peculiar/asn1-csr/build/es2015/certification_request_info.js
+var CertificationRequestInfo = class {
+  static {
+    __name(this, "CertificationRequestInfo");
+  }
+  constructor(params = {}) {
+    this.version = 0;
+    this.subject = new Name();
+    this.subjectPKInfo = new SubjectPublicKeyInfo();
+    this.attributes = new Attributes3();
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: AsnPropTypes.Integer })
+], CertificationRequestInfo.prototype, "version", void 0);
+__decorate([
+  AsnProp({ type: Name })
+], CertificationRequestInfo.prototype, "subject", void 0);
+__decorate([
+  AsnProp({ type: SubjectPublicKeyInfo })
+], CertificationRequestInfo.prototype, "subjectPKInfo", void 0);
+__decorate([
+  AsnProp({ type: Attributes3, implicit: true, context: 0 })
+], CertificationRequestInfo.prototype, "attributes", void 0);
+
+// node_modules/@peculiar/asn1-csr/build/es2015/certification_request.js
+var CertificationRequest = class {
+  static {
+    __name(this, "CertificationRequest");
+  }
+  constructor(params = {}) {
+    this.certificationRequestInfo = new CertificationRequestInfo();
+    this.signatureAlgorithm = new AlgorithmIdentifier();
+    this.signature = new ArrayBuffer(0);
+    Object.assign(this, params);
+  }
+};
+__decorate([
+  AsnProp({ type: CertificationRequestInfo, raw: true })
+], CertificationRequest.prototype, "certificationRequestInfo", void 0);
+__decorate([
+  AsnProp({ type: AlgorithmIdentifier })
+], CertificationRequest.prototype, "signatureAlgorithm", void 0);
+__decorate([
+  AsnProp({ type: AsnPropTypes.BitString })
+], CertificationRequest.prototype, "signature", void 0);
+
+// node_modules/@peculiar/x509/build/x509.es.js
+var diAlgorithm = "crypto.algorithm";
+var AlgorithmProvider = class {
+  static {
+    __name(this, "AlgorithmProvider");
+  }
+  getAlgorithms() {
+    return instance.resolveAll(diAlgorithm);
+  }
+  toAsnAlgorithm(alg) {
+    ({ ...alg });
+    for (const algorithm of this.getAlgorithms()) {
+      const res = algorithm.toAsnAlgorithm(alg);
+      if (res) {
+        return res;
+      }
+    }
+    if (/^[0-9.]+$/.test(alg.name)) {
+      const res = new AlgorithmIdentifier({
+        algorithm: alg.name
+      });
+      if ("parameters" in alg) {
+        const unknown = alg;
+        res.parameters = unknown.parameters;
+      }
+      return res;
+    }
+    throw new Error("Cannot convert WebCrypto algorithm to ASN.1 algorithm");
+  }
+  toWebAlgorithm(alg) {
+    for (const algorithm of this.getAlgorithms()) {
+      const res = algorithm.toWebAlgorithm(alg);
+      if (res) {
+        return res;
+      }
+    }
+    const unknown = {
+      name: alg.algorithm,
+      parameters: alg.parameters
+    };
+    return unknown;
+  }
+};
+var diAlgorithmProvider = "crypto.algorithmProvider";
+instance.registerSingleton(diAlgorithmProvider, AlgorithmProvider);
+var EcAlgorithm_1;
+var idVersionOne = "1.3.36.3.3.2.8.1.1";
+var idBrainpoolP160r1 = `${idVersionOne}.1`;
+var idBrainpoolP160t1 = `${idVersionOne}.2`;
+var idBrainpoolP192r1 = `${idVersionOne}.3`;
+var idBrainpoolP192t1 = `${idVersionOne}.4`;
+var idBrainpoolP224r1 = `${idVersionOne}.5`;
+var idBrainpoolP224t1 = `${idVersionOne}.6`;
+var idBrainpoolP256r1 = `${idVersionOne}.7`;
+var idBrainpoolP256t1 = `${idVersionOne}.8`;
+var idBrainpoolP320r1 = `${idVersionOne}.9`;
+var idBrainpoolP320t1 = `${idVersionOne}.10`;
+var idBrainpoolP384r1 = `${idVersionOne}.11`;
+var idBrainpoolP384t1 = `${idVersionOne}.12`;
+var idBrainpoolP512r1 = `${idVersionOne}.13`;
+var idBrainpoolP512t1 = `${idVersionOne}.14`;
+var brainpoolP160r1 = "brainpoolP160r1";
+var brainpoolP160t1 = "brainpoolP160t1";
+var brainpoolP192r1 = "brainpoolP192r1";
+var brainpoolP192t1 = "brainpoolP192t1";
+var brainpoolP224r1 = "brainpoolP224r1";
+var brainpoolP224t1 = "brainpoolP224t1";
+var brainpoolP256r1 = "brainpoolP256r1";
+var brainpoolP256t1 = "brainpoolP256t1";
+var brainpoolP320r1 = "brainpoolP320r1";
+var brainpoolP320t1 = "brainpoolP320t1";
+var brainpoolP384r1 = "brainpoolP384r1";
+var brainpoolP384t1 = "brainpoolP384t1";
+var brainpoolP512r1 = "brainpoolP512r1";
+var brainpoolP512t1 = "brainpoolP512t1";
+var ECDSA = "ECDSA";
+var EcAlgorithm = EcAlgorithm_1 = class EcAlgorithm2 {
+  static {
+    __name(this, "EcAlgorithm");
+  }
+  toAsnAlgorithm(alg) {
+    switch (alg.name.toLowerCase()) {
+      case ECDSA.toLowerCase():
+        if ("hash" in alg) {
+          const hash = typeof alg.hash === "string" ? alg.hash : alg.hash.name;
+          switch (hash.toLowerCase()) {
+            case "sha-1":
+              return ecdsaWithSHA1;
+            case "sha-256":
+              return ecdsaWithSHA256;
+            case "sha-384":
+              return ecdsaWithSHA384;
+            case "sha-512":
+              return ecdsaWithSHA512;
+          }
+        } else if ("namedCurve" in alg) {
+          let parameters = "";
+          switch (alg.namedCurve) {
+            case "P-256":
+              parameters = id_secp256r1;
+              break;
+            case "K-256":
+              parameters = EcAlgorithm_1.SECP256K1;
+              break;
+            case "P-384":
+              parameters = id_secp384r1;
+              break;
+            case "P-521":
+              parameters = id_secp521r1;
+              break;
+            case brainpoolP160r1:
+              parameters = idBrainpoolP160r1;
+              break;
+            case brainpoolP160t1:
+              parameters = idBrainpoolP160t1;
+              break;
+            case brainpoolP192r1:
+              parameters = idBrainpoolP192r1;
+              break;
+            case brainpoolP192t1:
+              parameters = idBrainpoolP192t1;
+              break;
+            case brainpoolP224r1:
+              parameters = idBrainpoolP224r1;
+              break;
+            case brainpoolP224t1:
+              parameters = idBrainpoolP224t1;
+              break;
+            case brainpoolP256r1:
+              parameters = idBrainpoolP256r1;
+              break;
+            case brainpoolP256t1:
+              parameters = idBrainpoolP256t1;
+              break;
+            case brainpoolP320r1:
+              parameters = idBrainpoolP320r1;
+              break;
+            case brainpoolP320t1:
+              parameters = idBrainpoolP320t1;
+              break;
+            case brainpoolP384r1:
+              parameters = idBrainpoolP384r1;
+              break;
+            case brainpoolP384t1:
+              parameters = idBrainpoolP384t1;
+              break;
+            case brainpoolP512r1:
+              parameters = idBrainpoolP512r1;
+              break;
+            case brainpoolP512t1:
+              parameters = idBrainpoolP512t1;
+              break;
+          }
+          if (parameters) {
+            return new AlgorithmIdentifier({
+              algorithm: id_ecPublicKey,
+              parameters: AsnConvert.serialize(new ECParameters({ namedCurve: parameters }))
+            });
+          }
+        }
+    }
+    return null;
+  }
+  toWebAlgorithm(alg) {
+    switch (alg.algorithm) {
+      case id_ecdsaWithSHA1:
+        return { name: ECDSA, hash: { name: "SHA-1" } };
+      case id_ecdsaWithSHA256:
+        return { name: ECDSA, hash: { name: "SHA-256" } };
+      case id_ecdsaWithSHA384:
+        return { name: ECDSA, hash: { name: "SHA-384" } };
+      case id_ecdsaWithSHA512:
+        return { name: ECDSA, hash: { name: "SHA-512" } };
+      case id_ecPublicKey: {
+        if (!alg.parameters) {
+          throw new TypeError("Cannot get required parameters from EC algorithm");
+        }
+        const parameters = AsnConvert.parse(alg.parameters, ECParameters);
+        switch (parameters.namedCurve) {
+          case id_secp256r1:
+            return { name: ECDSA, namedCurve: "P-256" };
+          case EcAlgorithm_1.SECP256K1:
+            return { name: ECDSA, namedCurve: "K-256" };
+          case id_secp384r1:
+            return { name: ECDSA, namedCurve: "P-384" };
+          case id_secp521r1:
+            return { name: ECDSA, namedCurve: "P-521" };
+          case idBrainpoolP160r1:
+            return { name: ECDSA, namedCurve: brainpoolP160r1 };
+          case idBrainpoolP160t1:
+            return { name: ECDSA, namedCurve: brainpoolP160t1 };
+          case idBrainpoolP192r1:
+            return { name: ECDSA, namedCurve: brainpoolP192r1 };
+          case idBrainpoolP192t1:
+            return { name: ECDSA, namedCurve: brainpoolP192t1 };
+          case idBrainpoolP224r1:
+            return { name: ECDSA, namedCurve: brainpoolP224r1 };
+          case idBrainpoolP224t1:
+            return { name: ECDSA, namedCurve: brainpoolP224t1 };
+          case idBrainpoolP256r1:
+            return { name: ECDSA, namedCurve: brainpoolP256r1 };
+          case idBrainpoolP256t1:
+            return { name: ECDSA, namedCurve: brainpoolP256t1 };
+          case idBrainpoolP320r1:
+            return { name: ECDSA, namedCurve: brainpoolP320r1 };
+          case idBrainpoolP320t1:
+            return { name: ECDSA, namedCurve: brainpoolP320t1 };
+          case idBrainpoolP384r1:
+            return { name: ECDSA, namedCurve: brainpoolP384r1 };
+          case idBrainpoolP384t1:
+            return { name: ECDSA, namedCurve: brainpoolP384t1 };
+          case idBrainpoolP512r1:
+            return { name: ECDSA, namedCurve: brainpoolP512r1 };
+          case idBrainpoolP512t1:
+            return { name: ECDSA, namedCurve: brainpoolP512t1 };
+        }
+      }
+    }
+    return null;
+  }
+};
+EcAlgorithm.SECP256K1 = "1.3.132.0.10";
+EcAlgorithm = EcAlgorithm_1 = __decorate([
+  injectable_default()
+], EcAlgorithm);
+instance.registerSingleton(diAlgorithm, EcAlgorithm);
+var NAME2 = Symbol("name");
+var VALUE = Symbol("value");
+var TextObject = class {
+  static {
+    __name(this, "TextObject");
+  }
+  constructor(name3, items = {}, value2 = "") {
+    this[NAME2] = name3;
+    this[VALUE] = value2;
+    for (const key in items) {
+      this[key] = items[key];
+    }
+  }
+};
+TextObject.NAME = NAME2;
+TextObject.VALUE = VALUE;
+var DefaultAlgorithmSerializer = class {
+  static {
+    __name(this, "DefaultAlgorithmSerializer");
+  }
+  static toTextObject(alg) {
+    const obj = new TextObject("Algorithm Identifier", {}, OidSerializer.toString(alg.algorithm));
+    if (alg.parameters) {
+      switch (alg.algorithm) {
+        case id_ecPublicKey: {
+          const ecAlg = new EcAlgorithm().toWebAlgorithm(alg);
+          if (ecAlg && "namedCurve" in ecAlg) {
+            obj["Named Curve"] = ecAlg.namedCurve;
+          } else {
+            obj["Parameters"] = alg.parameters;
+          }
+          break;
+        }
+        default:
+          obj["Parameters"] = alg.parameters;
+      }
+    }
+    return obj;
+  }
+};
+var OidSerializer = class {
+  static {
+    __name(this, "OidSerializer");
+  }
+  static toString(oid) {
+    const name3 = this.items[oid];
+    if (name3) {
+      return name3;
+    }
+    return oid;
+  }
+};
+OidSerializer.items = {
+  [id_sha1]: "sha1",
+  [id_sha224]: "sha224",
+  [id_sha256]: "sha256",
+  [id_sha384]: "sha384",
+  [id_sha512]: "sha512",
+  [id_rsaEncryption]: "rsaEncryption",
+  [id_sha1WithRSAEncryption]: "sha1WithRSAEncryption",
+  [id_sha224WithRSAEncryption]: "sha224WithRSAEncryption",
+  [id_sha256WithRSAEncryption]: "sha256WithRSAEncryption",
+  [id_sha384WithRSAEncryption]: "sha384WithRSAEncryption",
+  [id_sha512WithRSAEncryption]: "sha512WithRSAEncryption",
+  [id_ecPublicKey]: "ecPublicKey",
+  [id_ecdsaWithSHA1]: "ecdsaWithSHA1",
+  [id_ecdsaWithSHA224]: "ecdsaWithSHA224",
+  [id_ecdsaWithSHA256]: "ecdsaWithSHA256",
+  [id_ecdsaWithSHA384]: "ecdsaWithSHA384",
+  [id_ecdsaWithSHA512]: "ecdsaWithSHA512",
+  [id_kp_serverAuth]: "TLS WWW server authentication",
+  [id_kp_clientAuth]: "TLS WWW client authentication",
+  [id_kp_codeSigning]: "Code Signing",
+  [id_kp_emailProtection]: "E-mail Protection",
+  [id_kp_timeStamping]: "Time Stamping",
+  [id_kp_OCSPSigning]: "OCSP Signing",
+  [id_signedData]: "Signed Data"
+};
+var TextConverter = class {
+  static {
+    __name(this, "TextConverter");
+  }
+  static serialize(obj) {
+    return this.serializeObj(obj).join("\n");
+  }
+  static pad(deep = 0) {
+    return "".padStart(2 * deep, " ");
+  }
+  static serializeObj(obj, deep = 0) {
+    const res = [];
+    let pad = this.pad(deep++);
+    let value2 = "";
+    const objValue = obj[TextObject.VALUE];
+    if (objValue) {
+      value2 = ` ${objValue}`;
+    }
+    res.push(`${pad}${obj[TextObject.NAME]}:${value2}`);
+    pad = this.pad(deep);
+    for (const key in obj) {
+      if (typeof key === "symbol") {
+        continue;
+      }
+      const value3 = obj[key];
+      const keyValue = key ? `${key}: ` : "";
+      if (typeof value3 === "string" || typeof value3 === "number" || typeof value3 === "boolean") {
+        res.push(`${pad}${keyValue}${value3}`);
+      } else if (value3 instanceof Date) {
+        res.push(`${pad}${keyValue}${value3.toUTCString()}`);
+      } else if (Array.isArray(value3)) {
+        for (const obj2 of value3) {
+          obj2[TextObject.NAME] = key;
+          res.push(...this.serializeObj(obj2, deep));
+        }
+      } else if (value3 instanceof TextObject) {
+        value3[TextObject.NAME] = key;
+        res.push(...this.serializeObj(value3, deep));
+      } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(value3)) {
+        if (key) {
+          res.push(`${pad}${keyValue}`);
+          res.push(...this.serializeBufferSource(value3, deep + 1));
+        } else {
+          res.push(...this.serializeBufferSource(value3, deep));
+        }
+      } else if ("toTextObject" in value3) {
+        const obj2 = value3.toTextObject();
+        obj2[TextObject.NAME] = key;
+        res.push(...this.serializeObj(obj2, deep));
+      } else {
+        throw new TypeError("Cannot serialize data in text format. Unsupported type.");
+      }
+    }
+    return res;
+  }
+  static serializeBufferSource(buffer, deep = 0) {
+    const pad = this.pad(deep);
+    const view = import_pvtsutils6.BufferSourceConverter.toUint8Array(buffer);
+    const res = [];
+    for (let i2 = 0; i2 < view.length; ) {
+      const row = [];
+      for (let j = 0; j < 16 && i2 < view.length; j++) {
+        if (j === 8) {
+          row.push("");
+        }
+        const hex = view[i2++].toString(16).padStart(2, "0");
+        row.push(hex);
+      }
+      res.push(`${pad}${row.join(" ")}`);
+    }
+    return res;
+  }
+  static serializeAlgorithm(alg) {
+    return this.algorithmSerializer.toTextObject(alg);
+  }
+};
+TextConverter.oidSerializer = OidSerializer;
+TextConverter.algorithmSerializer = DefaultAlgorithmSerializer;
+var _AsnData_rawData;
+var AsnData = class _AsnData {
+  static {
+    __name(this, "AsnData");
+  }
+  get rawData() {
+    if (!__classPrivateFieldGet(this, _AsnData_rawData, "f")) {
+      __classPrivateFieldSet(this, _AsnData_rawData, AsnConvert.serialize(this.asn), "f");
+    }
+    return __classPrivateFieldGet(this, _AsnData_rawData, "f");
+  }
+  constructor(...args) {
+    _AsnData_rawData.set(this, void 0);
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      this.asn = AsnConvert.parse(args[0], args[1]);
+      __classPrivateFieldSet(this, _AsnData_rawData, import_pvtsutils6.BufferSourceConverter.toArrayBuffer(args[0]), "f");
+      this.onInit(this.asn);
+    } else {
+      this.asn = args[0];
+      this.onInit(this.asn);
+    }
+  }
+  equal(data) {
+    if (data instanceof _AsnData) {
+      return (0, import_pvtsutils6.isEqual)(data.rawData, this.rawData);
+    }
+    return false;
+  }
+  toString(format2 = "text") {
+    switch (format2) {
+      case "asn":
+        return AsnConvert.toString(this.rawData);
+      case "text":
+        return TextConverter.serialize(this.toTextObject());
+      case "hex":
+        return import_pvtsutils6.Convert.ToHex(this.rawData);
+      case "base64":
+        return import_pvtsutils6.Convert.ToBase64(this.rawData);
+      case "base64url":
+        return import_pvtsutils6.Convert.ToBase64Url(this.rawData);
+      default:
+        throw TypeError("Argument 'format' is unsupported value");
+    }
+  }
+  getTextName() {
+    const constructor = this.constructor;
+    return constructor.NAME;
+  }
+  toTextObject() {
+    const obj = this.toTextObjectEmpty();
+    obj[""] = this.rawData;
+    return obj;
+  }
+  toTextObjectEmpty(value2) {
+    return new TextObject(this.getTextName(), {}, value2);
+  }
+};
+_AsnData_rawData = /* @__PURE__ */ new WeakMap();
+AsnData.NAME = "ASN";
+var Extension2 = class _Extension extends AsnData {
+  static {
+    __name(this, "Extension");
+  }
+  constructor(...args) {
+    let raw;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      raw = import_pvtsutils6.BufferSourceConverter.toArrayBuffer(args[0]);
+    } else {
+      raw = AsnConvert.serialize(new Extension({
+        extnID: args[0],
+        critical: args[1],
+        extnValue: new OctetString2(import_pvtsutils6.BufferSourceConverter.toArrayBuffer(args[2]))
+      }));
+    }
+    super(raw, Extension);
+  }
+  onInit(asn) {
+    this.type = asn.extnID;
+    this.critical = asn.critical;
+    this.value = asn.extnValue.buffer;
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    obj[""] = this.value;
+    return obj;
+  }
+  toTextObjectWithoutValue() {
+    const obj = this.toTextObjectEmpty(this.critical ? "critical" : void 0);
+    if (obj[TextObject.NAME] === _Extension.NAME) {
+      obj[TextObject.NAME] = OidSerializer.toString(this.type);
+    }
+    return obj;
+  }
+};
+var _a2;
+var CryptoProvider = class _CryptoProvider {
+  static {
+    __name(this, "CryptoProvider");
+  }
+  static isCryptoKeyPair(data) {
+    return data && data.privateKey && data.publicKey;
+  }
+  static isCryptoKey(data) {
+    return data && data.usages && data.type && data.algorithm && data.extractable !== void 0;
+  }
+  constructor() {
+    this.items = /* @__PURE__ */ new Map();
+    this[_a2] = "CryptoProvider";
+    if (typeof self !== "undefined" && typeof crypto !== "undefined") {
+      this.set(_CryptoProvider.DEFAULT, crypto);
+    } else if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
+      this.set(_CryptoProvider.DEFAULT, window.crypto);
+    }
+  }
+  clear() {
+    this.items.clear();
+  }
+  delete(key) {
+    return this.items.delete(key);
+  }
+  forEach(callbackfn, thisArg) {
+    return this.items.forEach(callbackfn, thisArg);
+  }
+  has(key) {
+    return this.items.has(key);
+  }
+  get size() {
+    return this.items.size;
+  }
+  entries() {
+    return this.items.entries();
+  }
+  keys() {
+    return this.items.keys();
+  }
+  values() {
+    return this.items.values();
+  }
+  [Symbol.iterator]() {
+    return this.items[Symbol.iterator]();
+  }
+  get(key = _CryptoProvider.DEFAULT) {
+    const crypto2 = this.items.get(key.toLowerCase());
+    if (!crypto2) {
+      throw new Error(`Cannot get Crypto by name '${key}'`);
+    }
+    return crypto2;
+  }
+  set(key, value2) {
+    if (typeof key === "string") {
+      if (!value2) {
+        throw new TypeError("Argument 'value' is required");
+      }
+      this.items.set(key.toLowerCase(), value2);
+    } else {
+      this.items.set(_CryptoProvider.DEFAULT, key);
+    }
+    return this;
+  }
+};
+_a2 = Symbol.toStringTag;
+CryptoProvider.DEFAULT = "default";
+var cryptoProvider = new CryptoProvider();
+var OID_REGEX = /^[0-2](?:\.[1-9][0-9]*)+$/;
+function isOID(id) {
+  return new RegExp(OID_REGEX).test(id);
+}
+__name(isOID, "isOID");
+var NameIdentifier = class {
+  static {
+    __name(this, "NameIdentifier");
+  }
+  constructor(names2 = {}) {
+    this.items = {};
+    for (const id in names2) {
+      this.register(id, names2[id]);
+    }
+  }
+  get(idOrName) {
+    return this.items[idOrName] || null;
+  }
+  findId(idOrName) {
+    if (!isOID(idOrName)) {
+      return this.get(idOrName);
+    }
+    return idOrName;
+  }
+  register(id, name3) {
+    this.items[id] = name3;
+    this.items[name3] = id;
+  }
+};
+var names = new NameIdentifier();
+names.register("CN", "2.5.4.3");
+names.register("L", "2.5.4.7");
+names.register("ST", "2.5.4.8");
+names.register("O", "2.5.4.10");
+names.register("OU", "2.5.4.11");
+names.register("C", "2.5.4.6");
+names.register("DC", "0.9.2342.19200300.100.1.25");
+names.register("E", "1.2.840.113549.1.9.1");
+names.register("G", "2.5.4.42");
+names.register("I", "2.5.4.43");
+names.register("SN", "2.5.4.4");
+names.register("T", "2.5.4.12");
+function replaceUnknownCharacter(text, char) {
+  return `\\${import_pvtsutils6.Convert.ToHex(import_pvtsutils6.Convert.FromUtf8String(char)).toUpperCase()}`;
+}
+__name(replaceUnknownCharacter, "replaceUnknownCharacter");
+function escape2(data) {
+  return data.replace(/([,+"\\<>;])/g, "\\$1").replace(/^([ #])/, "\\$1").replace(/([ ]$)/, "\\$1").replace(/([\r\n\t])/, replaceUnknownCharacter);
+}
+__name(escape2, "escape");
+var Name3 = class _Name {
+  static {
+    __name(this, "Name");
+  }
+  static isASCII(text) {
+    for (let i2 = 0; i2 < text.length; i2++) {
+      const code4 = text.charCodeAt(i2);
+      if (code4 > 255) {
+        return false;
+      }
+    }
+    return true;
+  }
+  static isPrintableString(text) {
+    return /^[A-Za-z0-9 '()+,-./:=?]*$/g.test(text);
+  }
+  constructor(data, extraNames = {}) {
+    this.extraNames = new NameIdentifier();
+    this.asn = new Name();
+    for (const key in extraNames) {
+      if (Object.prototype.hasOwnProperty.call(extraNames, key)) {
+        const value2 = extraNames[key];
+        this.extraNames.register(key, value2);
+      }
+    }
+    if (typeof data === "string") {
+      this.asn = this.fromString(data);
+    } else if (data instanceof Name) {
+      this.asn = data;
+    } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(data)) {
+      this.asn = AsnConvert.parse(data, Name);
+    } else {
+      this.asn = this.fromJSON(data);
+    }
+  }
+  getField(idOrName) {
+    const id = this.extraNames.findId(idOrName) || names.findId(idOrName);
+    const res = [];
+    for (const name3 of this.asn) {
+      for (const rdn of name3) {
+        if (rdn.type === id) {
+          res.push(rdn.value.toString());
+        }
+      }
+    }
+    return res;
+  }
+  getName(idOrName) {
+    return this.extraNames.get(idOrName) || names.get(idOrName);
+  }
+  toString() {
+    return this.asn.map((rdn) => rdn.map((o2) => {
+      const type = this.getName(o2.type) || o2.type;
+      const value2 = o2.value.anyValue ? `#${import_pvtsutils6.Convert.ToHex(o2.value.anyValue)}` : escape2(o2.value.toString());
+      return `${type}=${value2}`;
+    }).join("+")).join(", ");
+  }
+  toJSON() {
+    var _a3;
+    const json = [];
+    for (const rdn of this.asn) {
+      const jsonItem = {};
+      for (const attr of rdn) {
+        const type = this.getName(attr.type) || attr.type;
+        (_a3 = jsonItem[type]) !== null && _a3 !== void 0 ? _a3 : jsonItem[type] = [];
+        jsonItem[type].push(attr.value.anyValue ? `#${import_pvtsutils6.Convert.ToHex(attr.value.anyValue)}` : attr.value.toString());
+      }
+      json.push(jsonItem);
+    }
+    return json;
+  }
+  fromString(data) {
+    const asn = new Name();
+    const regex = /(\d\.[\d.]*\d|[A-Za-z]+)=((?:"")|(?:".*?[^\\]")|(?:[^,+"\\](?=[,+]|$))|(?:[^,+].*?(?:[^\\][,+]))|(?:))([,+])?/g;
+    let matches = null;
+    let level = ",";
+    while (matches = regex.exec(`${data},`)) {
+      let [, type, value2] = matches;
+      const lastChar = value2[value2.length - 1];
+      if (lastChar === "," || lastChar === "+") {
+        value2 = value2.slice(0, value2.length - 1);
+        matches[3] = lastChar;
+      }
+      const next = matches[3];
+      type = this.getTypeOid(type);
+      const attr = this.createAttribute(type, value2);
+      if (level === "+") {
+        asn[asn.length - 1].push(attr);
+      } else {
+        asn.push(new RelativeDistinguishedName([attr]));
+      }
+      level = next;
+    }
+    return asn;
+  }
+  fromJSON(data) {
+    const asn = new Name();
+    for (const item of data) {
+      const asnRdn = new RelativeDistinguishedName();
+      for (const type in item) {
+        const typeId = this.getTypeOid(type);
+        const values = item[type];
+        for (const value2 of values) {
+          const asnAttr = this.createAttribute(typeId, value2);
+          asnRdn.push(asnAttr);
+        }
+      }
+      asn.push(asnRdn);
+    }
+    return asn;
+  }
+  getTypeOid(type) {
+    if (!/[\d.]+/.test(type)) {
+      type = this.getName(type) || "";
+    }
+    if (!type) {
+      throw new Error(`Cannot get OID for name type '${type}'`);
+    }
+    return type;
+  }
+  createAttribute(type, value2) {
+    const attr = new AttributeTypeAndValue({ type });
+    if (typeof value2 === "object") {
+      for (const key in value2) {
+        switch (key) {
+          case "ia5String":
+            attr.value.ia5String = value2[key];
+            break;
+          case "utf8String":
+            attr.value.utf8String = value2[key];
+            break;
+          case "universalString":
+            attr.value.universalString = value2[key];
+            break;
+          case "bmpString":
+            attr.value.bmpString = value2[key];
+            break;
+          case "printableString":
+            attr.value.printableString = value2[key];
+            break;
+        }
+      }
+    } else if (value2[0] === "#") {
+      attr.value.anyValue = import_pvtsutils6.Convert.FromHex(value2.slice(1));
+    } else {
+      const processedValue = this.processStringValue(value2);
+      if (type === this.getName("E") || type === this.getName("DC")) {
+        attr.value.ia5String = processedValue;
+      } else {
+        if (_Name.isPrintableString(processedValue)) {
+          attr.value.printableString = processedValue;
+        } else {
+          attr.value.utf8String = processedValue;
+        }
+      }
+    }
+    return attr;
+  }
+  processStringValue(value2) {
+    const quotedMatches = /"(.*?[^\\])?"/.exec(value2);
+    if (quotedMatches) {
+      value2 = quotedMatches[1];
+    }
+    return value2.replace(/\\0a/ig, "\n").replace(/\\0d/ig, "\r").replace(/\\0g/ig, "	").replace(/\\(.)/g, "$1");
+  }
+  toArrayBuffer() {
+    return AsnConvert.serialize(this.asn);
+  }
+  async getThumbprint(...args) {
+    var _a3;
+    let crypto2;
+    let algorithm = "SHA-1";
+    if (args.length >= 1 && !((_a3 = args[0]) === null || _a3 === void 0 ? void 0 : _a3.subtle)) {
+      algorithm = args[0] || algorithm;
+      crypto2 = args[1] || cryptoProvider.get();
+    } else {
+      crypto2 = args[0] || cryptoProvider.get();
+    }
+    return await crypto2.subtle.digest(algorithm, this.toArrayBuffer());
+  }
+};
+var ERR_GN_CONSTRUCTOR = "Cannot initialize GeneralName from ASN.1 data.";
+var ERR_GN_STRING_FORMAT = `${ERR_GN_CONSTRUCTOR} Unsupported string format in use.`;
+var ERR_GUID = `${ERR_GN_CONSTRUCTOR} Value doesn't match to GUID regular expression.`;
+var GUID_REGEX = /^([0-9a-f]{8})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{4})-?([0-9a-f]{12})$/i;
+var id_GUID = "1.3.6.1.4.1.311.25.1";
+var id_UPN = "1.3.6.1.4.1.311.20.2.3";
+var DNS2 = "dns";
+var DN = "dn";
+var EMAIL = "email";
+var IP2 = "ip";
+var URL2 = "url";
+var GUID = "guid";
+var UPN = "upn";
+var REGISTERED_ID = "id";
+var GeneralName3 = class extends AsnData {
+  static {
+    __name(this, "GeneralName");
+  }
+  constructor(...args) {
+    let name3;
+    if (args.length === 2) {
+      switch (args[0]) {
+        case DN: {
+          const derName = new Name3(args[1]).toArrayBuffer();
+          const asnName = AsnConvert.parse(derName, Name);
+          name3 = new GeneralName({ directoryName: asnName });
+          break;
+        }
+        case DNS2:
+          name3 = new GeneralName({ dNSName: args[1] });
+          break;
+        case EMAIL:
+          name3 = new GeneralName({ rfc822Name: args[1] });
+          break;
+        case GUID: {
+          const matches = new RegExp(GUID_REGEX, "i").exec(args[1]);
+          if (!matches) {
+            throw new Error("Cannot parse GUID value. Value doesn't match to regular expression");
+          }
+          const hex = matches.slice(1).map((o2, i2) => {
+            if (i2 < 3) {
+              return import_pvtsutils6.Convert.ToHex(new Uint8Array(import_pvtsutils6.Convert.FromHex(o2)).reverse());
+            }
+            return o2;
+          }).join("");
+          name3 = new GeneralName({
+            otherName: new OtherName({
+              typeId: id_GUID,
+              value: AsnConvert.serialize(new OctetString2(import_pvtsutils6.Convert.FromHex(hex)))
+            })
+          });
+          break;
+        }
+        case IP2:
+          name3 = new GeneralName({ iPAddress: args[1] });
+          break;
+        case REGISTERED_ID:
+          name3 = new GeneralName({ registeredID: args[1] });
+          break;
+        case UPN: {
+          name3 = new GeneralName({
+            otherName: new OtherName({
+              typeId: id_UPN,
+              value: AsnConvert.serialize(AsnUtf8StringConverter.toASN(args[1]))
+            })
+          });
+          break;
+        }
+        case URL2:
+          name3 = new GeneralName({ uniformResourceIdentifier: args[1] });
+          break;
+        default:
+          throw new Error("Cannot create GeneralName. Unsupported type of the name");
+      }
+    } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      name3 = AsnConvert.parse(args[0], GeneralName);
+    } else {
+      name3 = args[0];
+    }
+    super(name3);
+  }
+  onInit(asn) {
+    if (asn.dNSName != void 0) {
+      this.type = DNS2;
+      this.value = asn.dNSName;
+    } else if (asn.rfc822Name != void 0) {
+      this.type = EMAIL;
+      this.value = asn.rfc822Name;
+    } else if (asn.iPAddress != void 0) {
+      this.type = IP2;
+      this.value = asn.iPAddress;
+    } else if (asn.uniformResourceIdentifier != void 0) {
+      this.type = URL2;
+      this.value = asn.uniformResourceIdentifier;
+    } else if (asn.registeredID != void 0) {
+      this.type = REGISTERED_ID;
+      this.value = asn.registeredID;
+    } else if (asn.directoryName != void 0) {
+      this.type = DN;
+      this.value = new Name3(asn.directoryName).toString();
+    } else if (asn.otherName != void 0) {
+      if (asn.otherName.typeId === id_GUID) {
+        this.type = GUID;
+        const guid = AsnConvert.parse(asn.otherName.value, OctetString2);
+        const matches = new RegExp(GUID_REGEX, "i").exec(import_pvtsutils6.Convert.ToHex(guid));
+        if (!matches) {
+          throw new Error(ERR_GUID);
+        }
+        this.value = matches.slice(1).map((o2, i2) => {
+          if (i2 < 3) {
+            return import_pvtsutils6.Convert.ToHex(new Uint8Array(import_pvtsutils6.Convert.FromHex(o2)).reverse());
+          }
+          return o2;
+        }).join("-");
+      } else if (asn.otherName.typeId === id_UPN) {
+        this.type = UPN;
+        this.value = AsnConvert.parse(asn.otherName.value, DirectoryString).toString();
+      } else {
+        throw new Error(ERR_GN_STRING_FORMAT);
+      }
+    } else {
+      throw new Error(ERR_GN_STRING_FORMAT);
+    }
+  }
+  toJSON() {
+    return {
+      type: this.type,
+      value: this.value
+    };
+  }
+  toTextObject() {
+    let type;
+    switch (this.type) {
+      case DN:
+      case DNS2:
+      case GUID:
+      case IP2:
+      case REGISTERED_ID:
+      case UPN:
+      case URL2:
+        type = this.type.toUpperCase();
+        break;
+      case EMAIL:
+        type = "Email";
+        break;
+      default:
+        throw new Error("Unsupported GeneralName type");
+    }
+    let value2 = this.value;
+    if (this.type === REGISTERED_ID) {
+      value2 = OidSerializer.toString(value2);
+    }
+    return new TextObject(type, void 0, value2);
+  }
+};
+var GeneralNames3 = class extends AsnData {
+  static {
+    __name(this, "GeneralNames");
+  }
+  constructor(params) {
+    let names2;
+    if (params instanceof GeneralNames) {
+      names2 = params;
+    } else if (Array.isArray(params)) {
+      const items = [];
+      for (const name3 of params) {
+        if (name3 instanceof GeneralName) {
+          items.push(name3);
+        } else {
+          const asnName = AsnConvert.parse(new GeneralName3(name3.type, name3.value).rawData, GeneralName);
+          items.push(asnName);
+        }
+      }
+      names2 = new GeneralNames(items);
+    } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(params)) {
+      names2 = AsnConvert.parse(params, GeneralNames);
+    } else {
+      throw new Error("Cannot initialize GeneralNames. Incorrect incoming arguments");
+    }
+    super(names2);
+  }
+  onInit(asn) {
+    const items = [];
+    for (const asnName of asn) {
+      let name3 = null;
+      try {
+        name3 = new GeneralName3(asnName);
+      } catch {
+        continue;
+      }
+      items.push(name3);
+    }
+    this.items = items;
+  }
+  toJSON() {
+    return this.items.map((o2) => o2.toJSON());
+  }
+  toTextObject() {
+    const res = super.toTextObjectEmpty();
+    for (const name3 of this.items) {
+      const nameObj = name3.toTextObject();
+      let field = res[nameObj[TextObject.NAME]];
+      if (!Array.isArray(field)) {
+        field = [];
+        res[nameObj[TextObject.NAME]] = field;
+      }
+      field.push(nameObj);
+    }
+    return res;
+  }
+};
+GeneralNames3.NAME = "GeneralNames";
+var rPaddingTag = "-{5}";
+var rEolChars = "\\n";
+var rNameTag = `[^${rEolChars}]+`;
+var rBeginTag = `${rPaddingTag}BEGIN (${rNameTag}(?=${rPaddingTag}))${rPaddingTag}`;
+var rEndTag = `${rPaddingTag}END \\1${rPaddingTag}`;
+var rEolGroup = "\\n";
+var rHeaderKey = `[^:${rEolChars}]+`;
+var rHeaderValue = `(?:[^${rEolChars}]+${rEolGroup}(?: +[^${rEolChars}]+${rEolGroup})*)`;
+var rBase64Chars = "[a-zA-Z0-9=+/]+";
+var rBase64 = `(?:${rBase64Chars}${rEolGroup})+`;
+var rPem = `${rBeginTag}${rEolGroup}(?:((?:${rHeaderKey}: ${rHeaderValue})+))?${rEolGroup}?(${rBase64})${rEndTag}`;
+var PemConverter = class {
+  static {
+    __name(this, "PemConverter");
+  }
+  static isPem(data) {
+    return typeof data === "string" && new RegExp(rPem, "g").test(data.replace(/\r/g, ""));
+  }
+  static decodeWithHeaders(pem) {
+    pem = pem.replace(/\r/g, "");
+    const pattern = new RegExp(rPem, "g");
+    const res = [];
+    let matches = null;
+    while (matches = pattern.exec(pem)) {
+      const base642 = matches[3].replace(new RegExp(`[${rEolChars}]+`, "g"), "");
+      const pemStruct = {
+        type: matches[1],
+        headers: [],
+        rawData: import_pvtsutils6.Convert.FromBase64(base642)
+      };
+      const headersString = matches[2];
+      if (headersString) {
+        const headers = headersString.split(new RegExp(rEolGroup, "g"));
+        let lastHeader = null;
+        for (const header of headers) {
+          const [key, value2] = header.split(/:(.*)/);
+          if (value2 === void 0) {
+            if (!lastHeader) {
+              throw new Error("Cannot parse PEM string. Incorrect header value");
+            }
+            lastHeader.value += key.trim();
+          } else {
+            if (lastHeader) {
+              pemStruct.headers.push(lastHeader);
+            }
+            lastHeader = { key, value: value2.trim() };
+          }
+        }
+        if (lastHeader) {
+          pemStruct.headers.push(lastHeader);
+        }
+      }
+      res.push(pemStruct);
+    }
+    return res;
+  }
+  static decode(pem) {
+    const blocks = this.decodeWithHeaders(pem);
+    return blocks.map((o2) => o2.rawData);
+  }
+  static decodeFirst(pem) {
+    const items = this.decode(pem);
+    if (!items.length) {
+      throw new RangeError("PEM string doesn't contain any objects");
+    }
+    return items[0];
+  }
+  static encode(rawData, tag) {
+    if (Array.isArray(rawData)) {
+      const raws = new Array();
+      if (tag) {
+        rawData.forEach((element) => {
+          if (!import_pvtsutils6.BufferSourceConverter.isBufferSource(element)) {
+            throw new TypeError("Cannot encode array of BufferSource in PEM format. Not all items of the array are BufferSource");
+          }
+          raws.push(this.encodeStruct({
+            type: tag,
+            rawData: import_pvtsutils6.BufferSourceConverter.toArrayBuffer(element)
+          }));
+        });
+      } else {
+        rawData.forEach((element) => {
+          if (!("type" in element)) {
+            throw new TypeError("Cannot encode array of PemStruct in PEM format. Not all items of the array are PemStrut");
+          }
+          raws.push(this.encodeStruct(element));
+        });
+      }
+      return raws.join("\n");
+    } else {
+      if (!tag) {
+        throw new Error("Required argument 'tag' is missed");
+      }
+      return this.encodeStruct({
+        type: tag,
+        rawData: import_pvtsutils6.BufferSourceConverter.toArrayBuffer(rawData)
+      });
+    }
+  }
+  static encodeStruct(pem) {
+    var _a3;
+    const upperCaseType = pem.type.toLocaleUpperCase();
+    const res = [];
+    res.push(`-----BEGIN ${upperCaseType}-----`);
+    if ((_a3 = pem.headers) === null || _a3 === void 0 ? void 0 : _a3.length) {
+      for (const header of pem.headers) {
+        res.push(`${header.key}: ${header.value}`);
+      }
+      res.push("");
+    }
+    const base642 = import_pvtsutils6.Convert.ToBase64(pem.rawData);
+    let sliced;
+    let offset = 0;
+    const rows = Array();
+    while (offset < base642.length) {
+      if (base642.length - offset < 64) {
+        sliced = base642.substring(offset);
+      } else {
+        sliced = base642.substring(offset, offset + 64);
+        offset += 64;
+      }
+      if (sliced.length !== 0) {
+        rows.push(sliced);
+        if (sliced.length < 64) {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    res.push(...rows);
+    res.push(`-----END ${upperCaseType}-----`);
+    return res.join("\n");
+  }
+};
+PemConverter.CertificateTag = "CERTIFICATE";
+PemConverter.CrlTag = "CRL";
+PemConverter.CertificateRequestTag = "CERTIFICATE REQUEST";
+PemConverter.PublicKeyTag = "PUBLIC KEY";
+PemConverter.PrivateKeyTag = "PRIVATE KEY";
+var PemData = class _PemData extends AsnData {
+  static {
+    __name(this, "PemData");
+  }
+  static isAsnEncoded(data) {
+    return import_pvtsutils6.BufferSourceConverter.isBufferSource(data) || typeof data === "string";
+  }
+  static toArrayBuffer(raw) {
+    if (typeof raw === "string") {
+      if (PemConverter.isPem(raw)) {
+        return PemConverter.decode(raw)[0];
+      } else if (import_pvtsutils6.Convert.isHex(raw)) {
+        return import_pvtsutils6.Convert.FromHex(raw);
+      } else if (import_pvtsutils6.Convert.isBase64(raw)) {
+        return import_pvtsutils6.Convert.FromBase64(raw);
+      } else if (import_pvtsutils6.Convert.isBase64Url(raw)) {
+        return import_pvtsutils6.Convert.FromBase64Url(raw);
+      } else {
+        throw new TypeError("Unsupported format of 'raw' argument. Must be one of DER, PEM, HEX, Base64, or Base4Url");
+      }
+    } else {
+      const buffer = import_pvtsutils6.BufferSourceConverter.toUint8Array(raw);
+      if (buffer.length > 0 && buffer[0] === 48) {
+        return import_pvtsutils6.BufferSourceConverter.toArrayBuffer(raw);
+      }
+      const stringRaw = import_pvtsutils6.Convert.ToBinary(raw);
+      if (PemConverter.isPem(stringRaw)) {
+        return PemConverter.decode(stringRaw)[0];
+      } else if (import_pvtsutils6.Convert.isHex(stringRaw)) {
+        return import_pvtsutils6.Convert.FromHex(stringRaw);
+      } else if (import_pvtsutils6.Convert.isBase64(stringRaw)) {
+        return import_pvtsutils6.Convert.FromBase64(stringRaw);
+      } else if (import_pvtsutils6.Convert.isBase64Url(stringRaw)) {
+        return import_pvtsutils6.Convert.FromBase64Url(stringRaw);
+      }
+      throw new TypeError("Unsupported format of 'raw' argument. Must be one of DER, PEM, HEX, Base64, or Base4Url");
+    }
+  }
+  constructor(...args) {
+    if (_PemData.isAsnEncoded(args[0])) {
+      super(_PemData.toArrayBuffer(args[0]), args[1]);
+    } else {
+      super(args[0]);
+    }
+  }
+  toString(format2 = "pem") {
+    switch (format2) {
+      case "pem":
+        return PemConverter.encode(this.rawData, this.tag);
+      default:
+        return super.toString(format2);
+    }
+  }
+};
+var PublicKey2 = class _PublicKey extends PemData {
+  static {
+    __name(this, "PublicKey");
+  }
+  static async create(data, crypto2 = cryptoProvider.get()) {
+    if (data instanceof _PublicKey) {
+      return data;
+    } else if (CryptoProvider.isCryptoKey(data)) {
+      if (data.type !== "public") {
+        throw new TypeError("Public key is required");
+      }
+      const spki = await crypto2.subtle.exportKey("spki", data);
+      return new _PublicKey(spki);
+    } else if (data.publicKey) {
+      return data.publicKey;
+    } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(data)) {
+      return new _PublicKey(data);
+    } else {
+      throw new TypeError("Unsupported PublicKeyType");
+    }
+  }
+  constructor(param) {
+    if (PemData.isAsnEncoded(param)) {
+      super(param, SubjectPublicKeyInfo);
+    } else {
+      super(param);
+    }
+    this.tag = PemConverter.PublicKeyTag;
+  }
+  async export(...args) {
+    let crypto2;
+    let keyUsages = ["verify"];
+    let algorithm = { hash: "SHA-256", ...this.algorithm };
+    if (args.length > 1) {
+      algorithm = args[0] || algorithm;
+      keyUsages = args[1] || keyUsages;
+      crypto2 = args[2] || cryptoProvider.get();
+    } else {
+      crypto2 = args[0] || cryptoProvider.get();
+    }
+    let raw = this.rawData;
+    const asnSpki = AsnConvert.parse(this.rawData, SubjectPublicKeyInfo);
+    if (asnSpki.algorithm.algorithm === id_RSASSA_PSS) {
+      raw = convertSpkiToRsaPkcs1(asnSpki, raw);
+    }
+    return crypto2.subtle.importKey("spki", raw, algorithm, true, keyUsages);
+  }
+  onInit(asn) {
+    const algProv = instance.resolve(diAlgorithmProvider);
+    const algorithm = this.algorithm = algProv.toWebAlgorithm(asn.algorithm);
+    switch (asn.algorithm.algorithm) {
+      case id_rsaEncryption: {
+        const rsaPublicKey = AsnConvert.parse(asn.subjectPublicKey, RSAPublicKey2);
+        const modulus = import_pvtsutils6.BufferSourceConverter.toUint8Array(rsaPublicKey.modulus);
+        algorithm.publicExponent = import_pvtsutils6.BufferSourceConverter.toUint8Array(rsaPublicKey.publicExponent);
+        algorithm.modulusLength = (!modulus[0] ? modulus.slice(1) : modulus).byteLength << 3;
+        break;
+      }
+    }
+  }
+  async getThumbprint(...args) {
+    var _a3;
+    let crypto2;
+    let algorithm = "SHA-1";
+    if (args.length >= 1 && !((_a3 = args[0]) === null || _a3 === void 0 ? void 0 : _a3.subtle)) {
+      algorithm = args[0] || algorithm;
+      crypto2 = args[1] || cryptoProvider.get();
+    } else {
+      crypto2 = args[0] || cryptoProvider.get();
+    }
+    return await crypto2.subtle.digest(algorithm, this.rawData);
+  }
+  async getKeyIdentifier(...args) {
+    let crypto2;
+    let algorithm = "SHA-1";
+    if (args.length === 1) {
+      if (typeof args[0] === "string") {
+        algorithm = args[0];
+        crypto2 = cryptoProvider.get();
+      } else {
+        crypto2 = args[0];
+      }
+    } else if (args.length === 2) {
+      algorithm = args[0];
+      crypto2 = args[1];
+    } else {
+      crypto2 = cryptoProvider.get();
+    }
+    const asn = AsnConvert.parse(this.rawData, SubjectPublicKeyInfo);
+    return await crypto2.subtle.digest(algorithm, asn.subjectPublicKey);
+  }
+  toTextObject() {
+    const obj = this.toTextObjectEmpty();
+    const asn = AsnConvert.parse(this.rawData, SubjectPublicKeyInfo);
+    obj["Algorithm"] = TextConverter.serializeAlgorithm(asn.algorithm);
+    switch (asn.algorithm.algorithm) {
+      case id_ecPublicKey:
+        obj["EC Point"] = asn.subjectPublicKey;
+        break;
+      case id_rsaEncryption:
+      default:
+        obj["Raw Data"] = asn.subjectPublicKey;
+    }
+    return obj;
+  }
+};
+function convertSpkiToRsaPkcs1(asnSpki, raw) {
+  asnSpki.algorithm = new AlgorithmIdentifier({
+    algorithm: id_rsaEncryption,
+    parameters: null
+  });
+  raw = AsnConvert.serialize(asnSpki);
+  return raw;
+}
+__name(convertSpkiToRsaPkcs1, "convertSpkiToRsaPkcs1");
+var AuthorityKeyIdentifierExtension = class _AuthorityKeyIdentifierExtension extends Extension2 {
+  static {
+    __name(this, "AuthorityKeyIdentifierExtension");
+  }
+  static async create(param, critical = false, crypto2 = cryptoProvider.get()) {
+    if ("name" in param && "serialNumber" in param) {
+      return new _AuthorityKeyIdentifierExtension(param, critical);
+    }
+    const key = await PublicKey2.create(param, crypto2);
+    const id = await key.getKeyIdentifier(crypto2);
+    return new _AuthorityKeyIdentifierExtension(import_pvtsutils6.Convert.ToHex(id), critical);
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else if (typeof args[0] === "string") {
+      const value2 = new AuthorityKeyIdentifier({ keyIdentifier: new KeyIdentifier(import_pvtsutils6.Convert.FromHex(args[0])) });
+      super(id_ce_authorityKeyIdentifier, args[1], AsnConvert.serialize(value2));
+    } else {
+      const certId = args[0];
+      const certIdName = certId.name instanceof GeneralNames3 ? AsnConvert.parse(certId.name.rawData, GeneralNames) : certId.name;
+      const value2 = new AuthorityKeyIdentifier({
+        authorityCertIssuer: certIdName,
+        authorityCertSerialNumber: import_pvtsutils6.Convert.FromHex(certId.serialNumber)
+      });
+      super(id_ce_authorityKeyIdentifier, args[1], AsnConvert.serialize(value2));
+    }
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    const aki = AsnConvert.parse(asn.extnValue, AuthorityKeyIdentifier);
+    if (aki.keyIdentifier) {
+      this.keyId = import_pvtsutils6.Convert.ToHex(aki.keyIdentifier);
+    }
+    if (aki.authorityCertIssuer || aki.authorityCertSerialNumber) {
+      this.certId = {
+        name: aki.authorityCertIssuer || [],
+        serialNumber: aki.authorityCertSerialNumber ? import_pvtsutils6.Convert.ToHex(aki.authorityCertSerialNumber) : ""
+      };
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    const asn = AsnConvert.parse(this.value, AuthorityKeyIdentifier);
+    if (asn.authorityCertIssuer) {
+      obj["Authority Issuer"] = new GeneralNames3(asn.authorityCertIssuer).toTextObject();
+    }
+    if (asn.authorityCertSerialNumber) {
+      obj["Authority Serial Number"] = asn.authorityCertSerialNumber;
+    }
+    if (asn.keyIdentifier) {
+      obj[""] = asn.keyIdentifier;
+    }
+    return obj;
+  }
+};
+AuthorityKeyIdentifierExtension.NAME = "Authority Key Identifier";
+var BasicConstraintsExtension = class extends Extension2 {
+  static {
+    __name(this, "BasicConstraintsExtension");
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+      const value2 = AsnConvert.parse(this.value, BasicConstraints);
+      this.ca = value2.cA;
+      this.pathLength = value2.pathLenConstraint;
+    } else {
+      const value2 = new BasicConstraints({
+        cA: args[0],
+        pathLenConstraint: args[1]
+      });
+      super(id_ce_basicConstraints, args[2], AsnConvert.serialize(value2));
+      this.ca = args[0];
+      this.pathLength = args[1];
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    if (this.ca) {
+      obj["CA"] = this.ca;
+    }
+    if (this.pathLength !== void 0) {
+      obj["Path Length"] = this.pathLength;
+    }
+    return obj;
+  }
+};
+BasicConstraintsExtension.NAME = "Basic Constraints";
+var ExtendedKeyUsage3;
+(function(ExtendedKeyUsage4) {
+  ExtendedKeyUsage4["serverAuth"] = "1.3.6.1.5.5.7.3.1";
+  ExtendedKeyUsage4["clientAuth"] = "1.3.6.1.5.5.7.3.2";
+  ExtendedKeyUsage4["codeSigning"] = "1.3.6.1.5.5.7.3.3";
+  ExtendedKeyUsage4["emailProtection"] = "1.3.6.1.5.5.7.3.4";
+  ExtendedKeyUsage4["timeStamping"] = "1.3.6.1.5.5.7.3.8";
+  ExtendedKeyUsage4["ocspSigning"] = "1.3.6.1.5.5.7.3.9";
+})(ExtendedKeyUsage3 || (ExtendedKeyUsage3 = {}));
+var ExtendedKeyUsageExtension = class extends Extension2 {
+  static {
+    __name(this, "ExtendedKeyUsageExtension");
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+      const value2 = AsnConvert.parse(this.value, ExtendedKeyUsage);
+      this.usages = value2.map((o2) => o2);
+    } else {
+      const value2 = new ExtendedKeyUsage(args[0]);
+      super(id_ce_extKeyUsage, args[1], AsnConvert.serialize(value2));
+      this.usages = args[0];
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    obj[""] = this.usages.map((o2) => OidSerializer.toString(o2)).join(", ");
+    return obj;
+  }
+};
+ExtendedKeyUsageExtension.NAME = "Extended Key Usages";
+var KeyUsageFlags2;
+(function(KeyUsageFlags3) {
+  KeyUsageFlags3[KeyUsageFlags3["digitalSignature"] = 1] = "digitalSignature";
+  KeyUsageFlags3[KeyUsageFlags3["nonRepudiation"] = 2] = "nonRepudiation";
+  KeyUsageFlags3[KeyUsageFlags3["keyEncipherment"] = 4] = "keyEncipherment";
+  KeyUsageFlags3[KeyUsageFlags3["dataEncipherment"] = 8] = "dataEncipherment";
+  KeyUsageFlags3[KeyUsageFlags3["keyAgreement"] = 16] = "keyAgreement";
+  KeyUsageFlags3[KeyUsageFlags3["keyCertSign"] = 32] = "keyCertSign";
+  KeyUsageFlags3[KeyUsageFlags3["cRLSign"] = 64] = "cRLSign";
+  KeyUsageFlags3[KeyUsageFlags3["encipherOnly"] = 128] = "encipherOnly";
+  KeyUsageFlags3[KeyUsageFlags3["decipherOnly"] = 256] = "decipherOnly";
+})(KeyUsageFlags2 || (KeyUsageFlags2 = {}));
+var KeyUsagesExtension = class extends Extension2 {
+  static {
+    __name(this, "KeyUsagesExtension");
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+      const value2 = AsnConvert.parse(this.value, KeyUsage);
+      this.usages = value2.toNumber();
+    } else {
+      const value2 = new KeyUsage(args[0]);
+      super(id_ce_keyUsage, args[1], AsnConvert.serialize(value2));
+      this.usages = args[0];
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    const asn = AsnConvert.parse(this.value, KeyUsage);
+    obj[""] = asn.toJSON().join(", ");
+    return obj;
+  }
+};
+KeyUsagesExtension.NAME = "Key Usages";
+var SubjectKeyIdentifierExtension = class _SubjectKeyIdentifierExtension extends Extension2 {
+  static {
+    __name(this, "SubjectKeyIdentifierExtension");
+  }
+  static async create(publicKey, critical = false, crypto2 = cryptoProvider.get()) {
+    const key = await PublicKey2.create(publicKey, crypto2);
+    const id = await key.getKeyIdentifier(crypto2);
+    return new _SubjectKeyIdentifierExtension(import_pvtsutils6.Convert.ToHex(id), critical);
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+      const value2 = AsnConvert.parse(this.value, SubjectKeyIdentifier);
+      this.keyId = import_pvtsutils6.Convert.ToHex(value2);
+    } else {
+      const identifier = typeof args[0] === "string" ? import_pvtsutils6.Convert.FromHex(args[0]) : args[0];
+      const value2 = new SubjectKeyIdentifier(identifier);
+      super(id_ce_subjectKeyIdentifier, args[1], AsnConvert.serialize(value2));
+      this.keyId = import_pvtsutils6.Convert.ToHex(identifier);
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    const asn = AsnConvert.parse(this.value, SubjectKeyIdentifier);
+    obj[""] = asn;
+    return obj;
+  }
+};
+SubjectKeyIdentifierExtension.NAME = "Subject Key Identifier";
+var SubjectAlternativeNameExtension = class extends Extension2 {
+  static {
+    __name(this, "SubjectAlternativeNameExtension");
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else {
+      super(id_ce_subjectAltName, args[1], new GeneralNames3(args[0] || []).rawData);
+    }
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    const value2 = AsnConvert.parse(asn.extnValue, SubjectAlternativeName);
+    this.names = new GeneralNames3(value2);
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    const namesObj = this.names.toTextObject();
+    for (const key in namesObj) {
+      obj[key] = namesObj[key];
+    }
+    return obj;
+  }
+};
+SubjectAlternativeNameExtension.NAME = "Subject Alternative Name";
+var ExtensionFactory = class {
+  static {
+    __name(this, "ExtensionFactory");
+  }
+  static register(id, type) {
+    this.items.set(id, type);
+  }
+  static create(data) {
+    const extension = new Extension2(data);
+    const Type = this.items.get(extension.type);
+    if (Type) {
+      return new Type(data);
+    }
+    return extension;
+  }
+};
+ExtensionFactory.items = /* @__PURE__ */ new Map();
+var CertificatePolicyExtension = class extends Extension2 {
+  static {
+    __name(this, "CertificatePolicyExtension");
+  }
+  constructor(...args) {
+    var _a3;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+      const asnPolicies = AsnConvert.parse(this.value, CertificatePolicies);
+      this.policies = asnPolicies.map((o2) => o2.policyIdentifier);
+    } else {
+      const policies = args[0];
+      const critical = (_a3 = args[1]) !== null && _a3 !== void 0 ? _a3 : false;
+      const value2 = new CertificatePolicies(policies.map((o2) => new PolicyInformation({
+        policyIdentifier: o2
+      })));
+      super(id_ce_certificatePolicies, critical, AsnConvert.serialize(value2));
+      this.policies = policies;
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    obj["Policy"] = this.policies.map((o2) => new TextObject("", {}, OidSerializer.toString(o2)));
+    return obj;
+  }
+};
+CertificatePolicyExtension.NAME = "Certificate Policies";
+ExtensionFactory.register(id_ce_certificatePolicies, CertificatePolicyExtension);
+var CRLDistributionPointsExtension = class extends Extension2 {
+  static {
+    __name(this, "CRLDistributionPointsExtension");
+  }
+  constructor(...args) {
+    var _a3;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else if (Array.isArray(args[0]) && typeof args[0][0] === "string") {
+      const urls = args[0];
+      const dps = urls.map((url) => {
+        return new DistributionPoint({
+          distributionPoint: new DistributionPointName({
+            fullName: [new GeneralName({ uniformResourceIdentifier: url })]
+          })
+        });
+      });
+      const value2 = new CRLDistributionPoints(dps);
+      super(id_ce_cRLDistributionPoints, args[1], AsnConvert.serialize(value2));
+    } else {
+      const value2 = new CRLDistributionPoints(args[0]);
+      super(id_ce_cRLDistributionPoints, args[1], AsnConvert.serialize(value2));
+    }
+    (_a3 = this.distributionPoints) !== null && _a3 !== void 0 ? _a3 : this.distributionPoints = [];
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    const crlExt = AsnConvert.parse(asn.extnValue, CRLDistributionPoints);
+    this.distributionPoints = crlExt;
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    obj["Distribution Point"] = this.distributionPoints.map((dp) => {
+      var _a3;
+      const dpObj = {};
+      if (dp.distributionPoint) {
+        dpObj[""] = (_a3 = dp.distributionPoint.fullName) === null || _a3 === void 0 ? void 0 : _a3.map((name3) => new GeneralName3(name3).toString()).join(", ");
+      }
+      if (dp.reasons) {
+        dpObj["Reasons"] = dp.reasons.toString();
+      }
+      if (dp.cRLIssuer) {
+        dpObj["CRL Issuer"] = dp.cRLIssuer.map((issuer) => issuer.toString()).join(", ");
+      }
+      return dpObj;
+    });
+    return obj;
+  }
+};
+CRLDistributionPointsExtension.NAME = "CRL Distribution Points";
+var AuthorityInfoAccessExtension = class extends Extension2 {
+  static {
+    __name(this, "AuthorityInfoAccessExtension");
+  }
+  constructor(...args) {
+    var _a3, _b, _c, _d;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else if (args[0] instanceof AuthorityInfoAccessSyntax) {
+      const value2 = new AuthorityInfoAccessSyntax(args[0]);
+      super(id_pe_authorityInfoAccess, args[1], AsnConvert.serialize(value2));
+    } else {
+      const params = args[0];
+      const value2 = new AuthorityInfoAccessSyntax();
+      addAccessDescriptions(value2, params, id_ad_ocsp, "ocsp");
+      addAccessDescriptions(value2, params, id_ad_caIssuers, "caIssuers");
+      addAccessDescriptions(value2, params, id_ad_timeStamping, "timeStamping");
+      addAccessDescriptions(value2, params, id_ad_caRepository, "caRepository");
+      super(id_pe_authorityInfoAccess, args[1], AsnConvert.serialize(value2));
+    }
+    (_a3 = this.ocsp) !== null && _a3 !== void 0 ? _a3 : this.ocsp = [];
+    (_b = this.caIssuers) !== null && _b !== void 0 ? _b : this.caIssuers = [];
+    (_c = this.timeStamping) !== null && _c !== void 0 ? _c : this.timeStamping = [];
+    (_d = this.caRepository) !== null && _d !== void 0 ? _d : this.caRepository = [];
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    this.ocsp = [];
+    this.caIssuers = [];
+    this.timeStamping = [];
+    this.caRepository = [];
+    const aia = AsnConvert.parse(asn.extnValue, AuthorityInfoAccessSyntax);
+    aia.forEach((accessDescription) => {
+      switch (accessDescription.accessMethod) {
+        case id_ad_ocsp:
+          this.ocsp.push(new GeneralName3(accessDescription.accessLocation));
+          break;
+        case id_ad_caIssuers:
+          this.caIssuers.push(new GeneralName3(accessDescription.accessLocation));
+          break;
+        case id_ad_timeStamping:
+          this.timeStamping.push(new GeneralName3(accessDescription.accessLocation));
+          break;
+        case id_ad_caRepository:
+          this.caRepository.push(new GeneralName3(accessDescription.accessLocation));
+          break;
+      }
+    });
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    if (this.ocsp.length) {
+      addUrlsToObject(obj, "OCSP", this.ocsp);
+    }
+    if (this.caIssuers.length) {
+      addUrlsToObject(obj, "CA Issuers", this.caIssuers);
+    }
+    if (this.timeStamping.length) {
+      addUrlsToObject(obj, "Time Stamping", this.timeStamping);
+    }
+    if (this.caRepository.length) {
+      addUrlsToObject(obj, "CA Repository", this.caRepository);
+    }
+    return obj;
+  }
+};
+AuthorityInfoAccessExtension.NAME = "Authority Info Access";
+function addUrlsToObject(obj, key, urls) {
+  if (urls.length === 1) {
+    obj[key] = urls[0].toTextObject();
+  } else {
+    const names2 = new TextObject("");
+    urls.forEach((name3, index) => {
+      const nameObj = name3.toTextObject();
+      const indexedKey = `${nameObj[TextObject.NAME]} ${index + 1}`;
+      let field = names2[indexedKey];
+      if (!Array.isArray(field)) {
+        field = [];
+        names2[indexedKey] = field;
+      }
+      field.push(nameObj);
+    });
+    obj[key] = names2;
+  }
+}
+__name(addUrlsToObject, "addUrlsToObject");
+function addAccessDescriptions(value2, params, method, key) {
+  const items = params[key];
+  if (items) {
+    const array = Array.isArray(items) ? items : [items];
+    array.forEach((url) => {
+      if (typeof url === "string") {
+        url = new GeneralName3("url", url);
+      }
+      value2.push(new AccessDescription({
+        accessMethod: method,
+        accessLocation: AsnConvert.parse(url.rawData, GeneralName)
+      }));
+    });
+  }
+}
+__name(addAccessDescriptions, "addAccessDescriptions");
+var IssuerAlternativeNameExtension = class extends Extension2 {
+  static {
+    __name(this, "IssuerAlternativeNameExtension");
+  }
+  constructor(...args) {
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else {
+      super(id_ce_issuerAltName, args[1], new GeneralNames3(args[0] || []).rawData);
+    }
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    const value2 = AsnConvert.parse(asn.extnValue, GeneralNames);
+    this.names = new GeneralNames3(value2);
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    const namesObj = this.names.toTextObject();
+    for (const key in namesObj) {
+      obj[key] = namesObj[key];
+    }
+    return obj;
+  }
+};
+IssuerAlternativeNameExtension.NAME = "Issuer Alternative Name";
+var Attribute3 = class _Attribute extends AsnData {
+  static {
+    __name(this, "Attribute");
+  }
+  constructor(...args) {
+    let raw;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      raw = import_pvtsutils6.BufferSourceConverter.toArrayBuffer(args[0]);
+    } else {
+      const type = args[0];
+      const values = Array.isArray(args[1]) ? args[1].map((o2) => import_pvtsutils6.BufferSourceConverter.toArrayBuffer(o2)) : [];
+      raw = AsnConvert.serialize(new Attribute({ type, values }));
+    }
+    super(raw, Attribute);
+  }
+  onInit(asn) {
+    this.type = asn.type;
+    this.values = asn.values;
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    obj["Value"] = this.values.map((o2) => new TextObject("", { "": o2 }));
+    return obj;
+  }
+  toTextObjectWithoutValue() {
+    const obj = this.toTextObjectEmpty();
+    if (obj[TextObject.NAME] === _Attribute.NAME) {
+      obj[TextObject.NAME] = OidSerializer.toString(this.type);
+    }
+    return obj;
+  }
+};
+Attribute3.NAME = "Attribute";
+var ChallengePasswordAttribute = class extends Attribute3 {
+  static {
+    __name(this, "ChallengePasswordAttribute");
+  }
+  constructor(...args) {
+    var _a3;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else {
+      const value2 = new ChallengePassword({
+        printableString: args[0]
+      });
+      super(id_pkcs9_at_challengePassword, [AsnConvert.serialize(value2)]);
+    }
+    (_a3 = this.password) !== null && _a3 !== void 0 ? _a3 : this.password = "";
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    if (this.values[0]) {
+      const value2 = AsnConvert.parse(this.values[0], ChallengePassword);
+      this.password = value2.toString();
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    obj[TextObject.VALUE] = this.password;
+    return obj;
+  }
+};
+ChallengePasswordAttribute.NAME = "Challenge Password";
+var ExtensionsAttribute = class extends Attribute3 {
+  static {
+    __name(this, "ExtensionsAttribute");
+  }
+  constructor(...args) {
+    var _a3;
+    if (import_pvtsutils6.BufferSourceConverter.isBufferSource(args[0])) {
+      super(args[0]);
+    } else {
+      const extensions = args[0];
+      const value2 = new Extensions();
+      for (const extension of extensions) {
+        value2.push(AsnConvert.parse(extension.rawData, Extension));
+      }
+      super(id_pkcs9_at_extensionRequest, [AsnConvert.serialize(value2)]);
+    }
+    (_a3 = this.items) !== null && _a3 !== void 0 ? _a3 : this.items = [];
+  }
+  onInit(asn) {
+    super.onInit(asn);
+    if (this.values[0]) {
+      const value2 = AsnConvert.parse(this.values[0], Extensions);
+      this.items = value2.map((o2) => ExtensionFactory.create(AsnConvert.serialize(o2)));
+    }
+  }
+  toTextObject() {
+    const obj = this.toTextObjectWithoutValue();
+    const extensions = this.items.map((o2) => o2.toTextObject());
+    for (const extension of extensions) {
+      obj[extension[TextObject.NAME]] = extension;
+    }
+    return obj;
+  }
+};
+ExtensionsAttribute.NAME = "Extensions";
+var AttributeFactory = class {
+  static {
+    __name(this, "AttributeFactory");
+  }
+  static register(id, type) {
+    this.items.set(id, type);
+  }
+  static create(data) {
+    const attribute = new Attribute3(data);
+    const Type = this.items.get(attribute.type);
+    if (Type) {
+      return new Type(data);
+    }
+    return attribute;
+  }
+};
+AttributeFactory.items = /* @__PURE__ */ new Map();
+var diAsnSignatureFormatter = "crypto.signatureFormatter";
+var AsnDefaultSignatureFormatter = class {
+  static {
+    __name(this, "AsnDefaultSignatureFormatter");
+  }
+  toAsnSignature(algorithm, signature) {
+    return import_pvtsutils6.BufferSourceConverter.toArrayBuffer(signature);
+  }
+  toWebSignature(algorithm, signature) {
+    return import_pvtsutils6.BufferSourceConverter.toArrayBuffer(signature);
+  }
+};
+var RsaAlgorithm_1;
+var RsaAlgorithm = RsaAlgorithm_1 = class RsaAlgorithm2 {
+  static {
+    __name(this, "RsaAlgorithm");
+  }
+  static createPssParams(hash, saltLength) {
+    const hashAlgorithm = RsaAlgorithm_1.getHashAlgorithm(hash);
+    if (!hashAlgorithm) {
+      return null;
+    }
+    return new RsaSaPssParams({
+      hashAlgorithm,
+      maskGenAlgorithm: new AlgorithmIdentifier({
+        algorithm: id_mgf1,
+        parameters: AsnConvert.serialize(hashAlgorithm)
+      }),
+      saltLength
+    });
+  }
+  static getHashAlgorithm(alg) {
+    const algProv = instance.resolve(diAlgorithmProvider);
+    if (typeof alg === "string") {
+      return algProv.toAsnAlgorithm({ name: alg });
+    }
+    if (typeof alg === "object" && alg && "name" in alg) {
+      return algProv.toAsnAlgorithm(alg);
+    }
+    return null;
+  }
+  toAsnAlgorithm(alg) {
+    switch (alg.name.toLowerCase()) {
+      case "rsassa-pkcs1-v1_5":
+        if ("hash" in alg) {
+          let hash;
+          if (typeof alg.hash === "string") {
+            hash = alg.hash;
+          } else if (alg.hash && typeof alg.hash === "object" && "name" in alg.hash && typeof alg.hash.name === "string") {
+            hash = alg.hash.name.toUpperCase();
+          } else {
+            throw new Error("Cannot get hash algorithm name");
+          }
+          switch (hash.toLowerCase()) {
+            case "sha-1":
+              return new AlgorithmIdentifier({ algorithm: id_sha1WithRSAEncryption, parameters: null });
+            case "sha-256":
+              return new AlgorithmIdentifier({ algorithm: id_sha256WithRSAEncryption, parameters: null });
+            case "sha-384":
+              return new AlgorithmIdentifier({ algorithm: id_sha384WithRSAEncryption, parameters: null });
+            case "sha-512":
+              return new AlgorithmIdentifier({ algorithm: id_sha512WithRSAEncryption, parameters: null });
+          }
+        } else {
+          return new AlgorithmIdentifier({ algorithm: id_rsaEncryption, parameters: null });
+        }
+        break;
+      case "rsa-pss":
+        if ("hash" in alg) {
+          if (!("saltLength" in alg && typeof alg.saltLength === "number")) {
+            throw new Error("Cannot get 'saltLength' from 'alg' argument");
+          }
+          const pssParams = RsaAlgorithm_1.createPssParams(alg.hash, alg.saltLength);
+          if (!pssParams) {
+            throw new Error("Cannot create PSS parameters");
+          }
+          return new AlgorithmIdentifier({ algorithm: id_RSASSA_PSS, parameters: AsnConvert.serialize(pssParams) });
+        } else {
+          return new AlgorithmIdentifier({ algorithm: id_RSASSA_PSS, parameters: null });
+        }
+    }
+    return null;
+  }
+  toWebAlgorithm(alg) {
+    switch (alg.algorithm) {
+      case id_rsaEncryption:
+        return { name: "RSASSA-PKCS1-v1_5" };
+      case id_sha1WithRSAEncryption:
+        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-1" } };
+      case id_sha256WithRSAEncryption:
+        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } };
+      case id_sha384WithRSAEncryption:
+        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-384" } };
+      case id_sha512WithRSAEncryption:
+        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-512" } };
+      case id_RSASSA_PSS:
+        if (alg.parameters) {
+          const pssParams = AsnConvert.parse(alg.parameters, RsaSaPssParams);
+          const algProv = instance.resolve(diAlgorithmProvider);
+          const hashAlg = algProv.toWebAlgorithm(pssParams.hashAlgorithm);
+          return {
+            name: "RSA-PSS",
+            hash: hashAlg,
+            saltLength: pssParams.saltLength
+          };
+        } else {
+          return { name: "RSA-PSS" };
+        }
+    }
+    return null;
+  }
+};
+RsaAlgorithm = RsaAlgorithm_1 = __decorate([
+  injectable_default()
+], RsaAlgorithm);
+instance.registerSingleton(diAlgorithm, RsaAlgorithm);
+var ShaAlgorithm = class ShaAlgorithm2 {
+  static {
+    __name(this, "ShaAlgorithm");
+  }
+  toAsnAlgorithm(alg) {
+    switch (alg.name.toLowerCase()) {
+      case "sha-1":
+        return new AlgorithmIdentifier({ algorithm: id_sha1 });
+      case "sha-256":
+        return new AlgorithmIdentifier({ algorithm: id_sha256 });
+      case "sha-384":
+        return new AlgorithmIdentifier({ algorithm: id_sha384 });
+      case "sha-512":
+        return new AlgorithmIdentifier({ algorithm: id_sha512 });
+    }
+    return null;
+  }
+  toWebAlgorithm(alg) {
+    switch (alg.algorithm) {
+      case id_sha1:
+        return { name: "SHA-1" };
+      case id_sha256:
+        return { name: "SHA-256" };
+      case id_sha384:
+        return { name: "SHA-384" };
+      case id_sha512:
+        return { name: "SHA-512" };
+    }
+    return null;
+  }
+};
+ShaAlgorithm = __decorate([
+  injectable_default()
+], ShaAlgorithm);
+instance.registerSingleton(diAlgorithm, ShaAlgorithm);
+var AsnEcSignatureFormatter = class _AsnEcSignatureFormatter {
+  static {
+    __name(this, "AsnEcSignatureFormatter");
+  }
+  addPadding(pointSize, data) {
+    const bytes = import_pvtsutils6.BufferSourceConverter.toUint8Array(data);
+    const res = new Uint8Array(pointSize);
+    res.set(bytes, pointSize - bytes.length);
+    return res.buffer;
+  }
+  removePadding(data, positive2 = false) {
+    let bytes = import_pvtsutils6.BufferSourceConverter.toUint8Array(data);
+    for (let i2 = 0; i2 < bytes.length; i2++) {
+      if (!bytes[i2]) {
+        continue;
+      }
+      bytes = bytes.slice(i2);
+      break;
+    }
+    if (positive2 && bytes[0] > 127) {
+      const result = new Uint8Array(bytes.length + 1);
+      result.set(bytes, 1);
+      return result.buffer;
+    }
+    return bytes.buffer;
+  }
+  toAsnSignature(algorithm, signature) {
+    if (algorithm.name === "ECDSA") {
+      const namedCurve = algorithm.namedCurve;
+      const pointSize = _AsnEcSignatureFormatter.namedCurveSize.get(namedCurve) || _AsnEcSignatureFormatter.defaultNamedCurveSize;
+      const ecSignature = new ECDSASigValue();
+      const uint8Signature = import_pvtsutils6.BufferSourceConverter.toUint8Array(signature);
+      ecSignature.r = this.removePadding(uint8Signature.slice(0, pointSize), true);
+      ecSignature.s = this.removePadding(uint8Signature.slice(pointSize, pointSize + pointSize), true);
+      return AsnConvert.serialize(ecSignature);
+    }
+    return null;
+  }
+  toWebSignature(algorithm, signature) {
+    if (algorithm.name === "ECDSA") {
+      const ecSigValue = AsnConvert.parse(signature, ECDSASigValue);
+      const namedCurve = algorithm.namedCurve;
+      const pointSize = _AsnEcSignatureFormatter.namedCurveSize.get(namedCurve) || _AsnEcSignatureFormatter.defaultNamedCurveSize;
+      const r2 = this.addPadding(pointSize, this.removePadding(ecSigValue.r));
+      const s2 = this.addPadding(pointSize, this.removePadding(ecSigValue.s));
+      return (0, import_pvtsutils6.combine)(r2, s2);
+    }
+    return null;
+  }
+};
+AsnEcSignatureFormatter.namedCurveSize = /* @__PURE__ */ new Map();
+AsnEcSignatureFormatter.defaultNamedCurveSize = 32;
+var idX25519 = "1.3.101.110";
+var idX448 = "1.3.101.111";
+var idEd25519 = "1.3.101.112";
+var idEd448 = "1.3.101.113";
+var EdAlgorithm = class EdAlgorithm2 {
+  static {
+    __name(this, "EdAlgorithm");
+  }
+  toAsnAlgorithm(alg) {
+    let algorithm = null;
+    switch (alg.name.toLowerCase()) {
+      case "ed25519":
+        algorithm = idEd25519;
+        break;
+      case "x25519":
+        algorithm = idX25519;
+        break;
+      case "eddsa":
+        switch (alg.namedCurve.toLowerCase()) {
+          case "ed25519":
+            algorithm = idEd25519;
+            break;
+          case "ed448":
+            algorithm = idEd448;
+            break;
+        }
+        break;
+      case "ecdh-es":
+        switch (alg.namedCurve.toLowerCase()) {
+          case "x25519":
+            algorithm = idX25519;
+            break;
+          case "x448":
+            algorithm = idX448;
+            break;
+        }
+    }
+    if (algorithm) {
+      return new AlgorithmIdentifier({
+        algorithm
+      });
+    }
+    return null;
+  }
+  toWebAlgorithm(alg) {
+    switch (alg.algorithm) {
+      case idEd25519:
+        return { name: "Ed25519" };
+      case idEd448:
+        return { name: "EdDSA", namedCurve: "Ed448" };
+      case idX25519:
+        return { name: "X25519" };
+      case idX448:
+        return { name: "ECDH-ES", namedCurve: "X448" };
+    }
+    return null;
+  }
+};
+EdAlgorithm = __decorate([
+  injectable_default()
+], EdAlgorithm);
+instance.registerSingleton(diAlgorithm, EdAlgorithm);
+var _Pkcs10CertificateRequest_tbs;
+var _Pkcs10CertificateRequest_subjectName;
+var _Pkcs10CertificateRequest_subject;
+var _Pkcs10CertificateRequest_signatureAlgorithm;
+var _Pkcs10CertificateRequest_signature;
+var _Pkcs10CertificateRequest_publicKey;
+var _Pkcs10CertificateRequest_attributes;
+var _Pkcs10CertificateRequest_extensions;
+var Pkcs10CertificateRequest = class extends PemData {
+  static {
+    __name(this, "Pkcs10CertificateRequest");
+  }
+  get subjectName() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_subjectName, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_subjectName, new Name3(this.asn.certificationRequestInfo.subject), "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_subjectName, "f");
+  }
+  get subject() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_subject, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_subject, this.subjectName.toString(), "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_subject, "f");
+  }
+  get signatureAlgorithm() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_signatureAlgorithm, "f")) {
+      const algProv = instance.resolve(diAlgorithmProvider);
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_signatureAlgorithm, algProv.toWebAlgorithm(this.asn.signatureAlgorithm), "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_signatureAlgorithm, "f");
+  }
+  get signature() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_signature, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_signature, this.asn.signature, "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_signature, "f");
+  }
+  get publicKey() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_publicKey, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_publicKey, new PublicKey2(this.asn.certificationRequestInfo.subjectPKInfo), "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_publicKey, "f");
+  }
+  get attributes() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_attributes, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_attributes, this.asn.certificationRequestInfo.attributes.map((o2) => AttributeFactory.create(AsnConvert.serialize(o2))), "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_attributes, "f");
+  }
+  get extensions() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_extensions, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_extensions, [], "f");
+      const extensions = this.getAttribute(id_pkcs9_at_extensionRequest);
+      if (extensions instanceof ExtensionsAttribute) {
+        __classPrivateFieldSet(this, _Pkcs10CertificateRequest_extensions, extensions.items, "f");
+      }
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_extensions, "f");
+  }
+  get tbs() {
+    if (!__classPrivateFieldGet(this, _Pkcs10CertificateRequest_tbs, "f")) {
+      __classPrivateFieldSet(this, _Pkcs10CertificateRequest_tbs, this.asn.certificationRequestInfoRaw || AsnConvert.serialize(this.asn.certificationRequestInfo), "f");
+    }
+    return __classPrivateFieldGet(this, _Pkcs10CertificateRequest_tbs, "f");
+  }
+  constructor(param) {
+    const args = PemData.isAsnEncoded(param) ? [param, CertificationRequest] : [param];
+    super(args[0], args[1]);
+    _Pkcs10CertificateRequest_tbs.set(this, void 0);
+    _Pkcs10CertificateRequest_subjectName.set(this, void 0);
+    _Pkcs10CertificateRequest_subject.set(this, void 0);
+    _Pkcs10CertificateRequest_signatureAlgorithm.set(this, void 0);
+    _Pkcs10CertificateRequest_signature.set(this, void 0);
+    _Pkcs10CertificateRequest_publicKey.set(this, void 0);
+    _Pkcs10CertificateRequest_attributes.set(this, void 0);
+    _Pkcs10CertificateRequest_extensions.set(this, void 0);
+    this.tag = PemConverter.CertificateRequestTag;
+  }
+  onInit(_asn) {
+  }
+  getAttribute(type) {
+    for (const attr of this.attributes) {
+      if (attr.type === type) {
+        return attr;
+      }
+    }
+    return null;
+  }
+  getAttributes(type) {
+    return this.attributes.filter((o2) => o2.type === type);
+  }
+  getExtension(type) {
+    for (const ext of this.extensions) {
+      if (ext.type === type) {
+        return ext;
+      }
+    }
+    return null;
+  }
+  getExtensions(type) {
+    return this.extensions.filter((o2) => o2.type === type);
+  }
+  async verify(crypto2 = cryptoProvider.get()) {
+    const algorithm = { ...this.publicKey.algorithm, ...this.signatureAlgorithm };
+    const publicKey = await this.publicKey.export(algorithm, ["verify"], crypto2);
+    const signatureFormatters = instance.resolveAll(diAsnSignatureFormatter).reverse();
+    let signature = null;
+    for (const signatureFormatter of signatureFormatters) {
+      signature = signatureFormatter.toWebSignature(algorithm, this.signature);
+      if (signature) {
+        break;
+      }
+    }
+    if (!signature) {
+      throw Error("Cannot convert WebCrypto signature value to ASN.1 format");
+    }
+    const ok = await crypto2.subtle.verify(this.signatureAlgorithm, publicKey, signature, this.tbs);
+    return ok;
+  }
+  toTextObject() {
+    const obj = this.toTextObjectEmpty();
+    const req = AsnConvert.parse(this.rawData, CertificationRequest);
+    const tbs = req.certificationRequestInfo;
+    const data = new TextObject("", {
+      "Version": `${Version[tbs.version]} (${tbs.version})`,
+      "Subject": this.subject,
+      "Subject Public Key Info": this.publicKey
+    });
+    if (this.attributes.length) {
+      const attrs = new TextObject("");
+      for (const ext of this.attributes) {
+        const attrObj = ext.toTextObject();
+        attrs[attrObj[TextObject.NAME]] = attrObj;
+      }
+      data["Attributes"] = attrs;
+    }
+    obj["Data"] = data;
+    obj["Signature"] = new TextObject("", {
+      "Algorithm": TextConverter.serializeAlgorithm(req.signatureAlgorithm),
+      "": req.signature
+    });
+    return obj;
+  }
+};
+_Pkcs10CertificateRequest_tbs = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_subjectName = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_subject = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_signatureAlgorithm = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_signature = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_publicKey = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_attributes = /* @__PURE__ */ new WeakMap(), _Pkcs10CertificateRequest_extensions = /* @__PURE__ */ new WeakMap();
+Pkcs10CertificateRequest.NAME = "PKCS#10 Certificate Request";
+var _X509Certificate_tbs;
+var _X509Certificate_serialNumber;
+var _X509Certificate_subjectName;
+var _X509Certificate_subject;
+var _X509Certificate_issuerName;
+var _X509Certificate_issuer;
+var _X509Certificate_notBefore;
+var _X509Certificate_notAfter;
+var _X509Certificate_signatureAlgorithm;
+var _X509Certificate_signature;
+var _X509Certificate_extensions;
+var _X509Certificate_publicKey;
+var X509Certificate = class extends PemData {
+  static {
+    __name(this, "X509Certificate");
+  }
+  get publicKey() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_publicKey, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_publicKey, new PublicKey2(this.asn.tbsCertificate.subjectPublicKeyInfo), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_publicKey, "f");
+  }
+  get serialNumber() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_serialNumber, "f")) {
+      const tbs = this.asn.tbsCertificate;
+      let serialNumberBytes = new Uint8Array(tbs.serialNumber);
+      if (serialNumberBytes.length > 1 && serialNumberBytes[0] === 0 && serialNumberBytes[1] > 127) {
+        serialNumberBytes = serialNumberBytes.slice(1);
+      }
+      __classPrivateFieldSet(this, _X509Certificate_serialNumber, import_pvtsutils6.Convert.ToHex(serialNumberBytes), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_serialNumber, "f");
+  }
+  get subjectName() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_subjectName, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_subjectName, new Name3(this.asn.tbsCertificate.subject), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_subjectName, "f");
+  }
+  get subject() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_subject, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_subject, this.subjectName.toString(), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_subject, "f");
+  }
+  get issuerName() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_issuerName, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_issuerName, new Name3(this.asn.tbsCertificate.issuer), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_issuerName, "f");
+  }
+  get issuer() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_issuer, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_issuer, this.issuerName.toString(), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_issuer, "f");
+  }
+  get notBefore() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_notBefore, "f")) {
+      const notBefore = this.asn.tbsCertificate.validity.notBefore.utcTime || this.asn.tbsCertificate.validity.notBefore.generalTime;
+      if (!notBefore) {
+        throw new Error("Cannot get 'notBefore' value");
+      }
+      __classPrivateFieldSet(this, _X509Certificate_notBefore, notBefore, "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_notBefore, "f");
+  }
+  get notAfter() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_notAfter, "f")) {
+      const notAfter = this.asn.tbsCertificate.validity.notAfter.utcTime || this.asn.tbsCertificate.validity.notAfter.generalTime;
+      if (!notAfter) {
+        throw new Error("Cannot get 'notAfter' value");
+      }
+      __classPrivateFieldSet(this, _X509Certificate_notAfter, notAfter, "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_notAfter, "f");
+  }
+  get signatureAlgorithm() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_signatureAlgorithm, "f")) {
+      const algProv = instance.resolve(diAlgorithmProvider);
+      __classPrivateFieldSet(this, _X509Certificate_signatureAlgorithm, algProv.toWebAlgorithm(this.asn.signatureAlgorithm), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_signatureAlgorithm, "f");
+  }
+  get signature() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_signature, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_signature, this.asn.signatureValue, "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_signature, "f");
+  }
+  get extensions() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_extensions, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_extensions, [], "f");
+      if (this.asn.tbsCertificate.extensions) {
+        __classPrivateFieldSet(this, _X509Certificate_extensions, this.asn.tbsCertificate.extensions.map((o2) => ExtensionFactory.create(AsnConvert.serialize(o2))), "f");
+      }
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_extensions, "f");
+  }
+  get tbs() {
+    if (!__classPrivateFieldGet(this, _X509Certificate_tbs, "f")) {
+      __classPrivateFieldSet(this, _X509Certificate_tbs, this.asn.tbsCertificateRaw || AsnConvert.serialize(this.asn.tbsCertificate), "f");
+    }
+    return __classPrivateFieldGet(this, _X509Certificate_tbs, "f");
+  }
+  constructor(param) {
+    const args = PemData.isAsnEncoded(param) ? [param, Certificate] : [param];
+    super(args[0], args[1]);
+    _X509Certificate_tbs.set(this, void 0);
+    _X509Certificate_serialNumber.set(this, void 0);
+    _X509Certificate_subjectName.set(this, void 0);
+    _X509Certificate_subject.set(this, void 0);
+    _X509Certificate_issuerName.set(this, void 0);
+    _X509Certificate_issuer.set(this, void 0);
+    _X509Certificate_notBefore.set(this, void 0);
+    _X509Certificate_notAfter.set(this, void 0);
+    _X509Certificate_signatureAlgorithm.set(this, void 0);
+    _X509Certificate_signature.set(this, void 0);
+    _X509Certificate_extensions.set(this, void 0);
+    _X509Certificate_publicKey.set(this, void 0);
+    this.tag = PemConverter.CertificateTag;
+  }
+  onInit(_asn) {
+  }
+  getExtension(type) {
+    for (const ext of this.extensions) {
+      if (typeof type === "string") {
+        if (ext.type === type) {
+          return ext;
+        }
+      } else {
+        if (ext instanceof type) {
+          return ext;
+        }
+      }
+    }
+    return null;
+  }
+  getExtensions(type) {
+    return this.extensions.filter((o2) => {
+      if (typeof type === "string") {
+        return o2.type === type;
+      } else {
+        return o2 instanceof type;
+      }
+    });
+  }
+  async verify(params = {}, crypto2 = cryptoProvider.get()) {
+    let keyAlgorithm;
+    let publicKey;
+    const paramsKey = params.publicKey;
+    try {
+      if (!paramsKey) {
+        keyAlgorithm = { ...this.publicKey.algorithm, ...this.signatureAlgorithm };
+        publicKey = await this.publicKey.export(keyAlgorithm, ["verify"], crypto2);
+      } else if ("publicKey" in paramsKey) {
+        keyAlgorithm = { ...paramsKey.publicKey.algorithm, ...this.signatureAlgorithm };
+        publicKey = await paramsKey.publicKey.export(keyAlgorithm, ["verify"], crypto2);
+      } else if (paramsKey instanceof PublicKey2) {
+        keyAlgorithm = { ...paramsKey.algorithm, ...this.signatureAlgorithm };
+        publicKey = await paramsKey.export(keyAlgorithm, ["verify"], crypto2);
+      } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(paramsKey)) {
+        const key = new PublicKey2(paramsKey);
+        keyAlgorithm = { ...key.algorithm, ...this.signatureAlgorithm };
+        publicKey = await key.export(keyAlgorithm, ["verify"], crypto2);
+      } else {
+        keyAlgorithm = { ...paramsKey.algorithm, ...this.signatureAlgorithm };
+        publicKey = paramsKey;
+      }
+    } catch (_e) {
+      return false;
+    }
+    const signatureFormatters = instance.resolveAll(diAsnSignatureFormatter).reverse();
+    let signature = null;
+    for (const signatureFormatter of signatureFormatters) {
+      signature = signatureFormatter.toWebSignature(keyAlgorithm, this.signature);
+      if (signature) {
+        break;
+      }
+    }
+    if (!signature) {
+      throw Error("Cannot convert ASN.1 signature value to WebCrypto format");
+    }
+    const ok = await crypto2.subtle.verify(this.signatureAlgorithm, publicKey, signature, this.tbs);
+    if (params.signatureOnly) {
+      return ok;
+    } else {
+      const date = params.date || /* @__PURE__ */ new Date();
+      const time = date.getTime();
+      return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
+    }
+  }
+  async getThumbprint(...args) {
+    let crypto2;
+    let algorithm = "SHA-1";
+    if (args[0]) {
+      if (!args[0].subtle) {
+        algorithm = args[0] || algorithm;
+        crypto2 = args[1];
+      } else {
+        crypto2 = args[0];
+      }
+    }
+    crypto2 !== null && crypto2 !== void 0 ? crypto2 : crypto2 = cryptoProvider.get();
+    return await crypto2.subtle.digest(algorithm, this.rawData);
+  }
+  async isSelfSigned(crypto2 = cryptoProvider.get()) {
+    return this.subject === this.issuer && await this.verify({ signatureOnly: true }, crypto2);
+  }
+  toTextObject() {
+    const obj = this.toTextObjectEmpty();
+    const cert = AsnConvert.parse(this.rawData, Certificate);
+    const tbs = cert.tbsCertificate;
+    const data = new TextObject("", {
+      "Version": `${Version[tbs.version]} (${tbs.version})`,
+      "Serial Number": tbs.serialNumber,
+      "Signature Algorithm": TextConverter.serializeAlgorithm(tbs.signature),
+      "Issuer": this.issuer,
+      "Validity": new TextObject("", {
+        "Not Before": tbs.validity.notBefore.getTime(),
+        "Not After": tbs.validity.notAfter.getTime()
+      }),
+      "Subject": this.subject,
+      "Subject Public Key Info": this.publicKey
+    });
+    if (tbs.issuerUniqueID) {
+      data["Issuer Unique ID"] = tbs.issuerUniqueID;
+    }
+    if (tbs.subjectUniqueID) {
+      data["Subject Unique ID"] = tbs.subjectUniqueID;
+    }
+    if (this.extensions.length) {
+      const extensions = new TextObject("");
+      for (const ext of this.extensions) {
+        const extObj = ext.toTextObject();
+        extensions[extObj[TextObject.NAME]] = extObj;
+      }
+      data["Extensions"] = extensions;
+    }
+    obj["Data"] = data;
+    obj["Signature"] = new TextObject("", {
+      "Algorithm": TextConverter.serializeAlgorithm(cert.signatureAlgorithm),
+      "": cert.signatureValue
+    });
+    return obj;
+  }
+};
+_X509Certificate_tbs = /* @__PURE__ */ new WeakMap(), _X509Certificate_serialNumber = /* @__PURE__ */ new WeakMap(), _X509Certificate_subjectName = /* @__PURE__ */ new WeakMap(), _X509Certificate_subject = /* @__PURE__ */ new WeakMap(), _X509Certificate_issuerName = /* @__PURE__ */ new WeakMap(), _X509Certificate_issuer = /* @__PURE__ */ new WeakMap(), _X509Certificate_notBefore = /* @__PURE__ */ new WeakMap(), _X509Certificate_notAfter = /* @__PURE__ */ new WeakMap(), _X509Certificate_signatureAlgorithm = /* @__PURE__ */ new WeakMap(), _X509Certificate_signature = /* @__PURE__ */ new WeakMap(), _X509Certificate_extensions = /* @__PURE__ */ new WeakMap(), _X509Certificate_publicKey = /* @__PURE__ */ new WeakMap();
+X509Certificate.NAME = "Certificate";
+function generateCertificateSerialNumber(input, crypto2 = cryptoProvider.get()) {
+  const inputView = import_pvtsutils6.BufferSourceConverter.toUint8Array(import_pvtsutils6.Convert.FromHex(input || ""));
+  let serialNumber = inputView && inputView.length && inputView.some((o2) => o2 > 0) ? new Uint8Array(inputView) : void 0;
+  if (!serialNumber) {
+    serialNumber = crypto2.getRandomValues(new Uint8Array(16));
+  }
+  let firstNonZero = 0;
+  while (firstNonZero < serialNumber.length - 1 && serialNumber[firstNonZero] === 0) {
+    firstNonZero++;
+  }
+  serialNumber = serialNumber.slice(firstNonZero);
+  if (serialNumber[0] > 127) {
+    const newSerialNumber = new Uint8Array(serialNumber.length + 1);
+    newSerialNumber[0] = 0;
+    newSerialNumber.set(serialNumber, 1);
+    serialNumber = newSerialNumber;
+  }
+  return serialNumber.buffer;
+}
+__name(generateCertificateSerialNumber, "generateCertificateSerialNumber");
+var X509CertificateGenerator = class {
+  static {
+    __name(this, "X509CertificateGenerator");
+  }
+  static async createSelfSigned(params, crypto2 = cryptoProvider.get()) {
+    if (!params.keys.privateKey) {
+      throw new Error("Bad field 'keys' in 'params' argument. 'privateKey' is empty");
+    }
+    if (!params.keys.publicKey) {
+      throw new Error("Bad field 'keys' in 'params' argument. 'publicKey' is empty");
+    }
+    return this.create({
+      serialNumber: params.serialNumber,
+      subject: params.name,
+      issuer: params.name,
+      notBefore: params.notBefore,
+      notAfter: params.notAfter,
+      publicKey: params.keys.publicKey,
+      signingKey: params.keys.privateKey,
+      signingAlgorithm: params.signingAlgorithm,
+      extensions: params.extensions
+    }, crypto2);
+  }
+  static async create(params, crypto2 = cryptoProvider.get()) {
+    var _a3;
+    let spki;
+    if (params.publicKey instanceof PublicKey2) {
+      spki = params.publicKey.rawData;
+    } else if ("publicKey" in params.publicKey) {
+      spki = params.publicKey.publicKey.rawData;
+    } else if (import_pvtsutils6.BufferSourceConverter.isBufferSource(params.publicKey)) {
+      spki = params.publicKey;
+    } else {
+      spki = await crypto2.subtle.exportKey("spki", params.publicKey);
+    }
+    const serialNumber = generateCertificateSerialNumber(params.serialNumber);
+    const notBefore = params.notBefore || /* @__PURE__ */ new Date();
+    const notAfter = params.notAfter || new Date(notBefore.getTime() + 31536e6);
+    const asnX509 = new Certificate({
+      tbsCertificate: new TBSCertificate({
+        version: Version.v3,
+        serialNumber,
+        validity: new Validity({
+          notBefore,
+          notAfter
+        }),
+        extensions: new Extensions(((_a3 = params.extensions) === null || _a3 === void 0 ? void 0 : _a3.map((o2) => AsnConvert.parse(o2.rawData, Extension))) || []),
+        subjectPublicKeyInfo: AsnConvert.parse(spki, SubjectPublicKeyInfo)
+      })
+    });
+    if (params.subject) {
+      const name3 = params.subject instanceof Name3 ? params.subject : new Name3(params.subject);
+      asnX509.tbsCertificate.subject = AsnConvert.parse(name3.toArrayBuffer(), Name);
+    }
+    if (params.issuer) {
+      const name3 = params.issuer instanceof Name3 ? params.issuer : new Name3(params.issuer);
+      asnX509.tbsCertificate.issuer = AsnConvert.parse(name3.toArrayBuffer(), Name);
+    }
+    const defaultSigningAlgorithm = {
+      hash: "SHA-256"
+    };
+    const signatureAlgorithm = "signingKey" in params ? { ...defaultSigningAlgorithm, ...params.signingAlgorithm, ...params.signingKey.algorithm } : { ...defaultSigningAlgorithm, ...params.signingAlgorithm };
+    const algProv = instance.resolve(diAlgorithmProvider);
+    asnX509.tbsCertificate.signature = asnX509.signatureAlgorithm = algProv.toAsnAlgorithm(signatureAlgorithm);
+    const tbs = AsnConvert.serialize(asnX509.tbsCertificate);
+    const signatureValue = "signingKey" in params ? await crypto2.subtle.sign(signatureAlgorithm, params.signingKey, tbs) : params.signature;
+    const signatureFormatters = instance.resolveAll(diAsnSignatureFormatter).reverse();
+    let asnSignature = null;
+    for (const signatureFormatter of signatureFormatters) {
+      asnSignature = signatureFormatter.toAsnSignature(signatureAlgorithm, signatureValue);
+      if (asnSignature) {
+        break;
+      }
+    }
+    if (!asnSignature) {
+      throw Error("Cannot convert ASN.1 signature value to WebCrypto format");
+    }
+    asnX509.signatureValue = asnSignature;
+    return new X509Certificate(AsnConvert.serialize(asnX509));
+  }
+};
+var _X509CrlEntry_serialNumber;
+var _X509CrlEntry_revocationDate;
+var _X509CrlEntry_reason;
+var _X509CrlEntry_invalidity;
+var _X509CrlEntry_extensions;
+var X509CrlReason;
+(function(X509CrlReason2) {
+  X509CrlReason2[X509CrlReason2["unspecified"] = 0] = "unspecified";
+  X509CrlReason2[X509CrlReason2["keyCompromise"] = 1] = "keyCompromise";
+  X509CrlReason2[X509CrlReason2["cACompromise"] = 2] = "cACompromise";
+  X509CrlReason2[X509CrlReason2["affiliationChanged"] = 3] = "affiliationChanged";
+  X509CrlReason2[X509CrlReason2["superseded"] = 4] = "superseded";
+  X509CrlReason2[X509CrlReason2["cessationOfOperation"] = 5] = "cessationOfOperation";
+  X509CrlReason2[X509CrlReason2["certificateHold"] = 6] = "certificateHold";
+  X509CrlReason2[X509CrlReason2["removeFromCRL"] = 8] = "removeFromCRL";
+  X509CrlReason2[X509CrlReason2["privilegeWithdrawn"] = 9] = "privilegeWithdrawn";
+  X509CrlReason2[X509CrlReason2["aACompromise"] = 10] = "aACompromise";
+})(X509CrlReason || (X509CrlReason = {}));
+_X509CrlEntry_serialNumber = /* @__PURE__ */ new WeakMap(), _X509CrlEntry_revocationDate = /* @__PURE__ */ new WeakMap(), _X509CrlEntry_reason = /* @__PURE__ */ new WeakMap(), _X509CrlEntry_invalidity = /* @__PURE__ */ new WeakMap(), _X509CrlEntry_extensions = /* @__PURE__ */ new WeakMap();
+var _X509Crl_tbs;
+var _X509Crl_signatureAlgorithm;
+var _X509Crl_issuerName;
+var _X509Crl_thisUpdate;
+var _X509Crl_nextUpdate;
+var _X509Crl_entries;
+var _X509Crl_extensions;
+_X509Crl_tbs = /* @__PURE__ */ new WeakMap(), _X509Crl_signatureAlgorithm = /* @__PURE__ */ new WeakMap(), _X509Crl_issuerName = /* @__PURE__ */ new WeakMap(), _X509Crl_thisUpdate = /* @__PURE__ */ new WeakMap(), _X509Crl_nextUpdate = /* @__PURE__ */ new WeakMap(), _X509Crl_entries = /* @__PURE__ */ new WeakMap(), _X509Crl_extensions = /* @__PURE__ */ new WeakMap();
+ExtensionFactory.register(id_ce_basicConstraints, BasicConstraintsExtension);
+ExtensionFactory.register(id_ce_extKeyUsage, ExtendedKeyUsageExtension);
+ExtensionFactory.register(id_ce_keyUsage, KeyUsagesExtension);
+ExtensionFactory.register(id_ce_subjectKeyIdentifier, SubjectKeyIdentifierExtension);
+ExtensionFactory.register(id_ce_authorityKeyIdentifier, AuthorityKeyIdentifierExtension);
+ExtensionFactory.register(id_ce_subjectAltName, SubjectAlternativeNameExtension);
+ExtensionFactory.register(id_ce_cRLDistributionPoints, CRLDistributionPointsExtension);
+ExtensionFactory.register(id_pe_authorityInfoAccess, AuthorityInfoAccessExtension);
+ExtensionFactory.register(id_ce_issuerAltName, IssuerAlternativeNameExtension);
+AttributeFactory.register(id_pkcs9_at_challengePassword, ChallengePasswordAttribute);
+AttributeFactory.register(id_pkcs9_at_extensionRequest, ExtensionsAttribute);
+instance.registerSingleton(diAsnSignatureFormatter, AsnDefaultSignatureFormatter);
+instance.registerSingleton(diAsnSignatureFormatter, AsnEcSignatureFormatter);
+AsnEcSignatureFormatter.namedCurveSize.set("P-256", 32);
+AsnEcSignatureFormatter.namedCurveSize.set("K-256", 32);
+AsnEcSignatureFormatter.namedCurveSize.set("P-384", 48);
+AsnEcSignatureFormatter.namedCurveSize.set("P-521", 66);
+
+// node_modules/@libp2p/webrtc/node_modules/interface-datastore/dist/src/key.js
+var pathSepS = "/";
+var pathSepB = new TextEncoder().encode(pathSepS);
+var pathSep = pathSepB[0];
+var Key = class _Key {
+  static {
+    __name(this, "Key");
+  }
+  _buf;
+  /**
+   * @param {string | Uint8Array} s
+   * @param {boolean} [clean]
+   */
+  constructor(s2, clean5) {
+    if (typeof s2 === "string") {
+      this._buf = fromString2(s2);
+    } else if (s2 instanceof Uint8Array) {
+      this._buf = s2;
+    } else {
+      throw new Error("Invalid key, should be String of Uint8Array");
+    }
+    if (clean5 == null) {
+      clean5 = true;
+    }
+    if (clean5) {
+      this.clean();
+    }
+    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep) {
+      throw new Error("Invalid key");
+    }
+  }
+  /**
+   * Convert to the string representation
+   *
+   * @param {import('uint8arrays/to-string').SupportedEncodings} [encoding] - The encoding to use.
+   * @returns {string}
+   */
+  toString(encoding = "utf8") {
+    return toString2(this._buf, encoding);
+  }
+  /**
+   * Return the Uint8Array representation of the key
+   *
+   * @returns {Uint8Array}
+   */
+  uint8Array() {
+    return this._buf;
+  }
+  /**
+   * Return string representation of the key
+   *
+   * @returns {string}
+   */
+  get [Symbol.toStringTag]() {
+    return `Key(${this.toString()})`;
+  }
+  /**
+   * Constructs a key out of a namespace array.
+   *
+   * @param {Array<string>} list - The array of namespaces
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * Key.withNamespaces(['one', 'two'])
+   * // => Key('/one/two')
+   * ```
+   */
+  static withNamespaces(list) {
+    return new _Key(list.join(pathSepS));
+  }
+  /**
+   * Returns a randomly (uuid) generated key.
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * Key.random()
+   * // => Key('/344502982398')
+   * ```
+   */
+  static random() {
+    return new _Key(Math.random().toString().substring(2));
+  }
+  /**
+   * @param {*} other
+   */
+  static asKey(other) {
+    if (other instanceof Uint8Array || typeof other === "string") {
+      return new _Key(other);
+    }
+    if (typeof other.uint8Array === "function") {
+      return new _Key(other.uint8Array());
+    }
+    return null;
+  }
+  /**
+   * Cleanup the current key
+   *
+   * @returns {void}
+   */
+  clean() {
+    if (this._buf == null || this._buf.byteLength === 0) {
+      this._buf = pathSepB;
+    }
+    if (this._buf[0] !== pathSep) {
+      const bytes = new Uint8Array(this._buf.byteLength + 1);
+      bytes.fill(pathSep, 0, 1);
+      bytes.set(this._buf, 1);
+      this._buf = bytes;
+    }
+    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep) {
+      this._buf = this._buf.subarray(0, -1);
+    }
+  }
+  /**
+   * Check if the given key is sorted lower than ourself.
+   *
+   * @param {Key} key - The other Key to check against
+   * @returns {boolean}
+   */
+  less(key) {
+    const list1 = this.list();
+    const list2 = key.list();
+    for (let i2 = 0; i2 < list1.length; i2++) {
+      if (list2.length < i2 + 1) {
+        return false;
+      }
+      const c1 = list1[i2];
+      const c2 = list2[i2];
+      if (c1 < c2) {
+        return true;
+      } else if (c1 > c2) {
+        return false;
+      }
+    }
+    return list1.length < list2.length;
+  }
+  /**
+   * Returns the key with all parts in reversed order.
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').reverse()
+   * // => Key('/Actor:JohnCleese/MontyPython/Comedy')
+   * ```
+   */
+  reverse() {
+    return _Key.withNamespaces(this.list().slice().reverse());
+  }
+  /**
+   * Returns the `namespaces` making up this Key.
+   *
+   * @returns {Array<string>}
+   */
+  namespaces() {
+    return this.list();
+  }
+  /**
+   * Returns the "base" namespace of this key.
+   *
+   * @returns {string}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').baseNamespace()
+   * // => 'Actor:JohnCleese'
+   * ```
+   */
+  baseNamespace() {
+    const ns = this.namespaces();
+    return ns[ns.length - 1];
+  }
+  /**
+   * Returns the `list` representation of this key.
+   *
+   * @returns {Array<string>}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').list()
+   * // => ['Comedy', 'MontyPythong', 'Actor:JohnCleese']
+   * ```
+   */
+  list() {
+    return this.toString().split(pathSepS).slice(1);
+  }
+  /**
+   * Returns the "type" of this key (value of last namespace).
+   *
+   * @returns {string}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').type()
+   * // => 'Actor'
+   * ```
+   */
+  type() {
+    return namespaceType(this.baseNamespace());
+  }
+  /**
+   * Returns the "name" of this key (field of last namespace).
+   *
+   * @returns {string}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').name()
+   * // => 'JohnCleese'
+   * ```
+   */
+  name() {
+    return namespaceValue(this.baseNamespace());
+  }
+  /**
+   * Returns an "instance" of this type key (appends value to namespace).
+   *
+   * @param {string} s - The string to append.
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor').instance('JohnClesse')
+   * // => Key('/Comedy/MontyPython/Actor:JohnCleese')
+   * ```
+   */
+  instance(s2) {
+    return new _Key(this.toString() + ":" + s2);
+  }
+  /**
+   * Returns the "path" of this key (parent + type).
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython/Actor:JohnCleese').path()
+   * // => Key('/Comedy/MontyPython/Actor')
+   * ```
+   */
+  path() {
+    let p2 = this.parent().toString();
+    if (!p2.endsWith(pathSepS)) {
+      p2 += pathSepS;
+    }
+    p2 += this.type();
+    return new _Key(p2);
+  }
+  /**
+   * Returns the `parent` Key of this Key.
+   *
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key("/Comedy/MontyPython/Actor:JohnCleese").parent()
+   * // => Key("/Comedy/MontyPython")
+   * ```
+   */
+  parent() {
+    const list = this.list();
+    if (list.length === 1) {
+      return new _Key(pathSepS);
+    }
+    return new _Key(list.slice(0, -1).join(pathSepS));
+  }
+  /**
+   * Returns the `child` Key of this Key.
+   *
+   * @param {Key} key - The child Key to add
+   * @returns {Key}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython').child(new Key('Actor:JohnCleese'))
+   * // => Key('/Comedy/MontyPython/Actor:JohnCleese')
+   * ```
+   */
+  child(key) {
+    if (this.toString() === pathSepS) {
+      return key;
+    } else if (key.toString() === pathSepS) {
+      return this;
+    }
+    return new _Key(this.toString() + key.toString(), false);
+  }
+  /**
+   * Returns whether this key is a prefix of `other`
+   *
+   * @param {Key} other - The other key to test against
+   * @returns {boolean}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy').isAncestorOf('/Comedy/MontyPython')
+   * // => true
+   * ```
+   */
+  isAncestorOf(other) {
+    if (other.toString() === this.toString()) {
+      return false;
+    }
+    return other.toString().startsWith(this.toString());
+  }
+  /**
+   * Returns whether this key is a contains another as prefix.
+   *
+   * @param {Key} other - The other Key to test against
+   * @returns {boolean}
+   *
+   * @example
+   * ```js
+   * new Key('/Comedy/MontyPython').isDecendantOf('/Comedy')
+   * // => true
+   * ```
+   */
+  isDecendantOf(other) {
+    if (other.toString() === this.toString()) {
+      return false;
+    }
+    return this.toString().startsWith(other.toString());
+  }
+  /**
+   * Checks if this key has only one namespace.
+   *
+   * @returns {boolean}
+   */
+  isTopLevel() {
+    return this.list().length === 1;
+  }
+  /**
+   * Concats one or more Keys into one new Key.
+   *
+   * @param {Array<Key>} keys - The array of keys to concatenate
+   * @returns {Key}
+   */
+  concat(...keys) {
+    return _Key.withNamespaces([...this.namespaces(), ...flatten(keys.map((key) => key.namespaces()))]);
+  }
+};
+function namespaceType(ns) {
+  const parts = ns.split(":");
+  if (parts.length < 2) {
+    return "";
+  }
+  return parts.slice(0, -1).join(":");
+}
+__name(namespaceType, "namespaceType");
+function namespaceValue(ns) {
+  const parts = ns.split(":");
+  return parts[parts.length - 1];
+}
+__name(namespaceValue, "namespaceValue");
+function flatten(arr) {
+  return [].concat(...arr);
+}
+__name(flatten, "flatten");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/listener.browser.js
+var WebRTCDirectListener = class extends TypedEventEmitter {
+  static {
+    __name(this, "WebRTCDirectListener");
+  }
+  async listen() {
+    throw new UnimplementedError("WebRTCTransport.createListener");
+  }
+  getAddrs() {
+    return [];
+  }
+  updateAnnounceAddrs() {
+  }
+  async close() {
+  }
+};
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/utils/sdp.js
+var multibaseDecoder = Object.values(bases).map((b) => b.decoder).reduce((d2, b) => d2.or(b));
+var fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m;
+function getFingerprintFromSdp(sdp) {
+  if (sdp == null) {
+    return void 0;
+  }
+  const searchResult = sdp.match(fingerprintRegex);
+  return searchResult?.groups?.fingerprint;
+}
+__name(getFingerprintFromSdp, "getFingerprintFromSdp");
+function certhash(ma) {
+  const components = ma.getComponents();
+  const certhash2 = components.find((c2) => c2.code === CODE_CERTHASH)?.value;
+  if (certhash2 === void 0 || certhash2 === "") {
+    throw new InvalidParametersError(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`);
+  }
+  return certhash2;
+}
+__name(certhash, "certhash");
+function decodeCerthash(certhash2) {
+  return digest_exports.decode(multibaseDecoder.decode(certhash2));
+}
+__name(decodeCerthash, "decodeCerthash");
+function ma2Fingerprint(ma) {
+  const multihashDecoded = decodeCerthash(certhash(ma));
+  const prefix = toSupportedHashFunction(multihashDecoded.code);
+  const fingerprint = multihashDecoded.digest.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
+  const sdp = fingerprint.match(/.{1,2}/g);
+  if (sdp == null) {
+    throw new InvalidFingerprintError(fingerprint, ma.toString());
+  }
+  return `${prefix} ${sdp.join(":").toUpperCase()}`;
+}
+__name(ma2Fingerprint, "ma2Fingerprint");
+function fingerprint2Ma(fingerprint) {
+  const output = fingerprint.split(":").map((str) => parseInt(str, 16));
+  const encoded = Uint8Array.from(output);
+  const digest2 = create(sha256.code, encoded);
+  return multiaddr(`/certhash/${base64url.encode(digest2.bytes)}`);
+}
+__name(fingerprint2Ma, "fingerprint2Ma");
+function toSupportedHashFunction(code4) {
+  switch (code4) {
+    case 17:
+      return "sha-1";
+    case 18:
+      return "sha-256";
+    case 19:
+      return "sha-512";
+    default:
+      throw new UnsupportedHashAlgorithmError(code4);
+  }
+}
+__name(toSupportedHashFunction, "toSupportedHashFunction");
+function serverAnswerFromMultiaddr(ma, ufrag) {
+  const { host, port: port2, type } = getNetConfig(ma);
+  if (type !== "ip4" && type !== "ip6") {
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
+  }
+  const fingerprint = ma2Fingerprint(ma);
+  const sdp = `v=0
+o=- 0 0 IN IP${type === "ip4" ? 4 : 6} ${host}
+s=-
+t=0 0
+a=ice-lite
+m=application ${port2} UDP/DTLS/SCTP webrtc-datachannel
+c=IN IP${type === "ip4" ? 4 : 6} ${host}
+a=mid:0
+a=ice-options:ice2
+a=ice-ufrag:${ufrag}
+a=ice-pwd:${ufrag}
+a=fingerprint:${fingerprint}
+a=setup:passive
+a=sctp-port:5000
+a=max-message-size:${MAX_MESSAGE_SIZE}
+a=candidate:1467250027 1 UDP 1467250027 ${host} ${port2} typ host
+a=end-of-candidates
+`;
+  return {
+    type: "answer",
+    sdp
+  };
+}
+__name(serverAnswerFromMultiaddr, "serverAnswerFromMultiaddr");
+function clientOfferFromMultiAddr(ma, ufrag) {
+  const { host, port: port2, type } = getNetConfig(ma);
+  if (type !== "ip4" && type !== "ip6") {
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`);
+  }
+  const sdp = `v=0
+o=- 0 0 IN IP${type === "ip4" ? 4 : 6} ${host}
+s=-
+c=IN IP${type === "ip4" ? 4 : 6} ${host}
+t=0 0
+a=ice-options:ice2,trickle
+m=application ${port2} UDP/DTLS/SCTP webrtc-datachannel
+a=mid:0
+a=setup:active
+a=ice-ufrag:${ufrag}
+a=ice-pwd:${ufrag}
+a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+a=sctp-port:5000
+a=max-message-size:${MAX_MESSAGE_SIZE}
+a=candidate:1467250027 1 UDP 1467250027 ${host} ${port2} typ host
+a=end-of-candidates
+`;
+  return {
+    type: "offer",
+    sdp
+  };
+}
+__name(clientOfferFromMultiAddr, "clientOfferFromMultiAddr");
+function munge(desc, ufrag) {
+  if (desc.sdp === void 0) {
+    throw new InvalidParametersError("Can't munge a missing SDP");
+  }
+  const lineBreak = desc.sdp.includes("\r\n") ? "\r\n" : "\n";
+  try {
+    desc.sdp = desc.sdp.replace(/\na=ice-ufrag:[^\n]*\n/, "\na=ice-ufrag:" + ufrag + lineBreak).replace(/\na=ice-pwd:[^\n]*\n/, "\na=ice-pwd:" + ufrag + lineBreak);
+  } catch {
+  }
+  return desc;
+}
+__name(munge, "munge");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/utils/generate-noise-prologue.js
+var PREFIX = fromString2("libp2p-webrtc-noise:");
+function generateNoisePrologue(localFingerprint, remoteAddr, role) {
+  const localFpString = localFingerprint.trim().toLowerCase().replaceAll(":", "");
+  const localFpArray = fromString2(localFpString, "hex");
+  const local = create(sha256.code, localFpArray);
+  const remote = multibaseDecoder.decode(certhash(remoteAddr));
+  const byteLength = PREFIX.byteLength + local.bytes.byteLength + remote.byteLength;
+  if (role === "server") {
+    return concat([PREFIX, remote, local.bytes], byteLength);
+  }
+  return concat([PREFIX, local.bytes, remote], byteLength);
+}
+__name(generateNoisePrologue, "generateNoisePrologue");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/utils/connect.js
+var CONNECTION_STATE_CHANGE_EVENT = isFirefox ? "iceconnectionstatechange" : "connectionstatechange";
+function isServer(options, peerConnection) {
+  return options.role === "server";
+}
+__name(isServer, "isServer");
+async function connect(peerConnection, muxerFactory, ufrag, options) {
+  const handshakeDataChannel = peerConnection.createDataChannel("", { negotiated: true, id: 0 });
+  try {
+    if (options.role === "client") {
+      options.log.trace("client creating local offer");
+      const offerSdp = await peerConnection.createOffer();
+      options.log.trace("client created local offer %s", offerSdp.sdp);
+      const mungedOfferSdp = munge(offerSdp, ufrag);
+      options.log.trace("client setting local offer %s", mungedOfferSdp.sdp);
+      await peerConnection.setLocalDescription(mungedOfferSdp);
+      const answerSdp = serverAnswerFromMultiaddr(options.remoteAddr, ufrag);
+      options.log.trace("client setting server description %s", answerSdp.sdp);
+      await peerConnection.setRemoteDescription(answerSdp);
+    } else {
+      const offerSdp = clientOfferFromMultiAddr(options.remoteAddr, ufrag);
+      options.log.trace("server setting client %s %s", offerSdp.type, offerSdp.sdp);
+      await peerConnection.setRemoteDescription(offerSdp);
+      options.log.trace("server creating local answer");
+      const answerSdp = await peerConnection.createAnswer();
+      options.log.trace("server created local answer");
+      const mungedAnswerSdp = munge(answerSdp, ufrag);
+      options.log.trace("server setting local description %s", answerSdp.sdp);
+      await peerConnection.setLocalDescription(mungedAnswerSdp);
+    }
+    if (handshakeDataChannel.readyState !== "open") {
+      options.log.trace("%s wait for handshake channel to open, starting status %s", options.role, handshakeDataChannel.readyState);
+      await pEvent(handshakeDataChannel, "open", options);
+    }
+    options.log.trace("%s handshake channel opened", options.role);
+    if (isServer(options, peerConnection)) {
+      const remoteFingerprint = peerConnection.remoteFingerprint()?.value ?? "";
+      options.remoteAddr = options.remoteAddr.encapsulate(fingerprint2Ma(remoteFingerprint));
+    }
+    const localFingerprint = getFingerprintFromSdp(peerConnection.localDescription?.sdp);
+    if (localFingerprint == null) {
+      throw new WebRTCTransportError("Could not get fingerprint from local description sdp");
+    }
+    options.log.trace("%s performing noise handshake", options.role);
+    const noisePrologue = generateNoisePrologue(localFingerprint, options.remoteAddr, options.role);
+    const connectionEncrypter = noise({ prologueBytes: noisePrologue })(options);
+    const handshakeStream = createStream({
+      channel: handshakeDataChannel,
+      direction: "outbound",
+      isHandshake: true,
+      log: options.log,
+      ...options.dataChannel ?? {}
+    });
+    const maConn = toMultiaddrConnection({
+      // @ts-expect-error types are broken
+      peerConnection,
+      remoteAddr: options.remoteAddr,
+      metrics: options.events,
+      direction: options.role === "client" ? "outbound" : "inbound",
+      log: options.logger.forComponent("libp2p:webrtc-direct:connection")
+    });
+    peerConnection.addEventListener(CONNECTION_STATE_CHANGE_EVENT, () => {
+      switch (peerConnection.connectionState) {
+        case "failed":
+        case "disconnected":
+        case "closed":
+          maConn.close().catch((err) => {
+            options.log.error("error closing connection - %e", err);
+            maConn.abort(err);
+          });
+          break;
+        default:
+          break;
+      }
+    });
+    options.events?.increment({ peer_connection: true });
+    if (options.role === "client") {
+      options.log.trace("%s secure inbound", options.role);
+      const result2 = await connectionEncrypter.secureInbound(handshakeStream, {
+        remotePeer: options.remotePeer,
+        signal: options.signal,
+        skipStreamMuxerNegotiation: true
+      });
+      options.log.trace("%s upgrade outbound", options.role);
+      return await options.upgrader.upgradeOutbound(maConn, {
+        skipProtection: true,
+        skipEncryption: true,
+        remotePeer: result2.remotePeer,
+        muxerFactory,
+        signal: options.signal
+      });
+    }
+    options.log.trace("%s secure outbound", options.role);
+    const result = await connectionEncrypter.secureOutbound(handshakeStream, {
+      remotePeer: options.remotePeer,
+      signal: options.signal,
+      skipStreamMuxerNegotiation: true
+    });
+    maConn.remoteAddr = maConn.remoteAddr.encapsulate(`/p2p/${result.remotePeer}`);
+    options.log.trace("%s upgrade inbound", options.role);
+    await options.upgrader.upgradeInbound(maConn, {
+      skipProtection: true,
+      skipEncryption: true,
+      remotePeer: result.remotePeer,
+      muxerFactory,
+      signal: options.signal
+    });
+  } catch (err) {
+    handshakeDataChannel.close();
+    peerConnection.close();
+    throw err;
+  }
+}
+__name(connect, "connect");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/utils/get-rtcpeerconnection.browser.js
+async function createDialerRTCPeerConnection(role, ufrag, options = {}) {
+  let certificate = options.certificate;
+  if (certificate == null) {
+    certificate = await RTCPeerConnection.generateCertificate({
+      name: "ECDSA",
+      // @ts-expect-error missing from lib.dom.d.ts but required by chrome
+      namedCurve: "P-256"
+      // hash: sdp.toSupportedHashFunction(hashName)
+    });
+  }
+  const rtcConfig = typeof options.rtcConfiguration === "function" ? await options.rtcConfiguration() : options.rtcConfiguration;
+  const peerConnection = new RTCPeerConnection({
+    ...rtcConfig ?? {},
+    certificates: [certificate]
+  });
+  const muxerFactory = new DataChannelMuxerFactory({
+    peerConnection,
+    metrics: options.events,
+    dataChannelOptions: options.dataChannel
+  });
+  return {
+    peerConnection,
+    muxerFactory
+  };
+}
+__name(createDialerRTCPeerConnection, "createDialerRTCPeerConnection");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/utils/pem.js
+async function formatAsPem(privateKey) {
+  const keyPair = await privateKeyToCryptoKeyPair(privateKey);
+  const exported = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+  return [
+    "-----BEGIN PRIVATE KEY-----",
+    ...toString2(new Uint8Array(exported), "base64pad").split(/(.{64})/).filter(Boolean),
+    "-----END PRIVATE KEY-----"
+  ].join("\n");
+}
+__name(formatAsPem, "formatAsPem");
+
+// node_modules/@libp2p/webrtc/dist/src/private-to-public/transport.js
+var WebRTCDirectTransport = class {
+  static {
+    __name(this, "WebRTCDirectTransport");
+  }
+  log;
+  metrics;
+  components;
+  init;
+  certificate;
+  privateKey;
+  emitter;
+  renewCertificateTask;
+  constructor(components, init = {}) {
+    this.log = components.logger.forComponent("libp2p:webrtc-direct");
+    this.components = components;
+    this.init = init;
+    this.emitter = new TypedEventEmitter();
+    if (init.certificateLifespan != null && init.certificateRenewalThreshold != null && init.certificateRenewalThreshold >= init.certificateLifespan) {
+      throw new InvalidParametersError("Certificate renewal threshold must be less than certificate lifespan");
+    }
+    if (components.metrics != null) {
+      this.metrics = {
+        dialerEvents: components.metrics.registerCounterGroup("libp2p_webrtc-direct_dialer_events_total", {
+          label: "event",
+          help: "Total count of WebRTC-direct dial events by type"
+        })
+      };
+    }
+  }
+  [transportSymbol] = true;
+  [Symbol.toStringTag] = "@libp2p/webrtc-direct";
+  [serviceCapabilities] = [
+    "@libp2p/transport"
+  ];
+  async start() {
+    this.certificate = await this.getCertificate();
+  }
+  async stop() {
+    if (this.renewCertificateTask != null) {
+      clearTimeout(this.renewCertificateTask);
+    }
+    this.certificate = void 0;
+  }
+  /**
+   * Dial a given multiaddr
+   */
+  async dial(ma, options) {
+    this.log("dial %a", ma);
+    options.signal.throwIfAborted();
+    let theirPeerId;
+    const remotePeerString = ma.getComponents().findLast((c2) => c2.code === CODE_P2P)?.value;
+    if (remotePeerString != null) {
+      theirPeerId = peerIdFromString(remotePeerString);
+    }
+    const ufrag = genUfrag();
+    const { peerConnection, muxerFactory } = await createDialerRTCPeerConnection("client", ufrag, {
+      rtcConfiguration: typeof this.init.rtcConfiguration === "function" ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {},
+      dataChannel: this.init.dataChannel
+    });
+    try {
+      return await connect(peerConnection, muxerFactory, ufrag, {
+        role: "client",
+        log: this.log,
+        logger: this.components.logger,
+        events: this.metrics?.dialerEvents,
+        signal: options.signal,
+        remoteAddr: ma,
+        dataChannel: this.init.dataChannel,
+        upgrader: options.upgrader,
+        peerId: this.components.peerId,
+        remotePeer: theirPeerId,
+        privateKey: this.components.privateKey
+      });
+    } catch (err) {
+      peerConnection.close();
+      throw err;
+    }
+  }
+  /**
+   * Create a transport listener - this will throw in browsers
+   */
+  createListener(options) {
+    if (this.certificate == null) {
+      throw new NotStartedError();
+    }
+    return new WebRTCDirectListener(this.components, {
+      ...this.init,
+      ...options,
+      certificate: this.certificate,
+      emitter: this.emitter
+    });
+  }
+  /**
+   * Filter check for all Multiaddrs that this transport can listen on
+   */
+  listenFilter(multiaddrs) {
+    return multiaddrs.filter(WebRTCDirect.exactMatch);
+  }
+  /**
+   * Filter check for all Multiaddrs that this transport can dial
+   */
+  dialFilter(multiaddrs) {
+    return this.listenFilter(multiaddrs);
+  }
+  async getCertificate(forceRenew) {
+    if (isTransportCertificate(this.init.certificate)) {
+      this.log("using provided TLS certificate");
+      return this.init.certificate;
+    }
+    const privateKey = await this.loadOrCreatePrivateKey();
+    const { pem, certhash: certhash2 } = await this.loadOrCreateCertificate(privateKey, forceRenew);
+    return {
+      privateKey: await formatAsPem(privateKey),
+      pem,
+      certhash: certhash2
+    };
+  }
+  async loadOrCreatePrivateKey() {
+    if (this.privateKey != null) {
+      return this.privateKey;
+    }
+    const keychainName = this.init.certificateKeychainName ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME;
+    const keychain = this.getKeychain();
+    try {
+      if (keychain == null) {
+        this.log("no keychain configured - not checking for stored private key");
+        throw new NotFoundError();
+      }
+      this.log.trace("checking for stored private key");
+      this.privateKey = await keychain.exportKey(keychainName);
+    } catch (err) {
+      if (err.name !== "NotFoundError") {
+        throw err;
+      }
+      this.log.trace("generating private key");
+      this.privateKey = await generateKeyPair("ECDSA", "P-256");
+      if (keychain != null) {
+        this.log.trace("storing private key");
+        await keychain.importKey(keychainName, this.privateKey);
+      } else {
+        this.log("no keychain configured - not storing private key");
+      }
+    }
+    return this.privateKey;
+  }
+  async loadOrCreateCertificate(privateKey, forceRenew) {
+    if (this.certificate != null && forceRenew !== true) {
+      return this.certificate;
+    }
+    let cert;
+    const dsKey = new Key(this.init.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY);
+    const keyPair = await privateKeyToCryptoKeyPair(privateKey);
+    try {
+      if (forceRenew === true) {
+        this.log.trace("forcing renewal of TLS certificate");
+        throw new NotFoundError();
+      }
+      this.log.trace("checking for stored TLS certificate");
+      cert = await this.loadCertificate(dsKey, keyPair);
+    } catch (err) {
+      if (err.name !== "NotFoundError") {
+        throw err;
+      }
+      this.log.trace("generating new TLS certificate");
+      cert = await this.createCertificate(dsKey, keyPair);
+    }
+    let renewTime = cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD) - Date.now();
+    if (renewTime < 0) {
+      renewTime = 100;
+    }
+    this.log("will renew TLS certificate after %d ms", renewTime);
+    this.renewCertificateTask = setTimeout(() => {
+      this.log("renewing TLS certificate");
+      this.getCertificate(true).then((cert2) => {
+        this.certificate = cert2;
+        this.emitter.safeDispatchEvent("certificate:renew", {
+          detail: cert2
+        });
+      }).catch((err) => {
+        this.log.error("could not renew certificate - %e", err);
+      });
+    }, renewTime);
+    return {
+      pem: cert.toString("pem"),
+      certhash: base64url.encode((await sha256.digest(new Uint8Array(cert.rawData))).bytes)
+    };
+  }
+  async loadCertificate(dsKey, keyPair) {
+    const buf = await this.components.datastore.get(dsKey);
+    const cert = new X509Certificate(buf);
+    const expiryTime = cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD);
+    if (Date.now() > expiryTime) {
+      this.log("stored TLS certificate has expired");
+      throw new NotFoundError();
+    }
+    this.log("loaded certificate, expires in %d ms", expiryTime);
+    const exportedCertKey = await cert.publicKey.export(crypto);
+    const rawCertKey = await crypto.subtle.exportKey("raw", exportedCertKey);
+    const rawKeyPairKey = await crypto.subtle.exportKey("raw", keyPair.publicKey);
+    if (!equals3(new Uint8Array(rawCertKey, 0, rawCertKey.byteLength), new Uint8Array(rawKeyPairKey, 0, rawKeyPairKey.byteLength))) {
+      this.log("stored TLS certificate public key did not match public key from private key");
+      throw new NotFoundError();
+    }
+    this.log("loaded certificate, expiry time is %o", expiryTime);
+    return cert;
+  }
+  async createCertificate(dsKey, keyPair) {
+    const notBefore = /* @__PURE__ */ new Date();
+    const notAfter = new Date(Date.now() + (this.init.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN));
+    notBefore.setMilliseconds(0);
+    notAfter.setMilliseconds(0);
+    const cert = await X509CertificateGenerator.createSelfSigned({
+      serialNumber: (BigInt(Math.random().toString().replace(".", "")) * 100000n).toString(16),
+      name: "CN=example.com, C=US, L=CA, O=example, ST=CA",
+      notBefore,
+      notAfter,
+      keys: keyPair,
+      extensions: [
+        new BasicConstraintsExtension(false, void 0, true)
+      ]
+    }, crypto);
+    if (this.getKeychain() != null) {
+      this.log.trace("storing TLS certificate");
+      await this.components.datastore.put(dsKey, fromString2(cert.toString("pem")));
+    } else {
+      this.log("no keychain is configured so not storing TLS certificate since the private key will not be reused");
+    }
+    return cert;
+  }
+  getKeychain() {
+    try {
+      return this.components.keychain;
+    } catch {
+    }
+  }
+};
+function isTransportCertificate(obj) {
+  if (obj == null) {
+    return false;
+  }
+  return typeof obj.privateKey === "string" && typeof obj.pem === "string" && typeof obj.certhash === "string";
+}
+__name(isTransportCertificate, "isTransportCertificate");
+
 // node_modules/@libp2p/webrtc/dist/src/index.js
+function webRTCDirect(init) {
+  return (components) => new WebRTCDirectTransport(components, init);
+}
+__name(webRTCDirect, "webRTCDirect");
 function webRTC(init) {
   return (components) => new WebRTCTransport(components, init);
 }
@@ -23288,10 +38128,10 @@ function compareMaps(mapA, mapB, compare2) {
 __name(compareMaps, "compareMaps");
 
 // node_modules/@libp2p/peer-store/node_modules/interface-datastore/dist/src/key.js
-var pathSepS = "/";
-var pathSepB = new TextEncoder().encode(pathSepS);
-var pathSep = pathSepB[0];
-var Key = class _Key {
+var pathSepS2 = "/";
+var pathSepB2 = new TextEncoder().encode(pathSepS2);
+var pathSep2 = pathSepB2[0];
+var Key2 = class _Key {
   static {
     __name(this, "Key");
   }
@@ -23314,7 +38154,7 @@ var Key = class _Key {
     if (clean5) {
       this.clean();
     }
-    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep) {
+    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep2) {
       throw new Error("Invalid key");
     }
   }
@@ -23356,7 +38196,7 @@ var Key = class _Key {
    * ```
    */
   static withNamespaces(list) {
-    return new _Key(list.join(pathSepS));
+    return new _Key(list.join(pathSepS2));
   }
   /**
    * Returns a randomly (uuid) generated key.
@@ -23391,15 +38231,15 @@ var Key = class _Key {
    */
   clean() {
     if (this._buf == null || this._buf.byteLength === 0) {
-      this._buf = pathSepB;
+      this._buf = pathSepB2;
     }
-    if (this._buf[0] !== pathSep) {
+    if (this._buf[0] !== pathSep2) {
       const bytes = new Uint8Array(this._buf.byteLength + 1);
-      bytes.fill(pathSep, 0, 1);
+      bytes.fill(pathSep2, 0, 1);
       bytes.set(this._buf, 1);
       this._buf = bytes;
     }
-    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep) {
+    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep2) {
       this._buf = this._buf.subarray(0, -1);
     }
   }
@@ -23475,7 +38315,7 @@ var Key = class _Key {
    * ```
    */
   list() {
-    return this.toString().split(pathSepS).slice(1);
+    return this.toString().split(pathSepS2).slice(1);
   }
   /**
    * Returns the "type" of this key (value of last namespace).
@@ -23489,7 +38329,7 @@ var Key = class _Key {
    * ```
    */
   type() {
-    return namespaceType(this.baseNamespace());
+    return namespaceType2(this.baseNamespace());
   }
   /**
    * Returns the "name" of this key (field of last namespace).
@@ -23503,7 +38343,7 @@ var Key = class _Key {
    * ```
    */
   name() {
-    return namespaceValue(this.baseNamespace());
+    return namespaceValue2(this.baseNamespace());
   }
   /**
    * Returns an "instance" of this type key (appends value to namespace).
@@ -23533,8 +38373,8 @@ var Key = class _Key {
    */
   path() {
     let p2 = this.parent().toString();
-    if (!p2.endsWith(pathSepS)) {
-      p2 += pathSepS;
+    if (!p2.endsWith(pathSepS2)) {
+      p2 += pathSepS2;
     }
     p2 += this.type();
     return new _Key(p2);
@@ -23553,9 +38393,9 @@ var Key = class _Key {
   parent() {
     const list = this.list();
     if (list.length === 1) {
-      return new _Key(pathSepS);
+      return new _Key(pathSepS2);
     }
-    return new _Key(list.slice(0, -1).join(pathSepS));
+    return new _Key(list.slice(0, -1).join(pathSepS2));
   }
   /**
    * Returns the `child` Key of this Key.
@@ -23570,9 +38410,9 @@ var Key = class _Key {
    * ```
    */
   child(key) {
-    if (this.toString() === pathSepS) {
+    if (this.toString() === pathSepS2) {
       return key;
-    } else if (key.toString() === pathSepS) {
+    } else if (key.toString() === pathSepS2) {
       return this;
     }
     return new _Key(this.toString() + key.toString(), false);
@@ -23628,26 +38468,26 @@ var Key = class _Key {
    * @returns {Key}
    */
   concat(...keys) {
-    return _Key.withNamespaces([...this.namespaces(), ...flatten(keys.map((key) => key.namespaces()))]);
+    return _Key.withNamespaces([...this.namespaces(), ...flatten2(keys.map((key) => key.namespaces()))]);
   }
 };
-function namespaceType(ns) {
+function namespaceType2(ns) {
   const parts = ns.split(":");
   if (parts.length < 2) {
     return "";
   }
   return parts.slice(0, -1).join(":");
 }
-__name(namespaceType, "namespaceType");
-function namespaceValue(ns) {
+__name(namespaceType2, "namespaceType");
+function namespaceValue2(ns) {
   const parts = ns.split(":");
   return parts[parts.length - 1];
 }
-__name(namespaceValue, "namespaceValue");
-function flatten(arr) {
+__name(namespaceValue2, "namespaceValue");
+function flatten2(arr) {
   return [].concat(...arr);
 }
-__name(flatten, "flatten");
+__name(flatten2, "flatten");
 
 // node_modules/@libp2p/peer-store/dist/src/utils/peer-id-to-datastore-key.js
 var NAMESPACE_COMMON = "/peers/";
@@ -23656,7 +38496,7 @@ function peerIdToDatastoreKey(peerId) {
     throw new InvalidParametersError("Invalid PeerId");
   }
   const b32key = peerId.toCID().toString();
-  return new Key(`${NAMESPACE_COMMON}${b32key}`);
+  return new Key2(`${NAMESPACE_COMMON}${b32key}`);
 }
 __name(peerIdToDatastoreKey, "peerIdToDatastoreKey");
 
@@ -24236,10 +39076,10 @@ function persistentPeerStore(components, init = {}) {
 __name(persistentPeerStore, "persistentPeerStore");
 
 // node_modules/datastore-core/node_modules/interface-datastore/dist/src/key.js
-var pathSepS2 = "/";
-var pathSepB2 = new TextEncoder().encode(pathSepS2);
-var pathSep2 = pathSepB2[0];
-var Key2 = class _Key {
+var pathSepS3 = "/";
+var pathSepB3 = new TextEncoder().encode(pathSepS3);
+var pathSep3 = pathSepB3[0];
+var Key3 = class _Key {
   static {
     __name(this, "Key");
   }
@@ -24262,7 +39102,7 @@ var Key2 = class _Key {
     if (clean5) {
       this.clean();
     }
-    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep2) {
+    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep3) {
       throw new Error("Invalid key");
     }
   }
@@ -24304,7 +39144,7 @@ var Key2 = class _Key {
    * ```
    */
   static withNamespaces(list) {
-    return new _Key(list.join(pathSepS2));
+    return new _Key(list.join(pathSepS3));
   }
   /**
    * Returns a randomly (uuid) generated key.
@@ -24339,15 +39179,15 @@ var Key2 = class _Key {
    */
   clean() {
     if (this._buf == null || this._buf.byteLength === 0) {
-      this._buf = pathSepB2;
+      this._buf = pathSepB3;
     }
-    if (this._buf[0] !== pathSep2) {
+    if (this._buf[0] !== pathSep3) {
       const bytes = new Uint8Array(this._buf.byteLength + 1);
-      bytes.fill(pathSep2, 0, 1);
+      bytes.fill(pathSep3, 0, 1);
       bytes.set(this._buf, 1);
       this._buf = bytes;
     }
-    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep2) {
+    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep3) {
       this._buf = this._buf.subarray(0, -1);
     }
   }
@@ -24423,7 +39263,7 @@ var Key2 = class _Key {
    * ```
    */
   list() {
-    return this.toString().split(pathSepS2).slice(1);
+    return this.toString().split(pathSepS3).slice(1);
   }
   /**
    * Returns the "type" of this key (value of last namespace).
@@ -24437,7 +39277,7 @@ var Key2 = class _Key {
    * ```
    */
   type() {
-    return namespaceType2(this.baseNamespace());
+    return namespaceType3(this.baseNamespace());
   }
   /**
    * Returns the "name" of this key (field of last namespace).
@@ -24451,7 +39291,7 @@ var Key2 = class _Key {
    * ```
    */
   name() {
-    return namespaceValue2(this.baseNamespace());
+    return namespaceValue3(this.baseNamespace());
   }
   /**
    * Returns an "instance" of this type key (appends value to namespace).
@@ -24481,8 +39321,8 @@ var Key2 = class _Key {
    */
   path() {
     let p2 = this.parent().toString();
-    if (!p2.endsWith(pathSepS2)) {
-      p2 += pathSepS2;
+    if (!p2.endsWith(pathSepS3)) {
+      p2 += pathSepS3;
     }
     p2 += this.type();
     return new _Key(p2);
@@ -24501,9 +39341,9 @@ var Key2 = class _Key {
   parent() {
     const list = this.list();
     if (list.length === 1) {
-      return new _Key(pathSepS2);
+      return new _Key(pathSepS3);
     }
-    return new _Key(list.slice(0, -1).join(pathSepS2));
+    return new _Key(list.slice(0, -1).join(pathSepS3));
   }
   /**
    * Returns the `child` Key of this Key.
@@ -24518,9 +39358,9 @@ var Key2 = class _Key {
    * ```
    */
   child(key) {
-    if (this.toString() === pathSepS2) {
+    if (this.toString() === pathSepS3) {
       return key;
-    } else if (key.toString() === pathSepS2) {
+    } else if (key.toString() === pathSepS3) {
       return this;
     }
     return new _Key(this.toString() + key.toString(), false);
@@ -24576,26 +39416,26 @@ var Key2 = class _Key {
    * @returns {Key}
    */
   concat(...keys) {
-    return _Key.withNamespaces([...this.namespaces(), ...flatten2(keys.map((key) => key.namespaces()))]);
+    return _Key.withNamespaces([...this.namespaces(), ...flatten3(keys.map((key) => key.namespaces()))]);
   }
 };
-function namespaceType2(ns) {
+function namespaceType3(ns) {
   const parts = ns.split(":");
   if (parts.length < 2) {
     return "";
   }
   return parts.slice(0, -1).join(":");
 }
-__name(namespaceType2, "namespaceType");
-function namespaceValue2(ns) {
+__name(namespaceType3, "namespaceType");
+function namespaceValue3(ns) {
   const parts = ns.split(":");
   return parts[parts.length - 1];
 }
-__name(namespaceValue2, "namespaceValue");
-function flatten2(arr) {
+__name(namespaceValue3, "namespaceValue");
+function flatten3(arr) {
   return [].concat(...arr);
 }
-__name(flatten2, "flatten");
+__name(flatten3, "flatten");
 
 // node_modules/datastore-core/node_modules/interface-store/dist/src/errors.js
 var NotFoundError2 = class _NotFoundError extends Error {
@@ -24893,14 +39733,14 @@ var MemoryDatastore = class extends BaseDatastore {
   *_all(q, options) {
     options?.signal?.throwIfAborted();
     for (const [key, value2] of this.data.entries()) {
-      yield { key: new Key2(key), value: value2 };
+      yield { key: new Key3(key), value: value2 };
       options?.signal?.throwIfAborted();
     }
   }
   *_allKeys(q, options) {
     options?.signal?.throwIfAborted();
     for (const key of this.data.keys()) {
-      yield new Key2(key);
+      yield new Key3(key);
       options?.signal?.throwIfAborted();
     }
   }
@@ -25193,7 +40033,7 @@ var IPMappings = class {
 };
 
 // node_modules/libp2p/dist/src/address-manager/observed-addresses.js
-var defaultValues2 = {
+var defaultValues3 = {
   maxObservedAddresses: 10
 };
 var ObservedAddresses = class {
@@ -25209,7 +40049,7 @@ var ObservedAddresses = class {
       name: "libp2p_address_manager_observed_addresses",
       metrics: components.metrics
     });
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues2.maxObservedAddresses;
+    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues3.maxObservedAddresses;
   }
   has(ma) {
     return this.addresses.has(ma.toString());
@@ -25267,7 +40107,7 @@ var ObservedAddresses = class {
 };
 
 // node_modules/libp2p/dist/src/address-manager/transport-addresses.js
-var defaultValues3 = {
+var defaultValues4 = {
   maxObservedAddresses: 10
 };
 var TransportAddresses = class {
@@ -25283,7 +40123,7 @@ var TransportAddresses = class {
       name: "libp2p_address_manager_transport_addresses",
       metrics: components.metrics
     });
-    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues3.maxObservedAddresses;
+    this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues4.maxObservedAddresses;
   }
   get(multiaddr2, ttl) {
     if (isPrivate(multiaddr2)) {
@@ -25360,7 +40200,7 @@ var TransportAddresses = class {
 
 // node_modules/libp2p/dist/src/address-manager/index.js
 var ONE_MINUTE = 6e4;
-var defaultValues4 = {
+var defaultValues5 = {
   maxObservedAddresses: 10,
   addressVerificationTTL: ONE_MINUTE * 10,
   addressVerificationRetry: ONE_MINUTE * 5
@@ -25414,8 +40254,8 @@ var AddressManager = class {
     this.transportAddresses = new TransportAddresses(components, init);
     this.announceFilter = init.announceFilter ?? defaultAddressFilter;
     this.observedAddressFilter = createScalableCuckooFilter(1024);
-    this.addressVerificationTTL = init.addressVerificationTTL ?? defaultValues4.addressVerificationTTL;
-    this.addressVerificationRetry = init.addressVerificationRetry ?? defaultValues4.addressVerificationRetry;
+    this.addressVerificationTTL = init.addressVerificationTTL ?? defaultValues5.addressVerificationTTL;
+    this.addressVerificationRetry = init.addressVerificationRetry ?? defaultValues5.addressVerificationRetry;
     this._updatePeerStoreAddresses = debounce(this._updatePeerStoreAddresses.bind(this), 1e3);
     components.events.addEventListener("transport:listening", () => {
       this._updatePeerStoreAddresses();
@@ -26343,7 +41183,7 @@ function defaultAddressSorter(addresses) {
 __name(defaultAddressSorter, "defaultAddressSorter");
 
 // node_modules/p-queue/node_modules/eventemitter3/index.mjs
-var import_index8 = __toESM(require_eventemitter3(), 1);
+var import_index9 = __toESM(require_eventemitter3(), 1);
 
 // node_modules/p-queue/dist/lower-bound.js
 function lowerBound(array, value2, comparator) {
@@ -26407,7 +41247,7 @@ var PriorityQueue2 = class {
 };
 
 // node_modules/p-queue/dist/index.js
-var PQueue = class extends import_index8.default {
+var PQueue = class extends import_index9.default {
   static {
     __name(this, "PQueue");
   }
@@ -26482,14 +41322,14 @@ var PQueue = class extends import_index8.default {
   get #isIntervalPaused() {
     const now = Date.now();
     if (this.#intervalId === void 0) {
-      const delay = this.#intervalEnd - now;
-      if (delay < 0) {
+      const delay3 = this.#intervalEnd - now;
+      if (delay3 < 0) {
         this.#intervalCount = this.#carryoverConcurrencyCount ? this.#pending : 0;
       } else {
         if (this.#timeoutId === void 0) {
           this.#timeoutId = setTimeout(() => {
             this.#onResumeInterval();
-          }, delay);
+          }, delay3);
         }
         return true;
       }
@@ -26905,7 +41745,7 @@ __name(cache2, "cache");
 
 // node_modules/@multiformats/dns/dist/src/dns.js
 var DEFAULT_ANSWER_CACHE_SIZE = 1e3;
-var DNS2 = class {
+var DNS3 = class {
   static {
     __name(this, "DNS");
   }
@@ -26981,7 +41821,7 @@ var RecordType;
   RecordType2[RecordType2["AAAA"] = 28] = "AAAA";
 })(RecordType || (RecordType = {}));
 function dns(init = {}) {
-  return new DNS2(init);
+  return new DNS3(init);
 }
 __name(dns, "dns");
 
@@ -28278,9 +43118,9 @@ var CompoundContentRouting = class {
     if (this.routers.length === 0) {
       throw new NoContentRoutersError("No content routers available");
     }
-    const self = this;
+    const self2 = this;
     const seen = new PeerSet();
-    for await (const peer of src_default(...self.routers.filter((router) => router.findProviders instanceof Function).map((router) => router.findProviders(key, options)))) {
+    for await (const peer of src_default(...self2.routers.filter((router) => router.findProviders instanceof Function).map((router) => router.findProviders(key, options)))) {
       if (peer == null) {
         continue;
       }
@@ -28391,12 +43231,12 @@ var DefaultPeerRouting = class {
     if (id.toString() === this.peerId.toString()) {
       throw new QueriedForSelfError("Should not try to find self");
     }
-    const self = this;
+    const self2 = this;
     const source = src_default(...this.routers.filter((router) => router.findPeer instanceof Function).map((router) => (async function* () {
       try {
         yield await router.findPeer(id, options);
       } catch (err) {
-        self.log.error("router failed to find peer - %e", err);
+        self2.log.error("router failed to find peer - %e", err);
       }
     })()));
     for await (const peer of source) {
@@ -28419,20 +43259,20 @@ var DefaultPeerRouting = class {
     if (this.routers.length === 0) {
       throw new NoPeerRoutersError("No peer routers available");
     }
-    const self = this;
+    const self2 = this;
     const seen = createScalableCuckooFilter(1024);
     for await (const peer of parallel((async function* () {
-      const source = src_default(...self.routers.filter((router) => router.getClosestPeers instanceof Function).map((router) => router.getClosestPeers(key, options)));
+      const source = src_default(...self2.routers.filter((router) => router.getClosestPeers instanceof Function).map((router) => router.getClosestPeers(key, options)));
       for await (let peer2 of source) {
         yield async () => {
           if (peer2.multiaddrs.length === 0) {
             try {
-              peer2 = await self.findPeer(peer2.id, {
+              peer2 = await self2.findPeer(peer2.id, {
                 ...options,
                 useCache: false
               });
             } catch (err) {
-              self.log.error("could not find peer multiaddrs - %e", err);
+              self2.log.error("could not find peer multiaddrs - %e", err);
               return;
             }
           }
@@ -29116,7 +43956,7 @@ async function select(stream, protocols, options = {}) {
   if (protocols.length === 0) {
     throw new Error("At least one protocol must be specified");
   }
-  const log3 = stream.log.newScope("mss:select");
+  const log4 = stream.log.newScope("mss:select");
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH
@@ -29125,29 +43965,29 @@ async function select(stream, protocols, options = {}) {
     const protocol2 = protocols[i2];
     let response;
     if (i2 === 0) {
-      log3.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol2);
+      log4.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol2);
       const p1 = fromString2(`${PROTOCOL_ID}
 `);
       const p2 = fromString2(`${protocol2}
 `);
       await lp.writeV([p1, p2], options);
-      log3.trace("reading multistream-select header");
+      log4.trace("reading multistream-select header");
       response = await readString(lp, options);
-      log3.trace('read "%s"', response);
+      log4.trace('read "%s"', response);
       if (response !== PROTOCOL_ID) {
-        log3.error("did not read multistream-select header from response");
+        log4.error("did not read multistream-select header from response");
         break;
       }
     } else {
-      log3.trace('write "%s"', protocol2);
+      log4.trace('write "%s"', protocol2);
       await lp.write(fromString2(`${protocol2}
 `), options);
     }
-    log3.trace("reading protocol response");
+    log4.trace("reading protocol response");
     response = await readString(lp, options);
-    log3.trace('read "%s"', response);
+    log4.trace('read "%s"', response);
     if (response === protocol2) {
-      log3.trace('selected "%s" after negotiation', response);
+      log4.trace('selected "%s" after negotiation', response);
       lp.unwrap();
       return protocol2;
     }
@@ -29369,7 +44209,7 @@ decode8.fromReader = (reader, options) => {
 // node_modules/@libp2p/multistream-select/dist/src/handle.js
 async function handle(stream, protocols, options = {}) {
   protocols = Array.isArray(protocols) ? protocols : [protocols];
-  const log3 = stream.log.newScope("mss:handle");
+  const log4 = stream.log.newScope("mss:handle");
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
@@ -29377,35 +44217,35 @@ async function handle(stream, protocols, options = {}) {
     // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
   });
   while (true) {
-    log3.trace("reading incoming string");
+    log4.trace("reading incoming string");
     const protocol2 = await readString(lp, options);
-    log3.trace('read "%s"', protocol2);
+    log4.trace('read "%s"', protocol2);
     if (protocol2 === PROTOCOL_ID) {
-      log3.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol2);
+      log4.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol2);
       await lp.write(fromString2(`${PROTOCOL_ID}
 `), options);
-      log3.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol2);
+      log4.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol2);
       continue;
     }
     if (protocols.includes(protocol2)) {
-      log3.trace('respond with "%s" for "%s"', protocol2, protocol2);
+      log4.trace('respond with "%s" for "%s"', protocol2, protocol2);
       await lp.write(fromString2(`${protocol2}
 `), options);
-      log3.trace('responded with "%s" for "%s"', protocol2, protocol2);
+      log4.trace('responded with "%s" for "%s"', protocol2, protocol2);
       lp.unwrap();
       return protocol2;
     }
     if (protocol2 === "ls") {
       const protos = new Uint8ArrayList(...protocols.map((p2) => encode7.single(fromString2(`${p2}
 `))), fromString2("\n"));
-      log3.trace('respond with "%s" for %s', protocols, protocol2);
+      log4.trace('respond with "%s" for %s', protocols, protocol2);
       await lp.write(protos, options);
-      log3.trace('responded with "%s" for %s', protocols, protocol2);
+      log4.trace('responded with "%s" for %s', protocols, protocol2);
       continue;
     }
-    log3.trace('respond with "na" for "%s"', protocol2);
+    log4.trace('respond with "na" for "%s"', protocol2);
     await lp.write(fromString2("na\n"), options);
-    log3('responded with "na" for "%s"', protocol2);
+    log4('responded with "na" for "%s"', protocol2);
   }
 }
 __name(handle, "handle");
@@ -30394,9 +45234,9 @@ function bootstrap(init) {
 __name(bootstrap, "bootstrap");
 
 // node_modules/@libp2p/kad-dht/node_modules/interface-datastore/dist/src/key.js
-var pathSepS3 = "/";
-var pathSepB3 = new TextEncoder().encode(pathSepS3);
-var pathSep3 = pathSepB3[0];
+var pathSepS4 = "/";
+var pathSepB4 = new TextEncoder().encode(pathSepS4);
+var pathSep4 = pathSepB4[0];
 
 // node_modules/@libp2p/kad-dht/dist/src/utils.js
 var PK_PREFIX = fromString2("/pk/");
@@ -30636,7 +45476,7 @@ __name(pubsubPeerDiscovery, "pubsubPeerDiscovery");
 var SHARDING_FN = "SHARDING";
 
 // node_modules/datastore-core/dist/src/sharding.js
-var shardKey = new Key2(SHARDING_FN);
+var shardKey = new Key3(SHARDING_FN);
 
 // node_modules/datastore-core/node_modules/@libp2p/logger/dist/src/index.js
 src_default2.formatters.b = (v) => {
@@ -30720,7 +45560,7 @@ function notEmpty2(str) {
 __name(notEmpty2, "notEmpty");
 
 // node_modules/datastore-core/dist/src/tiered.js
-var log2 = logger2("datastore:core:tiered");
+var log3 = logger2("datastore:core:tiered");
 
 // node_modules/idb/build/index.js
 var instanceOfAny = /* @__PURE__ */ __name((object, constructors) => constructors.some((c2) => object instanceof c2), "instanceOfAny");
@@ -30982,10 +45822,10 @@ replaceTraps((oldTraps) => ({
 }));
 
 // node_modules/datastore-idb/node_modules/interface-datastore/dist/src/key.js
-var pathSepS4 = "/";
-var pathSepB4 = new TextEncoder().encode(pathSepS4);
-var pathSep4 = pathSepB4[0];
-var Key4 = class _Key {
+var pathSepS5 = "/";
+var pathSepB5 = new TextEncoder().encode(pathSepS5);
+var pathSep5 = pathSepB5[0];
+var Key5 = class _Key {
   static {
     __name(this, "Key");
   }
@@ -31008,7 +45848,7 @@ var Key4 = class _Key {
     if (clean5) {
       this.clean();
     }
-    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep4) {
+    if (this._buf.byteLength === 0 || this._buf[0] !== pathSep5) {
       throw new Error("Invalid key");
     }
   }
@@ -31050,7 +45890,7 @@ var Key4 = class _Key {
    * ```
    */
   static withNamespaces(list) {
-    return new _Key(list.join(pathSepS4));
+    return new _Key(list.join(pathSepS5));
   }
   /**
    * Returns a randomly (uuid) generated key.
@@ -31085,15 +45925,15 @@ var Key4 = class _Key {
    */
   clean() {
     if (this._buf == null || this._buf.byteLength === 0) {
-      this._buf = pathSepB4;
+      this._buf = pathSepB5;
     }
-    if (this._buf[0] !== pathSep4) {
+    if (this._buf[0] !== pathSep5) {
       const bytes = new Uint8Array(this._buf.byteLength + 1);
-      bytes.fill(pathSep4, 0, 1);
+      bytes.fill(pathSep5, 0, 1);
       bytes.set(this._buf, 1);
       this._buf = bytes;
     }
-    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep4) {
+    while (this._buf.byteLength > 1 && this._buf[this._buf.byteLength - 1] === pathSep5) {
       this._buf = this._buf.subarray(0, -1);
     }
   }
@@ -31169,7 +46009,7 @@ var Key4 = class _Key {
    * ```
    */
   list() {
-    return this.toString().split(pathSepS4).slice(1);
+    return this.toString().split(pathSepS5).slice(1);
   }
   /**
    * Returns the "type" of this key (value of last namespace).
@@ -31183,7 +46023,7 @@ var Key4 = class _Key {
    * ```
    */
   type() {
-    return namespaceType3(this.baseNamespace());
+    return namespaceType4(this.baseNamespace());
   }
   /**
    * Returns the "name" of this key (field of last namespace).
@@ -31197,7 +46037,7 @@ var Key4 = class _Key {
    * ```
    */
   name() {
-    return namespaceValue3(this.baseNamespace());
+    return namespaceValue4(this.baseNamespace());
   }
   /**
    * Returns an "instance" of this type key (appends value to namespace).
@@ -31227,8 +46067,8 @@ var Key4 = class _Key {
    */
   path() {
     let p2 = this.parent().toString();
-    if (!p2.endsWith(pathSepS4)) {
-      p2 += pathSepS4;
+    if (!p2.endsWith(pathSepS5)) {
+      p2 += pathSepS5;
     }
     p2 += this.type();
     return new _Key(p2);
@@ -31247,9 +46087,9 @@ var Key4 = class _Key {
   parent() {
     const list = this.list();
     if (list.length === 1) {
-      return new _Key(pathSepS4);
+      return new _Key(pathSepS5);
     }
-    return new _Key(list.slice(0, -1).join(pathSepS4));
+    return new _Key(list.slice(0, -1).join(pathSepS5));
   }
   /**
    * Returns the `child` Key of this Key.
@@ -31264,9 +46104,9 @@ var Key4 = class _Key {
    * ```
    */
   child(key) {
-    if (this.toString() === pathSepS4) {
+    if (this.toString() === pathSepS5) {
       return key;
-    } else if (key.toString() === pathSepS4) {
+    } else if (key.toString() === pathSepS5) {
       return this;
     }
     return new _Key(this.toString() + key.toString(), false);
@@ -31322,26 +46162,26 @@ var Key4 = class _Key {
    * @returns {Key}
    */
   concat(...keys) {
-    return _Key.withNamespaces([...this.namespaces(), ...flatten3(keys.map((key) => key.namespaces()))]);
+    return _Key.withNamespaces([...this.namespaces(), ...flatten4(keys.map((key) => key.namespaces()))]);
   }
 };
-function namespaceType3(ns) {
+function namespaceType4(ns) {
   const parts = ns.split(":");
   if (parts.length < 2) {
     return "";
   }
   return parts.slice(0, -1).join(":");
 }
-__name(namespaceType3, "namespaceType");
-function namespaceValue3(ns) {
+__name(namespaceType4, "namespaceType");
+function namespaceValue4(ns) {
   const parts = ns.split(":");
   return parts[parts.length - 1];
 }
-__name(namespaceValue3, "namespaceValue");
-function flatten3(arr) {
+__name(namespaceValue4, "namespaceValue");
+function flatten4(arr) {
   return [].concat(...arr);
 }
-__name(flatten3, "flatten");
+__name(flatten4, "flatten");
 
 // node_modules/datastore-idb/node_modules/interface-store/dist/src/errors.js
 var OpenFailedError2 = class _OpenFailedError extends Error {
@@ -31584,7 +46424,7 @@ var IDBDatastore = class extends BaseDatastore {
       if (q.offset != null && index < q.offset) {
         continue;
       }
-      const k = new Key4(key.toString());
+      const k = new Key5(key.toString());
       let value2;
       try {
         value2 = await this.get(k, options);
@@ -31607,6 +46447,176 @@ var IDBDatastore = class extends BaseDatastore {
   }
 };
 
+// node_modules/@libp2p/ping/node_modules/race-signal/dist/src/index.js
+function defaultTranslate6(signal) {
+  return signal.reason;
+}
+__name(defaultTranslate6, "defaultTranslate");
+async function raceSignal7(promise, signal, opts) {
+  if (signal == null) {
+    return promise;
+  }
+  const translateError = opts?.translateError ?? defaultTranslate6;
+  if (signal.aborted) {
+    promise.catch(() => {
+    });
+    return Promise.reject(translateError(signal));
+  }
+  let listener;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((resolve, reject) => {
+        listener = /* @__PURE__ */ __name(() => {
+          reject(translateError(signal));
+        }, "listener");
+        signal.addEventListener("abort", listener);
+      })
+    ]);
+  } finally {
+    if (listener != null) {
+      signal.removeEventListener("abort", listener);
+    }
+  }
+}
+__name(raceSignal7, "raceSignal");
+
+// node_modules/@libp2p/ping/dist/src/constants.js
+var PING_LENGTH2 = 32;
+var PROTOCOL_VERSION2 = "1.0.0";
+var PROTOCOL_NAME2 = "ping";
+var PROTOCOL_PREFIX2 = "ipfs";
+var TIMEOUT = 1e4;
+var MAX_INBOUND_STREAMS = 2;
+var MAX_OUTBOUND_STREAMS = 1;
+
+// node_modules/@libp2p/ping/dist/src/ping.js
+var Ping = class {
+  static {
+    __name(this, "Ping");
+  }
+  protocol;
+  components;
+  started;
+  timeout;
+  maxInboundStreams;
+  maxOutboundStreams;
+  runOnLimitedConnection;
+  constructor(components, init = {}) {
+    this.components = components;
+    this.started = false;
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX2}/${PROTOCOL_NAME2}/${PROTOCOL_VERSION2}`;
+    this.timeout = init.timeout ?? TIMEOUT;
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS;
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? true;
+    this.handlePing = this.handlePing.bind(this);
+  }
+  [Symbol.toStringTag] = "@libp2p/ping";
+  [serviceCapabilities] = [
+    "@libp2p/ping"
+  ];
+  async start() {
+    await this.components.registrar.handle(this.protocol, this.handlePing, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnLimitedConnection: this.runOnLimitedConnection
+    });
+    this.started = true;
+  }
+  async stop() {
+    await this.components.registrar.unhandle(this.protocol);
+    this.started = false;
+  }
+  isStarted() {
+    return this.started;
+  }
+  /**
+   * A handler to register with Libp2p to process ping messages
+   */
+  async handlePing(stream, connection) {
+    const log4 = stream.log.newScope("ping");
+    log4.trace("ping from %p", connection.remotePeer);
+    const signal = AbortSignal.timeout(this.timeout);
+    setMaxListeners(Infinity, signal);
+    signal.addEventListener("abort", () => {
+      stream.abort(new TimeoutError("Ping timed out"));
+    });
+    const start2 = Date.now();
+    for await (const buf of stream) {
+      if (stream.status !== "open") {
+        log4("stream status changed to %s", stream.status);
+        break;
+      }
+      if (!stream.send(buf)) {
+        log4("waiting for stream to drain");
+        await pEvent(stream, "drain", {
+          rejectionEvents: [
+            "close"
+          ],
+          signal
+        });
+        log4("stream drained");
+      }
+    }
+    log4("ping from %p complete in %dms", connection.remotePeer, Date.now() - start2);
+    await stream.close({
+      signal
+    });
+  }
+  /**
+   * Ping a given peer and wait for its response, getting the operation latency.
+   */
+  async ping(peer, options = {}) {
+    const data = randomBytes2(PING_LENGTH2);
+    const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
+      runOnLimitedConnection: this.runOnLimitedConnection,
+      ...options
+    });
+    const log4 = stream.log.newScope("ping");
+    try {
+      const start2 = Date.now();
+      const finished = Promise.withResolvers();
+      const received = new Uint8ArrayList();
+      const onPong = /* @__PURE__ */ __name((evt) => {
+        received.append(evt.data);
+        if (received.byteLength === PING_LENGTH2) {
+          stream.removeEventListener("message", onPong);
+          const rtt = Date.now() - start2;
+          Promise.all([
+            stream.closeRead(options)
+          ]).then(() => {
+            if (!equals3(data, received.subarray())) {
+              throw new ProtocolError(`Received wrong ping ack after ${rtt}ms`);
+            } else {
+              finished.resolve(rtt);
+            }
+          }).catch((err) => {
+            stream.abort(err);
+            finished.reject(err);
+          });
+        }
+      }, "onPong");
+      stream.addEventListener("message", onPong);
+      stream.send(data);
+      await stream.close(options);
+      return await raceSignal7(finished.promise, options.signal);
+    } catch (err) {
+      log4.error("error while pinging %o - %e", peer, err);
+      stream?.abort(err);
+      throw err;
+    } finally {
+      stream?.close();
+    }
+  }
+};
+
+// node_modules/@libp2p/ping/dist/src/index.js
+function ping(init = {}) {
+  return (components) => new Ping(components, init);
+}
+__name(ping, "ping");
+
 // docs/constants.js
 var PUBSUB_PEER_DISCOVERY = "discovery";
 
@@ -31622,7 +46632,7 @@ var FaultTolerance2;
 var pubSubSymbol = Symbol.for("@libp2p/pubsub");
 
 // node_modules/@libp2p/floodsub/node_modules/eventemitter3/index.mjs
-var import_index11 = __toESM(require_eventemitter32(), 1);
+var import_index12 = __toESM(require_eventemitter32(), 1);
 
 // node_modules/@libp2p/floodsub/node_modules/p-timeout/index.js
 var TimeoutError3 = class _TimeoutError extends Error {
@@ -31760,7 +46770,7 @@ var PriorityQueue3 = class {
 };
 
 // node_modules/@libp2p/floodsub/node_modules/p-queue/dist/index.js
-var PQueue2 = class extends import_index11.default {
+var PQueue2 = class extends import_index12.default {
   static {
     __name(this, "PQueue");
   }
@@ -31854,8 +46864,8 @@ var PQueue2 = class extends import_index11.default {
   get #isIntervalPaused() {
     const now = Date.now();
     if (this.#intervalId === void 0) {
-      const delay = this.#intervalEnd - now;
-      if (delay < 0) {
+      const delay3 = this.#intervalEnd - now;
+      if (delay3 < 0) {
         if (this.#lastExecutionTime > 0) {
           const timeSinceLastExecution = now - this.#lastExecutionTime;
           if (timeSinceLastExecution < this.#interval) {
@@ -31865,19 +46875,19 @@ var PQueue2 = class extends import_index11.default {
         }
         this.#intervalCount = this.#carryoverIntervalCount ? this.#pending : 0;
       } else {
-        this.#createIntervalTimeout(delay);
+        this.#createIntervalTimeout(delay3);
         return true;
       }
     }
     return false;
   }
-  #createIntervalTimeout(delay) {
+  #createIntervalTimeout(delay3) {
     if (this.#timeoutId !== void 0) {
       return;
     }
     this.#timeoutId = setTimeout(() => {
       this.#onResumeInterval();
-    }, delay);
+    }, delay3);
   }
   #clearIntervalTimer() {
     if (this.#intervalId) {
@@ -33829,36 +48839,66 @@ if (isLanKad) {
   ];
 }
 var libp2p = await createLibp2p({
+  store,
+  persistentPeerStore,
   addresses: {
     listen: [
-      // make a reservation on any discovered relays - this will let other
-      // peers use the relay to contact us
       "/p2p-circuit",
-      // create listeners for incoming WebRTC connection attempts on on all
-      // available Circuit Relay connections
       "/webrtc"
     ]
   },
   transports: [
-    // the WebSocket transport lets us dial a local relay
+    webRTCDirect(),
     webSockets(),
-    // support dialing/listening on WebRTC addresses
     webRTC(),
-    // support dialing/listening on Circuit Relay addresses
+    // circuitRelayTransport({
+    //   discoverRelays: 2
+    // })
     circuitRelayTransport()
   ],
-  // a connection encrypter is necessary to dial the relay
   connectionEncrypters: [noise()],
-  // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
-  connectionGater: {
-    denyDialMultiaddr: /* @__PURE__ */ __name(() => {
-      return false;
-    }, "denyDialMultiaddr")
+  connectionManager: {
+    minConnections: 20
+  },
+  transportManager: {
+    faultTolerance: FaultTolerance2.NO_FATAL
   },
   services: {
     identify: identify(),
-    pubsub: floodsub()
+    pubsub: floodsub(),
+    identifyPush: identifyPush(),
+    dcutr: dcutr(),
+    ping: ping()
+  },
+  connectionGater: {
+    denyDialPeer: /* @__PURE__ */ __name((currentPeerId) => {
+      return false;
+    }, "denyDialPeer"),
+    denyDialMultiaddr: /* @__PURE__ */ __name(async (currentPeerId) => {
+      return false;
+    }, "denyDialMultiaddr"),
+    denyOutboundConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
+      return false;
+    }, "denyOutboundConnection"),
+    denyOutboundEncryptedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
+      return false;
+    }, "denyOutboundEncryptedConnection"),
+    denyOutboundUpgradedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
+      return false;
+    }, "denyOutboundUpgradedConnection"),
+    denyInboundConnection: /* @__PURE__ */ __name((maConn) => {
+      return false;
+    }, "denyInboundConnection"),
+    denyInboundEncryptedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
+      return false;
+    }, "denyInboundEncryptedConnection"),
+    denyInboundUpgradedConnection: /* @__PURE__ */ __name((currentPeerId, maConn) => {
+      return false;
+    }, "denyInboundUpgradedConnection"),
+    filterMultiaddrForPeer: /* @__PURE__ */ __name(async (currentPeerId, maConn) => {
+      return true;
+    }, "filterMultiaddrForPeer")
   }
 });
 DOM.peerId().innerText = libp2p.peerId.toString();
@@ -33894,6 +48934,15 @@ libp2p.addEventListener("self:peer:update", (event) => {
   const multiaddrs = libp2p.getMultiaddrs().filter((ma) => WebRTC.matches(ma)).map((ma) => {
     const el = document.createElement("li");
     el.textContent = ma.toString();
+    el.onclick = (event2) => {
+      const button = event2.currentTarget;
+      navigator.clipboard.writeText(event2.currentTarget.textContent).then(() => {
+        button.classList.add("copied");
+        setTimeout(() => {
+          button.classList.remove("copied");
+        }, 2e3);
+      }).catch((err) => console.error(err.name, err.message));
+    };
     return el;
   });
   DOM.listeningAddressesList().replaceChildren(...multiaddrs);
@@ -33946,6 +48995,48 @@ libp2p.services.pubsub.addEventListener("message", (event) => {
 });
 /*! Bundled license information:
 
+reflect-metadata/Reflect.js:
+  (*! *****************************************************************************
+  Copyright (C) Microsoft. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+  this file except in compliance with the License. You may obtain a copy of the
+  License at http://www.apache.org/licenses/LICENSE-2.0
+  
+  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+  MERCHANTABLITY OR NON-INFRINGEMENT.
+  
+  See the Apache Version 2.0 License for specific language governing permissions
+  and limitations under the License.
+  ***************************************************************************** *)
+
+pvtsutils/build/index.js:
+  (*!
+   * MIT License
+   * 
+   * Copyright (c) 2017-2024 Peculiar Ventures, LLC
+   * 
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   * 
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   * 
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   * 
+   *)
+
 @noble/hashes/utils.js:
 @noble/hashes/utils.js:
   (*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
@@ -33966,5 +49057,87 @@ libp2p.services.pubsub.addEventListener("message", (event) => {
 
 @noble/ciphers/utils.js:
   (*! noble-ciphers - MIT License (c) 2023 Paul Miller (paulmillr.com) *)
+
+pvutils/build/utils.es.js:
+  (*!
+   Copyright (c) Peculiar Ventures, LLC
+  *)
+
+asn1js/build/index.es.js:
+  (*!
+   * Copyright (c) 2014, GMO GlobalSign
+   * Copyright (c) 2015-2022, Peculiar Ventures
+   * All rights reserved.
+   * 
+   * Author 2014-2019, Yury Strozhevsky
+   * 
+   * Redistribution and use in source and binary forms, with or without modification,
+   * are permitted provided that the following conditions are met:
+   * 
+   * * Redistributions of source code must retain the above copyright notice, this
+   *   list of conditions and the following disclaimer.
+   * 
+   * * Redistributions in binary form must reproduce the above copyright notice, this
+   *   list of conditions and the following disclaimer in the documentation and/or
+   *   other materials provided with the distribution.
+   * 
+   * * Neither the name of the copyright holder nor the names of its
+   *   contributors may be used to endorse or promote products derived from
+   *   this software without specific prior written permission.
+   * 
+   * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+   * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+   * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+   * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+   * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+   * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+   * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+   * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+   * 
+   *)
+
+tslib/tslib.es6.js:
+  (*! *****************************************************************************
+  Copyright (c) Microsoft Corporation.
+  
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
+  
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
+  ***************************************************************************** *)
+
+@peculiar/x509/build/x509.es.js:
+  (*!
+   * MIT License
+   * 
+   * Copyright (c) Peculiar Ventures. All rights reserved.
+   * 
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   * 
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   * 
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   * 
+   *)
 */
 //# sourceMappingURL=index.bundle.mjs.map
