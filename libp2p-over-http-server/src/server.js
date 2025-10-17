@@ -60,7 +60,7 @@ const addresses = process.env.PORT
       ]
     }
 
-const node = await createLibp2p({
+const libp2p = await createLibp2p({
   privateKey: peerId,
   addresses: addresses,
   transports: [
@@ -83,6 +83,24 @@ const node = await createLibp2p({
     http: http(),
     pingHTTP: pingHTTP()
   }
+})
+
+libp2p.addEventListener('peer:discovery', (evt) => {
+  console.log(`peer:discovery ${evt.detail.id.toString()}`)
+})
+
+// update peer connections
+libp2p.addEventListener('connection:open', (event) => {
+  console.log('connection:open', event.detail.remoteAddr.toString())
+})
+
+libp2p.addEventListener('connection:close', (event) => {
+  console.log('connection:close', event.detail.remoteAddr.toString())
+})
+
+// update listening addresses
+libp2p.addEventListener('self:peer:update', (event) => {
+  // console.log('self:peer:update', event.detail)
 })
 
 let clients = [];
@@ -111,7 +129,7 @@ app.get('/clients', (req, res) => {
 
 app.get('/peers', (req, res) => {
   let peers = []
-  for (let item of node.getPeers()) {
+  for (let item of libp2p.getPeers()) {
     peers.push(item.toString())
   }
 
@@ -119,9 +137,9 @@ app.get('/peers', (req, res) => {
     status: true,
     peers: peers,
     dhtMode: 'undefined',
-    MA: node.getMultiaddrs()
+    MA: libp2p.getMultiaddrs()
   });
-  // node.services.lanDHT.getMode()
+  // libp2p.services.lanDHT.getMode()
 });
 
 app.get('/events', (req, res) => {
@@ -151,7 +169,7 @@ app.get('/events', (req, res) => {
 
   clients.push(newClient);
 
-  console.log(`${clientId} - Connection opened`, clients.length);
+  console.log(`${clientId} - sse connection opened`, clients.length);
 
   req.on('close', () => {
     clients = clients.filter(client => client.id !== clientId);
@@ -159,23 +177,23 @@ app.get('/events', (req, res) => {
   });
 });
 
-node.services.http.handle(HTTP_TEST_PROTOCOL, {
+libp2p.services.http.handle(HTTP_TEST_PROTOCOL, {
   handler: (req) => {
     return new Response('Hello World!')
   }
 })
 
-const handled = canHandle(node)
+const handled = canHandle(libp2p)
 
 console.info('Relay listening on:')
 
-node.getMultiaddrs().forEach(ma => {
+libp2p.getMultiaddrs().forEach(ma => {
   pathNode.push(ma.toString())
   console.info(ma.toString())
 })
 
-app.get('/', async (req, res) => {
-  res.status(200).send(await htmlResponse({node, pathNode, PORT}));
+app.get('/{*splat}', async (req, res) => {
+  res.status(200).send(await htmlResponse({libp2p, pathNode, PORT}));
 })
 
 // Функция очистки всех данных
@@ -196,9 +214,9 @@ async function cleanup() {
   pathNode = [];
 
   // Останавливаем Libp2p узел
-  if (node) {
+  if (libp2p) {
     console.log('Остановка Libp2p узла...');
-    await node.stop();
+    await libp2p.stop();
     console.log('Libp2p узел остановлен');
   }
 

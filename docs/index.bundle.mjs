@@ -53194,7 +53194,6 @@ var libp2p = await createLibp2p({
       return false;
     }, "denyInboundUpgradedConnection"),
     filterMultiaddrForPeer: /* @__PURE__ */ __name(async (currentPeerId, maConn) => {
-      console.log("-------- filterMultiaddrForPeer --------", currentPeerId.toString(), maConn);
       return true;
     }, "filterMultiaddrForPeer")
   }

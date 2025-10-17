@@ -207,7 +207,7 @@ const libp2p = await createLibp2p({
       return false
     },
     filterMultiaddrForPeer: async (currentPeerId, maConn) => {
-      console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
+      // console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
       return true
     }
   }

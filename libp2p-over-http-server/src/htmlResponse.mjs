@@ -1,6 +1,6 @@
 import process from "node:process";
 
-export const htmlResponse = async ({node, pathNode, PORT}) => {
+export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
 
     return `<!DOCTYPE html>
 <html lang="ru">
@@ -49,7 +49,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
         
         .card {
@@ -272,7 +272,17 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             <h1>Relay Node</h1>
             <p>Real-time information and monitoring dashboard</p>
         </div>
-        
+          <div class="card">
+            <h3>📡 Bootstrap Address</h3>
+            <div class="info-item">
+                <span class="info-label">Primary Address:</span>
+                <div class="bootstrap-address">
+                    <span class="info-value" id="primaryAddress">${pathNode.filter(item => item.includes('/ws'))}</span>
+                    <button class="copy-btn" data-id="primaryAddress">Copy</button>
+                </div>
+            </div>
+            <div class="refresh-info">Use this address to connect other nodes to this relay</div>
+        </div>
         <div class="dashboard">
             <div class="card">
                 <h3>🆔 Node Identity</h3>
@@ -280,7 +290,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                     <div class="info-item">
                         <span class="info-label">Peer ID:</span>
                         <div class="container_peer_id">
-                            <span class="info-value" id="peerId">${node.peerId.publicKey.toString()}</span>
+                            <span class="info-value" id="peerId">${libp2p.peerId.publicKey.toString()}</span>
                             <button class="copy-btn" data-id="peerId">Copy</button>
                         </div>
                     </div>
@@ -305,7 +315,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             <div class="card">
                 <h3>🌐 Network Addresses</h3>
                 <div class="info-grid" id="addressesList">
-                    ${node.getMultiaddrs().map((addr, index) =>
+                    ${libp2p.getMultiaddrs().map((addr, index) =>
         `<div class="info-item">
                             <span class="info-label">Address ${index + 1}:</span>
                             <span class="info-value address-item">${addr.toString()}</span>
@@ -318,7 +328,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                 <h3>📊 Node Statistics</h3>
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-value" id="peersCount">${node.getPeers().length}</div>
+                        <div class="stat-value" id="peersCount">${libp2p.getPeers().length}</div>
                         <div class="stat-label">Connected Peers</div>
                     </div>
                     <div class="stat-item">
@@ -326,7 +336,7 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                         <div class="stat-label">SSE Clients</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value" id="dhtMode">${node.services.lanDHT?.getMode() || 'Unknown'}</div>
+                        <div class="stat-value" id="dhtMode">${libp2p.services.lanDHT?.getMode() || 'Unknown'}</div>
                         <div class="stat-label">DHT Mode</div>
                     </div>
                     <div class="stat-item">
@@ -411,25 +421,13 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
                 <button class="btn" onclick="exportNodeInfo()">💾 Export Node Info</button>
             </div>
             <div class="peers-list" id="peersList">
-                ${node.getPeers().length > 0
-        ? node.getPeers().map(peer =>
+                ${libp2p.getPeers().length > 0
+        ? libp2p.getPeers().map(peer =>
             `<div class="peer-item">${peer.toString()}</div>`
         ).join('')
         : '<div class="refresh-info">No peers connected</div>'
     }
             </div>
-        </div>
-        
-        <div class="card">
-            <h3>📡 Bootstrap Address</h3>
-            <div class="info-item">
-                <span class="info-label">Primary Address:</span>
-                <div class="bootstrap-address">
-                    <span class="info-value" id="primaryAddress">${pathNode.filter(item => item.includes('/ws'))}</span>
-                    <button class="copy-btn" data-id="primaryAddress">Copy</button>
-                </div>
-            </div>
-            <div class="refresh-info">Use this address to connect other nodes to this relay</div>
         </div>
     </div>
 
@@ -535,7 +533,6 @@ export const htmlResponse = async ({node, pathNode, PORT}) => {
             try {
                 const response = await fetch('/clients');
                 const clients = await response.json();
-                console.log('clients', clients)
                 document.getElementById('clientsCount').textContent = clients.length;
             } catch (error) {
                 document.getElementById('clientsCount').textContent = 'Сервер не найден';
