@@ -19,9 +19,15 @@ import {PUBSUB_PEER_DISCOVERY} from './constants.js'
 import {FaultTolerance} from '@libp2p/interface-transport'
 import {http} from "@libp2p/http";
 import {nodeServer} from "@libp2p/http-server";
+import { WebRTC, WebSockets } from '@multiformats/multiaddr-matcher'
+import { floodsub } from '@libp2p/floodsub'
 
-const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
-const port = 4839
+// const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
+// const port = 4839
+// const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com'
+
+const serverPeerId = '12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i'
+const port = 6835
 const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com'
 
 const store = new IDBDatastore('/fs', {
@@ -139,85 +145,124 @@ if (isLanKad) {
   ]
 }
 
-console.log('-------------- boot----------------- ', boot)
+
 const libp2p = await createLibp2p({
-  store,
-  persistentPeerStore,
   addresses: {
     listen: [
+      // make a reservation on any discovered relays - this will let other
+      // peers use the relay to contact us
       '/p2p-circuit',
+      // create listeners for incoming WebRTC connection attempts on on all
+      // available Circuit Relay connections
       '/webrtc'
     ]
   },
   transports: [
-    webRTCDirect(),
+    // the WebSocket transport lets us dial a local relay
     webSockets(),
+    // support dialing/listening on WebRTC addresses
     webRTC(),
-    circuitRelayTransport({
-      discoverRelays: 2
-    })
+    // support dialing/listening on Circuit Relay addresses
+    circuitRelayTransport()
   ],
+  // a connection encrypter is necessary to dial the relay
   connectionEncrypters: [noise()],
+  // a stream muxer is necessary to dial the relay
   streamMuxers: [yamux()],
-  connectionManager: {
-    minConnections: 20
-  },
-  transportManager: {
-    faultTolerance: FaultTolerance.NO_FATAL
+  connectionGater: {
+    denyDialMultiaddr: () => {
+      // by default we refuse to dial local addresses from browsers since they
+      // are usually sent by remote peers broadcasting undialable multiaddrs and
+      // cause errors to appear in the console but in this example we are
+      // explicitly connecting to a local node so allow all addresses
+      return false
+    }
   },
   services: {
     identify: identify(),
-    identifyPush: identifyPush(),
-    pubsub: gossipsub({
-      doPX: true,
-      allowPublishToZeroPeers: true,
-      emitSelf: true
-    }),
-    dcutr: dcutr(),
-    ping: ping(),
-  },
-  connectionGater: {
-    denyDialPeer: (currentPeerId) => {
-      // console.log('-------- denyDialPeer --------', currentPeerId.toString())
-      return false
-    },
-    denyDialMultiaddr: async (currentPeerId) => {
-      // console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
-      return false
-    },
-    denyOutboundConnection: (currentPeerId, maConn) => {
-      // console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
-      return false
-    },
-    denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
-      // console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
-      return false
-    },
-    denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
-      // console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
-      return false
-    },
-    denyInboundConnection: (maConn) => {
-      // console.log('-------- 1 denyInboundConnection 1 --------', maConn)
-      return false
-    },
-    denyInboundEncryptedConnection: (currentPeerId, maConn) => {
-      // console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
-      return false
-    },
-    denyInboundUpgradedConnection: (currentPeerId, maConn) => {
-      // console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
-      return false
-    },
-    filterMultiaddrForPeer: async (currentPeerId, maConn) => {
-      // console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
-      return true
-    }
+    pubsub: floodsub()
   }
 })
+// gossipsub({
+//   doPX: true,
+//   allowPublishToZeroPeers: true,
+//   emitSelf: true
+// })
+// console.log('-------------- boot----------------- ', boot)
+// const libp2p = await createLibp2p({
+//   store,
+//   persistentPeerStore,
+//   addresses: {
+//     listen: [
+//       '/p2p-circuit',
+//       '/webrtc'
+//     ]
+//   },
+//   transports: [
+//     webRTCDirect(),
+//     webSockets(),
+//     webRTC(),
+//     circuitRelayTransport({
+//       discoverRelays: 2
+//     })
+//   ],
+//   connectionEncrypters: [noise()],
+//   streamMuxers: [yamux()],
+//   connectionManager: {
+//     minConnections: 20
+//   },
+//   transportManager: {
+//     faultTolerance: FaultTolerance.NO_FATAL
+//   },
+//   services: {
+//     identify: identify(),
+//     identifyPush: identifyPush(),
+//     pubsub: floodsub(),
+//     dcutr: dcutr(),
+//     ping: ping(),
+//   },
+//   connectionGater: {
+//     denyDialPeer: (currentPeerId) => {
+//       // console.log('-------- denyDialPeer --------', currentPeerId.toString())
+//       return false
+//     },
+//     denyDialMultiaddr: async (currentPeerId) => {
+//       // console.log('-------- denyDialMultiaddr --------', currentPeerId.toString())
+//       return false
+//     },
+//     denyOutboundConnection: (currentPeerId, maConn) => {
+//       // console.log('-------- 1 denyOutboundConnection 1 --------', currentPeerId.toString(), maConn)
+//       return false
+//     },
+//     denyOutboundEncryptedConnection: (currentPeerId, maConn) => {
+//       // console.log('-------- 2 denyOutboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+//       return false
+//     },
+//     denyOutboundUpgradedConnection: (currentPeerId, maConn) => {
+//       // console.log('-------- 3 denyOutboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+//       return false
+//     },
+//     denyInboundConnection: (maConn) => {
+//       // console.log('-------- 1 denyInboundConnection 1 --------', maConn)
+//       return false
+//     },
+//     denyInboundEncryptedConnection: (currentPeerId, maConn) => {
+//       // console.log('-------- 2 denyInboundEncryptedConnection 2 --------', currentPeerId.toString(), maConn)
+//       return false
+//     },
+//     denyInboundUpgradedConnection: (currentPeerId, maConn) => {
+//       // console.log('-------- 3 denyInboundUpgradedConnection 3 --------', currentPeerId.toString(), maConn)
+//       return false
+//     },
+//     filterMultiaddrForPeer: async (currentPeerId, maConn) => {
+//       // console.log('-------- filterMultiaddrForPeer --------', currentPeerId.toString(), maConn)
+//       return true
+//     }
+//   }
+// })
 
-console.log('====== PUBSUB_PEER_DISCOVERY ======', PUBSUB_PEER_DISCOVERY)
-libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
+// console.log('====== PUBSUB_PEER_DISCOVERY ======', PUBSUB_PEER_DISCOVERY)
+// libp2p.services.pubsub.subscribe(PUBSUB_PEER_DISCOVERY)
 
 // const intervalId = setInterval(() => {
 //   const ma = multiaddr(isLocalhost
@@ -273,20 +318,13 @@ libp2p.addEventListener('connection:close', (event) => {
 
 // update listening addresses
 libp2p.addEventListener('self:peer:update', (event) => {
-  // console.log('self:peer:update', event.detail)
   const multiaddrs = libp2p.getMultiaddrs()
+      .filter(ma => WebRTC.matches(ma))
       .map((ma) => {
         const el = document.createElement('li')
         el.textContent = ma.toString()
-        el.onclick = (event) => {
-          navigator.clipboard.writeText(event.currentTarget.textContent)
-              .then(() => {
-              })
-              .catch((err) => console.error(err.name, err.message));
-        }
         return el
       })
-
   DOM.listeningAddressesList().replaceChildren(...multiaddrs)
 })
 
@@ -323,6 +361,7 @@ DOM.sendTopicMessageButton().onclick = async () => {
 setInterval(() => {
   const topic = DOM.subscribeTopicInput().value
   const peerList = libp2p.services.pubsub.getSubscribers(topic)
+  console.log('---------------', topic, peerList)
   peerList.map(peerId => {
       const el = document.createElement('li')
       el.textContent = peerId.toString()
