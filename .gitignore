@@ -39,3 +39,4 @@ node_modules
 ./_sandbox
 ./_sandbox_1
 **/index.bundle.mjs/**
+**/index.bundle.mjs.map/**
