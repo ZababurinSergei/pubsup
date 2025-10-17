@@ -1,26 +1,26 @@
-import {gossipsub} from '@chainsafe/libp2p-gossipsub'
-import {noise} from '@chainsafe/libp2p-noise'
-import {yamux} from '@chainsafe/libp2p-yamux'
-import {circuitRelayTransport} from '@libp2p/circuit-relay-v2'
-import {dcutr} from '@libp2p/dcutr'
-import {identify, identifyPush} from '@libp2p/identify'
-import {webRTC, webRTCDirect} from '@libp2p/webrtc'
-import {webSockets} from '@libp2p/websockets'
-import {multiaddr} from '@multiformats/multiaddr'
-import {createLibp2p} from 'libp2p'
-import {fromString, toString} from 'uint8arrays'
-import {bootstrap} from '@libp2p/bootstrap'
-import {kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper} from '@libp2p/kad-dht'
-import {persistentPeerStore} from '@libp2p/peer-store'
-import {pubsubPeerDiscovery} from '@libp2p/pubsub-peer-discovery'
-import {IDBDatastore} from 'datastore-idb'
-import {ping} from '@libp2p/ping'
-import {PUBSUB_PEER_DISCOVERY} from './constants.js'
-import {FaultTolerance} from '@libp2p/interface-transport'
-import {http} from "@libp2p/http";
-import {nodeServer} from "@libp2p/http-server";
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
+import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
+import { dcutr } from '@libp2p/dcutr'
+import { identify, identifyPush } from '@libp2p/identify'
+import { webRTC, webRTCDirect } from '@libp2p/webrtc'
+import { webSockets } from '@libp2p/websockets'
+import { multiaddr } from '@multiformats/multiaddr'
+import { createLibp2p } from 'libp2p'
+import { fromString, toString } from 'uint8arrays'
+import { bootstrap } from '@libp2p/bootstrap'
+import { kadDHT, removePrivateAddressesMapper, removePublicAddressesMapper } from '@libp2p/kad-dht'
+import { persistentPeerStore } from '@libp2p/peer-store'
+import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery'
+import { IDBDatastore } from 'datastore-idb'
+import { ping } from '@libp2p/ping'
+import { PUBSUB_PEER_DISCOVERY } from './constants.js'
+import { FaultTolerance } from '@libp2p/interface-transport'
+import { http } from "@libp2p/http";
+import { nodeServer } from "@libp2p/http-server";
 import { WebRTC, WebSockets } from '@multiformats/multiaddr-matcher'
 import { floodsub } from '@libp2p/floodsub'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 
 // const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
 // const port = 4839
@@ -188,8 +188,6 @@ if (isLanKad) {
 // })
 // console.log('-------------- boot----------------- ', boot)
 const libp2p = await createLibp2p({
-  store,
-  persistentPeerStore,
   addresses: {
     listen: [
       '/p2p-circuit',
@@ -200,9 +198,6 @@ const libp2p = await createLibp2p({
     webRTCDirect(),
     webSockets(),
     webRTC(),
-    // circuitRelayTransport({
-    //   discoverRelays: 2
-    // })
     circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],

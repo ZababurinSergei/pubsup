@@ -48851,9 +48851,6 @@ var libp2p = await createLibp2p({
     webRTCDirect(),
     webSockets(),
     webRTC(),
-    // circuitRelayTransport({
-    //   discoverRelays: 2
-    // })
     circuitRelayTransport()
   ],
   connectionEncrypters: [noise()],
