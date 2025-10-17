@@ -94,11 +94,8 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         .info-value {
             font-family: 'Courier New', monospace;
             background: #f7fafc;
-            // padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.9em;
-            // word-break: break-all;
-            // max-width: 60%;
             text-align: right;
             display: flex;
             flex-direction: row;
@@ -153,13 +150,60 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         
         .peer-item {
             background: #f7fafc;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 6px;
+            padding: 15px;
+            margin: 8px 0;
+            border-radius: 8px;
             border-left: 4px solid #4299e1;
             font-family: 'Courier New', monospace;
             font-size: 0.85em;
             word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .peer-info {
+            flex: 1;
+            word-break: break-all;
+        }
+        
+        .peer-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .peer-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75em;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .peer-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .peer-btn-info {
+            background: #38a169;
+        }
+        
+        .peer-btn-info:hover {
+            background: #2f855a;
+        }
+        
+        .peer-btn-danger {
+            background: #e53e3e;
+        }
+        
+        .peer-btn-danger:hover {
+            background: #c53030;
         }
         
         .actions {
@@ -191,6 +235,22 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         
         .btn-secondary:hover {
             background: #4a5568;
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        .btn-success {
+            background: #38a169;
+        }
+        
+        .btn-success:hover {
+            background: #2f855a;
         }
         
         .stats-grid {
@@ -228,8 +288,80 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         
         .full-width {
             grid-column: 1 / -1;
-              margin-bottom: 20px;
-    }
+            margin-bottom: 20px;
+        }
+        
+        .peer-management {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .peer-form {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .response-area {
+            margin-top: 15px;
+            padding: 10px;
+            background: #edf2f7;
+            border-radius: 6px;
+            border-left: 4px solid #4299e1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .response-success {
+            border-left-color: #48bb78;
+            background: #f0fff4;
+        }
+        
+        .response-error {
+            border-left-color: #f56565;
+            background: #fff5f5;
+        }
+        
+        .hidden {
+            display: none;
+        }
         
         @media (max-width: 768px) {
             .dashboard {
@@ -249,6 +381,25 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             .info-value {
                 max-width: 100%;
                 text-align: left;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .peer-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .peer-actions {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
         
@@ -272,7 +423,8 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             <h1>Relay Node</h1>
             <p>Real-time information and monitoring dashboard</p>
         </div>
-          <div class="card">
+        
+        <div class="card">
             <h3>📡 Bootstrap Address</h3>
             <div class="info-item">
                 <span class="info-label">Primary Address:</span>
@@ -283,7 +435,9 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             </div>
             <div class="refresh-info">Use this address to connect other nodes to this relay</div>
         </div>
+        
         <div class="dashboard">
+            <!-- Остальные карточки остаются без изменений -->
             <div class="card">
                 <h3>🆔 Node Identity</h3>
                 <div class="info-grid">
@@ -394,37 +548,105 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 </div>
             </div>
             
-             <div class="card">
-            <h3>📝 Node Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Start Time:</span>
-                    <span class="info-value" id="startTime">${new Date().toLocaleString()}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Environment:</span>
-                    <span class="info-value">${process.env.NODE_ENV || 'development'}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Version:</span>
-                    <span class="info-value" id="libp2pVersion">Loading...</span>
+            <div class="card">
+                <h3>📝 Node Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Start Time:</span>
+                        <span class="info-value" id="startTime">${new Date().toLocaleString()}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Environment:</span>
+                        <span class="info-value">${process.env.NODE_ENV || 'development'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Version:</span>
+                        <span class="info-value" id="libp2pVersion">Loading...</span>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
         
         <div class="card full-width">
             <h3>👥 Connected Peers</h3>
             <div class="actions">
-                <button class="btn" onclick="refreshPeers()">🔄 Refresh Peers</button>
-                <button class="btn btn-secondary" onclick="copyAllAddresses()">📋 Copy All Addresses</button>
-                <button class="btn" onclick="exportNodeInfo()">💾 Export Node Info</button>
+                <button class="btn" onclick="window.refreshPeers()">🔄 Refresh Peers</button>
+                <button class="btn btn-secondary" onclick="window.copyAllAddresses()">📋 Copy All Addresses</button>
+                <button class="btn" onclick="window.exportNodeInfo()">💾 Export Node Info</button>
+                <button class="btn btn-success" onclick="window.showPeerForm('getAllPeers')">📋 Get All Peers</button>
+                <button class="btn btn-danger" onclick="window.showPeerForm('disconnectAll')">🚫 Disconnect All</button>
             </div>
+            
+            <!-- Формы для управления пирами -->
+            <div class="peer-management">
+                <!-- Форма для получения всех пиров -->
+                <div id="getAllPeersForm" class="peer-form hidden">
+                    <h4>📋 Get All Peers</h4>
+                    <p>Get detailed information about all connected peers</p>
+                    <div class="form-actions">
+                        <button class="btn btn-success" onclick="window.getAllPeers()">Get All Peers</button>
+                        <button class="btn btn-secondary" onclick="window.hidePeerForm('getAllPeers')">Cancel</button>
+                    </div>
+                    <div id="getAllPeersResponse" class="response-area hidden"></div>
+                </div>
+                
+                <!-- Форма для получения информации о конкретном пире -->
+                <div id="getPeerForm" class="peer-form hidden">
+                    <h4>🔍 Get Peer Info</h4>
+                    <div class="form-group">
+                        <label class="form-label" for="peerIdInput">Peer ID:</label>
+                        <input type="text" id="peerIdInput" class="form-input" placeholder="Enter Peer ID...">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-success" onclick="window.getPeerInfo()">Get Peer Info</button>
+                        <button class="btn btn-secondary" onclick="window.hidePeerForm('getPeer')">Cancel</button>
+                    </div>
+                    <div id="getPeerResponse" class="response-area hidden"></div>
+                </div>
+                
+                <!-- Форма для отключения конкретного пира -->
+                <div id="disconnectPeerForm" class="peer-form hidden">
+                    <h4>🚫 Disconnect Peer</h4>
+                    <div class="form-group">
+                        <label class="form-label" for="disconnectPeerIdInput">Peer ID:</label>
+                        <input type="text" id="disconnectPeerIdInput" class="form-input" placeholder="Enter Peer ID to disconnect...">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-danger" onclick="window.disconnectPeer()">Disconnect Peer</button>
+                        <button class="btn btn-secondary" onclick="window.hidePeerForm('disconnectPeer')">Cancel</button>
+                    </div>
+                    <div id="disconnectPeerResponse" class="response-area hidden"></div>
+                </div>
+                
+                <!-- Форма для отключения всех пиров -->
+                <div id="disconnectAllForm" class="peer-form hidden">
+                    <h4>🚫 Disconnect All Peers</h4>
+                    <p><strong>Warning:</strong> This will disconnect all connected peers. This action cannot be undone.</p>
+                    <div class="form-actions">
+                        <button class="btn btn-danger" onclick="window.disconnectAllPeers()">Confirm Disconnect All</button>
+                        <button class="btn btn-secondary" onclick="window.hidePeerForm('disconnectAll')">Cancel</button>
+                    </div>
+                    <div id="disconnectAllResponse" class="response-area hidden"></div>
+                </div>
+            </div>
+            
             <div class="peers-list" id="peersList">
                 ${libp2p.getPeers().length > 0
-        ? libp2p.getPeers().map(peer =>
-            `<div class="peer-item">${peer.toString()}</div>`
-        ).join('')
+        ? libp2p.getPeers().map(peer => {
+            const peerIdString = peer.toString();
+            return `
+                    <div class="peer-item">
+                        <div class="peer-info">${peerIdString}</div>
+                        <div class="peer-actions">
+                            <button class="peer-btn peer-btn-info" onclick="window.getSpecificPeerInfo('${peerIdString}')">
+                                🔍 Get Info
+                            </button>
+                            <button class="peer-btn peer-btn-danger" onclick="window.disconnectSpecificPeer('${peerIdString}')">
+                                🚫 Disconnect
+                            </button>
+                        </div>
+                    </div>`;
+        }).join('')
         : '<div class="refresh-info">No peers connected</div>'
     }
             </div>
@@ -432,26 +654,208 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
     </div>
 
     <script type="module">
-        let nodeData = {};
-        let startTime = Date.now();
+        // Делаем функции глобальными, чтобы они были доступны из HTML
+        window.nodeData = {};
+        window.startTime = Date.now();
         
-        function copyAllAddresses() {
+        // Функции для управления формами
+        window.showPeerForm = function(formType) {
+            // Скрываем все формы
+            window.hideAllPeerForms();
+            
+            // Показываем нужную форму
+            switch(formType) {
+                case 'getAllPeers':
+                    document.getElementById('getAllPeersForm').classList.remove('hidden');
+                    break;
+                case 'getPeer':
+                    document.getElementById('getPeerForm').classList.remove('hidden');
+                    break;
+                case 'disconnectPeer':
+                    document.getElementById('disconnectPeerForm').classList.remove('hidden');
+                    break;
+                case 'disconnectAll':
+                    document.getElementById('disconnectAllForm').classList.remove('hidden');
+                    break;
+            }
+        };
+        
+        window.hidePeerForm = function(formType) {
+            const form = document.getElementById(formType + 'Form');
+            if (form) {
+                form.classList.add('hidden');
+            }
+            const response = document.getElementById(formType + 'Response');
+            if (response) {
+                response.classList.add('hidden');
+            }
+        };
+        
+        window.hideAllPeerForms = function() {
+            const forms = [
+                'getAllPeersForm',
+                'getPeerForm', 
+                'disconnectPeerForm',
+                'disconnectAllForm'
+            ];
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                if (form) form.classList.add('hidden');
+            });
+        };
+        
+        // Функции для работы с конкретными пирами (кнопки рядом с пиром)
+        window.getSpecificPeerInfo = function(peerId) {
+            document.getElementById('peerIdInput').value = peerId;
+            window.showPeerForm('getPeer');
+            window.getPeerInfo();
+        };
+        
+        window.disconnectSpecificPeer = function(peerId) {
+            document.getElementById('disconnectPeerIdInput').value = peerId;
+            window.showPeerForm('disconnectPeer');
+            window.disconnectPeer();
+        };
+        
+        // Функции для работы с API
+        window.getAllPeers = async function() {
+            try {
+                const response = await fetch('/peers');
+                const data = await response.json();
+                
+                const responseArea = document.getElementById('getAllPeersResponse');
+                responseArea.textContent = JSON.stringify(data, null, 2);
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-success';
+                
+                window.showNotification('Peers information retrieved successfully');
+            } catch (error) {
+                const responseArea = document.getElementById('getAllPeersResponse');
+                responseArea.textContent = 'Error: ' + error.message;
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-error';
+                
+                window.showNotification('Error getting peers information');
+            }
+        };
+        
+        window.getPeerInfo = async function() {
+            const peerId = document.getElementById('peerIdInput').value.trim();
+            if (!peerId) {
+                alert('Please enter a Peer ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(\`/peers/\${peerId}\`);
+                const data = await response.json();
+                
+                const responseArea = document.getElementById('getPeerResponse');
+                responseArea.textContent = JSON.stringify(data, null, 2);
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-success';
+                
+                window.showNotification(\`Peer \${peerId} information retrieved\`);
+            } catch (error) {
+                const responseArea = document.getElementById('getPeerResponse');
+                responseArea.textContent = 'Error: ' + error.message;
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-error';
+                
+                window.showNotification('Error getting peer information');
+            }
+        };
+        
+        window.disconnectPeer = async function() {
+            const peerId = document.getElementById('disconnectPeerIdInput').value.trim();
+            if (!peerId) {
+                alert('Please enter a Peer ID');
+                return;
+            }
+            
+            if (!confirm(\`Are you sure you want to disconnect peer \${peerId}?\`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(\`/peers/disconnect/\${peerId}\`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                const responseArea = document.getElementById('disconnectPeerResponse');
+                responseArea.textContent = JSON.stringify(data, null, 2);
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-success';
+                
+                window.showNotification(\`Peer \${peerId} disconnected successfully\`);
+                
+                // Обновляем список пиров
+                setTimeout(window.refreshPeers, 1000);
+            } catch (error) {
+                const responseArea = document.getElementById('disconnectPeerResponse');
+                responseArea.textContent = 'Error: ' + error.message;
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-error';
+                
+                window.showNotification('Error disconnecting peer');
+            }
+        };
+        
+        window.disconnectAllPeers = async function() {
+            if (!confirm('Are you sure you want to disconnect ALL peers? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/peers/disconnect-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                const responseArea = document.getElementById('disconnectAllResponse');
+                responseArea.textContent = JSON.stringify(data, null, 2);
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-success';
+                
+                window.showNotification('All peers disconnected successfully');
+                
+                // Обновляем список пиров
+                setTimeout(window.refreshPeers, 1000);
+            } catch (error) {
+                const responseArea = document.getElementById('disconnectAllResponse');
+                responseArea.textContent = 'Error: ' + error.message;
+                responseArea.classList.remove('hidden');
+                responseArea.className = 'response-area response-error';
+                
+                window.showNotification('Error disconnecting all peers');
+            }
+        };
+        
+        // Существующие функции (остаются без изменений)
+        window.copyAllAddresses = function() {
             const addresses = Array.from(document.querySelectorAll('.address-item'))
                 .map(item => item.textContent)
-                .join('\\n');
+                .join('\\\\n');
             
             if (addresses) {
                 navigator.clipboard.writeText(addresses).then(() => {
-                    showNotification('All addresses copied to clipboard!');
+                    window.showNotification('All addresses copied to clipboard!');
                 });
             }
-        }
+        };
         
-        function exportNodeInfo() {
+        window.exportNodeInfo = function() {
             const nodeInfo = {
                 peerId: document.getElementById('peerId').textContent,
                 addresses: Array.from(document.querySelectorAll('.address-item')).map(item => item.textContent),
-                peers: Array.from(document.querySelectorAll('.peer-item')).map(item => item.textContent),
+                peers: Array.from(document.querySelectorAll('.peer-item .peer-info')).map(item => item.textContent),
                 statistics: {
                     peersCount: document.getElementById('peersCount').textContent,
                     clientsCount: document.getElementById('clientsCount').textContent,
@@ -467,17 +871,16 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = \`node-info-${new Date().toISOString().split('T')[0]}.json\`;
+            link.download = \`node-info-\${new Date().toISOString().split('T')[0]}.json\`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
             
-            showNotification('Node information exported!');
-        }
+            window.showNotification('Node information exported!');
+        };
         
-        function showNotification(message) {
-            // Create notification element
+        window.showNotification = function(message) {
             const notification = document.createElement('div');
             notification.style.cssText = \`
                 position: fixed;
@@ -498,10 +901,10 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             setTimeout(() => {
                 notification.remove();
             }, 3000);
-        }
+        };
         
-        function formatUptime() {
-            const seconds = Math.floor((Date.now() - startTime) / 1000);
+        window.formatUptime = function() {
+            const seconds = Math.floor((Date.now() - window.startTime) / 1000);
             const days = Math.floor(seconds / 86400);
             const hours = Math.floor((seconds % 86400) / 3600);
             const minutes = Math.floor((seconds % 3600) / 60);
@@ -511,25 +914,24 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             if (hours > 0) return \`\${hours}h \${minutes}m \${secs}s\`;
             if (minutes > 0) return \`\${minutes}m \${secs}s\`;
             return \`\${secs}s\`;
-        }
+        };
         
-        // Data fetching functions
-        async function refreshPeers() {
+        window.refreshPeers = async function() {
             try {
                 const response = await fetch('/peers');
                 const data = await response.json();
-                nodeData = data;
-                updateDashboard();
-                showNotification('Peers list updated');
+                window.nodeData = data;
+                window.updateDashboard();
+                window.showNotification('Peers list updated');
             } catch (error) {
                 console.log('Error fetching peers:', error);
-                nodeData = {}
-                updateDashboard();
-                showNotification('Error updating peers list');
+                window.nodeData = {}
+                window.updateDashboard();
+                window.showNotification('Error updating peers list');
             }
-        }
+        };
         
-        async function refreshClients() {
+        window.refreshClients = async function() {
             try {
                 const response = await fetch('/clients');
                 const clients = await response.json();
@@ -538,45 +940,59 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 document.getElementById('clientsCount').textContent = 'Сервер не найден';
                 console.log('Error fetching clients:', error);
             }
-        }
+        };
         
-        function updateDashboard() {
-            if (nodeData.peers) {
-                document.getElementById('peersCount').textContent = nodeData.peers.length;
+        window.updateDashboard = function() {
+            if (window.nodeData.peers && Array.isArray(window.nodeData.peers)) {
+                document.getElementById('peersCount').textContent = window.nodeData.peers.length;
                 
                 const peersList = document.getElementById('peersList');
-                if (nodeData.peers.length > 0) {
-                    peersList.innerHTML = nodeData.peers.map(peer => 
-                        \`<div class="peer-item">\${peer}</div>\`
-                    ).join('');
+                if (window.nodeData.peers.length > 0) {
+                    // Обрабатываем данные из API - извлекаем peerId из объектов
+                    const peerItems = window.nodeData.peers.map(peer => {
+                        // Если peer - это объект, извлекаем peerId, иначе используем как строку
+                        const peerId = typeof peer === 'object' && peer.peerId ? peer.peerId : peer;
+                        const peerIdString = String(peerId);
+                        
+                        return \`<div class="peer-item">
+                            <div class="peer-info">\${peerIdString}</div>
+                            <div class="peer-actions">
+                                <button class="peer-btn peer-btn-info" onclick="window.getSpecificPeerInfo('\${peerIdString.replace(/'/g, "\\\\'")}')">
+                                    🔍 Get Info
+                                </button>
+                                <button class="peer-btn peer-btn-danger" onclick="window.disconnectSpecificPeer('\${peerIdString.replace(/'/g, "\\\\'")}')">
+                                    🚫 Disconnect
+                                </button>
+                            </div>
+                        </div>\`;
+                    }).join('');
+                    
+                    peersList.innerHTML = peerItems;
                 } else {
-                    peersList.innerHTML = '<div class="refresh-info">Сервер не найден</div>';
+                    peersList.innerHTML = '<div class="refresh-info">No peers connected</div>';
                 }
             } else {
-               document.getElementById('peersCount').textContent = 'Сервер не найден';
+                document.getElementById('peersCount').textContent = '0';
+                const peersList = document.getElementById('peersList');
+                peersList.innerHTML = '<div class="refresh-info">No peers connected</div>';
             }
             
-            // Update DHT mode
-            if (nodeData.dhtMode) {
-                document.getElementById('dhtMode').textContent = nodeData.dhtMode;
+            if (window.nodeData.dhtMode) {
+                document.getElementById('dhtMode').textContent = window.nodeData.dhtMode;
             }
-        }
+        };
         
         function getPageIdentifier() {
             let pageId = sessionStorage.getItem('pageIdentifier');
             if (!pageId) {
                 pageId = crypto.randomUUID();
                 sessionStorage.setItem('pageIdentifier', pageId);
-                
-                // Дополнительно логируем создание нового ID
                 console.log('New page session ID:', pageId);
             }
             return "/events?pageId=" + pageId;
         }
 
-        // SSE connection for real-time updates
         function setupEventSource() {
-    
             const url = getPageIdentifier();
             const events = new EventSource(url);
             
@@ -596,10 +1012,10 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
         
         document.addEventListener('DOMContentLoaded', function() {
             setupEventSource();
-            refreshClients();
-            refreshPeers();
-             
-                  // Utility functions
+            window.refreshClients();
+            window.refreshPeers();
+            
+            // Utility functions
             function copyToClipboard(event) {
                 const button = event.currentTarget
                 const element = document.getElementById(button.dataset.id);
@@ -619,8 +1035,6 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
                 });
             }
         
-            console.log('document.body.querySelector', document.body.querySelector('.copy-btn'))
-        
             const copyButtons = document.body.querySelectorAll('.copy-btn')
             copyButtons.forEach(item => {
                 item.addEventListener('click', copyToClipboard)
@@ -629,13 +1043,12 @@ export const htmlResponse = async ({libp2p, pathNode, PORT}) => {
             document.getElementById('libp2pVersion').textContent = '3.0.6';
             
             setInterval(() => {
-                document.getElementById('uptime').textContent = formatUptime();
+                document.getElementById('uptime').textContent = window.formatUptime();
             }, 1000);
             
-            // Refresh data every 30 seconds
             setInterval(() => {
-                refreshPeers();
-                refreshClients();
+                window.refreshPeers();
+                window.refreshClients();
             }, 3000);
         });
     </script>

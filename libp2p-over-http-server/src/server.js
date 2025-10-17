@@ -127,19 +127,203 @@ app.get('/clients', (req, res) => {
   res.json(clients.map((client) => client.id));
 });
 
-app.get('/peers', (req, res) => {
-  let peers = []
-  for (let item of libp2p.getPeers()) {
-    peers.push(item.toString())
-  }
+// Эндпоинт для отключения конкретного пира
+app.post('/peers/disconnect/:peerId', async (req, res) => {
+  try {
+    const { peerId } = req.params;
 
-  res.json({
-    status: true,
-    peers: peers,
-    dhtMode: 'undefined',
-    MA: libp2p.getMultiaddrs()
-  });
-  // libp2p.services.lanDHT.getMode()
+    if (!peerId) {
+      return res.status(400).json({
+        status: false,
+        error: 'Peer ID is required'
+      });
+    }
+
+    // Получаем все соединения
+    const connections = libp2p.getConnections();
+
+    // Находим соединения с указанным пиром
+    const peerConnections = connections.filter(conn =>
+        conn.remotePeer.toString() === peerId
+    );
+
+    if (peerConnections.length === 0) {
+      return res.status(404).json({
+        status: false,
+        error: `Peer ${peerId} not found or not connected`
+      });
+    }
+
+    // Закрываем все соединения с этим пиром
+    const closePromises = peerConnections.map(conn => conn.close());
+    await Promise.all(closePromises);
+
+    console.log(`Disconnected from peer: ${peerId}`);
+
+    res.json({
+      status: true,
+      message: `Successfully disconnected from peer ${peerId}`,
+      disconnectedConnections: peerConnections.length
+    });
+
+  } catch (error) {
+    console.error('Error disconnecting peer:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
+});
+
+// Эндпоинт для отключения всех пиров
+app.post('/peers/disconnect-all', async (req, res) => {
+  try {
+    // Получаем все активные соединения
+    const connections = libp2p.getConnections();
+
+    if (connections.length === 0) {
+      return res.json({
+        status: true,
+        message: 'No active connections to disconnect',
+        disconnectedCount: 0
+      });
+    }
+
+    // Собираем информацию о пирах перед отключением
+    const peerIds = [...new Set(connections.map(conn => conn.remotePeer.toString()))];
+
+    // Закрываем все соединения
+    const closePromises = connections.map(conn => conn.close());
+    await Promise.all(closePromises);
+
+    console.log(`Disconnected from all peers. Total connections: ${connections.length}, Unique peers: ${peerIds.length}`);
+
+    res.json({
+      status: true,
+      message: `Successfully disconnected from all peers`,
+      disconnectedConnections: connections.length,
+      disconnectedPeers: peerIds.length,
+      peerIds: peerIds
+    });
+
+  } catch (error) {
+    console.error('Error disconnecting all peers:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
+});
+
+// Эндпоинт для получения информации о конкретном пире
+app.get('/peers/:peerId', (req, res) => {
+  try {
+    const { peerId } = req.params;
+
+    if (!peerId) {
+      return res.status(400).json({
+        status: false,
+        error: 'Peer ID is required'
+      });
+    }
+
+    const connections = libp2p.getConnections();
+    const peerConnections = connections.filter(conn =>
+        conn.remotePeer.toString() === peerId
+    );
+
+    if (peerConnections.length === 0) {
+      return res.status(404).json({
+        status: false,
+        error: `Peer ${peerId} not found`
+      });
+    }
+
+    const peerInfo = {
+      peerId: peerId,
+      connectionCount: peerConnections.length,
+      connections: peerConnections.map(conn => ({
+        id: conn.id,
+        status: conn.status,
+        remoteAddr: conn.remoteAddr.toString(),
+        timeline: conn.timeline
+      })),
+      streams: peerConnections.flatMap(conn =>
+          conn.streams.map(stream => ({
+            id: stream.id,
+            protocol: stream.protocol,
+            direction: stream.direction
+          }))
+      )
+    };
+
+    res.json({
+      status: true,
+      peer: peerInfo
+    });
+
+  } catch (error) {
+    console.error('Error getting peer info:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
+});
+
+// Обновленный эндпоинт для получения списка всех пиров с детальной информацией
+app.get('/peers', (req, res) => {
+  try {
+    const connections = libp2p.getConnections();
+
+    // Группируем соединения по пирам
+    const peersMap = new Map();
+
+    connections.forEach(conn => {
+      const peerId = conn.remotePeer.toString();
+      if (!peersMap.has(peerId)) {
+        peersMap.set(peerId, []);
+      }
+      peersMap.get(peerId).push(conn);
+    });
+
+    const peers = Array.from(peersMap.entries()).map(([peerId, connections]) => {
+      const streams = connections.flatMap(conn => conn.streams);
+
+      return {
+        peerId: peerId,
+        connectionCount: connections.length,
+        connections: connections.map(conn => ({
+          id: conn.id,
+          status: conn.status,
+          remoteAddr: conn.remoteAddr.toString(),
+          timeline: conn.timeline
+        })),
+        streamCount: streams.length,
+        streams: streams.map(stream => ({
+          id: stream.id,
+          protocol: stream.protocol,
+          direction: stream.direction
+        }))
+      };
+    });
+
+    res.json({
+      status: true,
+      totalPeers: peers.length,
+      totalConnections: connections.length,
+      peers: peers,
+      dhtMode: 'undefined',
+      MA: libp2p.getMultiaddrs()
+    });
+
+  } catch (error) {
+    console.error('Error getting peers:', error);
+    res.status(500).json({
+      status: false,
+      error: error.message
+    });
+  }
 });
 
 app.get('/events', (req, res) => {
@@ -196,7 +380,7 @@ app.get('/{*splat}', async (req, res) => {
   res.status(200).send(await htmlResponse({libp2p, pathNode, PORT}));
 })
 
-// Функция очистки всех данных
+
 async function cleanup() {
   console.log('Очистка данных сервера...');
 
@@ -210,15 +394,23 @@ async function cleanup() {
   });
   clients = [];
 
-  // Очищаем массив pathNode
-  pathNode = [];
-
-  // Останавливаем Libp2p узел
+  // Закрываем все p2p соединения
   if (libp2p) {
+    console.log('Закрытие всех p2p соединений...');
+    const connections = libp2p.getConnections();
+    if (connections.length > 0) {
+      const closePromises = connections.map(conn => conn.close());
+      await Promise.all(closePromises);
+      console.log(`Закрыто ${connections.length} p2p соединений`);
+    }
+
     console.log('Остановка Libp2p узла...');
     await libp2p.stop();
     console.log('Libp2p узел остановлен');
   }
+
+  // Очищаем массив pathNode
+  pathNode = [];
 
   console.log('Очистка завершена');
 }
