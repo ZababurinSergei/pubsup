@@ -190,11 +190,11 @@ export function renderConnectionControls({state = {}} = {}) {
         <div class="control-group">
             <label class="control-label">Режим работы</label>
             <div class="mode-switcher">
-                <button class="mode-btn ${state.mode === 'listener' ? 'active' : ''}" id="listener-mode">
+                <button class="mode-btn ${state.mode === 'listener' ? 'active' : ''}" id="listener-mode-btn">
                     <span class="btn-icon">📡</span>
                     Слушатель
                 </button>
-                <button class="mode-btn ${state.mode === 'dialer' ? 'active' : ''}" id="dialer-mode">
+                <button class="mode-btn ${state.mode === 'dialer' ? 'active' : ''}" id="dialer-mode-btn">
                     <span class="btn-icon">🔗</span>
                     Инициатор
                 </button>
@@ -260,7 +260,7 @@ export function renderPeersList({state = {}} = {}) {
     }
 
     return `
-    <div class="peers-container">
+    <div class="peers-container" id="connected-peers-list">
         ${peers.map((peer, index) => `
         <div class="peer-item" data-peer-id="${peer.id}">
             <div class="peer-avatar">
@@ -301,7 +301,7 @@ export function renderAddressesList({state = {}} = {}) {
     }
 
     return `
-    <div class="addresses-container">
+    <div class="addresses-container" id="listening-addresses">
         ${addresses.map((address, index) => `
         <div class="address-item" data-address="${address}">
             <div class="address-index">${index + 1}</div>
@@ -377,6 +377,52 @@ export function renderStatistics({state = {}} = {}) {
             <div class="stat-value">${state.mode === 'listener' ? 'Входящие' : 'Исходящие'}</div>
             <div class="stat-label">Тип подключений</div>
         </div>
+    </div>
+    `;
+}
+
+/**
+ * Шаблон для списка адресов (альтернативный метод для renderPart)
+ */
+export function renderAddresses({state = {}} = {}) {
+    return renderAddressesList({state});
+}
+
+/**
+ * Шаблон для списка подключенных пиров (альтернативный метод для renderPart)
+ */
+export function renderConnectedPeers({state = {}} = {}) {
+    return renderPeersList({state});
+}
+
+/**
+ * Шаблон для статуса подключения (для ChatInterface)
+ */
+export function renderStatus({state = {}} = {}) {
+    if (!state.connected) {
+        return `
+        <div class="status-message disconnected">
+            <span class="status-icon">🔴</span>
+            <span class="status-text">Не подключено к P2P сети</span>
+            <button class="status-action" id="reconnect">Переподключиться</button>
+        </div>
+        `;
+    }
+
+    if (!state.currentGroup) {
+        return `
+        <div class="status-message info">
+            <span class="status-icon">ℹ️</span>
+            <span class="status-text">Выберите или создайте группу для начала общения</span>
+        </div>
+        `;
+    }
+
+    return `
+    <div class="status-message connected">
+        <span class="status-icon">🟢</span>
+        <span class="status-text">Подключено к группу "${state.currentGroup.name}"</span>
+        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + '...' : 'Неизвестен'}</span>
     </div>
     `;
 }

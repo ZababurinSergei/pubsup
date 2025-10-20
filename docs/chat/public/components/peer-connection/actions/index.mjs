@@ -18,7 +18,7 @@ export async function createActions(context) {
     let libp2p = null;
     let connectionInterval = null;
 
-    return {
+    const self = {
         /**
          * Инициализирует Libp2p узел
          * @async
@@ -28,8 +28,8 @@ export async function createActions(context) {
         async initializeLibp2p(mode = 'listener') {
             try {
                 const serverPeerId = '12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i';
-                const port = 6832;
-                const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com';
+                const PORT = 6835;
+                const RENDER_EXTERNAL_HOSTNAME = window.location.hostname;
                 const isLocalhost = window.location.hostname === 'localhost';
 
                 // Конфигурация Libp2p
@@ -64,15 +64,6 @@ export async function createActions(context) {
                     }
                 };
 
-                // Добавляем relay сервер для подключения
-                if (mode === 'dialer') {
-                    const relayMultiaddr = isLocalhost
-                        ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
-                        : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`;
-
-                    config.addresses.listen.push(relayMultiaddr);
-                }
-
                 libp2p = await createLibp2p(config);
                 await libp2p.start();
 
@@ -83,10 +74,10 @@ export async function createActions(context) {
                 });
 
                 // Настройка обработчиков событий
-                this.setupEventHandlers();
+                self.setupEventHandlers();
 
                 // Запускаем обновление списка подключенных пиров
-                this.startPeerListUpdates();
+                self.startPeerListUpdates();
 
                 return libp2p;
 
@@ -112,19 +103,19 @@ export async function createActions(context) {
             // Обновление списка пиров при подключении
             libp2p.addEventListener('peer:connect', (event) => {
                 console.log('Подключен пир:', event.detail.toString());
-                this.updatePeerList();
+                self.updatePeerList();
             });
 
             // Обновление списка пиров при отключении
             libp2p.addEventListener('peer:disconnect', (event) => {
                 console.log('Отключен пир:', event.detail.toString());
-                this.updatePeerList();
+                self.updatePeerList();
             });
 
-            // Обновление собственных адресов
+            // Обновление собственных адреса
             libp2p.addEventListener('self:peer:update', (event) => {
                 console.log('Обновлены адреса узла');
-                this.updateAddressList();
+                self.updateAddressList();
             });
 
             // Обнаружение пиров
@@ -142,10 +133,69 @@ export async function createActions(context) {
                 clearInterval(connectionInterval);
             }
 
+            console.log('🚫 Автоматическое обновление отключено для отладки');
+
+            // Закомментируем интервал на время отладки
+            /*
             connectionInterval = setInterval(() => {
-                this.updatePeerList();
-                this.updateAddressList();
-            }, 2000);
+                console.log('🔄 Автоматическое обновление...');
+                self.updatePeerList();
+                self.updateAddressList();
+            }, 5000);
+            */
+
+            // Однократное обновление после полной загрузки
+            setTimeout(() => {
+                console.log('🔄 Однократное обновление после загрузки');
+                self.manualUpdate();
+            }, 4000);
+        },
+
+        /**
+         * Ручное обновление списков
+         * @async
+         */
+        async manualUpdate() {
+            console.log('🔄 Ручное обновление списков...');
+
+            const addressesElement = context.shadowRoot.querySelector('#listening-addresses');
+            const peersElement = context.shadowRoot.querySelector('#connected-peers-list');
+
+            console.log('🔍 Состояние DOM:', {
+                addressesElement: !!addressesElement,
+                peersElement: !!peersElement,
+                shadowRoot: !!context.shadowRoot
+            });
+
+            if (context.shadowRoot) {
+                console.log('🔍 Все элементы в shadowRoot:');
+                context.shadowRoot.querySelectorAll('*').forEach(el => {
+                    if (el.id) {
+                        console.log('  -', el.tagName, `#${el.id}`);
+                    }
+                });
+            }
+
+            await self.updatePeerList();
+            await self.updateAddressList();
+        },
+
+        /**
+         * Принудительное обновление всех списков (для отладки)
+         * @async
+         */
+        async forceUpdate() {
+            console.log('💥 Принудительное обновление всех списков');
+
+            if (libp2p) {
+                console.log('📊 Текущее состояние libp2p:', {
+                    peerId: libp2p.peerId?.toString(),
+                    addresses: libp2p.getMultiaddrs().map(ma => ma.toString()),
+                    peers: libp2p.getPeers().map(p => p.toString())
+                });
+            }
+
+            await self.manualUpdate();
         },
 
         /**
@@ -153,8 +203,29 @@ export async function createActions(context) {
          * @async
          */
         async updatePeerList() {
-            if (libp2p && context.updatePeerList) {
-                await context.updatePeerList();
+            if (!libp2p || !context.state) {
+                console.log('❌ updatePeerList: libp2p или context.state не доступны');
+                return;
+            }
+
+            const peers = await self.getConnectedPeers();
+            context.state.connectedPeers = peers;
+
+            console.log('👥 updatePeerList: пиров найдено:', peers.length);
+
+            const peersElement = context.shadowRoot.querySelector('#connected-peers-list');
+            console.log('🔍 updatePeerList: элемент #connected-peers-list найден:', !!peersElement);
+
+            if (peersElement && context.renderPart) {
+                console.log('🎯 updatePeerList: выполняем renderPart');
+                await context.renderPart({
+                    partName: 'renderPeersList',
+                    state: context.state,
+                    selector: '#connected-peers-list'
+                });
+                console.log('✅ updatePeerList: renderPart завершен');
+            } else {
+                console.log('⚠️ updatePeerList: renderPart не выполнен - элемент не найден');
             }
         },
 
@@ -163,13 +234,29 @@ export async function createActions(context) {
          * @async
          */
         async updateAddressList() {
-            if (libp2p && context.state) {
-                context.state.listeningAddresses = libp2p.getMultiaddrs().map(ma => ma.toString());
+            if (!libp2p || !context.state) {
+                console.log('❌ updateAddressList: libp2p или context.state не доступны');
+                return;
+            }
+
+            const addresses = libp2p.getMultiaddrs().map(ma => ma.toString());
+            context.state.listeningAddresses = addresses;
+
+            console.log('📋 updateAddressList: адресов найдено:', addresses.length);
+
+            const addressesElement = context.shadowRoot.querySelector('#listening-addresses');
+            console.log('🔍 updateAddressList: элемент #listening-addresses найден:', !!addressesElement);
+
+            if (addressesElement && context.renderPart) {
+                console.log('🎯 updateAddressList: выполняем renderPart');
                 await context.renderPart({
-                    partName: 'renderAddresses',
+                    partName: 'renderAddressesList',
                     state: context.state,
                     selector: '#listening-addresses'
                 });
+                console.log('✅ updateAddressList: renderPart завершен');
+            } else {
+                console.log('⚠️ updateAddressList: renderPart не выполнен - элемент не найден');
             }
         },
 
@@ -324,8 +411,8 @@ export async function createActions(context) {
          * @param {string} mode - Новый режим работы
          */
         async restart(mode) {
-            await this.cleanup();
-            return await this.initializeLibp2p(mode);
+            await self.cleanup();
+            return await self.initializeLibp2p(mode);
         },
 
         /**
@@ -364,5 +451,25 @@ export async function createActions(context) {
                 addresses: libp2p.getMultiaddrs().map(ma => ma.toString())
             };
         }
+    };
+
+    return {
+        initializeLibp2p: self.initializeLibp2p.bind(self),
+        setupEventHandlers: self.setupEventHandlers.bind(self),
+        startPeerListUpdates: self.startPeerListUpdates.bind(self),
+        manualUpdate: self.manualUpdate.bind(self),
+        forceUpdate: self.forceUpdate.bind(self),
+        updatePeerList: self.updatePeerList.bind(self),
+        updateAddressList: self.updateAddressList.bind(self),
+        connectToPeer: self.connectToPeer.bind(self),
+        getConnectedPeers: self.getConnectedPeers.bind(self),
+        getRelayAddresses: self.getRelayAddresses.bind(self),
+        subscribeToTopic: self.subscribeToTopic.bind(self),
+        sendTopicMessage: self.sendTopicMessage.bind(self),
+        getTopicPeers: self.getTopicPeers.bind(self),
+        cleanup: self.cleanup.bind(self),
+        restart: self.restart.bind(self),
+        isConnected: self.isConnected.bind(self),
+        getConnectionStats: self.getConnectionStats.bind(self)
     };
 }

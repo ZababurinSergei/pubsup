@@ -138,8 +138,38 @@ export function renderConnectionStatus({state = {}} = {}) {
     return `
     <div class="status-message connected">
         <span class="status-icon">🟢</span>
-        <span class="status-text">Подключено к группе "${state.currentGroup.name}"</span>
+        <span class="status-text">Подключено к группу "${state.currentGroup.name}"</span>
         <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + '...' : 'Неизвестен'}</span>
+    </div>
+    `;
+}
+
+/**
+ * Шаблон для простого статуса (для renderPart)
+ */
+export function renderStatus({state = {}} = {}) {
+    if (!state.connected) {
+        return `
+        <div class="status-message disconnected">
+            <span class="status-icon">🔴</span>
+            <span class="status-text">Не подключено</span>
+        </div>
+        `;
+    }
+
+    if (!state.currentGroup) {
+        return `
+        <div class="status-message info">
+            <span class="status-icon">ℹ️</span>
+            <span class="status-text">Выберите группу</span>
+        </div>
+        `;
+    }
+
+    return `
+    <div class="status-message connected">
+        <span class="status-icon">🟢</span>
+        <span class="status-text">В сети: ${state.currentGroup.name}</span>
     </div>
     `;
 }

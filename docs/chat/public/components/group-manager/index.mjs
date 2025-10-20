@@ -18,7 +18,7 @@ export class GroupManager extends BaseComponent {
     async _componentReady() {
         this._controller = await controller(this);
         this._actions = await createActions(this);
-        // await this._controller.init();
+        await this._controller.init();
         return true;
     }
 

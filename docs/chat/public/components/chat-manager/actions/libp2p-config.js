@@ -11,8 +11,9 @@ import { bootstrap } from '@libp2p/bootstrap';
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery';
 
 const serverPeerId = '12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i';
-const port = 6832;
-const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com';
+const PORT = 6835;
+// const RENDER_EXTERNAL_HOSTNAME = 'relay-tuem.onrender.com';
+const RENDER_EXTERNAL_HOSTNAME = window.location.hostname
 
 export async function CreateLibp2p(mode = 'listener') {
     const isLocalhost = window.location.hostname === 'localhost';
@@ -26,17 +27,17 @@ export async function CreateLibp2p(mode = 'listener') {
     // Добавляем конкретные адреса для listener режима
     if (mode === 'listener') {
         if (isLocalhost) {
-            listenAddresses.push(`/ip4/0.0.0.0/tcp/${port}/ws`);
+            listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/ws/p2p/${serverPeerId}`);
         } else {
-            listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`);
+            listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/wss/p2p/${serverPeerId}`);
         }
     }
 
     // Bootstrap пиры для discovery
     const bootstrapList = [
         isLocalhost
-            ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}`
-            : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`
+            ? `/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/ws/p2p/${serverPeerId}`
+            : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/wss/p2p/${serverPeerId}`
     ];
 
     const libp2p = await createLibp2p({

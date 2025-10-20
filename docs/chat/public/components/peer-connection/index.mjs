@@ -18,32 +18,62 @@ export class PeerConnection extends BaseComponent {
     }
 
     async _componentReady() {
+        console.log('🔧 PeerConnection component ready');
+
         this._controller = await controller(this);
         this._actions = await createActions(this);
-        // await this._controller.init();
+
+        console.log('🔧 Controller and actions created:', {
+            hasController: !!this._controller,
+            hasActions: !!this._actions
+        });
+
+        await this._controller.init();
+
+        // Автоматически инициализируем начальный режим
+        await this.initializeLibp2p(this.state.mode);
+
         return true;
     }
 
     async initializeLibp2p(mode = 'listener') {
+        console.log('🚀 initializeLibp2p called with mode:', mode);
+
         this.state.mode = mode;
         this.state.connected = false;
 
-        await this.showSkeleton({
-            selector: '#connection-status',
-            replace: true
-        });
-
         try {
+            await this.showSkeleton({
+                selector: '#connection-status',
+                replace: true
+            });
+
             const libp2p = await this._actions.initializeLibp2p(mode);
             this.state.peerId = libp2p.peerId.toString();
             this.state.listeningAddresses = libp2p.getMultiaddrs().map(ma => ma.toString());
             this.state.connected = true;
 
+            console.log('✅ Libp2p initialized successfully');
+            console.log('📋 New state:', {
+                mode: this.state.mode,
+                connected: this.state.connected,
+                peerId: this.state.peerId,
+                addresses: this.state.listeningAddresses
+            });
+
             await this.fullRender(this.state);
             return libp2p;
         } catch (error) {
-            console.error('Ошибка инициализации Libp2p:', error);
+            console.error('❌ Libp2p initialization failed:', error);
             await this.hideSkeleton();
+
+            // Добавляем пользовательское уведомление об ошибке
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'initializeLibp2p',
+                message: `Не удалось инициализировать режим ${mode}`,
+                details: error
+            });
             throw error;
         }
     }
@@ -61,20 +91,40 @@ export class PeerConnection extends BaseComponent {
     async updatePeerList() {
         if (this._actions.getConnectedPeers) {
             this.state.connectedPeers = await this._actions.getConnectedPeers();
-            await this.renderPart({
-                partName: 'renderConnectedPeers',
-                state: this.state,
-                selector: '#connected-peers-list'
-            });
+
+            // Проверяем существование элемента перед renderPart
+            const peersElement = this.shadowRoot.querySelector('#connected-peers-list');
+            if (peersElement && this.renderPart) {
+                await this.renderPart({
+                    partName: 'renderPeersList',
+                    state: this.state,
+                    selector: '#connected-peers-list'
+                });
+            } else {
+                console.log('⚠️ updatePeerList: элемент #connected-peers-list не найден, используем полный рендер');
+                await this.fullRender(this.state);
+            }
         }
     }
 
     async switchMode(mode) {
+        console.log('🔧 switchMode called with:', mode);
+        console.log('🔧 Current mode:', this.state.mode);
+
         if (this.state.mode !== mode) {
-            if (this._actions.cleanup) {
+            console.log('🔧 Mode change detected, proceeding...');
+
+            if (this._actions && this._actions.cleanup) {
+                console.log('🔧 Cleaning up previous connections...');
                 await this._actions.cleanup();
             }
+
+            console.log('🔧 Initializing Libp2p with new mode...');
             await this.initializeLibp2p(mode);
+
+            console.log('🔧 Mode switch completed');
+        } else {
+            console.log('🔧 Mode is already', mode);
         }
     }
 
@@ -82,6 +132,21 @@ export class PeerConnection extends BaseComponent {
         return this.state.listeningAddresses.filter(addr =>
             addr.includes('/p2p-circuit') || addr.includes('/webrtc')
         );
+    }
+
+    // Методы для отладки
+    async manualUpdate() {
+        console.log('🔄 Ручное обновление PeerConnection');
+        if (this._actions && this._actions.manualUpdate) {
+            await this._actions.manualUpdate();
+        }
+    }
+
+    async forceUpdate() {
+        console.log('💥 Принудительное обновление PeerConnection');
+        if (this._actions && this._actions.forceUpdate) {
+            await this._actions.forceUpdate();
+        }
     }
 
     async _componentDisconnected() {

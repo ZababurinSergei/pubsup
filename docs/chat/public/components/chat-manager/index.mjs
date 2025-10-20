@@ -23,9 +23,9 @@ export class ChatManager extends BaseComponent {
     async _componentReady() {
         this._controller = await controller(this);
         this._actions = await createActions(this);
-        // await this._controller.init();
+        await this._controller.init();
 
-        // await this._actions.initializeLibp2p(this.state.mode);
+        await this._actions.initializeLibp2p(this.state.mode);
 
         return true;
     }
@@ -56,7 +56,7 @@ export class ChatManager extends BaseComponent {
             selector: '#messages-container'
         });
 
-        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat-interface');
+        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
         if (chatInterface) {
             await chatInterface.addMessage(message);
         }
@@ -112,7 +112,7 @@ export class ChatManager extends BaseComponent {
 
         await this.fullRender(this.state);
 
-        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat-interface');
+        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
         if (chatInterface) {
             await chatInterface.setCurrentGroup(this.state.currentGroup);
         }
@@ -150,7 +150,7 @@ export class ChatManager extends BaseComponent {
             selector: '#connection-status'
         });
 
-        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat-interface');
+        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
         if (chatInterface) {
             await chatInterface.updateConnectionStatus(connected);
         }

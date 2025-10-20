@@ -13858,10 +13858,10 @@ function bytes2port(buf) {
   return view.getUint16(buf.byteOffset).toString();
 }
 __name(bytes2port, "bytes2port");
-function port2bytes(port2) {
+function port2bytes(port) {
   const buf = new ArrayBuffer(2);
   const view = new DataView(buf);
-  view.setUint16(0, typeof port2 === "string" ? parseInt(port2) : port2);
+  view.setUint16(0, typeof port === "string" ? parseInt(port) : port);
   return new Uint8Array(buf);
 }
 __name(port2bytes, "port2bytes");
@@ -13874,11 +13874,11 @@ function onion2bytes(str) {
     throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion address.`);
   }
   const buf = fromString2(addr[0], "base32");
-  const port2 = parseInt(addr[1], 10);
-  if (port2 < 1 || port2 > 65536) {
+  const port = parseInt(addr[1], 10);
+  if (port < 1 || port > 65536) {
     throw new Error("Port number is not in range(1, 65536)");
   }
-  const portBuf = port2bytes(port2);
+  const portBuf = port2bytes(port);
   return concat([buf, portBuf], buf.length + portBuf.length);
 }
 __name(onion2bytes, "onion2bytes");
@@ -13891,11 +13891,11 @@ function onion32bytes(str) {
     throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion3 address.`);
   }
   const buf = base32.decode(`b${addr[0]}`);
-  const port2 = parseInt(addr[1], 10);
-  if (port2 < 1 || port2 > 65536) {
+  const port = parseInt(addr[1], 10);
+  if (port < 1 || port > 65536) {
     throw new Error("Port number is not in range(1, 65536)");
   }
-  const portBuf = port2bytes(port2);
+  const portBuf = port2bytes(port);
   return concat([buf, portBuf], buf.length + portBuf.length);
 }
 __name(onion32bytes, "onion32bytes");
@@ -13903,8 +13903,8 @@ function bytes2onion(buf) {
   const addrBytes = buf.subarray(0, buf.length - 2);
   const portBytes = buf.subarray(buf.length - 2);
   const addr = toString2(addrBytes, "base32");
-  const port2 = bytes2port(portBytes);
-  return `${addr}:${port2}`;
+  const port = bytes2port(portBytes);
+  return `${addr}:${port}`;
 }
 __name(bytes2onion, "bytes2onion");
 var ip4ToBytes = /* @__PURE__ */ __name(function(ip) {
@@ -28766,11 +28766,11 @@ function extractSNI(ma) {
 }
 __name(extractSNI, "extractSNI");
 function extractPort(ma) {
-  const port2 = extractTuple("tcp", ma)?.value;
-  if (port2 == null) {
+  const port = extractTuple("tcp", ma)?.value;
+  if (port == null) {
     return "";
   }
-  return `:${port2}`;
+  return `:${port}`;
 }
 __name(extractPort, "extractPort");
 function extractTuple(name3, ma) {
@@ -28836,9 +28836,9 @@ var interpreters = {
   http: /* @__PURE__ */ __name((head, rest) => {
     const maHasTLS = hasTLS(rest);
     const sni = extractSNI(rest);
-    const port2 = extractPort(rest);
+    const port = extractPort(rest);
     if (maHasTLS && sni != null) {
-      return `https://${sni}${port2}`;
+      return `https://${sni}${port}`;
     }
     const protocol2 = maHasTLS ? "https://" : "http://";
     const tail = rest.pop();
@@ -28884,9 +28884,9 @@ var interpreters = {
   ws: /* @__PURE__ */ __name((head, rest) => {
     const maHasTLS = hasTLS(rest);
     const sni = extractSNI(rest);
-    const port2 = extractPort(rest);
+    const port = extractPort(rest);
     if (maHasTLS && sni != null) {
-      return `wss://${sni}${port2}`;
+      return `wss://${sni}${port}`;
     }
     const protocol2 = maHasTLS ? "wss://" : "ws://";
     const tail = rest.pop();
@@ -36040,10 +36040,10 @@ function bytes2port2(buf) {
   return view.getUint16(buf.byteOffset).toString();
 }
 __name(bytes2port2, "bytes2port");
-function port2bytes2(port2) {
+function port2bytes2(port) {
   const buf = new ArrayBuffer(2);
   const view = new DataView(buf);
-  view.setUint16(0, typeof port2 === "string" ? parseInt(port2) : port2);
+  view.setUint16(0, typeof port === "string" ? parseInt(port) : port);
   return new Uint8Array(buf);
 }
 __name(port2bytes2, "port2bytes");
@@ -36056,11 +36056,11 @@ function onion2bytes2(str) {
     throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion address.`);
   }
   const buf = fromString2(addr[0], "base32");
-  const port2 = parseInt(addr[1], 10);
-  if (port2 < 1 || port2 > 65536) {
+  const port = parseInt(addr[1], 10);
+  if (port < 1 || port > 65536) {
     throw new Error("Port number is not in range(1, 65536)");
   }
-  const portBuf = port2bytes2(port2);
+  const portBuf = port2bytes2(port);
   return concat([buf, portBuf], buf.length + portBuf.length);
 }
 __name(onion2bytes2, "onion2bytes");
@@ -36073,11 +36073,11 @@ function onion32bytes2(str) {
     throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion3 address.`);
   }
   const buf = base32.decode(`b${addr[0]}`);
-  const port2 = parseInt(addr[1], 10);
-  if (port2 < 1 || port2 > 65536) {
+  const port = parseInt(addr[1], 10);
+  if (port < 1 || port > 65536) {
     throw new Error("Port number is not in range(1, 65536)");
   }
-  const portBuf = port2bytes2(port2);
+  const portBuf = port2bytes2(port);
   return concat([buf, portBuf], buf.length + portBuf.length);
 }
 __name(onion32bytes2, "onion32bytes");
@@ -36085,8 +36085,8 @@ function bytes2onion2(buf) {
   const addrBytes = buf.subarray(0, buf.length - 2);
   const portBytes = buf.subarray(buf.length - 2);
   const addr = toString2(addrBytes, "base32");
-  const port2 = bytes2port2(portBytes);
-  return `${addr}:${port2}`;
+  const port = bytes2port2(portBytes);
+  return `${addr}:${port}`;
 }
 __name(bytes2onion2, "bytes2onion");
 var ip4ToBytes2 = /* @__PURE__ */ __name(function(ip) {
@@ -38967,8 +38967,8 @@ __name(pubsubPeerDiscovery, "pubsubPeerDiscovery");
 
 // public/components/chat-manager/actions/libp2p-config.js
 var serverPeerId = "12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
-var port = 6832;
-var RENDER_EXTERNAL_HOSTNAME = "relay-tuem.onrender.com";
+var PORT = 6835;
+var RENDER_EXTERNAL_HOSTNAME = window.location.hostname;
 async function CreateLibp2p(mode = "listener") {
   const isLocalhost = window.location.hostname === "localhost";
   const listenAddresses = [
@@ -38977,13 +38977,13 @@ async function CreateLibp2p(mode = "listener") {
   ];
   if (mode === "listener") {
     if (isLocalhost) {
-      listenAddresses.push(`/ip4/0.0.0.0/tcp/${port}/ws`);
+      listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/ws/p2p/${serverPeerId}`);
     } else {
-      listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`);
+      listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/wss/p2p/${serverPeerId}`);
     }
   }
   const bootstrapList = [
-    isLocalhost ? `/dns4/localhost/tcp/${port}/ws/p2p/${serverPeerId}` : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/wss/p2p/${serverPeerId}`
+    isLocalhost ? `/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/ws/p2p/${serverPeerId}` : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/wss/p2p/${serverPeerId}`
   ];
   const libp2p = await createLibp2p({
     addresses: {
@@ -39335,6 +39335,8 @@ var ChatManager = class extends BaseComponent {
   async _componentReady() {
     this._controller = await controller(this);
     this._actions = await createActions(this);
+    await this._controller.init();
+    await this._actions.initializeLibp2p(this.state.mode);
     return true;
   }
   async switchMode(mode) {
@@ -39358,7 +39360,7 @@ var ChatManager = class extends BaseComponent {
       state: this.state,
       selector: "#messages-container"
     });
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat-interface");
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
     if (chatInterface) {
       await chatInterface.addMessage(message2);
     }
@@ -39402,7 +39404,7 @@ var ChatManager = class extends BaseComponent {
     }
     await this._actions.subscribeToGroup(topic);
     await this.fullRender(this.state);
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat-interface");
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
     if (chatInterface) {
       await chatInterface.setCurrentGroup(this.state.currentGroup);
     }
@@ -39432,7 +39434,7 @@ var ChatManager = class extends BaseComponent {
       state: this.state,
       selector: "#connection-status"
     });
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat-interface");
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
     if (chatInterface) {
       await chatInterface.updateConnectionStatus(connected);
     }
@@ -39527,6 +39529,7 @@ __export(template_exports2, {
   renderMessages: () => renderMessages2,
   renderSearchOverlay: () => renderSearchOverlay,
   renderSearchResults: () => renderSearchResults,
+  renderStatus: () => renderStatus,
   renderTypingIndicator: () => renderTypingIndicator
 });
 function defaultTemplate2({ state = {} } = {}) {
@@ -39658,12 +39661,37 @@ function renderConnectionStatus({ state = {} } = {}) {
   return `
     <div class="status-message connected">
         <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0435 "${state.currentGroup.name}"</span>
+        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
         <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
     </div>
     `;
 }
 __name(renderConnectionStatus, "renderConnectionStatus");
+function renderStatus({ state = {} } = {}) {
+  if (!state.connected) {
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
+        </div>
+        `;
+  }
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.currentGroup.name}</span>
+    </div>
+    `;
+}
+__name(renderStatus, "renderStatus");
 function renderMembersList({ state = {} } = {}) {
   const members = state.currentGroup?.members || [];
   if (members.length === 0) {
@@ -40182,6 +40210,7 @@ var ChatInterface = class extends BaseComponent {
   async _componentReady() {
     this._controller = await controller2(this);
     this._actions = await createActions2(this);
+    await this._controller.init();
     return true;
   }
   async addMessage(message2) {
@@ -40239,493 +40268,263 @@ if (!customElements.get("chat-interface")) {
 var template_exports3 = {};
 __export(template_exports3, {
   default: () => defaultTemplate3,
-  renderCreateGroup: () => renderCreateGroup,
   renderDiscoveredGroups: () => renderDiscoveredGroups2,
   renderHeader: () => renderHeader,
   renderJoinedGroups: () => renderJoinedGroups2,
+  renderMainContent: () => renderMainContent,
   renderMyGroups: () => renderMyGroups2,
   renderSearch: () => renderSearch,
-  renderSearchResults: () => renderSearchResults2,
-  renderStatus: () => renderStatus
+  renderSearchResults: () => renderSearchResults2
 });
 function defaultTemplate3({ state = {} } = {}) {
+  const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = state;
   return `
-    <div class="group-manager">
-        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 -->
-        <header class="manager-header" id="header-section">
-            ${renderHeader({ state })}
-        </header>
-        
-        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->
-        <main class="manager-main">
-            <div class="manager-content">
-                ${renderMyGroups2({ state })}
-                ${renderDiscoveredGroups2({ state })}
-                ${renderJoinedGroups2({ state })}
-            </div>
-        </main>
-    </div>
+        <div class="group-manager">
+            ${renderHeader({ groups, discoveredGroups, joinedGroups })}
+            ${renderSearch({ searchQuery })}
+            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery })}
+        </div>
     `;
 }
 __name(defaultTemplate3, "defaultTemplate");
-function renderHeader({ state = {} } = {}) {
+function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [] } = {}) {
   return `
-    <div class="header-content">
-        <h2 class="manager-title">\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438 \u0447\u0430\u0442\u0430</h2>
-        <p class="manager-subtitle">\u0421\u043E\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435, \u0438\u0449\u0438\u0442\u0435 \u0438 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>
-        
-        <div class="header-stats">
-            <div class="stat-item">
-                <span class="stat-label">\u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B:</span>
-                <span class="stat-value">${state.groups?.length || 0}</span>
+        <header class="manager-header">
+            <div class="header-content">
+                <h1 class="manager-title">\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438</h1>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">\u041C\u043E\u0438</span>
+                        <span class="stat-value">${groups.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.</span>
+                        <span class="stat-value">${joinedGroups.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">\u041D\u0430\u0439\u0434\u0435\u043D\u043E</span>
+                        <span class="stat-value">${discoveredGroups.length}</span>
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043E:</span>
-                <span class="stat-value">${state.joinedGroups?.length || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">\u041D\u0430\u0439\u0434\u0435\u043D\u043E:</span>
-                <span class="stat-value">${state.discoveredGroups?.length || 0}</span>
-            </div>
-        </div>
-    </div>
+        </header>
     `;
 }
 __name(renderHeader, "renderHeader");
-function renderSearch({ state = {} } = {}) {
+function renderSearch({ searchQuery = "" } = {}) {
   return `
-    <div class="search-content">
-        <h3 class="section-title">\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F</h3>
-        <div class="search-controls">
-            <input 
-                type="text" 
-                id="group-search" 
-                class="search-input" 
-                placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0438\u043B\u0438 \u0442\u0435\u043C\u0443..."
-                value="${state.searchQuery || ""}"
-            >
-            <button class="search-button" id="search-groups">
-                <span class="search-icon">\u{1F50D}</span>
-                \u041F\u043E\u0438\u0441\u043A
-            </button>
-            <button class="discover-button secondary" id="discover-groups">
-                <span class="discover-icon">\u{1F310}</span>
-                \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u044B
-            </button>
-        </div>
-        
-        ${state.searchQuery ? `
-        <div class="search-info">
-            <p>\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430 \u0434\u043B\u044F: <strong>"${state.searchQuery}"</strong></p>
-        </div>
-        ` : ""}
-    </div>
+        <section class="search-section">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="group-search-input" 
+                    class="search-input" 
+                    placeholder="\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F..."
+                    value="${escapeHtml3(searchQuery)}"
+                >
+                <button class="search-btn" id="search-groups">
+                    <span>\u{1F50D}</span>
+                    \u041F\u043E\u0438\u0441\u043A
+                </button>
+            </div>
+        </section>
     `;
 }
 __name(renderSearch, "renderSearch");
-function renderCreateGroup({ state = {} } = {}) {
+function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
   return `
-    <div class="create-group-content">
-        <h3 class="section-title">\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u043D\u043E\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443</h3>
-        <div class="create-form">
-            <div class="form-group">
-                <label for="group-name" class="form-label">\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B</label>
-                <input 
-                    type="text" 
-                    id="group-name" 
-                    class="form-input" 
-                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."
-                    maxlength="50"
-                >
-                <div class="char-counter">
-                    <span id="char-count">0</span>/50 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432
-                </div>
+        <main class="manager-main">
+            <div class="content-grid">
+                ${renderMyGroups2({ groups })}
+                ${renderDiscoveredGroups2({ discoveredGroups })}
+                ${renderJoinedGroups2({ joinedGroups })}
+                ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery }) : ""}
             </div>
-            
-            <div class="form-group">
-                <label for="group-description" class="form-label">\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 (\u043D\u0435\u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E)</label>
-                <textarea 
-                    id="group-description" 
-                    class="form-textarea" 
-                    placeholder="\u041A\u0440\u0430\u0442\u043A\u043E\u0435 \u043E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."
-                    rows="3"
-                    maxlength="200"
-                ></textarea>
-                <div class="char-counter">
-                    <span id="desc-char-count">0</span>/200 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432
-                </div>
-            </div>
-            
-            <div class="form-options">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="group-public" checked>
-                    <span class="checkmark"></span>
-                    \u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430 (\u0432\u0438\u0434\u043D\u0430 \u0434\u0440\u0443\u0433\u0438\u043C \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F\u043C)
-                </label>
-                
-                <label class="checkbox-label">
-                    <input type="checkbox" id="group-encrypted">
-                    <span class="checkmark"></span>
-                    \u0417\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F
-                </label>
-            </div>
-            
-            <button class="create-button primary" id="create-group">
-                <span class="create-icon">\u2795</span>
-                \u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443
-            </button>
-        </div>
-    </div>
+        </main>
     `;
 }
-__name(renderCreateGroup, "renderCreateGroup");
-function renderMyGroups2({ state = {} } = {}) {
-  const groups = state.groups || [];
-  if (groups.length === 0) {
-    return `
-        <div class="my-groups-content">
-            <div class="empty-state">
-                <div class="empty-icon">\u{1F3E0}</div>
-                <p class="empty-title">\u0423 \u0432\u0430\u0441 \u043F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F</p>
-                <p class="empty-description">\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443, \u0447\u0442\u043E\u0431\u044B \u043D\u0430\u0447\u0430\u0442\u044C \u043E\u0431\u0449\u0435\u043D\u0438\u0435</p>
-            </div>
-        </div>
-        `;
-  }
+__name(renderMainContent, "renderMainContent");
+function renderMyGroups2({ groups = [] } = {}) {
   return `
-    <div class="my-groups-content">
-        <h3 class="section-title">\u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B (${groups.length})</h3>
-        <div class="groups-grid" id="my-groups-list">
-            ${groups.map((group) => `
-            <div class="group-card owned" data-group-id="${group.id}">
-                <div class="group-header">
-                    <h4 class="group-name">${group.name}</h4>
-                    <span class="group-badge owner">\u0412\u043B\u0430\u0434\u0435\u043B\u0435\u0446</span>
-                </div>
-                
-                <div class="group-info">
-                    <p class="group-topic">\u0422\u043E\u043F\u0438\u043A: <code>${group.topic}</code></p>
-                    ${group.description ? `<p class="group-description">${group.description}</p>` : ""}
-                </div>
-                
-                <div class="group-stats">
-                    <div class="group-stat">
-                        <span class="stat-icon">\u{1F465}</span>
-                        <span class="stat-value">${group.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</span>
-                    </div>
-                    <div class="group-stat">
-                        <span class="stat-icon">\u{1F4C5}</span>
-                        <span class="stat-value">${formatDate2(group.createdAt)}</span>
-                    </div>
-                </div>
-                
-                <div class="group-actions">
-                    <button class="action-btn primary join-group" data-group-id="${group.id}">
-                        <span class="action-icon">\u{1F4AC}</span>
-                        \u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442
-                    </button>
-                    <button class="action-btn secondary share-group" data-group-id="${group.id}">
-                        <span class="action-icon">\u{1F4E4}</span>
-                        \u041F\u043E\u0434\u0435\u043B\u0438\u0442\u044C\u0441\u044F
-                    </button>
-                    <button class="action-btn danger delete-group" data-group-id="${group.id}">
-                        <span class="action-icon">\u{1F5D1}\uFE0F</span>
-                        \u0423\u0434\u0430\u043B\u0438\u0442\u044C
-                    </button>
-                </div>
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B</h3>
+                <span class="card-badge">${groups.length}</span>
             </div>
-            `).join("")}
-        </div>
-    </div>
+            <div class="card-content">
+                ${groups.length > 0 ? renderGroupsList(groups, "my") : renderEmptyState("my")}
+            </div>
+        </section>
     `;
 }
 __name(renderMyGroups2, "renderMyGroups");
-function renderDiscoveredGroups2({ state = {} } = {}) {
-  const discoveredGroups = state.discoveredGroups || [];
-  if (discoveredGroups.length === 0) {
-    return `
-        <div class="discovered-groups-content">
-            <div class="empty-state">
-                <div class="empty-icon">\u{1F310}</div>
-                <p class="empty-title">\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u044B</p>
-                <p class="empty-description">\u041D\u0430\u0436\u043C\u0438\u0442\u0435 "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u044B" \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F \u0432 \u0441\u0435\u0442\u0438</p>
-            </div>
-        </div>
-        `;
-  }
+function renderDiscoveredGroups2({ discoveredGroups = [] } = {}) {
   return `
-    <div class="discovered-groups-content">
-        <h3 class="section-title">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B (${discoveredGroups.length})</h3>
-        <div class="groups-list" id="discovered-groups-list">
-            ${discoveredGroups.map((group) => `
-            <div class="group-item discovered" data-group-id="${group.id}">
-                <div class="group-main">
-                    <div class="group-avatar">
-                        <span class="avatar-icon">\u{1F465}</span>
-                    </div>
-                    <div class="group-details">
-                        <h4 class="group-name">${group.name}</h4>
-                        ${group.description ? `<p class="group-description">${group.description}</p>` : ""}
-                        <div class="group-meta">
-                            <span class="meta-item">
-                                <span class="meta-icon">\u{1F465}</span>
-                                ${group.memberCount || 0} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432
-                            </span>
-                            <span class="meta-item">
-                                <span class="meta-icon">\u{1F50D}</span>
-                                ${group.isPublic ? "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F" : "\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u0430\u044F"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="group-actions">
-                    <button class="action-btn primary join-discovered" data-group-id="${group.id}" data-topic="${group.topic}">
-                        <span class="action-icon">\u2795</span>
-                        \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F
-                    </button>
-                    <button class="action-btn secondary info-group" data-group-id="${group.id}">
-                        <span class="action-icon">\u2139\uFE0F</span>
-                        \u0418\u043D\u0444\u043E
-                    </button>
-                </div>
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435</h3>
+                <span class="card-badge">${discoveredGroups.length}</span>
             </div>
-            `).join("")}
-        </div>
-    </div>
+            <div class="card-content">
+                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered") : renderEmptyState("discovered")}
+            </div>
+        </section>
     `;
 }
 __name(renderDiscoveredGroups2, "renderDiscoveredGroups");
-function renderJoinedGroups2({ state = {} } = {}) {
-  const joinedGroups = state.joinedGroups || [];
-  if (joinedGroups.length === 0) {
-    return `
-        <div class="joined-groups-content">
-            <div class="empty-state">
-                <div class="empty-icon">\u{1F91D}</div>
-                <p class="empty-title">\u0412\u044B \u0435\u0449\u0435 \u043D\u0435 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C</p>
-                <p class="empty-description">\u041D\u0430\u0439\u0434\u0438\u0442\u0435 \u0438\u043D\u0442\u0435\u0440\u0435\u0441\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0438 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u043E\u0431\u0449\u0435\u043D\u0438\u044E</p>
-            </div>
-        </div>
-        `;
-  }
+function renderJoinedGroups2({ joinedGroups = [] } = {}) {
   return `
-    <div class="joined-groups-content">
-        <h3 class="section-title">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B (${joinedGroups.length})</h3>
-        <div class="groups-list" id="joined-groups-list">
-            ${joinedGroups.map((group) => `
-            <div class="group-item joined" data-group-id="${group.id}">
-                <div class="group-main">
-                    <div class="group-avatar">
-                        <span class="avatar-icon ${group.isPublic ? "public" : "private"}">
-                            ${group.isPublic ? "\u{1F310}" : "\u{1F512}"}
-                        </span>
-                    </div>
-                    <div class="group-details">
-                        <h4 class="group-name">${group.name}</h4>
-                        ${group.description ? `<p class="group-description">${group.description}</p>` : ""}
-                        <div class="group-meta">
-                            <span class="meta-item">
-                                <span class="meta-icon">\u{1F4C5}</span>
-                                \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0441\u044F: ${formatDate2(group.joinedAt)}
-                            </span>
-                            <span class="meta-item">
-                                <span class="meta-icon">\u{1F465}</span>
-                                ${group.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="group-actions">
-                    <button class="action-btn primary enter-chat" data-group-id="${group.id}" data-topic="${group.topic}">
-                        <span class="action-icon">\u{1F4AC}</span>
-                        \u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442
-                    </button>
-                    <button class="action-btn secondary leave-group" data-group-id="${group.id}">
-                        <span class="action-icon">\u{1F6AA}</span>
-                        \u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C
-                    </button>
-                </div>
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435</h3>
+                <span class="card-badge">${joinedGroups.length}</span>
             </div>
-            `).join("")}
-        </div>
-    </div>
+            <div class="card-content">
+                ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, "joined") : renderEmptyState("joined")}
+            </div>
+        </section>
     `;
 }
 __name(renderJoinedGroups2, "renderJoinedGroups");
-function renderSearchResults2({ state = {} } = {}) {
-  if (!state.searchQuery) {
-    return `
-        <div class="search-results-content">
-            <h3 class="section-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430</h3>
-            <div class="search-prompt">
-                <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0432 \u043F\u043E\u043B\u0435 \u043F\u043E\u0438\u0441\u043A\u0430 \u0434\u043B\u044F \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u043E\u0432</p>
-            </div>
-        </div>
-        `;
-  }
-  const allGroups = [
-    ...state.groups || [],
-    ...state.discoveredGroups || [],
-    ...state.joinedGroups || []
-  ];
-  const searchResults = allGroups.filter(
-    (group) => group.name.toLowerCase().includes(state.searchQuery.toLowerCase()) || group.description && group.description.toLowerCase().includes(state.searchQuery.toLowerCase()) || group.topic.toLowerCase().includes(state.searchQuery.toLowerCase())
+function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
+  const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
+  const filteredGroups = allGroups.filter(
+    (group) => group.name?.toLowerCase().includes(searchQuery.toLowerCase()) || group.topic?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  if (searchResults.length === 0) {
-    return `
-        <div class="search-results-content">
-            <h3 class="section-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430</h3>
-            <div class="empty-state">
-                <div class="empty-icon">\u{1F50D}</div>
-                <p class="empty-title">\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 "${state.searchQuery}" \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E</p>
-                <p class="empty-description">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0442\u044C \u043D\u043E\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443</p>
-            </div>
-        </div>
-        `;
-  }
   return `
-    <div class="search-results-content">
-        <h3 class="section-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430 (${searchResults.length})</h3>
-        <div class="search-summary">
-            <p>\u041D\u0430\u0439\u0434\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F \u043F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443: <strong>"${state.searchQuery}"</strong></p>
-        </div>
-        
-        <div class="groups-list" id="search-results">
-            ${searchResults.map((group) => `
-            <div class="group-item search-result" data-group-id="${group.id}">
-                <div class="group-main">
-                    <div class="group-avatar">
-                        <span class="avatar-icon ${getGroupTypeIcon(group)}">
-                            ${getGroupTypeIcon(group)}
-                        </span>
-                    </div>
-                    <div class="group-details">
-                        <h4 class="group-name">${group.name}</h4>
-                        <span class="group-type ${getGroupTypeClass(group)}">${getGroupTypeLabel(group)}</span>
-                        ${group.description ? `<p class="group-description">${group.description}</p>` : ""}
-                        <div class="group-meta">
-                            <span class="meta-item">
-                                <span class="meta-icon">\u{1F465}</span>
-                                ${group.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432
-                            </span>
-                            <span class="meta-item">
-                                <span class="meta-icon">\u{1F4C5}</span>
-                                ${formatDate2(group.createdAt || group.joinedAt)}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="group-actions">
-                    ${getSearchResultActions(group, state)}
-                </div>
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430</h3>
+                <span class="card-badge">${filteredGroups.length}</span>
             </div>
-            `).join("")}
-        </div>
-    </div>
+            <div class="card-content">
+                ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, "search") : renderEmptyState("search", searchQuery)}
+            </div>
+        </section>
     `;
 }
 __name(renderSearchResults2, "renderSearchResults");
-function renderStatus({ state = {} } = {}) {
-  const totalGroups = (state.groups?.length || 0) + (state.joinedGroups?.length || 0);
+function renderGroupsList(groups, type) {
   return `
-    <div class="status-content">
-        <div class="status-info">
-            <div class="status-item">
-                <span class="status-label">\u0412\u0441\u0435\u0433\u043E \u0433\u0440\u0443\u043F\u043F:</span>
-                <span class="status-value">${totalGroups}</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u0438\u0441\u043A:</span>
-                <span class="status-value ${state.searchQuery ? "active" : "inactive"}">
-                    ${state.searchQuery ? "\u0414\u0430" : "\u041D\u0435\u0442"}
-                </span>
-            </div>
+        <div class="groups-list">
+            ${groups.map((group) => renderGroupItem(group, type)).join("")}
         </div>
-        
-        ${state.lastAction ? `
-        <div class="last-action">
-            <span class="action-label">\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u0435\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435:</span>
-            <span class="action-value">${state.lastAction}</span>
-        </div>
-        ` : ""}
-    </div>
     `;
 }
-__name(renderStatus, "renderStatus");
-function formatDate2(timestamp) {
-  if (!timestamp) return "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u043E";
-  const date = new Date(timestamp);
-  const now = /* @__PURE__ */ new Date();
-  const diff = now - date;
-  if (diff < 6e4) {
-    return "\u0422\u043E\u043B\u044C\u043A\u043E \u0447\u0442\u043E";
-  } else if (diff < 36e5) {
-    const minutes = Math.floor(diff / 6e4);
-    return `${minutes} \u043C\u0438\u043D. \u043D\u0430\u0437\u0430\u0434`;
-  } else if (diff < 864e5) {
-    const hours = Math.floor(diff / 36e5);
-    return `${hours} \u0447. \u043D\u0430\u0437\u0430\u0434`;
-  } else {
-    return date.toLocaleDateString("ru-RU");
+__name(renderGroupsList, "renderGroupsList");
+function renderGroupItem(group, type) {
+  const { id, name: name3, topic, memberCount = 1, description } = group;
+  return `
+        <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
+            <div class="group-avatar">
+                ${name3 ? name3.charAt(0).toUpperCase() : "G"}
+            </div>
+            <div class="group-info">
+                <div class="group-name">${escapeHtml3(name3)}</div>
+                <div class="group-meta">
+                    <span class="meta-item">\u{1F465} ${memberCount}</span>
+                    <span class="meta-item">${getGroupTypeLabel(type)}</span>
+                </div>
+            </div>
+            <div class="group-actions">
+                ${renderGroupActions(type, id, topic)}
+            </div>
+        </div>
+    `;
+}
+__name(renderGroupItem, "renderGroupItem");
+function renderGroupActions(type, groupId, topic) {
+  switch (type) {
+    case "my":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" title="\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
+                    \u{1F4AC}
+                </button>
+                <button class="action-btn leave" data-group-id="${groupId}" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
+                    \u{1F5D1}\uFE0F
+                </button>
+            `;
+    case "discovered":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                    \u2795
+                </button>
+            `;
+    case "joined":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" title="\u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
+                    \u{1F4AC}
+                </button>
+                <button class="action-btn leave" data-group-id="${groupId}" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">
+                    \u{1F6AA}
+                </button>
+            `;
+    case "search":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                    \u2795
+                </button>
+            `;
+    default:
+      return "";
   }
 }
-__name(formatDate2, "formatDate");
-function getGroupTypeIcon(group) {
-  if (group.owner) return "\u{1F3E0}";
-  if (group.isPublic) return "\u{1F310}";
-  return "\u{1F512}";
+__name(renderGroupActions, "renderGroupActions");
+function renderEmptyState(type, searchQuery = "") {
+  const states = {
+    my: {
+      icon: "\u{1F3E0}",
+      title: "\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
+      description: "\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      action: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443"
+    },
+    discovered: {
+      icon: "\u{1F310}",
+      title: "\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B",
+      description: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u044C\u0442\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0432 \u0441\u0435\u0442\u0438",
+      action: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C"
+    },
+    joined: {
+      icon: "\u{1F91D}",
+      title: "\u041D\u0435\u0442 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
+      description: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      action: "\u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B"
+    },
+    search: {
+      icon: "\u{1F50D}",
+      title: `\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 "${searchQuery}" \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E`,
+      description: "\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441",
+      action: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A"
+    }
+  };
+  const state = states[type] || states.my;
+  return `
+        <div class="empty-state">
+            <div class="empty-icon">${state.icon}</div>
+            <p class="empty-text">${state.title}</p>
+            <button class="empty-action" id="${type}-action">
+                ${state.action}
+            </button>
+        </div>
+    `;
 }
-__name(getGroupTypeIcon, "getGroupTypeIcon");
-function getGroupTypeClass(group) {
-  if (group.owner) return "type-owner";
-  if (group.isPublic) return "type-public";
-  return "type-private";
-}
-__name(getGroupTypeClass, "getGroupTypeClass");
-function getGroupTypeLabel(group) {
-  if (group.owner) return "\u041C\u043E\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
-  if (group.isPublic) return "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F";
-  return "\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u0430\u044F";
+__name(renderEmptyState, "renderEmptyState");
+function getGroupTypeLabel(type) {
+  const labels = {
+    my: "\u041C\u043E\u044F",
+    discovered: "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F",
+    joined: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.",
+    search: "\u041D\u0430\u0439\u0434\u0435\u043D\u0430"
+  };
+  return labels[type] || "\u0413\u0440\u0443\u043F\u043F\u0430";
 }
 __name(getGroupTypeLabel, "getGroupTypeLabel");
-function getSearchResultActions(group, state) {
-  const isOwned = state.groups?.some((g) => g.id === group.id);
-  const isJoined = state.joinedGroups?.some((g) => g.id === group.id);
-  if (isOwned) {
-    return `
-        <button class="action-btn primary open-owned" data-group-id="${group.id}">
-            <span class="action-icon">\u{1F4AC}</span>
-            \u041E\u0442\u043A\u0440\u044B\u0442\u044C
-        </button>
-    `;
-  } else if (isJoined) {
-    return `
-        <button class="action-btn primary open-joined" data-group-id="${group.id}">
-            <span class="action-icon">\u{1F4AC}</span>
-            \u0412\u043E\u0439\u0442\u0438
-        </button>
-        <button class="action-btn secondary leave-from-search" data-group-id="${group.id}">
-            <span class="action-icon">\u{1F6AA}</span>
-            \u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C
-        </button>
-    `;
-  } else {
-    return `
-        <button class="action-btn primary join-from-search" data-group-id="${group.id}" data-topic="${group.topic}">
-            <span class="action-icon">\u2795</span>
-            \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F
-        </button>
-        <button class="action-btn secondary info-from-search" data-group-id="${group.id}">
-            <span class="action-icon">\u2139\uFE0F</span>
-            \u0418\u043D\u0444\u043E
-        </button>
-    `;
-  }
+function escapeHtml3(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }
-__name(getSearchResultActions, "getSearchResultActions");
+__name(escapeHtml3, "escapeHtml");
 
 // public/components/group-manager/controller/index.mjs
 var controller3 = /* @__PURE__ */ __name(async (context) => {
@@ -41156,6 +40955,7 @@ var GroupManager = class extends BaseComponent {
   async _componentReady() {
     this._controller = await controller3(this);
     this._actions = await createActions3(this);
+    await this._controller.init();
     return true;
   }
   async createGroup(groupName) {
@@ -41244,11 +41044,14 @@ if (!customElements.get("group-manager")) {
 var template_exports4 = {};
 __export(template_exports4, {
   default: () => defaultTemplate4,
+  renderAddresses: () => renderAddresses,
   renderAddressesList: () => renderAddressesList,
+  renderConnectedPeers: () => renderConnectedPeers,
   renderConnectionControls: () => renderConnectionControls,
   renderPeersList: () => renderPeersList,
   renderQuickActions: () => renderQuickActions2,
   renderStatistics: () => renderStatistics2,
+  renderStatus: () => renderStatus2,
   renderSystemStatus: () => renderSystemStatus
 });
 function defaultTemplate4({ state = {} } = {}) {
@@ -41431,11 +41234,11 @@ function renderConnectionControls({ state = {} } = {}) {
         <div class="control-group">
             <label class="control-label">\u0420\u0435\u0436\u0438\u043C \u0440\u0430\u0431\u043E\u0442\u044B</label>
             <div class="mode-switcher">
-                <button class="mode-btn ${state.mode === "listener" ? "active" : ""}" id="listener-mode">
+                <button class="mode-btn ${state.mode === "listener" ? "active" : ""}" id="listener-mode-btn">
                     <span class="btn-icon">\u{1F4E1}</span>
                     \u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C
                 </button>
-                <button class="mode-btn ${state.mode === "dialer" ? "active" : ""}" id="dialer-mode">
+                <button class="mode-btn ${state.mode === "dialer" ? "active" : ""}" id="dialer-mode-btn">
                     <span class="btn-icon">\u{1F517}</span>
                     \u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440
                 </button>
@@ -41496,7 +41299,7 @@ function renderPeersList({ state = {} } = {}) {
         `;
   }
   return `
-    <div class="peers-container">
+    <div class="peers-container" id="connected-peers-list">
         ${peers.map((peer, index) => `
         <div class="peer-item" data-peer-id="${peer.id}">
             <div class="peer-avatar">
@@ -41532,7 +41335,7 @@ function renderAddressesList({ state = {} } = {}) {
         `;
   }
   return `
-    <div class="addresses-container">
+    <div class="addresses-container" id="listening-addresses">
         ${addresses.map((address, index) => `
         <div class="address-item" data-address="${address}">
             <div class="address-index">${index + 1}</div>
@@ -41604,6 +41407,41 @@ function renderStatistics2({ state = {} } = {}) {
     `;
 }
 __name(renderStatistics2, "renderStatistics");
+function renderAddresses({ state = {} } = {}) {
+  return renderAddressesList({ state });
+}
+__name(renderAddresses, "renderAddresses");
+function renderConnectedPeers({ state = {} } = {}) {
+  return renderPeersList({ state });
+}
+__name(renderConnectedPeers, "renderConnectedPeers");
+function renderStatus2({ state = {} } = {}) {
+  if (!state.connected) {
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
+            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
+        </div>
+        `;
+  }
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
+        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
+    </div>
+    `;
+}
+__name(renderStatus2, "renderStatus");
 function getProtocolIcon(address) {
   if (address.includes("/ws")) return "\u{1F517}";
   if (address.includes("/wss")) return "\u{1F512}";
@@ -41630,31 +41468,75 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
+      console.log("\u{1F527} PeerConnection controller initializing...");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode-btn");
+      console.log("\u{1F50D} Debug: button elements found", {
+        listenerBtn: !!listenerBtn,
+        dialerBtn: !!dialerBtn,
+        listenerBtnId: listenerBtn?.id,
+        dialerBtnId: dialerBtn?.id
+      });
       if (listenerBtn) {
         const listenerHandler = /* @__PURE__ */ __name(async () => {
           try {
+            console.log("\u{1F527} Listener mode button clicked");
             await context.switchMode("listener");
-            console.log("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
+            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
           } catch (error) {
-            console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener:", error);
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener:", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "controller-listener",
+              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C \u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044F",
+              details: error
+            });
           }
         }, "listenerHandler");
         listenerBtn.addEventListener("click", listenerHandler);
         eventListeners.push({ element: listenerBtn, handler: listenerHandler });
+        console.log("\u2705 Listener button handler attached");
       }
       if (dialerBtn) {
         const dialerHandler = /* @__PURE__ */ __name(async () => {
           try {
+            console.log("\u{1F527} Dialer mode button clicked");
             await context.switchMode("dialer");
-            console.log("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
+            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
           } catch (error) {
-            console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer:", error);
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer:", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "controller-dialer",
+              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C \u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440\u0430",
+              details: error
+            });
           }
         }, "dialerHandler");
         dialerBtn.addEventListener("click", dialerHandler);
         eventListeners.push({ element: dialerBtn, handler: dialerHandler });
+        console.log("\u2705 Dialer button handler attached");
+      }
+      const modeSwitcher = context.shadowRoot.querySelector(".mode-switcher");
+      if (modeSwitcher) {
+        const modeDelegationHandler = /* @__PURE__ */ __name(async (event) => {
+          const button = event.target.closest(".mode-btn");
+          if (button) {
+            event.preventDefault();
+            event.stopPropagation();
+            const mode = button.id === "listener-mode-btn" ? "listener" : "dialer";
+            console.log("\u{1F527} Mode delegation handler triggered:", mode);
+            try {
+              await context.switchMode(mode);
+              console.log("\u2705 Mode switched via delegation:", mode);
+            } catch (error) {
+              console.error("\u274C Error in mode delegation:", error);
+            }
+          }
+        }, "modeDelegationHandler");
+        modeSwitcher.addEventListener("click", modeDelegationHandler);
+        eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
+        console.log("\u2705 Mode switcher delegation handler attached");
       }
       const connectBtn = context.shadowRoot.querySelector("#connect-peer-btn");
       const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
@@ -41663,11 +41545,12 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           const address = peerAddressInput.value.trim();
           if (address) {
             try {
+              console.log("\u{1F527} Connecting to peer:", address);
               await context.connectToPeer(address);
               peerAddressInput.value = "";
-              console.log(`\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443: ${address}`);
+              console.log(`\u2705 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: ${address}`);
             } catch (error) {
-              console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
+              console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
               context.addError({
                 componentName: context.constructor.name,
                 source: "controller-connect",
@@ -41675,73 +41558,193 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
                 details: error
               });
             }
+          } else {
+            console.warn("\u26A0\uFE0F \u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
           }
         }, "connectHandler");
         connectBtn.addEventListener("click", connectHandler);
         eventListeners.push({ element: connectBtn, handler: connectHandler });
         const enterHandler = /* @__PURE__ */ __name((event) => {
           if (event.key === "Enter") {
+            event.preventDefault();
             connectHandler();
           }
         }, "enterHandler");
         peerAddressInput.addEventListener("keypress", enterHandler);
         eventListeners.push({ element: peerAddressInput, handler: enterHandler });
+        console.log("\u2705 Peer connection handlers attached");
       }
       const refreshBtn = context.shadowRoot.querySelector("#refresh-peers-btn");
       if (refreshBtn) {
         const refreshHandler = /* @__PURE__ */ __name(async () => {
           try {
+            console.log("\u{1F527} Refreshing peer list...");
             await context.updatePeerList();
-            console.log("\u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
+            console.log("\u2705 \u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
           } catch (error) {
-            console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432:", error);
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432:", error);
           }
         }, "refreshHandler");
         refreshBtn.addEventListener("click", refreshHandler);
         eventListeners.push({ element: refreshBtn, handler: refreshHandler });
+        console.log("\u2705 Refresh peers handler attached");
       }
       const copyAddressesBtn = context.shadowRoot.querySelector("#copy-addresses-btn");
       if (copyAddressesBtn) {
         const copyHandler = /* @__PURE__ */ __name(async () => {
           try {
+            console.log("\u{1F527} Copying addresses...");
             const addresses = await context.getRelayAddresses();
             const textToCopy = addresses.join("\n");
             await navigator.clipboard.writeText(textToCopy);
-            console.log("\u0410\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+            console.log("\u2705 \u0410\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+            const originalText = copyAddressesBtn.textContent;
             copyAddressesBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
+            copyAddressesBtn.style.background = "var(--success-gradient)";
             setTimeout(() => {
-              copyAddressesBtn.textContent = "\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430";
+              copyAddressesBtn.textContent = originalText;
+              copyAddressesBtn.style.background = "";
             }, 2e3);
           } catch (error) {
-            console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "controller-copy-addresses",
+              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432",
+              details: error
+            });
           }
         }, "copyHandler");
         copyAddressesBtn.addEventListener("click", copyHandler);
         eventListeners.push({ element: copyAddressesBtn, handler: copyHandler });
+        console.log("\u2705 Copy addresses handler attached");
       }
       const relayToggle = context.shadowRoot.querySelector("#relay-toggle");
       if (relayToggle) {
         const relayHandler = /* @__PURE__ */ __name((event) => {
           context.state.relayEnabled = event.target.checked;
-          console.log(`Relay ${context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}`);
+          console.log(`\u{1F527} Relay ${context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}`);
+          context.renderPart({
+            partName: "renderSystemStatus",
+            state: context.state,
+            selector: ".status-card .card-content"
+          }).catch(console.error);
         }, "relayHandler");
         relayToggle.addEventListener("change", relayHandler);
         eventListeners.push({ element: relayToggle, handler: relayHandler });
+        console.log("\u2705 Relay toggle handler attached");
       }
-      console.log("[PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      this.setupQuickActions(context, eventListeners);
+      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      console.log("\u{1F4CA} Total event listeners:", eventListeners.length);
+    },
+    /**
+     * Настраивает обработчики для быстрых действий
+     * @param {HTMLElement} context - Контекст компонента
+     * @param {Array} eventListeners - Массив обработчиков событий
+     */
+    setupQuickActions(context2, eventListeners2) {
+      const copyPeerIdBtn = context2.shadowRoot.querySelector("#copy-peer-id");
+      if (copyPeerIdBtn) {
+        const copyPeerHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            if (context2.state.peerId) {
+              await navigator.clipboard.writeText(context2.state.peerId);
+              console.log("\u2705 Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D:", context2.state.peerId);
+              copyPeerIdBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
+              setTimeout(() => {
+                copyPeerIdBtn.textContent = "\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID";
+              }, 2e3);
+            }
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID:", error);
+          }
+        }, "copyPeerHandler");
+        copyPeerIdBtn.addEventListener("click", copyPeerHandler);
+        eventListeners2.push({ element: copyPeerIdBtn, handler: copyPeerHandler });
+      }
+      const copyAllAddressesBtn = context2.shadowRoot.querySelector("#copy-addresses");
+      if (copyAllAddressesBtn) {
+        const copyAllAddressesHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            const addresses = context2.state.listeningAddresses || [];
+            if (addresses.length > 0) {
+              await navigator.clipboard.writeText(addresses.join("\n"));
+              console.log("\u2705 \u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B");
+              copyAllAddressesBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
+              setTimeout(() => {
+                copyAllAddressesBtn.textContent = "\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430";
+              }, 2e3);
+            }
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+          }
+        }, "copyAllAddressesHandler");
+        copyAllAddressesBtn.addEventListener("click", copyAllAddressesHandler);
+        eventListeners2.push({ element: copyAllAddressesBtn, handler: copyAllAddressesHandler });
+      }
+      const disconnectAllBtn = context2.shadowRoot.querySelector("#disconnect-all");
+      if (disconnectAllBtn) {
+        const disconnectAllHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Disconnecting all peers...");
+            console.log("\u2705 \u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432:", error);
+          }
+        }, "disconnectAllHandler");
+        disconnectAllBtn.addEventListener("click", disconnectAllHandler);
+        eventListeners2.push({ element: disconnectAllBtn, handler: disconnectAllHandler });
+      }
+      const restartNodeBtn = context2.shadowRoot.querySelector("#restart-node");
+      if (restartNodeBtn) {
+        const restartHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Restarting node...");
+            await context2.switchMode(context2.state.mode);
+            console.log("\u2705 \u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430:", error);
+          }
+        }, "restartHandler");
+        restartNodeBtn.addEventListener("click", restartHandler);
+        eventListeners2.push({ element: restartNodeBtn, handler: restartHandler });
+      }
+      const refreshAllBtn = context2.shadowRoot.querySelector("#refresh-all");
+      if (refreshAllBtn) {
+        const refreshAllHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Refreshing all data...");
+            await context2.updatePeerList();
+            console.log("\u2705 \u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445:", error);
+          }
+        }, "refreshAllHandler");
+        refreshAllBtn.addEventListener("click", refreshAllHandler);
+        eventListeners2.push({ element: refreshAllBtn, handler: refreshAllHandler });
+      }
+      console.log("\u2705 Quick actions handlers attached");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
+      console.log("\u{1F527} PeerConnection controller destroying...");
       eventListeners.forEach(({ element, handler }) => {
-        element.removeEventListener("click", handler);
-        element.removeEventListener("keypress", handler);
-        element.removeEventListener("change", handler);
+        try {
+          element.removeEventListener("click", handler);
+          element.removeEventListener("input", handler);
+          element.removeEventListener("keypress", handler);
+          element.removeEventListener("change", handler);
+        } catch (error) {
+          console.warn("\u26A0\uFE0F Error removing event listener:", error);
+        }
       });
+      console.log(`\u2705 Removed ${eventListeners.length} event listeners`);
       eventListeners = [];
-      console.log("[PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
@@ -41750,7 +41753,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
 async function createActions4(context) {
   let libp2p = null;
   let connectionInterval = null;
-  return {
+  const self = {
     /**
      * Инициализирует Libp2p узел
      * @async
@@ -41760,8 +41763,8 @@ async function createActions4(context) {
     async initializeLibp2p(mode = "listener") {
       try {
         const serverPeerId2 = "12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
-        const port2 = 6832;
-        const RENDER_EXTERNAL_HOSTNAME2 = "relay-tuem.onrender.com";
+        const PORT2 = 6835;
+        const RENDER_EXTERNAL_HOSTNAME2 = window.location.hostname;
         const isLocalhost = window.location.hostname === "localhost";
         const config = {
           addresses: {
@@ -41793,10 +41796,6 @@ async function createActions4(context) {
             filterMultiaddrForPeer: /* @__PURE__ */ __name(async () => true, "filterMultiaddrForPeer")
           }
         };
-        if (mode === "dialer") {
-          const relayMultiaddr = isLocalhost ? `/dns4/localhost/tcp/${port2}/ws/p2p/${serverPeerId2}` : `/dns4/${RENDER_EXTERNAL_HOSTNAME2}/wss/p2p/${serverPeerId2}`;
-          config.addresses.listen.push(relayMultiaddr);
-        }
         libp2p = await createLibp2p(config);
         await libp2p.start();
         console.log("Libp2p \u0443\u0437\u0435\u043B \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D:", {
@@ -41804,8 +41803,8 @@ async function createActions4(context) {
           mode,
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString())
         });
-        this.setupEventHandlers();
-        this.startPeerListUpdates();
+        self.setupEventHandlers();
+        self.startPeerListUpdates();
         return libp2p;
       } catch (error) {
         console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p:", error);
@@ -41826,15 +41825,15 @@ async function createActions4(context) {
       if (!libp2p) return;
       libp2p.addEventListener("peer:connect", (event) => {
         console.log("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
-        this.updatePeerList();
+        self.updatePeerList();
       });
       libp2p.addEventListener("peer:disconnect", (event) => {
         console.log("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
-        this.updatePeerList();
+        self.updatePeerList();
       });
       libp2p.addEventListener("self:peer:update", (event) => {
         console.log("\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
-        this.updateAddressList();
+        self.updateAddressList();
       });
       libp2p.addEventListener("peer:discovery", (event) => {
         console.log("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440:", event.detail.id.toString());
@@ -41848,18 +41847,75 @@ async function createActions4(context) {
       if (connectionInterval) {
         clearInterval(connectionInterval);
       }
-      connectionInterval = setInterval(() => {
-        this.updatePeerList();
-        this.updateAddressList();
-      }, 2e3);
+      console.log("\u{1F6AB} \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0434\u043B\u044F \u043E\u0442\u043B\u0430\u0434\u043A\u0438");
+      setTimeout(() => {
+        console.log("\u{1F504} \u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
+        self.manualUpdate();
+      }, 4e3);
+    },
+    /**
+     * Ручное обновление списков
+     * @async
+     */
+    async manualUpdate() {
+      console.log("\u{1F504} \u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0441\u043F\u0438\u0441\u043A\u043E\u0432...");
+      const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
+      const peersElement = context.shadowRoot.querySelector("#connected-peers-list");
+      console.log("\u{1F50D} \u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 DOM:", {
+        addressesElement: !!addressesElement,
+        peersElement: !!peersElement,
+        shadowRoot: !!context.shadowRoot
+      });
+      if (context.shadowRoot) {
+        console.log("\u{1F50D} \u0412\u0441\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0432 shadowRoot:");
+        context.shadowRoot.querySelectorAll("*").forEach((el) => {
+          if (el.id) {
+            console.log("  -", el.tagName, `#${el.id}`);
+          }
+        });
+      }
+      await self.updatePeerList();
+      await self.updateAddressList();
+    },
+    /**
+     * Принудительное обновление всех списков (для отладки)
+     * @async
+     */
+    async forceUpdate() {
+      console.log("\u{1F4A5} \u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0432\u0441\u0435\u0445 \u0441\u043F\u0438\u0441\u043A\u043E\u0432");
+      if (libp2p) {
+        console.log("\u{1F4CA} \u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 libp2p:", {
+          peerId: libp2p.peerId?.toString(),
+          addresses: libp2p.getMultiaddrs().map((ma) => ma.toString()),
+          peers: libp2p.getPeers().map((p2) => p2.toString())
+        });
+      }
+      await self.manualUpdate();
     },
     /**
      * Обновляет список подключенных пиров
      * @async
      */
     async updatePeerList() {
-      if (libp2p && context.updatePeerList) {
-        await context.updatePeerList();
+      if (!libp2p || !context.state) {
+        console.log("\u274C updatePeerList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        return;
+      }
+      const peers = await self.getConnectedPeers();
+      context.state.connectedPeers = peers;
+      console.log("\u{1F465} updatePeerList: \u043F\u0438\u0440\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E:", peers.length);
+      const peersElement = context.shadowRoot.querySelector("#connected-peers-list");
+      console.log("\u{1F50D} updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D:", !!peersElement);
+      if (peersElement && context.renderPart) {
+        console.log("\u{1F3AF} updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
+        await context.renderPart({
+          partName: "renderPeersList",
+          state: context.state,
+          selector: "#connected-peers-list"
+        });
+        console.log("\u2705 updatePeerList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
+      } else {
+        console.log("\u26A0\uFE0F updatePeerList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
       }
     },
     /**
@@ -41867,13 +41923,25 @@ async function createActions4(context) {
      * @async
      */
     async updateAddressList() {
-      if (libp2p && context.state) {
-        context.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
+      if (!libp2p || !context.state) {
+        console.log("\u274C updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        return;
+      }
+      const addresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
+      context.state.listeningAddresses = addresses;
+      console.log("\u{1F4CB} updateAddressList: \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E:", addresses.length);
+      const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
+      console.log("\u{1F50D} updateAddressList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #listening-addresses \u043D\u0430\u0439\u0434\u0435\u043D:", !!addressesElement);
+      if (addressesElement && context.renderPart) {
+        console.log("\u{1F3AF} updateAddressList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
         await context.renderPart({
-          partName: "renderAddresses",
+          partName: "renderAddressesList",
           state: context.state,
           selector: "#listening-addresses"
         });
+        console.log("\u2705 updateAddressList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
+      } else {
+        console.log("\u26A0\uFE0F updateAddressList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
       }
     },
     /**
@@ -42004,8 +42072,8 @@ async function createActions4(context) {
      * @param {string} mode - Новый режим работы
      */
     async restart(mode) {
-      await this.cleanup();
-      return await this.initializeLibp2p(mode);
+      await self.cleanup();
+      return await self.initializeLibp2p(mode);
     },
     /**
      * Проверяет статус подключения
@@ -42040,6 +42108,25 @@ async function createActions4(context) {
       };
     }
   };
+  return {
+    initializeLibp2p: self.initializeLibp2p.bind(self),
+    setupEventHandlers: self.setupEventHandlers.bind(self),
+    startPeerListUpdates: self.startPeerListUpdates.bind(self),
+    manualUpdate: self.manualUpdate.bind(self),
+    forceUpdate: self.forceUpdate.bind(self),
+    updatePeerList: self.updatePeerList.bind(self),
+    updateAddressList: self.updateAddressList.bind(self),
+    connectToPeer: self.connectToPeer.bind(self),
+    getConnectedPeers: self.getConnectedPeers.bind(self),
+    getRelayAddresses: self.getRelayAddresses.bind(self),
+    subscribeToTopic: self.subscribeToTopic.bind(self),
+    sendTopicMessage: self.sendTopicMessage.bind(self),
+    getTopicPeers: self.getTopicPeers.bind(self),
+    cleanup: self.cleanup.bind(self),
+    restart: self.restart.bind(self),
+    isConnected: self.isConnected.bind(self),
+    getConnectionStats: self.getConnectionStats.bind(self)
+  };
 }
 __name(createActions4, "createActions");
 
@@ -42061,27 +42148,48 @@ var PeerConnection = class extends BaseComponent {
     };
   }
   async _componentReady() {
+    console.log("\u{1F527} PeerConnection component ready");
     this._controller = await controller4(this);
     this._actions = await createActions4(this);
+    console.log("\u{1F527} Controller and actions created:", {
+      hasController: !!this._controller,
+      hasActions: !!this._actions
+    });
+    await this._controller.init();
+    await this.initializeLibp2p(this.state.mode);
     return true;
   }
   async initializeLibp2p(mode = "listener") {
+    console.log("\u{1F680} initializeLibp2p called with mode:", mode);
     this.state.mode = mode;
     this.state.connected = false;
-    await this.showSkeleton({
-      selector: "#connection-status",
-      replace: true
-    });
     try {
+      await this.showSkeleton({
+        selector: "#connection-status",
+        replace: true
+      });
       const libp2p = await this._actions.initializeLibp2p(mode);
       this.state.peerId = libp2p.peerId.toString();
       this.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
       this.state.connected = true;
+      console.log("\u2705 Libp2p initialized successfully");
+      console.log("\u{1F4CB} New state:", {
+        mode: this.state.mode,
+        connected: this.state.connected,
+        peerId: this.state.peerId,
+        addresses: this.state.listeningAddresses
+      });
       await this.fullRender(this.state);
       return libp2p;
     } catch (error) {
-      console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p:", error);
+      console.error("\u274C Libp2p initialization failed:", error);
       await this.hideSkeleton();
+      this.addError({
+        componentName: this.constructor.name,
+        source: "initializeLibp2p",
+        message: `\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0440\u0435\u0436\u0438\u043C ${mode}`,
+        details: error
+      });
       throw error;
     }
   }
@@ -42097,25 +42205,52 @@ var PeerConnection = class extends BaseComponent {
   async updatePeerList() {
     if (this._actions.getConnectedPeers) {
       this.state.connectedPeers = await this._actions.getConnectedPeers();
-      await this.renderPart({
-        partName: "renderConnectedPeers",
-        state: this.state,
-        selector: "#connected-peers-list"
-      });
+      const peersElement = this.shadowRoot.querySelector("#connected-peers-list");
+      if (peersElement && this.renderPart) {
+        await this.renderPart({
+          partName: "renderPeersList",
+          state: this.state,
+          selector: "#connected-peers-list"
+        });
+      } else {
+        console.log("\u26A0\uFE0F updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D, \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u043C \u043F\u043E\u043B\u043D\u044B\u0439 \u0440\u0435\u043D\u0434\u0435\u0440");
+        await this.fullRender(this.state);
+      }
     }
   }
   async switchMode(mode) {
+    console.log("\u{1F527} switchMode called with:", mode);
+    console.log("\u{1F527} Current mode:", this.state.mode);
     if (this.state.mode !== mode) {
-      if (this._actions.cleanup) {
+      console.log("\u{1F527} Mode change detected, proceeding...");
+      if (this._actions && this._actions.cleanup) {
+        console.log("\u{1F527} Cleaning up previous connections...");
         await this._actions.cleanup();
       }
+      console.log("\u{1F527} Initializing Libp2p with new mode...");
       await this.initializeLibp2p(mode);
+      console.log("\u{1F527} Mode switch completed");
+    } else {
+      console.log("\u{1F527} Mode is already", mode);
     }
   }
   async getRelayAddresses() {
     return this.state.listeningAddresses.filter(
       (addr) => addr.includes("/p2p-circuit") || addr.includes("/webrtc")
     );
+  }
+  // Методы для отладки
+  async manualUpdate() {
+    console.log("\u{1F504} \u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
+    if (this._actions && this._actions.manualUpdate) {
+      await this._actions.manualUpdate();
+    }
+  }
+  async forceUpdate() {
+    console.log("\u{1F4A5} \u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
+    if (this._actions && this._actions.forceUpdate) {
+      await this._actions.forceUpdate();
+    }
   }
   async _componentDisconnected() {
     if (this._controller && this._controller.destroy) {
