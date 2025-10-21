@@ -17523,7 +17523,6 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                                     style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
                                            border-radius: 8px; background: rgba(255,255,255,0.05); 
                                            color: var(--cosmic-primary); font-size: 1rem;"
-                                    autofocus
                                 >
                                 <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
                                     \u0413\u0440\u0443\u043F\u043F\u0430 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0438 \u0441\u0442\u0430\u043D\u0435\u0442 \u0432\u0438\u0434\u0438\u043C\u043E\u0439 \u0434\u043B\u044F \u0434\u0440\u0443\u0433\u0438\u0445 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0435\u0442\u0438.

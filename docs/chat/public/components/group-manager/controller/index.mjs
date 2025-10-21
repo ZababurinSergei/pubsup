@@ -70,7 +70,6 @@ export const controller = async (context) => {
                                     style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
                                            border-radius: 8px; background: rgba(255,255,255,0.05); 
                                            color: var(--cosmic-primary); font-size: 1rem;"
-                                    autofocus
                                 >
                                 <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
                                     Группа будет создана и станет видимой для других участников сети.
