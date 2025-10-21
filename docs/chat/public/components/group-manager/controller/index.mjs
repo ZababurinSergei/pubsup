@@ -96,6 +96,14 @@ export const controller = async (context) => {
                                             const group = await context.createGroup(groupName);
                                             log('group created successfully: %o', group);
 
+                                            // Принудительное обновление UI списка групп
+                                            if (context.forceUpdateMyGroups) {
+                                                await context.forceUpdateMyGroups();
+                                            } else {
+                                                // Fallback: полный рендер
+                                                await context.fullRender(context.state);
+                                            }
+
                                             // Уведомляем chat-manager о создании группы
                                             const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
                                             if (chatManager) {

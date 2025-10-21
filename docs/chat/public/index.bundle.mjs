@@ -16657,11 +16657,6 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         toggleMembersBtn.addEventListener("click", toggleMembersHandler);
         eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
       }
-      if (messageInput) {
-        setTimeout(() => {
-          messageInput.focus();
-        }, 100);
-      }
       log7("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
     },
     /**
@@ -17513,6 +17508,11 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                     try {
                       const group = await context.createGroup(groupName);
                       log7("group created successfully: %o", group);
+                      if (context.forceUpdateMyGroups) {
+                        await context.forceUpdateMyGroups();
+                      } else {
+                        await context.fullRender(context.state);
+                      }
                       const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
                       if (chatManager) {
                         await chatManager.postMessage({
@@ -17994,11 +17994,17 @@ async function createActions3(context) {
       try {
         if (!context.renderPart) {
           log7.warn("renderPart method not available for my groups");
+          if (context.fullRender) {
+            await context.fullRender(context.state);
+          }
           return;
         }
         const myGroupsElement = context.shadowRoot?.querySelector("#my-groups-list");
         if (!myGroupsElement) {
-          log7.warn("my groups list element not found");
+          log7.warn("my groups list element not found, using full render");
+          if (context.fullRender) {
+            await context.fullRender(context.state);
+          }
           return;
         }
         await context.renderPart({
@@ -18006,8 +18012,12 @@ async function createActions3(context) {
           state: context.state,
           selector: "#my-groups-list"
         });
+        log7.trace("My groups UI updated successfully");
       } catch (error) {
-        log7.warn("error updating my groups UI: %o", error);
+        log7.error("Error updating my groups UI: %o", error);
+        if (context.fullRender) {
+          await context.fullRender(context.state);
+        }
       }
     },
     /**
@@ -18381,7 +18391,25 @@ var GroupManager = class extends BaseComponent {
       this.log("creating group: %s", groupName);
       const group = await this._actions.createGroup(groupName);
       this.log("group created: %o", group);
-      await this.safeUpdateGroupsList();
+      this.state.groups = [...this.state.groups];
+      let uiUpdated = false;
+      try {
+        uiUpdated = await this.safeRenderPart({
+          partName: "renderMyGroups",
+          state: this.state,
+          selector: "#my-groups-list"
+        });
+        this.log("UI updated via renderPart: %s", uiUpdated);
+      } catch (error) {
+        this.log.error("Error updating via renderPart: %o", error);
+      }
+      if (!uiUpdated) {
+        this.log("Using full render as fallback");
+        await this.fullRender(this.state);
+        uiUpdated = true;
+      }
+      await this.notifyGroupCreation(group);
+      this.log("Group creation completed, UI updated: %s", uiUpdated);
       return group;
     } catch (error) {
       this.log.error("error creating group: %o", error);
@@ -18391,6 +18419,27 @@ var GroupManager = class extends BaseComponent {
         throw new Error("\u0421\u0435\u0440\u0432\u0438\u0441 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432. \u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0447\u0435\u0440\u0435\u0437 \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u043A\u0443\u043D\u0434.");
       }
       throw error;
+    }
+  }
+  /**
+   * Принудительно обновляет список моих групп
+   */
+  async forceUpdateMyGroups() {
+    try {
+      this.log("Force updating my groups list");
+      this.state = { ...this.state };
+      const success = await this.safeRenderPart({
+        partName: "renderMyGroups",
+        state: this.state,
+        selector: "#my-groups-list"
+      });
+      if (!success) {
+        await this.fullRender(this.state);
+      }
+      this.log("My groups list updated successfully");
+    } catch (error) {
+      this.log.error("Error in forceUpdateMyGroups: %o", error);
+      await this.fullRender(this.state);
     }
   }
   async safeUpdateGroupsList() {
@@ -18510,6 +18559,30 @@ var GroupManager = class extends BaseComponent {
     } catch (error) {
       this.log.error("error checking node status: %o", error);
       return false;
+    }
+  }
+  /**
+   * Уведомляет другие компоненты о создании группы
+   */
+  async notifyGroupCreation(group) {
+    try {
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager) {
+        await chatManager.postMessage({
+          type: "GROUP_CREATED",
+          data: group
+        });
+      }
+      const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
+      if (peerConnection) {
+        await peerConnection.postMessage({
+          type: "GROUP_CREATED",
+          data: group
+        });
+      }
+      this.log("Group creation notified to other components");
+    } catch (error) {
+      this.log.error("Error notifying group creation: %o", error);
     }
   }
   async _componentDisconnected() {

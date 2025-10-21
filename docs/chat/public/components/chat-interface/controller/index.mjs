@@ -107,11 +107,11 @@ export const controller = async (context) => {
             }
 
             // Автофокус на поле ввода сообщения
-            if (messageInput) {
-                setTimeout(() => {
-                    messageInput.focus();
-                }, 100);
-            }
+            // if (messageInput) {
+            //     setTimeout(() => {
+            //         messageInput.focus();
+            //     }, 100);
+            // }
 
             log('контроллер инициализирован, обработчиков: %d', eventListeners.length);
         },

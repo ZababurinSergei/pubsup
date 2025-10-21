@@ -399,12 +399,19 @@ export async function createActions(context) {
             try {
                 if (!context.renderPart) {
                     log.warn('renderPart method not available for my groups');
+                    // Пытаемся использовать полный рендер
+                    if (context.fullRender) {
+                        await context.fullRender(context.state);
+                    }
                     return;
                 }
 
                 const myGroupsElement = context.shadowRoot?.querySelector('#my-groups-list');
                 if (!myGroupsElement) {
-                    log.warn('my groups list element not found');
+                    log.warn('my groups list element not found, using full render');
+                    if (context.fullRender) {
+                        await context.fullRender(context.state);
+                    }
                     return;
                 }
 
@@ -414,8 +421,14 @@ export async function createActions(context) {
                     selector: '#my-groups-list'
                 });
 
+                log.trace('My groups UI updated successfully');
+
             } catch (error) {
-                log.warn('error updating my groups UI: %o', error);
+                log.error('Error updating my groups UI: %o', error);
+                // Fallback to full render
+                if (context.fullRender) {
+                    await context.fullRender(context.state);
+                }
             }
         },
 
@@ -605,7 +618,7 @@ export async function createActions(context) {
                 (group.tags && group.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
             );
 
-            log('поиск "%s": найдено %d групп', query, filteredGroups.length);
+            log('поиск \"%s\": найдено %d групп', query, filteredGroups.length);
 
             return filteredGroups;
         },

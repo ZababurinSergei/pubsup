@@ -189,10 +189,38 @@ export class GroupManager extends BaseComponent {
             const group = await this._actions.createGroup(groupName);
             this.log('group created: %o', group);
 
-            // Безопасное обновление UI
-            await this.safeUpdateGroupsList();
+            // Принудительное обновление состояния - создаем новый массив для реактивности
+            this.state.groups = [...this.state.groups];
+
+            // Несколько способов обновления UI
+            let uiUpdated = false;
+
+            // Способ 1: Через renderPart
+            try {
+                uiUpdated = await this.safeRenderPart({
+                    partName: 'renderMyGroups',
+                    state: this.state,
+                    selector: '#my-groups-list'
+                });
+                this.log('UI updated via renderPart: %s', uiUpdated);
+            } catch (error) {
+                this.log.error('Error updating via renderPart: %o', error);
+            }
+
+            // Способ 2: Полный рендер если renderPart не сработал
+            if (!uiUpdated) {
+                this.log('Using full render as fallback');
+                await this.fullRender(this.state);
+                uiUpdated = true;
+            }
+
+            // Уведомляем другие компоненты
+            await this.notifyGroupCreation(group);
+
+            this.log('Group creation completed, UI updated: %s', uiUpdated);
 
             return group;
+
         } catch (error) {
             this.log.error('error creating group: %o', error);
 
@@ -204,6 +232,35 @@ export class GroupManager extends BaseComponent {
             }
 
             throw error;
+        }
+    }
+
+    /**
+     * Принудительно обновляет список моих групп
+     */
+    async forceUpdateMyGroups() {
+        try {
+            this.log('Force updating my groups list');
+
+            // Обновляем состояние
+            this.state = {...this.state};
+
+            // Пытаемся обновить через renderPart
+            const success = await this.safeRenderPart({
+                partName: 'renderMyGroups',
+                state: this.state,
+                selector: '#my-groups-list'
+            });
+
+            if (!success) {
+                // Fallback to full render
+                await this.fullRender(this.state);
+            }
+
+            this.log('My groups list updated successfully');
+        } catch (error) {
+            this.log.error('Error in forceUpdateMyGroups: %o', error);
+            await this.fullRender(this.state);
         }
     }
 
@@ -352,6 +409,35 @@ export class GroupManager extends BaseComponent {
         } catch (error) {
             this.log.error('error checking node status: %o', error);
             return false;
+        }
+    }
+
+    /**
+     * Уведомляет другие компоненты о создании группы
+     */
+    async notifyGroupCreation(group) {
+        try {
+            // Уведомляем chat-manager
+            const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+            if (chatManager) {
+                await chatManager.postMessage({
+                    type: 'GROUP_CREATED',
+                    data: group
+                });
+            }
+
+            // Уведомляем peer-connection если нужно
+            const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
+            if (peerConnection) {
+                await peerConnection.postMessage({
+                    type: 'GROUP_CREATED',
+                    data: group
+                });
+            }
+
+            this.log('Group creation notified to other components');
+        } catch (error) {
+            this.log.error('Error notifying group creation: %o', error);
         }
     }
 
