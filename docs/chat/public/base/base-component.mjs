@@ -279,7 +279,7 @@ export class BaseComponent extends HTMLElement {
             this.shadowRoot.appendChild(style);
             log(`Стили для ${this.constructor.name} загружены из ${cssPath}`);
         } catch (error) {
-            log.warn(`Ошибка загрузки стилей для ${this.constructor.name}:`, error)
+            log.error(`Ошибка загрузки стилей для ${this.constructor.name}:`, error)
         }
     }
 
@@ -516,18 +516,18 @@ export class BaseComponent extends HTMLElement {
     async renderPart({ partName = 'defaultTemplate', state = {}, selector, method = 'innerHTML' } = {}) {
         try {
             if (!this._templateMethods || !this._templateMethods[partName]) {
-                log.warn(`Метод шаблона '${partName}' не найден в ${this.constructor.name}`);
+                log.error(`Метод шаблона '${partName}' не найден в ${this.constructor.name}`);
                 return false;
             }
 
             if (!selector) {
-                log.warn(`Не указан селектор для рендеринга части '${partName}'`);
+                log.error(`Не указан селектор для рендеринга части '${partName}'`);
                 return false;
             }
 
             const targetElement = this.shadowRoot.querySelector(selector);
             if (!targetElement) {
-                log.warn(`Элемент с селектором '${selector}' не найден`);
+                log.error(`Элемент с селектором '${selector}' не найден`);
                 return false;
             }
 
@@ -555,7 +555,7 @@ export class BaseComponent extends HTMLElement {
                     targetElement.insertAdjacentHTML('afterend', htmlContent);
                     break;
                 default:
-                    log.warn(`Неизвестный метод вставки: ${method}`);
+                    log.error(`Неизвестный метод вставки: ${method}`);
                     return false;
             }
 
@@ -633,7 +633,7 @@ export class BaseComponent extends HTMLElement {
         try {
             const targetElement = this.shadowRoot.querySelector(selector);
             if (!targetElement) {
-                log.warn(`Элемент с селектором '${selector}' не найден для очистки`);
+                log.error(`Элемент с селектором '${selector}' не найден для очистки`);
                 return false;
             }
 
@@ -680,7 +680,7 @@ export class BaseComponent extends HTMLElement {
     async _registerComponent() {
         try {
             if (!this.id) {
-                log.warn('ЯТО-ID1: Компонент желательно имеет ID для регистрации');
+                log.error('ЯТО-ID1: Компонент желательно имеет ID для регистрации');
                 throw new Error('ЯТО-ID1: Компонент требует ID'); // Строгое требование по спецификации
                 return;
             }

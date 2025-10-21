@@ -58,8 +58,10 @@ export const controller = async (context) => {
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'childList') {
-                        setupCopyHandlers();
-                        setupPeerCopyHandlers();
+                        if(mutation?.target?.closest && mutation.target.closest('.addresses-card')) {
+                            setupCopyHandlers();
+                            setupPeerCopyHandlers();
+                        }
                     }
                 });
             });
@@ -74,10 +76,10 @@ export const controller = async (context) => {
             context._copyObserver = observer;
 
             // Инициализация кнопок при первом рендере
-            setTimeout(() => {
+            // setTimeout(() => {
                 setupCopyHandlers();
                 setupPeerCopyHandlers();
-            }, 100);
+            // }, 100);
 
             // Обработчик подключения к пиру
             const connectBtn = context.shadowRoot.querySelector('#connect-peer-btn');
@@ -181,7 +183,7 @@ export const controller = async (context) => {
                             });
                         }
                     } else {
-                        log.warn('Пустой адрес для подключения');
+                        log.error('Пустой адрес для подключения');
                     }
                 };
 
@@ -375,7 +377,7 @@ export const controller = async (context) => {
                     element.removeEventListener('keypress', handler);
                     element.removeEventListener('change', handler);
                 } catch (error) {
-                    log.warn('Error removing event listener: %o', error);
+                    log.error('Error removing event listener: %o', error);
                 }
             });
 

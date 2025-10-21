@@ -193,6 +193,8 @@ export class PeerConnection extends BaseComponent {
      */
     async copyToClipboard(text, successMessage = 'Текст скопирован в буфер обмена', addressItem) {
         try {
+            console.log('dddddddddddddddddddddddddddddddddddddd')
+            console.trace()
             await navigator.clipboard.writeText(text);
             log('Text copied to clipboard: %s', text);
 

@@ -53,7 +53,7 @@ export async function createActions(context) {
                                 this.handleDiscoveryRequest(event.detail);
                             }
                         } catch (error) {
-                            log.warn('ошибка обработки сообщения: %o', error);
+                            log.error('ошибка обработки сообщения: %o', error);
                         }
                     }
                 });
@@ -81,7 +81,7 @@ export async function createActions(context) {
                     log('получен анонс группы: %s', groupInfo.name);
                 }
             } catch (error) {
-                log.warn('ошибка обработки анонса группы: %o', error);
+                log.error('ошибка обработки анонса группы: %o', error);
             }
         },
 
@@ -128,14 +128,14 @@ export async function createActions(context) {
             try {
                 // Проверяем доступность метода renderPart
                 if (!context.renderPart) {
-                    log.warn('renderPart method not available in actions');
+                    log.error('renderPart method not available in actions');
                     return;
                 }
 
                 // Проверяем существование элемента
                 const discoveredGroupsElement = context.shadowRoot?.querySelector('#discovered-groups-list');
                 if (!discoveredGroupsElement) {
-                    log.warn('discovered groups list element not found');
+                    log.error('discovered groups list element not found');
                     return;
                 }
 
@@ -145,7 +145,7 @@ export async function createActions(context) {
                     selector: '#discovered-groups-list'
                 });
             } catch (error) {
-                log.warn('error updating discovered groups UI: %o', error);
+                log.error('error updating discovered groups UI: %o', error);
                 // Не выбрасываем ошибку дальше, чтобы не прерывать логику
             }
         },
@@ -160,9 +160,9 @@ export async function createActions(context) {
             }
 
             // Обновляем список групп каждые 10 секунд
-            discoveredGroupsInterval = setInterval(async () => {
+            // discoveredGroupsInterval = setInterval(async () => {
                 await this.discoverGroups();
-            }, 10000);
+            // }, 10000);
 
             // Первоначальное обнаружение
             await this.discoverGroups();
@@ -251,7 +251,7 @@ export async function createActions(context) {
                 }
 
             } catch (error) {
-                log.warn('ошибка обработки запроса обнаружения: %o', error);
+                log.error('ошибка обработки запроса обнаружения: %o', error);
             }
         },
 
@@ -261,7 +261,7 @@ export async function createActions(context) {
          */
         discoverGroups: async function() {
             if (!libp2p) {
-                log.warn('libp2p не инициализирован');
+                log.error('libp2p не инициализирован');
                 return;
             }
 
@@ -307,7 +307,7 @@ export async function createActions(context) {
 
                         discoveredGroups.push(groupInfo);
                     } catch (error) {
-                        log.warn('ошибка получения информации о группе %s: %o', topic, error);
+                        log.error('ошибка получения информации о группе %s: %o', topic, error);
                     }
                 }
 
@@ -398,7 +398,7 @@ export async function createActions(context) {
         async safeUpdateMyGroupsUI() {
             try {
                 if (!context.renderPart) {
-                    log.warn('renderPart method not available for my groups');
+                    log.error('renderPart method not available for my groups');
                     // Пытаемся использовать полный рендер
                     if (context.fullRender) {
                         await context.fullRender(context.state);
@@ -408,7 +408,7 @@ export async function createActions(context) {
 
                 const myGroupsElement = context.shadowRoot?.querySelector('#my-groups-list');
                 if (!myGroupsElement) {
-                    log.warn('my groups list element not found, using full render');
+                    log.error('my groups list element not found, using full render');
                     if (context.fullRender) {
                         await context.fullRender(context.state);
                     }
@@ -541,13 +541,13 @@ export async function createActions(context) {
         async safeUpdateJoinedGroupsUI() {
             try {
                 if (!context.renderPart) {
-                    log.warn('renderPart method not available for joined groups');
+                    log.error('renderPart method not available for joined groups');
                     return;
                 }
 
                 const joinedGroupsElement = context.shadowRoot?.querySelector('#joined-groups-list');
                 if (!joinedGroupsElement) {
-                    log.warn('joined groups list element not found');
+                    log.error('joined groups list element not found');
                     return;
                 }
 
@@ -558,7 +558,7 @@ export async function createActions(context) {
                 });
 
             } catch (error) {
-                log.warn('error updating joined groups UI: %o', error);
+                log.error('error updating joined groups UI: %o', error);
             }
         },
 
@@ -638,7 +638,7 @@ export async function createActions(context) {
                 const subscribers = libp2p.services.pubsub.getSubscribers(topic);
                 return subscribers.map(peerId => peerId.toString());
             } catch (error) {
-                log.warn('ошибка получения участников группы %s: %o', topic, error);
+                log.error('ошибка получения участников группы %s: %o', topic, error);
                 return [];
             }
         },

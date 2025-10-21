@@ -48,7 +48,7 @@ export class ChatManager extends BaseComponent {
             const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
 
             if (!peerConnection) {
-                log.warn('PeerConnection component not found');
+                log.error('PeerConnection component not found');
                 return;
             }
 
@@ -193,7 +193,7 @@ export class ChatManager extends BaseComponent {
      */
     async setupGroupStream(topic) {
         if (!this.node) {
-            log.warn('Node not available for stream setup');
+            log.error('Node not available for stream setup');
             return;
         }
 
@@ -259,7 +259,7 @@ export class ChatManager extends BaseComponent {
      */
     async sendMessageViaStream(topic, messageText) {
         if (!this.node || !this.state.currentGroup) {
-            log.warn('Node or current group not available');
+            log.error('Node or current group not available');
             return false;
         }
 
@@ -415,7 +415,7 @@ export class ChatManager extends BaseComponent {
                     await this.handleGroupCreated(event.data);
                     break;
                 default:
-                    log.warn('Неизвестный тип сообщения: %s', event.type);
+                    log.error('Неизвестный тип сообщения: %s', event.type);
             }
         } catch (error) {
             log.error('Error processing message in ChatManager: %o', error);
@@ -479,7 +479,7 @@ export class ChatManager extends BaseComponent {
             try {
                 await streamData.stream.close();
             } catch (error) {
-                log.warn('Error closing stream %s: %o', key, error);
+                log.error('Error closing stream %s: %o', key, error);
             }
         }
         this.activeStreams.clear();

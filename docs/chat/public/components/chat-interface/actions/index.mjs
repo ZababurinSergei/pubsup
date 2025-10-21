@@ -58,7 +58,7 @@ async function sendMessage(message, topic) {
 
     try {
         if (!message.trim()) {
-            log.warn('попытка отправки пустого сообщения');
+            log.error('попытка отправки пустого сообщения');
             await this.showModal({
                 title: 'Ошибка',
                 content: '<p>Сообщение не может быть пустым</p>',
@@ -68,7 +68,7 @@ async function sendMessage(message, topic) {
         }
 
         if (!topic) {
-            log.warn('не выбрана группа для отправки');
+            log.error('не выбрана группа для отправки');
             await this.showModal({
                 title: 'Ошибка',
                 content: '<p>Не выбрана группа для отправки</p>',

@@ -103,7 +103,7 @@ export class ChatInterface extends BaseComponent {
                     break;
 
                 default:
-                    this._log.warn('неизвестный тип сообщения: %s', event.type);
+                    this._log.error('неизвестный тип сообщения: %s', event.type);
             }
         } catch (error) {
             this._log.error('❌ ошибка обработки сообщения: %o', error);

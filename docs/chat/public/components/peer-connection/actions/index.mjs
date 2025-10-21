@@ -111,42 +111,45 @@ export async function createActions(context) {
             if (!libp2p) return;
 
             // Обработчик подключения пира
-            libp2p.addEventListener('peer:connect', (event) => {
+            libp2p.addEventListener('peer:connect', async (event) => {
                 log('Подключен пир: %s', event.detail.toString());
 
                 // Обновляем список пиров
-                setTimeout(async () => {
+                // setTimeout(async () => {
                     await self.updatePeerList();
                     await self.sendPeersToChatInterface();
-                }, 500);
+                // }, 500);
             });
 
             // Обработчик отключения пира
-            libp2p.addEventListener('peer:disconnect', (event) => {
+            libp2p.addEventListener('peer:disconnect', async (event) => {
                 log('Отключен пир: %s', event.detail.toString());
 
                 // Обновляем список пиров
-                setTimeout(async () => {
+                // setTimeout(async () => {
                     await self.updatePeerList();
                     await self.sendPeersToChatInterface();
-                }, 500);
+                // }, 500);
             });
 
             // Обновление собственных адреса
             libp2p.addEventListener('self:peer:update', (event) => {
                 log('Обновлены адреса узла');
+                self.updatePeerList();
                 self.updateAddressList();
+                self.updateStatsCard();
+                self.sendPeersToChatInterface();
                 self.sendConnectionStatusToChatInterface();
             });
 
             // Обнаружение пиров
-            libp2p.addEventListener('peer:discovery', (event) => {
+            libp2p.addEventListener('peer:discovery', async (event) => {
                 log('Обнаружен пир: %s', event.detail.id.toString());
                 // Также обновляем список при обнаружении новых пиров
-                setTimeout(async () => {
+                // setTimeout(async () => {
                     await self.updatePeerList();
                     await self.sendPeersToChatInterface();
-                }, 1000);
+                // }, 1000);
             });
         },
 
@@ -240,14 +243,14 @@ export async function createActions(context) {
                 clearInterval(connectionInterval);
             }
 
-            connectionInterval = setInterval(() => {
-                log.trace('Автоматическое обновление...');
+            // connectionInterval = setInterval(() => {
+            //     log.trace('Автоматическое обновление...');
                 self.updatePeerList();
                 self.updateAddressList();
                 self.updateStatsCard();
                 self.sendPeersToChatInterface();
                 self.sendConnectionStatusToChatInterface();
-            }, 5000);
+            // }, 5000);
 
             // Однократное обновление после полной загрузки
             setTimeout(() => {

@@ -81,7 +81,7 @@ export default function defaultTemplate({state = {}} = {}) {
                             <span class="btn-icon">🔍</span>
                         </button>
                     </div>
-                    <div class="section-content">
+                    <div class="section-content" id="groups-container">
                         ${renderDiscoveredGroups({state})}
                     </div>
                 </div>
@@ -526,6 +526,49 @@ function getInputPlaceholder(state) {
     if (!state.connected) return 'Подключитесь к сети...';
     if (!state.currentGroup) return 'Выберите группу для общения...';
     return 'Введите сообщение...';
+}
+
+/**
+ * Шаблон для списка групп (для renderPart)
+ */
+export function renderGroups({state = {}} = {}) {
+    const groups = state.groups || [];
+
+    if (groups.length === 0) {
+        return `
+        <div class="empty-state">
+            <div class="empty-icon">🏠</div>
+            <p class="empty-text">Нет созданных групп</p>
+            <button class="empty-action" id="create-first-group">
+                Создать группу
+            </button>
+        </div>
+        `;
+    }
+
+    return `
+    <div class="groups-list" id="my-groups-list">
+        ${groups.map((group, index) => `
+        <div class="group-item ${state.currentGroup?.id === group.id ? 'active' : ''}" data-group-id="${group.id}" data-group-topic="${group.topic}">
+            <div class="group-avatar">
+                <span class="avatar-icon">💬</span>
+            </div>
+            <div class="group-info">
+                <div class="group-name">${escapeHtml(group.name)}</div>
+                <div class="group-meta">
+                    <span class="meta-item">👥 ${group.memberCount || 1}</span>
+                    <span class="meta-item">${formatDate(group.createdAt)}</span>
+                </div>
+            </div>
+            <div class="group-actions">
+                <button class="group-action-btn join" data-group-id="${group.id}" title="Присоединиться">
+                    <span class="btn-icon">➡️</span>
+                </button>
+            </div>
+        </div>
+        `).join('')}
+    </div>
+    `;
 }
 
 function formatDate(timestamp) {

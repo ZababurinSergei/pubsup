@@ -1669,7 +1669,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       this.shadowRoot.appendChild(style);
       log(`\u0421\u0442\u0438\u043B\u0438 \u0434\u043B\u044F ${this.constructor.name} \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u044B \u0438\u0437 ${cssPath}`);
     } catch (error) {
-      log.warn(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0442\u0438\u043B\u0435\u0439 \u0434\u043B\u044F ${this.constructor.name}:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0442\u0438\u043B\u0435\u0439 \u0434\u043B\u044F ${this.constructor.name}:`, error);
     }
   }
   /**
@@ -1886,16 +1886,16 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
   async renderPart({ partName = "defaultTemplate", state = {}, selector, method = "innerHTML" } = {}) {
     try {
       if (!this._templateMethods || !this._templateMethods[partName]) {
-        log.warn(`\u041C\u0435\u0442\u043E\u0434 \u0448\u0430\u0431\u043B\u043E\u043D\u0430 '${partName}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0432 ${this.constructor.name}`);
+        log.error(`\u041C\u0435\u0442\u043E\u0434 \u0448\u0430\u0431\u043B\u043E\u043D\u0430 '${partName}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0432 ${this.constructor.name}`);
         return false;
       }
       if (!selector) {
-        log.warn(`\u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440 \u0434\u043B\u044F \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}'`);
+        log.error(`\u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440 \u0434\u043B\u044F \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}'`);
         return false;
       }
       const targetElement = this.shadowRoot.querySelector(selector);
       if (!targetElement) {
-        log.warn(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D`);
+        log.error(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D`);
         return false;
       }
       const htmlContent = await this._templateMethods[partName]({
@@ -1919,7 +1919,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
           targetElement.insertAdjacentHTML("afterend", htmlContent);
           break;
         default:
-          log.warn(`\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u043C\u0435\u0442\u043E\u0434 \u0432\u0441\u0442\u0430\u0432\u043A\u0438: ${method}`);
+          log.error(`\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u043C\u0435\u0442\u043E\u0434 \u0432\u0441\u0442\u0430\u0432\u043A\u0438: ${method}`);
           return false;
       }
       log(`\u0427\u0430\u0441\u0442\u044C '${partName}' \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D\u0430 \u0432 '${selector}' \u043C\u0435\u0442\u043E\u0434\u043E\u043C '${method}'`);
@@ -1983,7 +1983,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     try {
       const targetElement = this.shadowRoot.querySelector(selector);
       if (!targetElement) {
-        log.warn(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u043E\u0447\u0438\u0441\u0442\u043A\u0438`);
+        log.error(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u043E\u0447\u0438\u0441\u0442\u043A\u0438`);
         return false;
       }
       targetElement.innerHTML = "";
@@ -2022,7 +2022,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
   async _registerComponent() {
     try {
       if (!this.id) {
-        log.warn("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0436\u0435\u043B\u0430\u0442\u0435\u043B\u044C\u043D\u043E \u0438\u043C\u0435\u0435\u0442 ID \u0434\u043B\u044F \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438");
+        log.error("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0436\u0435\u043B\u0430\u0442\u0435\u043B\u044C\u043D\u043E \u0438\u043C\u0435\u0435\u0442 ID \u0434\u043B\u044F \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438");
         throw new Error("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0442\u0440\u0435\u0431\u0443\u0435\u0442 ID");
         return;
       }
@@ -2097,6 +2097,7 @@ __export(template_exports, {
   renderActiveChatHeader: () => renderActiveChatHeader,
   renderConnectionInfo: () => renderConnectionInfo,
   renderDiscoveredGroups: () => renderDiscoveredGroups,
+  renderGroups: () => renderGroups,
   renderJoinedGroups: () => renderJoinedGroups,
   renderMessages: () => renderMessages,
   renderMyGroups: () => renderMyGroups,
@@ -2180,7 +2181,7 @@ function defaultTemplate({ state = {} } = {}) {
                             <span class="btn-icon">\u{1F50D}</span>
                         </button>
                     </div>
-                    <div class="section-content">
+                    <div class="section-content" id="groups-container">
                         ${renderDiscoveredGroups({ state })}
                     </div>
                 </div>
@@ -2589,6 +2590,44 @@ function getInputPlaceholder(state) {
   return "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...";
 }
 __name(getInputPlaceholder, "getInputPlaceholder");
+function renderGroups({ state = {} } = {}) {
+  const groups = state.groups || [];
+  if (groups.length === 0) {
+    return `
+        <div class="empty-state">
+            <div class="empty-icon">\u{1F3E0}</div>
+            <p class="empty-text">\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F</p>
+            <button class="empty-action" id="create-first-group">
+                \u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443
+            </button>
+        </div>
+        `;
+  }
+  return `
+    <div class="groups-list" id="my-groups-list">
+        ${groups.map((group, index) => `
+        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}" data-group-topic="${group.topic}">
+            <div class="group-avatar">
+                <span class="avatar-icon">\u{1F4AC}</span>
+            </div>
+            <div class="group-info">
+                <div class="group-name">${escapeHtml(group.name)}</div>
+                <div class="group-meta">
+                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>
+                    <span class="meta-item">${formatDate(group.createdAt)}</span>
+                </div>
+            </div>
+            <div class="group-actions">
+                <button class="group-action-btn join" data-group-id="${group.id}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                    <span class="btn-icon">\u27A1\uFE0F</span>
+                </button>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderGroups, "renderGroups");
 function formatDate(timestamp) {
   if (!timestamp) return "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u043E";
   const date = new Date(timestamp);
@@ -15849,7 +15888,7 @@ var ChatManager = class extends BaseComponent {
     try {
       const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
       if (!peerConnection) {
-        log5.warn("PeerConnection component not found");
+        log5.error("PeerConnection component not found");
         return;
       }
       let attempts = 0;
@@ -15962,7 +16001,7 @@ var ChatManager = class extends BaseComponent {
    */
   async setupGroupStream(topic) {
     if (!this.node) {
-      log5.warn("Node not available for stream setup");
+      log5.error("Node not available for stream setup");
       return;
     }
     try {
@@ -16008,7 +16047,7 @@ var ChatManager = class extends BaseComponent {
    */
   async sendMessageViaStream(topic, messageText) {
     if (!this.node || !this.state.currentGroup) {
-      log5.warn("Node or current group not available");
+      log5.error("Node or current group not available");
       return false;
     }
     try {
@@ -16132,7 +16171,7 @@ var ChatManager = class extends BaseComponent {
           await this.handleGroupCreated(event.data);
           break;
         default:
-          log5.warn("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
+          log5.error("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
       }
     } catch (error) {
       log5.error("Error processing message in ChatManager: %o", error);
@@ -16184,7 +16223,7 @@ var ChatManager = class extends BaseComponent {
       try {
         await streamData.stream.close();
       } catch (error) {
-        log5.warn("Error closing stream %s: %o", key, error);
+        log5.error("Error closing stream %s: %o", key, error);
       }
     }
     this.activeStreams.clear();
@@ -16715,7 +16754,7 @@ async function sendMessage(message2, topic) {
   const log7 = logger("chat-interface:actions:sendMessage");
   try {
     if (!message2.trim()) {
-      log7.warn("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
+      log7.error("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
@@ -16724,7 +16763,7 @@ async function sendMessage(message2, topic) {
       return;
     }
     if (!topic) {
-      log7.warn("\u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438");
+      log7.error("\u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438</p>",
@@ -16988,7 +17027,7 @@ var ChatInterface = class extends BaseComponent {
           await this.handleIncomingMessage(event.data);
           break;
         default:
-          this._log.warn("\u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
+          this._log.error("\u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
       }
     } catch (error) {
       this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
@@ -17684,7 +17723,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
           element.removeEventListener("click", handler);
           element.removeEventListener("input", handler);
         } catch (error) {
-          log7.warn("error removing event listener: %o", error);
+          log7.error("error removing event listener: %o", error);
         }
       });
       if (context._groupObserver) {
@@ -17734,7 +17773,7 @@ async function createActions3(context) {
                 this.handleDiscoveryRequest(event.detail);
               }
             } catch (error) {
-              log7.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+              log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
             }
           }
         });
@@ -17756,7 +17795,7 @@ async function createActions3(context) {
           log7("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
         }
       } catch (error) {
-        log7.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
       }
     },
     /**
@@ -17791,12 +17830,12 @@ async function createActions3(context) {
     async safeUpdateDiscoveredGroupsUI() {
       try {
         if (!context.renderPart) {
-          log7.warn("renderPart method not available in actions");
+          log7.error("renderPart method not available in actions");
           return;
         }
         const discoveredGroupsElement = context.shadowRoot?.querySelector("#discovered-groups-list");
         if (!discoveredGroupsElement) {
-          log7.warn("discovered groups list element not found");
+          log7.error("discovered groups list element not found");
           return;
         }
         await context.renderPart({
@@ -17805,7 +17844,7 @@ async function createActions3(context) {
           selector: "#discovered-groups-list"
         });
       } catch (error) {
-        log7.warn("error updating discovered groups UI: %o", error);
+        log7.error("error updating discovered groups UI: %o", error);
       }
     },
     /**
@@ -17816,9 +17855,7 @@ async function createActions3(context) {
       if (discoveredGroupsInterval) {
         clearInterval(discoveredGroupsInterval);
       }
-      discoveredGroupsInterval = setInterval(async () => {
-        await this.discoverGroups();
-      }, 1e4);
+      await this.discoverGroups();
       await this.discoverGroups();
     }, "startGroupDiscovery"),
     /**
@@ -17883,7 +17920,7 @@ async function createActions3(context) {
           log7("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
         }
       } catch (error) {
-        log7.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
+        log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
       }
     },
     /**
@@ -17892,7 +17929,7 @@ async function createActions3(context) {
      */
     discoverGroups: /* @__PURE__ */ __name(async function() {
       if (!libp2p) {
-        log7.warn("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        log7.error("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         return;
       }
       try {
@@ -17925,7 +17962,7 @@ async function createActions3(context) {
             };
             discoveredGroups.push(groupInfo);
           } catch (error) {
-            log7.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
+            log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
           }
         }
         context.state.discoveredGroups = discoveredGroups;
@@ -17993,7 +18030,7 @@ async function createActions3(context) {
     async safeUpdateMyGroupsUI() {
       try {
         if (!context.renderPart) {
-          log7.warn("renderPart method not available for my groups");
+          log7.error("renderPart method not available for my groups");
           if (context.fullRender) {
             await context.fullRender(context.state);
           }
@@ -18001,7 +18038,7 @@ async function createActions3(context) {
         }
         const myGroupsElement = context.shadowRoot?.querySelector("#my-groups-list");
         if (!myGroupsElement) {
-          log7.warn("my groups list element not found, using full render");
+          log7.error("my groups list element not found, using full render");
           if (context.fullRender) {
             await context.fullRender(context.state);
           }
@@ -18109,12 +18146,12 @@ async function createActions3(context) {
     async safeUpdateJoinedGroupsUI() {
       try {
         if (!context.renderPart) {
-          log7.warn("renderPart method not available for joined groups");
+          log7.error("renderPart method not available for joined groups");
           return;
         }
         const joinedGroupsElement = context.shadowRoot?.querySelector("#joined-groups-list");
         if (!joinedGroupsElement) {
-          log7.warn("joined groups list element not found");
+          log7.error("joined groups list element not found");
           return;
         }
         await context.renderPart({
@@ -18123,7 +18160,7 @@ async function createActions3(context) {
           selector: "#joined-groups-list"
         });
       } catch (error) {
-        log7.warn("error updating joined groups UI: %o", error);
+        log7.error("error updating joined groups UI: %o", error);
       }
     },
     /**
@@ -18184,7 +18221,7 @@ async function createActions3(context) {
         const subscribers = libp2p.services.pubsub.getSubscribers(topic);
         return subscribers.map((peerId) => peerId.toString());
       } catch (error) {
-        log7.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
+        log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
         return [];
       }
     }, "getGroupMembers"),
@@ -19174,8 +19211,10 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === "childList") {
-            setupCopyHandlers();
-            setupPeerCopyHandlers();
+            if (mutation?.target?.closest && mutation.target.closest(".addresses-card")) {
+              setupCopyHandlers();
+              setupPeerCopyHandlers();
+            }
           }
         });
       });
@@ -19184,10 +19223,8 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         subtree: true
       });
       context._copyObserver = observer;
-      setTimeout(() => {
-        setupCopyHandlers();
-        setupPeerCopyHandlers();
-      }, 100);
+      setupCopyHandlers();
+      setupPeerCopyHandlers();
       const connectBtn = context.shadowRoot.querySelector("#connect-peer-btn");
       const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
@@ -19278,7 +19315,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
               });
             }
           } else {
-            log7.warn("\u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
+            log7.error("\u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
           }
         }, "connectHandler");
         connectBtn.addEventListener("click", connectHandler);
@@ -19441,7 +19478,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           element.removeEventListener("keypress", handler);
           element.removeEventListener("change", handler);
         } catch (error) {
-          log7.warn("Error removing event listener: %o", error);
+          log7.error("Error removing event listener: %o", error);
         }
       });
       if (context._copyObserver) {
@@ -35619,31 +35656,28 @@ async function createActions4(context) {
      */
     async setupEventHandlers() {
       if (!libp2p) return;
-      libp2p.addEventListener("peer:connect", (event) => {
+      libp2p.addEventListener("peer:connect", async (event) => {
         log7("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
-        setTimeout(async () => {
-          await self.updatePeerList();
-          await self.sendPeersToChatInterface();
-        }, 500);
+        await self.updatePeerList();
+        await self.sendPeersToChatInterface();
       });
-      libp2p.addEventListener("peer:disconnect", (event) => {
+      libp2p.addEventListener("peer:disconnect", async (event) => {
         log7("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
-        setTimeout(async () => {
-          await self.updatePeerList();
-          await self.sendPeersToChatInterface();
-        }, 500);
+        await self.updatePeerList();
+        await self.sendPeersToChatInterface();
       });
       libp2p.addEventListener("self:peer:update", (event) => {
         log7("\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
+        self.updatePeerList();
         self.updateAddressList();
+        self.updateStatsCard();
+        self.sendPeersToChatInterface();
         self.sendConnectionStatusToChatInterface();
       });
-      libp2p.addEventListener("peer:discovery", (event) => {
+      libp2p.addEventListener("peer:discovery", async (event) => {
         log7("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440: %s", event.detail.id.toString());
-        setTimeout(async () => {
-          await self.updatePeerList();
-          await self.sendPeersToChatInterface();
-        }, 1e3);
+        await self.updatePeerList();
+        await self.sendPeersToChatInterface();
       });
     },
     /**
@@ -35725,14 +35759,11 @@ async function createActions4(context) {
       if (connectionInterval) {
         clearInterval(connectionInterval);
       }
-      connectionInterval = setInterval(() => {
-        log7.trace("\u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435...");
-        self.updatePeerList();
-        self.updateAddressList();
-        self.updateStatsCard();
-        self.sendPeersToChatInterface();
-        self.sendConnectionStatusToChatInterface();
-      }, 5e3);
+      self.updatePeerList();
+      self.updateAddressList();
+      self.updateStatsCard();
+      self.sendPeersToChatInterface();
+      self.sendConnectionStatusToChatInterface();
       setTimeout(() => {
         log7.trace("\u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
         self.manualUpdate();
@@ -36170,6 +36201,8 @@ var PeerConnection = class extends BaseComponent {
    */
   async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem) {
     try {
+      console.log("dddddddddddddddddddddddddddddddddddddd");
+      console.trace();
       await navigator.clipboard.writeText(text);
       log6("Text copied to clipboard: %s", text);
       addressItem.classList.add("copied");

@@ -317,7 +317,7 @@ export const controller = async (context) => {
                     element.removeEventListener('click', handler);
                     element.removeEventListener('input', handler);
                 } catch (error) {
-                    log.warn('error removing event listener: %o', error);
+                    log.error('error removing event listener: %o', error);
                 }
             });
 
