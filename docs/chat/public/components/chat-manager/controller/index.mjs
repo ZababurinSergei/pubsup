@@ -8,7 +8,7 @@ export const controller = async (context) => {
 
     return {
         /**
-         * Инициализирует контроллер компонента
+         * Инициализирует контроллер компонента ChatManager
          * @async
          */
         async init() {
@@ -117,6 +117,134 @@ export const controller = async (context) => {
                 eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
             }
 
+            // Обработчики для переключения между группами
+            const setupGroupHandlers = () => {
+                const groupItems = context.shadowRoot.querySelectorAll('.group-item');
+                groupItems.forEach(item => {
+                    const handler = async (e) => {
+                        // Предотвращаем срабатывание на кнопках действий
+                        if (e.target.closest('.group-actions')) {
+                            return;
+                        }
+
+                        const groupId = e.currentTarget.getAttribute('data-group-id');
+                        const groupTopic = e.currentTarget.getAttribute('data-group-topic');
+
+                        if (groupId || groupTopic) {
+                            const topic = groupTopic || groupId;
+                            const group = context.state.groups.find(g => g.id === topic || g.topic === topic);
+                            if (group) {
+                                try {
+                                    await context.joinGroup(group);
+                                    console.log('✅ Switched to group:', group.name);
+                                } catch (error) {
+                                    console.error('❌ Error switching group:', error);
+                                    context.addError({
+                                        componentName: context.constructor.name,
+                                        source: 'group-switch',
+                                        message: 'Ошибка переключения группы',
+                                        details: error
+                                    });
+                                }
+                            }
+                        }
+                    };
+
+                    item.addEventListener('click', handler);
+                    eventListeners.push({ element: item, handler: handler });
+                });
+            };
+
+            // Обработчики для кнопок действий в группах
+            const setupGroupActionHandlers = () => {
+                // Обработчики для кнопок присоединения к группам
+                const joinButtons = context.shadowRoot.querySelectorAll('.join-group-btn');
+                joinButtons.forEach(button => {
+                    const handler = async (e) => {
+                        const groupId = e.target.dataset.groupId || e.target.closest('.join-group-btn')?.dataset.groupId;
+                        const groupTopic = e.target.dataset.topic || e.target.closest('.join-group-btn')?.dataset.topic;
+
+                        if (groupId || groupTopic) {
+                            const topic = groupTopic || groupId;
+                            const group = context.state.discoveredGroups?.find(g => g.id === topic) ||
+                                context.state.groups?.find(g => g.id === topic);
+
+                            if (group) {
+                                try {
+                                    await context.joinGroup(group);
+                                    console.log('✅ Successfully joined group:', group.name);
+                                } catch (error) {
+                                    console.error('❌ Error joining group:', error);
+                                    await context.showModal({
+                                        title: 'Ошибка',
+                                        content: `<p>Не удалось присоединиться к группе: ${error.message}</p>`,
+                                        buttons: [{ text: 'OK', type: 'primary' }]
+                                    });
+                                }
+                            }
+                        }
+                    };
+
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler: handler });
+                });
+
+                // Обработчики для кнопок выхода из групп
+                const leaveButtons = context.shadowRoot.querySelectorAll('.leave-group-btn');
+                leaveButtons.forEach(button => {
+                    const handler = async (e) => {
+                        const groupId = e.target.dataset.groupId || e.target.closest('.leave-group-btn')?.dataset.groupId;
+                        if (groupId) {
+                            try {
+                                await context.leaveGroup(groupId);
+                                console.log('✅ Successfully left group:', groupId);
+                            } catch (error) {
+                                console.error('❌ Error leaving group:', error);
+                                await context.showModal({
+                                    title: 'Ошибка',
+                                    content: `<p>Не удалось покинуть группу: ${error.message}</p>`,
+                                    buttons: [{ text: 'OK', type: 'primary' }]
+                                });
+                            }
+                        }
+                    };
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler: handler });
+                });
+            };
+
+            // Наблюдатель за изменениями DOM для динамических кнопок
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        setupGroupHandlers();
+                        setupGroupActionHandlers();
+                    }
+                });
+            });
+
+            // Начинаем наблюдение за изменениями в shadowRoot
+            observer.observe(context.shadowRoot, {
+                childList: true,
+                subtree: true
+            });
+
+            // Сохраняем observer для очистки
+            context._groupObserver = observer;
+
+            // Инициализация обработчиков при первом рендере
+            setTimeout(() => {
+                setupGroupHandlers();
+                setupGroupActionHandlers();
+            }, 100);
+
+            // Автофокус на поле ввода сообщения
+            if (messageInput) {
+                setTimeout(() => {
+                    messageInput.focus();
+                }, 100);
+            }
+
             console.log('[ChatManager] Контроллер инициализирован');
         },
 
@@ -132,6 +260,12 @@ export const controller = async (context) => {
                 element.removeEventListener('keypress', handler);
             });
             eventListeners = [];
+
+            // Остановка наблюдателя за DOM
+            if (context._groupObserver) {
+                context._groupObserver.disconnect();
+                context._groupObserver = null;
+            }
 
             console.log('[ChatManager] Контроллер уничтожен');
         }

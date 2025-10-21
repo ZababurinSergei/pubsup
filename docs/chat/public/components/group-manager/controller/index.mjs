@@ -12,18 +12,134 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
+            console.log('🔧 GroupManager controller initializing...');
+
             // Обработчик создания новой группы
             const createGroupBtn = context.shadowRoot.querySelector('#create-group-btn');
-            if (createGroupBtn) {
-                const createGroupHandler = async () => {
-                    const groupNameInput = context.shadowRoot.querySelector('#group-name-input');
-                    if (groupNameInput && groupNameInput.value.trim()) {
-                        await context.createGroup(groupNameInput.value.trim());
-                        groupNameInput.value = '';
+            const createFirstGroupBtn = context.shadowRoot.querySelector('#create-first-group');
+            const createGroupActionBtn = context.shadowRoot.querySelector('#create-group');
+
+            const createGroupHandler = async () => {
+                try {
+                    // Проверяем готовность ноды
+                    if (!context.state.nodeReady) {
+                        await context.showModal({
+                            title: 'Сеть не готова',
+                            content: `
+                                <div style="padding: 1rem 0;">
+                                    <p>P2P сеть еще не готова к работе.</p>
+                                    <p>Пожалуйста, подождите немного и попробуйте снова.</p>
+                                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1); 
+                                                border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);">
+                                        <strong>Статус:</strong> Ожидание инициализации сети...
+                                    </div>
+                                </div>
+                            `,
+                            buttons: [
+                                {
+                                    text: 'Проверить статус',
+                                    type: 'primary',
+                                    action: async () => {
+                                        await context.checkNodeStatus();
+                                    }
+                                },
+                                {
+                                    text: 'Закрыть',
+                                    type: 'secondary'
+                                }
+                            ]
+                        });
+                        return;
+                    }
+
+                    // Показываем модальное окно для ввода названия группы
+                    await context.showModal({
+                        title: 'Создание новой группы',
+                        content: `
+                            <div style="padding: 1rem 0;">
+                                <label for="group-name-input" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                                    Название группы:
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="group-name-input" 
+                                    placeholder="Введите название группы..."
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
+                                           border-radius: 8px; background: rgba(255,255,255,0.05); 
+                                           color: var(--cosmic-text-primary); font-size: 1rem;"
+                                    autofocus
+                                >
+                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-text-secondary);">
+                                    Группа будет создана и станет видимой для других участников сети.
+                                </div>
+                            </div>
+                        `,
+                        buttons: [
+                            {
+                                text: 'Отмена',
+                                type: 'secondary',
+                                action: () => console.log('Создание группы отменено')
+                            },
+                            {
+                                text: 'Создать',
+                                type: 'primary',
+                                action: async () => {
+                                    const groupNameInput = document.querySelector('#group-name-input');
+                                    if (groupNameInput && groupNameInput.value.trim()) {
+                                        const groupName = groupNameInput.value.trim();
+                                        console.log('🔧 Creating group:', groupName);
+
+                                        try {
+                                            const group = await context.createGroup(groupName);
+                                            console.log('✅ Group created successfully:', group);
+
+                                            // Уведомляем chat-manager о создании группы
+                                            const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                                            if (chatManager) {
+                                                await chatManager.postMessage({
+                                                    type: 'GROUP_CREATED',
+                                                    data: group
+                                                });
+                                            }
+                                        } catch (error) {
+                                            console.error('❌ Error creating group:', error);
+                                            await context.showModal({
+                                                title: 'Ошибка',
+                                                content: `<p>Не удалось создать группу: ${error.message}</p>`,
+                                                buttons: [{ text: 'OK', type: 'primary' }]
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        closeOnBackdropClick: true
+                    });
+                } catch (error) {
+                    console.error('❌ Error in create group handler:', error);
+                }
+            };
+
+            // Привязываем обработчик ко всем кнопкам создания группы
+            [createGroupBtn, createFirstGroupBtn, createGroupActionBtn].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', createGroupHandler);
+                    eventListeners.push({ element: btn, handler: createGroupHandler });
+                }
+            });
+
+            // Обработчик проверки статуса ноды
+            const checkStatusBtn = context.shadowRoot.querySelector('#check-status');
+            if (checkStatusBtn) {
+                const checkStatusHandler = async () => {
+                    try {
+                        await context.checkNodeStatus();
+                    } catch (error) {
+                        console.error('❌ Error checking node status:', error);
                     }
                 };
-                createGroupBtn.addEventListener('click', createGroupHandler);
-                eventListeners.push({ element: createGroupBtn, handler: createGroupHandler });
+                checkStatusBtn.addEventListener('click', checkStatusHandler);
+                eventListeners.push({ element: checkStatusBtn, handler: checkStatusHandler });
             }
 
             // Обработчик поиска групп
@@ -38,12 +154,38 @@ export const controller = async (context) => {
 
             // Обработчик обнаружения групп
             const discoverBtn = context.shadowRoot.querySelector('#discover-groups-btn');
+            const discoverGroupsBtn = context.shadowRoot.querySelector('#discover-groups');
             if (discoverBtn) {
                 const discoverHandler = async () => {
-                    await context.discoverGroups();
+                    try {
+                        await context.discoverGroups();
+                    } catch (error) {
+                        console.error('❌ Error discovering groups:', error);
+                        await context.showModal({
+                            title: 'Ошибка',
+                            content: `<p>Не удалось обнаружить группы: ${error.message}</p>`,
+                            buttons: [{ text: 'OK', type: 'primary' }]
+                        });
+                    }
                 };
                 discoverBtn.addEventListener('click', discoverHandler);
                 eventListeners.push({ element: discoverBtn, handler: discoverHandler });
+            }
+            if (discoverGroupsBtn) {
+                const discoverHandler = async () => {
+                    try {
+                        await context.discoverGroups();
+                    } catch (error) {
+                        console.error('❌ Error discovering groups:', error);
+                        await context.showModal({
+                            title: 'Ошибка',
+                            content: `<p>Не удалось обнаружить групп: ${error.message}</p>`,
+                            buttons: [{ text: 'OK', type: 'primary' }]
+                        });
+                    }
+                };
+                discoverGroupsBtn.addEventListener('click', discoverHandler);
+                eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
             }
 
             // Обработчики для кнопок присоединения к группам
@@ -51,22 +193,39 @@ export const controller = async (context) => {
                 const joinButtons = context.shadowRoot.querySelectorAll('.join-group-btn');
                 joinButtons.forEach(button => {
                     const handler = async (e) => {
-                        const groupId = e.target.dataset.groupId;
-                        const group = context.state.discoveredGroups.find(g => g.id === groupId) ||
-                            context.state.groups.find(g => g.id === groupId);
-                        if (group) {
-                            await context.joinGroup(group);
+                        const groupId = e.target.dataset.groupId || e.target.closest('.join-group-btn')?.dataset.groupId;
+                        const groupTopic = e.target.dataset.topic || e.target.closest('.join-group-btn')?.dataset.topic;
 
-                            // Уведомляем chat-manager о присоединении к группе
-                            const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
-                            if (chatManager) {
-                                await chatManager.postMessage({
-                                    type: 'JOIN_GROUP',
-                                    data: group
-                                });
+                        if (groupId || groupTopic) {
+                            const topic = groupTopic || groupId;
+                            const group = context.state.discoveredGroups?.find(g => g.id === topic) ||
+                                context.state.groups?.find(g => g.id === topic);
+
+                            if (group) {
+                                try {
+                                    await context.joinGroup(group);
+                                    console.log('✅ Successfully joined group:', group.name);
+
+                                    // Уведомляем chat-manager о присоединении к группе
+                                    const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                                    if (chatManager) {
+                                        await chatManager.postMessage({
+                                            type: 'JOIN_GROUP',
+                                            data: group
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error('❌ Error joining group:', error);
+                                    await context.showModal({
+                                        title: 'Ошибка',
+                                        content: `<p>Не удалось присоединиться к группе: ${error.message}</p>`,
+                                        buttons: [{ text: 'OK', type: 'primary' }]
+                                    });
+                                }
                             }
                         }
                     };
+
                     button.addEventListener('click', handler);
                     eventListeners.push({ element: button, handler: handler });
                 });
@@ -77,8 +236,20 @@ export const controller = async (context) => {
                 const leaveButtons = context.shadowRoot.querySelectorAll('.leave-group-btn');
                 leaveButtons.forEach(button => {
                     const handler = async (e) => {
-                        const groupId = e.target.dataset.groupId;
-                        await context.leaveGroup(groupId);
+                        const groupId = e.target.dataset.groupId || e.target.closest('.leave-group-btn')?.dataset.groupId;
+                        if (groupId) {
+                            try {
+                                await context.leaveGroup(groupId);
+                                console.log('✅ Successfully left group:', groupId);
+                            } catch (error) {
+                                console.error('❌ Error leaving group:', error);
+                                await context.showModal({
+                                    title: 'Ошибка',
+                                    content: `<p>Не удалось покинуть группу: ${error.message}</p>`,
+                                    buttons: [{ text: 'OK', type: 'primary' }]
+                                });
+                            }
+                        }
                     };
                     button.addEventListener('click', handler);
                     eventListeners.push({ element: button, handler: handler });
@@ -109,6 +280,8 @@ export const controller = async (context) => {
                 setupJoinButtons();
                 setupLeaveButtons();
             }, 100);
+
+            console.log('✅ [GroupManager] Контроллер инициализирован');
         },
 
         /**
@@ -116,17 +289,28 @@ export const controller = async (context) => {
          * @async
          */
         async destroy() {
+            console.log('🔧 GroupManager controller destroying...');
+
             // Очистка всех обработчиков событий
             eventListeners.forEach(({ element, handler }) => {
-                element.removeEventListener('click', handler);
+                try {
+                    element.removeEventListener('click', handler);
+                    element.removeEventListener('input', handler);
+                } catch (error) {
+                    console.warn('⚠️ Error removing event listener:', error);
+                }
             });
-            eventListeners = [];
 
             // Остановка наблюдателя за DOM
             if (context._groupObserver) {
                 context._groupObserver.disconnect();
                 context._groupObserver = null;
             }
+
+            console.log(`✅ Removed ${eventListeners.length} event listeners`);
+            eventListeners = [];
+
+            console.log('✅ [GroupManager] Контроллер уничтожен');
         }
     };
 };

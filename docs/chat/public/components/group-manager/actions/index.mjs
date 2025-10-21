@@ -6,6 +6,7 @@
 export async function createActions(context) {
     let libp2p = null;
     let discoveredGroupsInterval = null;
+    const GROUPS_ANNOUNCEMENT_TOPIC = 'chat-groups-announcements';
 
     return {
         /**
@@ -16,10 +17,123 @@ export async function createActions(context) {
         initializeLibp2p: async function(libp2pInstance) {
             libp2p = libp2pInstance;
 
+            // Подписываемся на топик анонсов групп
+            await this.subscribeToGroupsAnnouncements();
+
             // Запускаем периодический поиск групп
             this.startGroupDiscovery();
 
             console.log('[GroupManager] Libp2p инициализирован для управления группами');
+        },
+
+        /**
+         * Подписывается на топик анонсов групп
+         * @async
+         */
+        async subscribeToGroupsAnnouncements() {
+            if (!libp2p) return;
+
+            try {
+                await libp2p.services.pubsub.subscribe(GROUPS_ANNOUNCEMENT_TOPIC);
+
+                // Обработчик входящих анонсов групп
+                libp2p.services.pubsub.addEventListener('message', (event) => {
+                    if (event.detail.topic === GROUPS_ANNOUNCEMENT_TOPIC) {
+                        this.handleGroupAnnouncement(event.detail);
+                    }
+                });
+
+                console.log(`[GroupManager] Подписан на топик анонсов групп: ${GROUPS_ANNOUNCEMENT_TOPIC}`);
+            } catch (error) {
+                console.error('[GroupManager] Ошибка подписки на топик анонсов:', error);
+            }
+        },
+
+        /**
+         * Обрабатывает входящие анонсы групп
+         * @param {Object} message - Сообщение с анонсом
+         */
+        async handleGroupAnnouncement(message) {
+            try {
+                const announcement = JSON.parse(new TextDecoder().decode(message.data));
+
+                if (announcement.type === 'GROUP_CREATED' || announcement.type === 'GROUP_UPDATED') {
+                    const groupInfo = announcement.data;
+
+                    // Обновляем список обнаруженных групп
+                    await this.updateDiscoveredGroups(groupInfo);
+
+                    console.log(`[GroupManager] Получен анонс группы: ${groupInfo.name}`);
+                }
+            } catch (error) {
+                console.warn('[GroupManager] Ошибка обработки анонса группы:', error);
+            }
+        },
+
+        /**
+         * Обновляет список обнаруженных групп
+         * @async
+         * @param {Object} groupInfo - Информация о группе
+         */
+        async updateDiscoveredGroups(groupInfo) {
+            if (!context.state.discoveredGroups) {
+                context.state.discoveredGroups = [];
+            }
+
+            // Проверяем, нет ли уже такой группы
+            const existingIndex = context.state.discoveredGroups.findIndex(g => g.id === groupInfo.id);
+
+            if (existingIndex >= 0) {
+                // Обновляем существующую группу
+                context.state.discoveredGroups[existingIndex] = {
+                    ...context.state.discoveredGroups[existingIndex],
+                    ...groupInfo,
+                    lastUpdated: Date.now()
+                };
+            } else {
+                // Добавляем новую группу
+                context.state.discoveredGroups.push({
+                    ...groupInfo,
+                    discoveredAt: Date.now(),
+                    lastUpdated: Date.now()
+                });
+            }
+
+            // Сортируем по времени обновления (новые сверху)
+            context.state.discoveredGroups.sort((a, b) => b.lastUpdated - a.lastUpdated);
+
+            // Безопасное обновление UI
+            await this.safeUpdateDiscoveredGroupsUI();
+        },
+
+        /**
+         * Безопасно обновляет UI списка обнаруженных групп
+         */
+        async safeUpdateDiscoveredGroupsUI() {
+            try {
+                // Проверяем доступность метода renderPart
+                if (!context.renderPart) {
+                    console.warn('⚠️ renderPart method not available in actions');
+                    return;
+                }
+
+                // Проверяем существование элемента
+                const discoveredGroupsElement = context.shadowRoot?.querySelector('#discovered-groups-list');
+                if (!discoveredGroupsElement) {
+                    console.warn('⚠️ Discovered groups list element not found');
+                    return;
+                }
+
+                await context.renderPart({
+                    partName: 'renderDiscoveredGroups',
+                    state: context.state,
+                    selector: '#discovered-groups-list'
+                });
+
+            } catch (error) {
+                console.warn('⚠️ Error updating discovered groups UI:', error);
+                // Не выбрасываем ошибку дальше, чтобы не прерывать логику
+            }
         },
 
         /**
@@ -74,7 +188,7 @@ export async function createActions(context) {
                             groupName = topic.replace('universe-chat-', '');
                         }
 
-                        // Получаем дополнительную информацию о группе через DHT (если доступно)
+                        // Получаем дополнительную информацию о группе
                         let groupInfo = {
                             id: topic,
                             name: this.formatGroupName(groupName),
@@ -94,14 +208,8 @@ export async function createActions(context) {
                 // Обновляем состояние компонента
                 context.state.discoveredGroups = discoveredGroups;
 
-                // Уведомляем компонент об обновлении
-                if (context.renderPart) {
-                    await context.renderPart({
-                        partName: 'renderDiscoveredGroups',
-                        state: context.state,
-                        selector: '#discovered-groups-list'
-                    });
-                }
+                // Безопасное обновление UI вместо прямого вызова renderPart
+                await this.safeUpdateDiscoveredGroupsUI();
 
                 console.log(`[GroupManager] Обнаружено групп: ${discoveredGroups.length}`);
 
@@ -140,18 +248,27 @@ export async function createActions(context) {
                     description: options.description || `Группа для общения: ${groupName}`,
                     isPublic: options.isPublic !== false,
                     createdAt: Date.now(),
-                    createdBy: libp2p.peerId.toString()
+                    createdBy: libp2p.peerId.toString(),
+                    tags: options.tags || ['general'],
+                    language: options.language || 'ru'
                 };
 
                 // Подписываемся на топик группы
                 await libp2p.services.pubsub.subscribe(topic);
 
                 // Публикуем информацию о создании группы
-                if (group.isPublic) {
-                    await this.announceGroupCreation(group);
+                await this.announceGroupCreation(group);
+
+                // Добавляем группу в локальный список
+                if (!context.state.groups) {
+                    context.state.groups = [];
                 }
+                context.state.groups.push(group);
 
                 console.log(`[GroupManager] Создана группа: ${groupName} (${topic})`);
+
+                // Безопасное обновление UI
+                await this.safeUpdateMyGroupsUI();
 
                 return group;
 
@@ -164,6 +281,79 @@ export async function createActions(context) {
                     details: error
                 });
                 throw error;
+            }
+        },
+
+        /**
+         * Безопасно обновляет UI списка моих групп
+         */
+        async safeUpdateMyGroupsUI() {
+            try {
+                if (!context.renderPart) {
+                    console.warn('⚠️ renderPart method not available for my groups');
+                    return;
+                }
+
+                const myGroupsElement = context.shadowRoot?.querySelector('#my-groups-list');
+                if (!myGroupsElement) {
+                    console.warn('⚠️ My groups list element not found');
+                    return;
+                }
+
+                await context.renderPart({
+                    partName: 'renderMyGroups',
+                    state: context.state,
+                    selector: '#my-groups-list'
+                });
+
+            } catch (error) {
+                console.warn('⚠️ Error updating my groups UI:', error);
+            }
+        },
+
+        /**
+         * Анонсирование создания новой группы
+         * @async
+         * @param {Object} group - Информация о группе
+         */
+        announceGroupCreation: async function(group) {
+            if (!libp2p) return;
+
+            try {
+                const announcement = {
+                    type: 'GROUP_CREATED',
+                    data: {
+                        id: group.id,
+                        name: group.name,
+                        topic: group.topic,
+                        description: group.description,
+                        memberCount: group.memberCount,
+                        createdAt: group.createdAt,
+                        createdBy: group.createdBy,
+                        isPublic: group.isPublic,
+                        tags: group.tags,
+                        language: group.language
+                    },
+                    timestamp: Date.now(),
+                    peerId: libp2p.peerId.toString()
+                };
+
+                // Публикуем анонс в служебный топик
+                await libp2p.services.pubsub.publish(
+                    GROUPS_ANNOUNCEMENT_TOPIC,
+                    new TextEncoder().encode(JSON.stringify(announcement))
+                );
+
+                console.log(`[GroupManager] Анонсирована созданная группа: ${group.name}`);
+
+            } catch (error) {
+                console.error('[GroupManager] Ошибка анонсирования группы:', error);
+                context.addError({
+                    componentName: 'GroupManager',
+                    source: 'announceGroupCreation',
+                    message: 'Ошибка анонсирования группы',
+                    details: error
+                });
             }
         },
 
@@ -196,7 +386,19 @@ export async function createActions(context) {
                     isPublic: true
                 };
 
+                // Добавляем в список присоединенных групп
+                if (!context.state.joinedGroups) {
+                    context.state.joinedGroups = [];
+                }
+
+                if (!context.state.joinedGroups.find(g => g.id === topic)) {
+                    context.state.joinedGroups.push(group);
+                }
+
                 console.log(`[GroupManager] Присоединились к группе: ${group.name} (${topic})`);
+
+                // Безопасное обновление UI
+                await this.safeUpdateJoinedGroupsUI();
 
                 return group;
 
@@ -209,6 +411,33 @@ export async function createActions(context) {
                     details: error
                 });
                 throw error;
+            }
+        },
+
+        /**
+         * Безопасно обновляет UI списка присоединенных групп
+         */
+        async safeUpdateJoinedGroupsUI() {
+            try {
+                if (!context.renderPart) {
+                    console.warn('⚠️ renderPart method not available for joined groups');
+                    return;
+                }
+
+                const joinedGroupsElement = context.shadowRoot?.querySelector('#joined-groups-list');
+                if (!joinedGroupsElement) {
+                    console.warn('⚠️ Joined groups list element not found');
+                    return;
+                }
+
+                await context.renderPart({
+                    partName: 'renderJoinedGroups',
+                    state: context.state,
+                    selector: '#joined-groups-list'
+                });
+
+            } catch (error) {
+                console.warn('⚠️ Error updating joined groups UI:', error);
             }
         },
 
@@ -226,7 +455,15 @@ export async function createActions(context) {
                 // Отписываемся от топика группы
                 await libp2p.services.pubsub.unsubscribe(topic);
 
+                // Удаляем из списка присоединенных групп
+                if (context.state.joinedGroups) {
+                    context.state.joinedGroups = context.state.joinedGroups.filter(g => g.id !== topic);
+                }
+
                 console.log(`[GroupManager] Покинули группу: ${topic}`);
+
+                // Безопасное обновление UI
+                await this.safeUpdateJoinedGroupsUI();
 
             } catch (error) {
                 console.error('[GroupManager] Ошибка выхода из группы:', error);
@@ -256,7 +493,8 @@ export async function createActions(context) {
             const filteredGroups = (context.state.discoveredGroups || []).filter(group =>
                 group.name.toLowerCase().includes(searchTerm) ||
                 (group.description && group.description.toLowerCase().includes(searchTerm)) ||
-                group.topic.toLowerCase().includes(searchTerm)
+                group.topic.toLowerCase().includes(searchTerm) ||
+                (group.tags && group.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
             );
 
             console.log(`[GroupManager] Поиск "${query}": найдено ${filteredGroups.length} групп`);
@@ -281,40 +519,6 @@ export async function createActions(context) {
             } catch (error) {
                 console.warn(`[GroupManager] Ошибка получения участников группы ${topic}:`, error);
                 return [];
-            }
-        },
-
-        /**
-         * Анонсирование создания новой группы
-         * @async
-         * @param {Object} group - Информация о группе
-         */
-        announceGroupCreation: async function(group) {
-            if (!libp2p) return;
-
-            try {
-                const announcement = {
-                    type: 'group_announcement',
-                    group: {
-                        id: group.id,
-                        name: group.name,
-                        topic: group.topic,
-                        description: group.description,
-                        createdAt: group.createdAt,
-                        createdBy: group.createdBy
-                    },
-                    timestamp: Date.now()
-                };
-
-                // Публикуем анонс в специальный топик для обнаружения групп
-                const announcementTopic = 'chat-group-announcements';
-                await libp2p.services.pubsub.publish(
-                    announcementTopic,
-                    new TextEncoder().encode(JSON.stringify(announcement))
-                );
-
-            } catch (error) {
-                console.warn('[GroupManager] Ошибка анонсирования группы:', error);
             }
         },
 

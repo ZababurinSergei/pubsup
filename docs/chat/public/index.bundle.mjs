@@ -1274,11 +1274,11 @@ function defaultTemplate({ state = {} } = {}) {
         <footer class="manager-footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <span class="info-item">Peer ID: ${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
+                    <span class="info-text">Peer ID: ${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
                     <span class="info-divider">\u2022</span>
-                    <span class="info-item">\u0420\u0435\u0436\u0438\u043C: ${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
+                    <span class="info-text">\u0420\u0435\u0436\u0438\u043C: ${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
                     <span class="info-divider">\u2022</span>
-                    <span class="info-item">Relay: ${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
+                    <span class="info-text">Relay: ${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
                 </div>
                 <div class="container-button">
                     <div class="footer-actions">
@@ -1316,14 +1316,14 @@ function renderMyGroups({ state = {} } = {}) {
         `;
   }
   return `
-    <div class="groups-list">
-        ${groups.map((group) => `
-        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}">
+    <div class="groups-list" id="my-groups-list">
+        ${groups.map((group, index) => `
+        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}" data-group-topic="${group.topic}">
             <div class="group-avatar">
                 <span class="avatar-icon">\u{1F4AC}</span>
             </div>
             <div class="group-info">
-                <div class="group-name">${group.name}</div>
+                <div class="group-name">${escapeHtml(group.name)}</div>
                 <div class="group-meta">
                     <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>
                     <span class="meta-item">${formatDate(group.createdAt)}</span>
@@ -1346,7 +1346,7 @@ function renderDiscoveredGroups({ state = {} } = {}) {
     return `
         <div class="empty-state">
             <div class="empty-icon">\u{1F310}</div>
-            <p class="empty-text">\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u044B</p>
+            <p class="empty-text">\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>
             <button class="empty-action" id="discover-groups">
                 \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C
             </button>
@@ -1354,14 +1354,14 @@ function renderDiscoveredGroups({ state = {} } = {}) {
         `;
   }
   return `
-    <div class="groups-list">
+    <div class="groups-list" id="discovered-groups-list">
         ${groups.map((group) => `
         <div class="group-item discovered" data-group-id="${group.id}" data-topic="${group.topic}">
             <div class="group-avatar">
                 <span class="avatar-icon">\u{1F50D}</span>
             </div>
             <div class="group-info">
-                <div class="group-name">${group.name}</div>
+                <div class="group-name">${escapeHtml(group.name)}</div>
                 <div class="group-description">${group.description || "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442"}</div>
                 <div class="group-meta">
                     <span class="meta-item">\u{1F465} ${group.memberCount || 0}</span>
@@ -1390,14 +1390,14 @@ function renderJoinedGroups({ state = {} } = {}) {
         `;
   }
   return `
-    <div class="groups-list">
+    <div class="groups-list" id="joined-groups-list">
         ${groups.map((group) => `
         <div class="group-item joined ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}">
             <div class="group-avatar">
                 <span class="avatar-icon">\u{1F91D}</span>
             </div>
             <div class="group-info">
-                <div class="group-name">${group.name}</div>
+                <div class="group-name">${escapeHtml(group.name)}</div>
                 <div class="group-meta">
                     <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>
                     <span class="meta-item">${formatDate(group.joinedAt)}</span>
@@ -1606,7 +1606,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
   return {
     /**
-     * Инициализирует контроллер компонента
+     * Инициализирует контроллер компонента ChatManager
      * @async
      */
     async init() {
@@ -1694,6 +1694,109 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         discoverGroupsBtn.addEventListener("click", discoverHandler);
         eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
       }
+      const setupGroupHandlers = /* @__PURE__ */ __name(() => {
+        const groupItems = context.shadowRoot.querySelectorAll(".group-item");
+        groupItems.forEach((item) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            if (e2.target.closest(".group-actions")) {
+              return;
+            }
+            const groupId = e2.currentTarget.getAttribute("data-group-id");
+            const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
+            if (groupId || groupTopic) {
+              const topic = groupTopic || groupId;
+              const group = context.state.groups.find((g) => g.id === topic || g.topic === topic);
+              if (group) {
+                try {
+                  await context.joinGroup(group);
+                  console.log("\u2705 Switched to group:", group.name);
+                } catch (error) {
+                  console.error("\u274C Error switching group:", error);
+                  context.addError({
+                    componentName: context.constructor.name,
+                    source: "group-switch",
+                    message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B",
+                    details: error
+                  });
+                }
+              }
+            }
+          }, "handler");
+          item.addEventListener("click", handler);
+          eventListeners.push({ element: item, handler });
+        });
+      }, "setupGroupHandlers");
+      const setupGroupActionHandlers = /* @__PURE__ */ __name(() => {
+        const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
+        joinButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const groupId = e2.target.dataset.groupId || e2.target.closest(".join-group-btn")?.dataset.groupId;
+            const groupTopic = e2.target.dataset.topic || e2.target.closest(".join-group-btn")?.dataset.topic;
+            if (groupId || groupTopic) {
+              const topic = groupTopic || groupId;
+              const group = context.state.discoveredGroups?.find((g) => g.id === topic) || context.state.groups?.find((g) => g.id === topic);
+              if (group) {
+                try {
+                  await context.joinGroup(group);
+                  console.log("\u2705 Successfully joined group:", group.name);
+                } catch (error) {
+                  console.error("\u274C Error joining group:", error);
+                  await context.showModal({
+                    title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                    content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
+                    buttons: [{ text: "OK", type: "primary" }]
+                  });
+                }
+              }
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+        const leaveButtons = context.shadowRoot.querySelectorAll(".leave-group-btn");
+        leaveButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const groupId = e2.target.dataset.groupId || e2.target.closest(".leave-group-btn")?.dataset.groupId;
+            if (groupId) {
+              try {
+                await context.leaveGroup(groupId);
+                console.log("\u2705 Successfully left group:", groupId);
+              } catch (error) {
+                console.error("\u274C Error leaving group:", error);
+                await context.showModal({
+                  title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                  content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
+                  buttons: [{ text: "OK", type: "primary" }]
+                });
+              }
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+      }, "setupGroupActionHandlers");
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "childList") {
+            setupGroupHandlers();
+            setupGroupActionHandlers();
+          }
+        });
+      });
+      observer.observe(context.shadowRoot, {
+        childList: true,
+        subtree: true
+      });
+      context._groupObserver = observer;
+      setTimeout(() => {
+        setupGroupHandlers();
+        setupGroupActionHandlers();
+      }, 100);
+      if (messageInput) {
+        setTimeout(() => {
+          messageInput.focus();
+        }, 100);
+      }
       console.log("[ChatManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
     },
     /**
@@ -1707,6 +1810,10 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         element.removeEventListener("keypress", handler);
       });
       eventListeners = [];
+      if (context._groupObserver) {
+        context._groupObserver.disconnect();
+        context._groupObserver = null;
+      }
       console.log("[ChatManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
@@ -14935,6 +15042,7 @@ var ChatManager = class extends BaseComponent {
   }
   async postMessage(event) {
     try {
+      console.log("\u{1F4E8} ChatManager received message:", event.type, event.data);
       switch (event.type) {
         case "SWITCH_MODE":
           await this.switchMode(event.data.mode);
@@ -14964,14 +15072,49 @@ var ChatManager = class extends BaseComponent {
         case "UPDATE_PEER_LIST":
           await this.updatePeerList(event.data.peers);
           break;
+        case "GROUP_CREATED":
+          console.log("\u2705 GROUP_CREATED received in ChatManager:", event.data);
+          await this.handleGroupCreated(event.data);
+          break;
         default:
           console.warn(`[ChatManager] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${event.type}`);
       }
     } catch (error) {
+      console.error("\u274C Error processing message in ChatManager:", error);
       this.addError({
         componentName: this.constructor.name,
         source: "postMessage",
         message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: error
+      });
+    }
+  }
+  /**
+   * Обрабатывает создание новой группы
+   * @param {Object} groupData - Данные созданной группы
+   */
+  async handleGroupCreated(groupData) {
+    try {
+      console.log("\u{1F527} Handling GROUP_CREATED in ChatManager:", groupData);
+      if (!this.state.groups.find((g) => g.id === groupData.id)) {
+        this.state.groups.push({
+          ...groupData,
+          joinedAt: Date.now()
+        });
+      }
+      await this.joinGroup(groupData.topic, groupData.name);
+      await this.renderPart({
+        partName: "renderGroups",
+        state: this.state,
+        selector: "#groups-container"
+      });
+      console.log("\u2705 Successfully handled GROUP_CREATED and joined the group");
+    } catch (error) {
+      console.error("\u274C Error handling GROUP_CREATED:", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "handleGroupCreated",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B",
         details: error
       });
     }
@@ -15864,21 +16007,24 @@ __export(template_exports3, {
   renderJoinedGroups: () => renderJoinedGroups2,
   renderMainContent: () => renderMainContent,
   renderMyGroups: () => renderMyGroups2,
+  renderNodeStatus: () => renderNodeStatus,
+  renderQuickActions: () => renderQuickActions2,
   renderSearch: () => renderSearch,
   renderSearchResults: () => renderSearchResults2
 });
 function defaultTemplate3({ state = {} } = {}) {
-  const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = state;
+  const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = state;
   return `
         <div class="group-manager">
-            ${renderHeader({ groups, discoveredGroups, joinedGroups })}
+            ${renderHeader({ groups, discoveredGroups, joinedGroups, nodeReady })}
             ${renderSearch({ searchQuery })}
-            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery })}
+            ${renderNodeStatus({ state })}
+            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady })}
         </div>
     `;
 }
 __name(defaultTemplate3, "defaultTemplate");
-function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [] } = {}) {
+function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [], nodeReady = false } = {}) {
   return `
         <header class="manager-header">
             <div class="header-content">
@@ -15895,6 +16041,12 @@ function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [] } 
                     <div class="stat-item">
                         <span class="stat-label">\u041D\u0430\u0439\u0434\u0435\u043D\u043E</span>
                         <span class="stat-value">${discoveredGroups.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">\u0421\u0435\u0442\u044C</span>
+                        <span class="stat-value ${nodeReady ? "connected" : "disconnected"}">
+                            ${nodeReady ? "\u{1F7E2}" : "\u{1F7E0}"}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -15922,62 +16074,94 @@ function renderSearch({ searchQuery = "" } = {}) {
     `;
 }
 __name(renderSearch, "renderSearch");
-function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
+function renderNodeStatus({ state = {} } = {}) {
+  return `
+    <section class="node-status-section">
+        <div class="status-item ${state.nodeReady ? "connected" : "disconnected"}">
+            <div class="status-icon ${state.nodeReady ? "connected" : "disconnected"}">
+                ${state.nodeReady ? "\u{1F7E2}" : "\u{1F7E0}"}
+            </div>
+            <div class="status-info">
+                <span class="status-label">P2P \u0421\u0435\u0442\u044C</span>
+                <span class="status-value">${state.nodeReady ? "\u0413\u043E\u0442\u043E\u0432\u0430" : "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u0442\u0441\u044F..."}</span>
+            </div>
+        </div>
+    </section>
+    `;
+}
+__name(renderNodeStatus, "renderNodeStatus");
+function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = {}) {
   return `
         <main class="manager-main">
             <div class="content-grid">
-                ${renderMyGroups2({ groups })}
-                ${renderDiscoveredGroups2({ discoveredGroups })}
-                ${renderJoinedGroups2({ joinedGroups })}
-                ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery }) : ""}
+                ${renderMyGroups2({ groups, nodeReady })}
+                ${renderDiscoveredGroups2({ discoveredGroups, nodeReady })}
+                ${renderJoinedGroups2({ joinedGroups, nodeReady })}
+                ${renderQuickActions2({ state: { nodeReady } })}
+                ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady }) : ""}
             </div>
         </main>
     `;
 }
 __name(renderMainContent, "renderMainContent");
-function renderMyGroups2({ groups = [] } = {}) {
+function renderMyGroups2({ groups = [], nodeReady = false } = {}) {
   return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">\u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">\u{1F3E0}</span>
+                    \u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B
+                </h3>
                 <span class="card-badge">${groups.length}</span>
             </div>
             <div class="card-content">
-                ${groups.length > 0 ? renderGroupsList(groups, "my") : renderEmptyState("my")}
+                <div id="my-groups-list">
+                    ${groups.length > 0 ? renderGroupsList(groups, "my", nodeReady) : renderEmptyState("my", nodeReady)}
+                </div>
             </div>
         </section>
     `;
 }
 __name(renderMyGroups2, "renderMyGroups");
-function renderDiscoveredGroups2({ discoveredGroups = [] } = {}) {
+function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false } = {}) {
   return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">\u{1F310}</span>
+                    \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435
+                </h3>
                 <span class="card-badge">${discoveredGroups.length}</span>
             </div>
             <div class="card-content">
-                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered") : renderEmptyState("discovered")}
+                <div id="discovered-groups-list">
+                    ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered", nodeReady) : renderEmptyState("discovered", nodeReady)}
+                </div>
             </div>
         </section>
     `;
 }
 __name(renderDiscoveredGroups2, "renderDiscoveredGroups");
-function renderJoinedGroups2({ joinedGroups = [] } = {}) {
+function renderJoinedGroups2({ joinedGroups = [], nodeReady = false } = {}) {
   return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">\u{1F465}</span>
+                    \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435
+                </h3>
                 <span class="card-badge">${joinedGroups.length}</span>
             </div>
             <div class="card-content">
-                ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, "joined") : renderEmptyState("joined")}
+                <div id="joined-groups-list">
+                    ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, "joined", nodeReady) : renderEmptyState("joined", nodeReady)}
+                </div>
             </div>
         </section>
     `;
 }
 __name(renderJoinedGroups2, "renderJoinedGroups");
-function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
+function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = {}) {
   const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
   const filteredGroups = allGroups.filter(
     (group) => group.name?.toLowerCase().includes(searchQuery.toLowerCase()) || group.topic?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -15985,25 +16169,61 @@ function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups
   return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">\u{1F50D}</span>
+                    \u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430
+                </h3>
                 <span class="card-badge">${filteredGroups.length}</span>
             </div>
             <div class="card-content">
-                ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, "search") : renderEmptyState("search", searchQuery)}
+                <div id="search-results">
+                    ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, "search", nodeReady) : renderEmptyState("search", nodeReady, searchQuery)}
+                </div>
             </div>
         </section>
     `;
 }
 __name(renderSearchResults2, "renderSearchResults");
-function renderGroupsList(groups, type) {
+function renderQuickActions2({ state = {} } = {}) {
+  return `
+    <section class="section-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <span class="card-icon">\u{1F680}</span>
+                \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F
+            </h3>
+        </div>
+        <div class="card-content">
+            <div class="quick-actions">
+                <button class="action-btn primary" id="create-group" ${!state.nodeReady ? "disabled" : ""}>
+                    <span class="btn-icon">\u2795</span>
+                    <span class="btn-text">${state.nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0441\u0435\u0442\u0438..."}</span>
+                </button>
+                
+                <button class="action-btn secondary" id="discover-groups" ${!state.nodeReady ? "disabled" : ""}>
+                    <span class="btn-icon">\u{1F50D}</span>
+                    <span class="btn-text">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C</span>
+                </button>
+                
+                <button class="action-btn secondary" id="check-status">
+                    <span class="btn-icon">\u{1F504}</span>
+                    <span class="btn-text">\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    `;
+}
+__name(renderQuickActions2, "renderQuickActions");
+function renderGroupsList(groups, type, nodeReady = false) {
   return `
         <div class="groups-list">
-            ${groups.map((group) => renderGroupItem(group, type)).join("")}
+            ${groups.map((group) => renderGroupItem(group, type, nodeReady)).join("")}
         </div>
     `;
 }
 __name(renderGroupsList, "renderGroupsList");
-function renderGroupItem(group, type) {
+function renderGroupItem(group, type, nodeReady = false) {
   const { id, name: name3, topic, memberCount = 1, description } = group;
   return `
         <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
@@ -16018,41 +16238,41 @@ function renderGroupItem(group, type) {
                 </div>
             </div>
             <div class="group-actions">
-                ${renderGroupActions(type, id, topic)}
+                ${renderGroupActions(type, id, topic, nodeReady)}
             </div>
         </div>
     `;
 }
 __name(renderGroupItem, "renderGroupItem");
-function renderGroupActions(type, groupId, topic) {
+function renderGroupActions(type, groupId, topic, nodeReady = false) {
   switch (type) {
     case "my":
       return `
-                <button class="action-btn join" data-group-id="${groupId}" title="\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
+                <button class="action-btn join" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
                     \u{1F4AC}
                 </button>
-                <button class="action-btn leave" data-group-id="${groupId}" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
+                <button class="action-btn leave" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
                     \u{1F5D1}\uFE0F
                 </button>
             `;
     case "discovered":
       return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" ${!nodeReady ? "disabled" : ""} title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
                     \u2795
                 </button>
             `;
     case "joined":
       return `
-                <button class="action-btn join" data-group-id="${groupId}" title="\u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
+                <button class="action-btn join" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
                     \u{1F4AC}
                 </button>
-                <button class="action-btn leave" data-group-id="${groupId}" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">
+                <button class="action-btn leave" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">
                     \u{1F6AA}
                 </button>
             `;
     case "search":
       return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" ${!nodeReady ? "disabled" : ""} title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
                     \u2795
                 </button>
             `;
@@ -16061,31 +16281,35 @@ function renderGroupActions(type, groupId, topic) {
   }
 }
 __name(renderGroupActions, "renderGroupActions");
-function renderEmptyState(type, searchQuery = "") {
+function renderEmptyState(type, nodeReady = false, searchQuery = "") {
   const states = {
     my: {
       icon: "\u{1F3E0}",
       title: "\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
-      description: "\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-      action: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443"
+      description: nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0441\u0435\u0442\u0438...",
+      action: nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443" : "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
+      disabled: !nodeReady
     },
     discovered: {
       icon: "\u{1F310}",
       title: "\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B",
-      description: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u044C\u0442\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0432 \u0441\u0435\u0442\u0438",
-      action: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C"
+      description: nodeReady ? "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u044C\u0442\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0432 \u0441\u0435\u0442\u0438" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0441\u0435\u0442\u0438...",
+      action: nodeReady ? "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C" : "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
+      disabled: !nodeReady
     },
     joined: {
       icon: "\u{1F91D}",
       title: "\u041D\u0435\u0442 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
-      description: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-      action: "\u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B"
+      description: nodeReady ? "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0441\u0435\u0442\u0438...",
+      action: nodeReady ? "\u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B" : "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
+      disabled: !nodeReady
     },
     search: {
       icon: "\u{1F50D}",
       title: `\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 "${searchQuery}" \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E`,
       description: "\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441",
-      action: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A"
+      action: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A",
+      disabled: false
     }
   };
   const state = states[type] || states.my;
@@ -16093,7 +16317,8 @@ function renderEmptyState(type, searchQuery = "") {
         <div class="empty-state">
             <div class="empty-icon">${state.icon}</div>
             <p class="empty-text">${state.title}</p>
-            <button class="empty-action" id="${type}-action">
+            <p class="empty-description">${state.description}</p>
+            <button class="empty-action" id="${type}-action" ${state.disabled ? "disabled" : ""}>
                 ${state.action}
             </button>
         </div>
@@ -16111,6 +16336,7 @@ function getGroupTypeLabel(type) {
 }
 __name(getGroupTypeLabel, "getGroupTypeLabel");
 function escapeHtml3(text) {
+  if (!text) return "";
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
@@ -16126,17 +16352,121 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
+      console.log("\u{1F527} GroupManager controller initializing...");
       const createGroupBtn = context.shadowRoot.querySelector("#create-group-btn");
-      if (createGroupBtn) {
-        const createGroupHandler = /* @__PURE__ */ __name(async () => {
-          const groupNameInput = context.shadowRoot.querySelector("#group-name-input");
-          if (groupNameInput && groupNameInput.value.trim()) {
-            await context.createGroup(groupNameInput.value.trim());
-            groupNameInput.value = "";
+      const createFirstGroupBtn = context.shadowRoot.querySelector("#create-first-group");
+      const createGroupActionBtn = context.shadowRoot.querySelector("#create-group");
+      const createGroupHandler = /* @__PURE__ */ __name(async () => {
+        try {
+          if (!context.state.nodeReady) {
+            await context.showModal({
+              title: "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
+              content: `
+                                <div style="padding: 1rem 0;">
+                                    <p>P2P \u0441\u0435\u0442\u044C \u0435\u0449\u0435 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u0440\u0430\u0431\u043E\u0442\u0435.</p>
+                                    <p>\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.</p>
+                                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1); 
+                                                border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);">
+                                        <strong>\u0421\u0442\u0430\u0442\u0443\u0441:</strong> \u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 \u0441\u0435\u0442\u0438...
+                                    </div>
+                                </div>
+                            `,
+              buttons: [
+                {
+                  text: "\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441",
+                  type: "primary",
+                  action: /* @__PURE__ */ __name(async () => {
+                    await context.checkNodeStatus();
+                  }, "action")
+                },
+                {
+                  text: "\u0417\u0430\u043A\u0440\u044B\u0442\u044C",
+                  type: "secondary"
+                }
+              ]
+            });
+            return;
           }
-        }, "createGroupHandler");
-        createGroupBtn.addEventListener("click", createGroupHandler);
-        eventListeners.push({ element: createGroupBtn, handler: createGroupHandler });
+          await context.showModal({
+            title: "\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u043D\u043E\u0432\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B",
+            content: `
+                            <div style="padding: 1rem 0;">
+                                <label for="group-name-input" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                                    \u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="group-name-input" 
+                                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."
+                                    style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
+                                           border-radius: 8px; background: rgba(255,255,255,0.05); 
+                                           color: var(--cosmic-text-primary); font-size: 1rem;"
+                                    autofocus
+                                >
+                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-text-secondary);">
+                                    \u0413\u0440\u0443\u043F\u043F\u0430 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0438 \u0441\u0442\u0430\u043D\u0435\u0442 \u0432\u0438\u0434\u0438\u043C\u043E\u0439 \u0434\u043B\u044F \u0434\u0440\u0443\u0433\u0438\u0445 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0435\u0442\u0438.
+                                </div>
+                            </div>
+                        `,
+            buttons: [
+              {
+                text: "\u041E\u0442\u043C\u0435\u043D\u0430",
+                type: "secondary",
+                action: /* @__PURE__ */ __name(() => console.log("\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E"), "action")
+              },
+              {
+                text: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C",
+                type: "primary",
+                action: /* @__PURE__ */ __name(async () => {
+                  const groupNameInput = document.querySelector("#group-name-input");
+                  if (groupNameInput && groupNameInput.value.trim()) {
+                    const groupName = groupNameInput.value.trim();
+                    console.log("\u{1F527} Creating group:", groupName);
+                    try {
+                      const group = await context.createGroup(groupName);
+                      console.log("\u2705 Group created successfully:", group);
+                      const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+                      if (chatManager) {
+                        await chatManager.postMessage({
+                          type: "GROUP_CREATED",
+                          data: group
+                        });
+                      }
+                    } catch (error) {
+                      console.error("\u274C Error creating group:", error);
+                      await context.showModal({
+                        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                        content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
+                        buttons: [{ text: "OK", type: "primary" }]
+                      });
+                    }
+                  }
+                }, "action")
+              }
+            ],
+            closeOnBackdropClick: true
+          });
+        } catch (error) {
+          console.error("\u274C Error in create group handler:", error);
+        }
+      }, "createGroupHandler");
+      [createGroupBtn, createFirstGroupBtn, createGroupActionBtn].forEach((btn) => {
+        if (btn) {
+          btn.addEventListener("click", createGroupHandler);
+          eventListeners.push({ element: btn, handler: createGroupHandler });
+        }
+      });
+      const checkStatusBtn = context.shadowRoot.querySelector("#check-status");
+      if (checkStatusBtn) {
+        const checkStatusHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            await context.checkNodeStatus();
+          } catch (error) {
+            console.error("\u274C Error checking node status:", error);
+          }
+        }, "checkStatusHandler");
+        checkStatusBtn.addEventListener("click", checkStatusHandler);
+        eventListeners.push({ element: checkStatusBtn, handler: checkStatusHandler });
       }
       const searchInput = context.shadowRoot.querySelector("#group-search-input");
       if (searchInput) {
@@ -16147,27 +16477,67 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
         eventListeners.push({ element: searchInput, handler: searchHandler });
       }
       const discoverBtn = context.shadowRoot.querySelector("#discover-groups-btn");
+      const discoverGroupsBtn = context.shadowRoot.querySelector("#discover-groups");
       if (discoverBtn) {
         const discoverHandler = /* @__PURE__ */ __name(async () => {
-          await context.discoverGroups();
+          try {
+            await context.discoverGroups();
+          } catch (error) {
+            console.error("\u274C Error discovering groups:", error);
+            await context.showModal({
+              title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+              content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u044B: ${error.message}</p>`,
+              buttons: [{ text: "OK", type: "primary" }]
+            });
+          }
         }, "discoverHandler");
         discoverBtn.addEventListener("click", discoverHandler);
         eventListeners.push({ element: discoverBtn, handler: discoverHandler });
+      }
+      if (discoverGroupsBtn) {
+        const discoverHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            await context.discoverGroups();
+          } catch (error) {
+            console.error("\u274C Error discovering groups:", error);
+            await context.showModal({
+              title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+              content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
+              buttons: [{ text: "OK", type: "primary" }]
+            });
+          }
+        }, "discoverHandler");
+        discoverGroupsBtn.addEventListener("click", discoverHandler);
+        eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
       }
       const setupJoinButtons = /* @__PURE__ */ __name(() => {
         const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
         joinButtons.forEach((button) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
-            const groupId = e2.target.dataset.groupId;
-            const group = context.state.discoveredGroups.find((g) => g.id === groupId) || context.state.groups.find((g) => g.id === groupId);
-            if (group) {
-              await context.joinGroup(group);
-              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-              if (chatManager) {
-                await chatManager.postMessage({
-                  type: "JOIN_GROUP",
-                  data: group
-                });
+            const groupId = e2.target.dataset.groupId || e2.target.closest(".join-group-btn")?.dataset.groupId;
+            const groupTopic = e2.target.dataset.topic || e2.target.closest(".join-group-btn")?.dataset.topic;
+            if (groupId || groupTopic) {
+              const topic = groupTopic || groupId;
+              const group = context.state.discoveredGroups?.find((g) => g.id === topic) || context.state.groups?.find((g) => g.id === topic);
+              if (group) {
+                try {
+                  await context.joinGroup(group);
+                  console.log("\u2705 Successfully joined group:", group.name);
+                  const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+                  if (chatManager) {
+                    await chatManager.postMessage({
+                      type: "JOIN_GROUP",
+                      data: group
+                    });
+                  }
+                } catch (error) {
+                  console.error("\u274C Error joining group:", error);
+                  await context.showModal({
+                    title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                    content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
+                    buttons: [{ text: "OK", type: "primary" }]
+                  });
+                }
               }
             }
           }, "handler");
@@ -16179,8 +16549,20 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
         const leaveButtons = context.shadowRoot.querySelectorAll(".leave-group-btn");
         leaveButtons.forEach((button) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
-            const groupId = e2.target.dataset.groupId;
-            await context.leaveGroup(groupId);
+            const groupId = e2.target.dataset.groupId || e2.target.closest(".leave-group-btn")?.dataset.groupId;
+            if (groupId) {
+              try {
+                await context.leaveGroup(groupId);
+                console.log("\u2705 Successfully left group:", groupId);
+              } catch (error) {
+                console.error("\u274C Error leaving group:", error);
+                await context.showModal({
+                  title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                  content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
+                  buttons: [{ text: "OK", type: "primary" }]
+                });
+              }
+            }
           }, "handler");
           button.addEventListener("click", handler);
           eventListeners.push({ element: button, handler });
@@ -16203,20 +16585,29 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
         setupJoinButtons();
         setupLeaveButtons();
       }, 100);
+      console.log("\u2705 [GroupManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
+      console.log("\u{1F527} GroupManager controller destroying...");
       eventListeners.forEach(({ element, handler }) => {
-        element.removeEventListener("click", handler);
+        try {
+          element.removeEventListener("click", handler);
+          element.removeEventListener("input", handler);
+        } catch (error) {
+          console.warn("\u26A0\uFE0F Error removing event listener:", error);
+        }
       });
-      eventListeners = [];
       if (context._groupObserver) {
         context._groupObserver.disconnect();
         context._groupObserver = null;
       }
+      console.log(`\u2705 Removed ${eventListeners.length} event listeners`);
+      eventListeners = [];
+      console.log("\u2705 [GroupManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
@@ -16225,6 +16616,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
 async function createActions3(context) {
   let libp2p = null;
   let discoveredGroupsInterval = null;
+  const GROUPS_ANNOUNCEMENT_TOPIC = "chat-groups-announcements";
   return {
     /**
      * Инициализация Libp2p для работы с группами
@@ -16233,9 +16625,93 @@ async function createActions3(context) {
      */
     initializeLibp2p: /* @__PURE__ */ __name(async function(libp2pInstance) {
       libp2p = libp2pInstance;
+      await this.subscribeToGroupsAnnouncements();
       this.startGroupDiscovery();
       console.log("[GroupManager] Libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
     }, "initializeLibp2p"),
+    /**
+     * Подписывается на топик анонсов групп
+     * @async
+     */
+    async subscribeToGroupsAnnouncements() {
+      if (!libp2p) return;
+      try {
+        await libp2p.services.pubsub.subscribe(GROUPS_ANNOUNCEMENT_TOPIC);
+        libp2p.services.pubsub.addEventListener("message", (event) => {
+          if (event.detail.topic === GROUPS_ANNOUNCEMENT_TOPIC) {
+            this.handleGroupAnnouncement(event.detail);
+          }
+        });
+        console.log(`[GroupManager] \u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: ${GROUPS_ANNOUNCEMENT_TOPIC}`);
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432:", error);
+      }
+    },
+    /**
+     * Обрабатывает входящие анонсы групп
+     * @param {Object} message - Сообщение с анонсом
+     */
+    async handleGroupAnnouncement(message2) {
+      try {
+        const announcement = JSON.parse(new TextDecoder().decode(message2.data));
+        if (announcement.type === "GROUP_CREATED" || announcement.type === "GROUP_UPDATED") {
+          const groupInfo = announcement.data;
+          await this.updateDiscoveredGroups(groupInfo);
+          console.log(`[GroupManager] \u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: ${groupInfo.name}`);
+        }
+      } catch (error) {
+        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+      }
+    },
+    /**
+     * Обновляет список обнаруженных групп
+     * @async
+     * @param {Object} groupInfo - Информация о группе
+     */
+    async updateDiscoveredGroups(groupInfo) {
+      if (!context.state.discoveredGroups) {
+        context.state.discoveredGroups = [];
+      }
+      const existingIndex = context.state.discoveredGroups.findIndex((g) => g.id === groupInfo.id);
+      if (existingIndex >= 0) {
+        context.state.discoveredGroups[existingIndex] = {
+          ...context.state.discoveredGroups[existingIndex],
+          ...groupInfo,
+          lastUpdated: Date.now()
+        };
+      } else {
+        context.state.discoveredGroups.push({
+          ...groupInfo,
+          discoveredAt: Date.now(),
+          lastUpdated: Date.now()
+        });
+      }
+      context.state.discoveredGroups.sort((a2, b) => b.lastUpdated - a2.lastUpdated);
+      await this.safeUpdateDiscoveredGroupsUI();
+    },
+    /**
+     * Безопасно обновляет UI списка обнаруженных групп
+     */
+    async safeUpdateDiscoveredGroupsUI() {
+      try {
+        if (!context.renderPart) {
+          console.warn("\u26A0\uFE0F renderPart method not available in actions");
+          return;
+        }
+        const discoveredGroupsElement = context.shadowRoot?.querySelector("#discovered-groups-list");
+        if (!discoveredGroupsElement) {
+          console.warn("\u26A0\uFE0F Discovered groups list element not found");
+          return;
+        }
+        await context.renderPart({
+          partName: "renderDiscoveredGroups",
+          state: context.state,
+          selector: "#discovered-groups-list"
+        });
+      } catch (error) {
+        console.warn("\u26A0\uFE0F Error updating discovered groups UI:", error);
+      }
+    },
     /**
      * Запуск процесса обнаружения групп
      * @async
@@ -16289,13 +16765,7 @@ async function createActions3(context) {
           }
         }
         context.state.discoveredGroups = discoveredGroups;
-        if (context.renderPart) {
-          await context.renderPart({
-            partName: "renderDiscoveredGroups",
-            state: context.state,
-            selector: "#discovered-groups-list"
-          });
-        }
+        await this.safeUpdateDiscoveredGroupsUI();
         console.log(`[GroupManager] \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: ${discoveredGroups.length}`);
       } catch (error) {
         console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F:", error);
@@ -16328,13 +16798,18 @@ async function createActions3(context) {
           description: options.description || `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${groupName}`,
           isPublic: options.isPublic !== false,
           createdAt: Date.now(),
-          createdBy: libp2p.peerId.toString()
+          createdBy: libp2p.peerId.toString(),
+          tags: options.tags || ["general"],
+          language: options.language || "ru"
         };
         await libp2p.services.pubsub.subscribe(topic);
-        if (group.isPublic) {
-          await this.announceGroupCreation(group);
+        await this.announceGroupCreation(group);
+        if (!context.state.groups) {
+          context.state.groups = [];
         }
+        context.state.groups.push(group);
         console.log(`[GroupManager] \u0421\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: ${groupName} (${topic})`);
+        await this.safeUpdateMyGroupsUI();
         return group;
       } catch (error) {
         console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
@@ -16347,6 +16822,69 @@ async function createActions3(context) {
         throw error;
       }
     }, "createGroup"),
+    /**
+     * Безопасно обновляет UI списка моих групп
+     */
+    async safeUpdateMyGroupsUI() {
+      try {
+        if (!context.renderPart) {
+          console.warn("\u26A0\uFE0F renderPart method not available for my groups");
+          return;
+        }
+        const myGroupsElement = context.shadowRoot?.querySelector("#my-groups-list");
+        if (!myGroupsElement) {
+          console.warn("\u26A0\uFE0F My groups list element not found");
+          return;
+        }
+        await context.renderPart({
+          partName: "renderMyGroups",
+          state: context.state,
+          selector: "#my-groups-list"
+        });
+      } catch (error) {
+        console.warn("\u26A0\uFE0F Error updating my groups UI:", error);
+      }
+    },
+    /**
+     * Анонсирование создания новой группы
+     * @async
+     * @param {Object} group - Информация о группе
+     */
+    announceGroupCreation: /* @__PURE__ */ __name(async function(group) {
+      if (!libp2p) return;
+      try {
+        const announcement = {
+          type: "GROUP_CREATED",
+          data: {
+            id: group.id,
+            name: group.name,
+            topic: group.topic,
+            description: group.description,
+            memberCount: group.memberCount,
+            createdAt: group.createdAt,
+            createdBy: group.createdBy,
+            isPublic: group.isPublic,
+            tags: group.tags,
+            language: group.language
+          },
+          timestamp: Date.now(),
+          peerId: libp2p.peerId.toString()
+        };
+        await libp2p.services.pubsub.publish(
+          GROUPS_ANNOUNCEMENT_TOPIC,
+          new TextEncoder().encode(JSON.stringify(announcement))
+        );
+        console.log(`[GroupManager] \u0410\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: ${group.name}`);
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        context.addError({
+          componentName: "GroupManager",
+          source: "announceGroupCreation",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B",
+          details: error
+        });
+      }
+    }, "announceGroupCreation"),
     /**
      * Присоединение к существующей группе
      * @async
@@ -16370,7 +16908,14 @@ async function createActions3(context) {
           joinedAt: Date.now(),
           isPublic: true
         };
+        if (!context.state.joinedGroups) {
+          context.state.joinedGroups = [];
+        }
+        if (!context.state.joinedGroups.find((g) => g.id === topic)) {
+          context.state.joinedGroups.push(group);
+        }
         console.log(`[GroupManager] \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${group.name} (${topic})`);
+        await this.safeUpdateJoinedGroupsUI();
         return group;
       } catch (error) {
         console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435:", error);
@@ -16384,6 +16929,29 @@ async function createActions3(context) {
       }
     }, "joinGroup"),
     /**
+     * Безопасно обновляет UI списка присоединенных групп
+     */
+    async safeUpdateJoinedGroupsUI() {
+      try {
+        if (!context.renderPart) {
+          console.warn("\u26A0\uFE0F renderPart method not available for joined groups");
+          return;
+        }
+        const joinedGroupsElement = context.shadowRoot?.querySelector("#joined-groups-list");
+        if (!joinedGroupsElement) {
+          console.warn("\u26A0\uFE0F Joined groups list element not found");
+          return;
+        }
+        await context.renderPart({
+          partName: "renderJoinedGroups",
+          state: context.state,
+          selector: "#joined-groups-list"
+        });
+      } catch (error) {
+        console.warn("\u26A0\uFE0F Error updating joined groups UI:", error);
+      }
+    },
+    /**
      * Выход из группы
      * @async
      * @param {string} topic - Топик группы
@@ -16394,7 +16962,11 @@ async function createActions3(context) {
       }
       try {
         await libp2p.services.pubsub.unsubscribe(topic);
+        if (context.state.joinedGroups) {
+          context.state.joinedGroups = context.state.joinedGroups.filter((g) => g.id !== topic);
+        }
         console.log(`[GroupManager] \u041F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: ${topic}`);
+        await this.safeUpdateJoinedGroupsUI();
       } catch (error) {
         console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
         context.addError({
@@ -16418,7 +16990,7 @@ async function createActions3(context) {
       }
       const searchTerm = query.toLowerCase().trim();
       const filteredGroups = (context.state.discoveredGroups || []).filter(
-        (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm)
+        (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm) || group.tags && group.tags.some((tag) => tag.toLowerCase().includes(searchTerm))
       );
       console.log(`[GroupManager] \u041F\u043E\u0438\u0441\u043A "${query}": \u043D\u0430\u0439\u0434\u0435\u043D\u043E ${filteredGroups.length} \u0433\u0440\u0443\u043F\u043F`);
       return filteredGroups;
@@ -16441,35 +17013,6 @@ async function createActions3(context) {
         return [];
       }
     }, "getGroupMembers"),
-    /**
-     * Анонсирование создания новой группы
-     * @async
-     * @param {Object} group - Информация о группе
-     */
-    announceGroupCreation: /* @__PURE__ */ __name(async function(group) {
-      if (!libp2p) return;
-      try {
-        const announcement = {
-          type: "group_announcement",
-          group: {
-            id: group.id,
-            name: group.name,
-            topic: group.topic,
-            description: group.description,
-            createdAt: group.createdAt,
-            createdBy: group.createdBy
-          },
-          timestamp: Date.now()
-        };
-        const announcementTopic = "chat-group-announcements";
-        await libp2p.services.pubsub.publish(
-          announcementTopic,
-          new TextEncoder().encode(JSON.stringify(announcement))
-        );
-      } catch (error) {
-        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
-      }
-    }, "announceGroupCreation"),
     /**
      * Форматирование названия группы
      * @param {string} rawName - Сырое название
@@ -16540,90 +17083,264 @@ var GroupManager = class extends BaseComponent {
       groups: [],
       discoveredGroups: [],
       searchQuery: "",
-      joinedGroups: []
+      joinedGroups: [],
+      nodeReady: false,
+      _initialized: false
+      // Флаг полной инициализации
     };
+    this._nodeCheckInterval = null;
   }
   async _componentReady() {
+    console.log("\u{1F527} GroupManager component ready");
     this._controller = await controller3(this);
     this._actions = await createActions3(this);
     await this.fullRender(this.state);
     await this._controller.init();
+    await this.startNodeInitialization();
+    this.state._initialized = true;
     return true;
   }
+  async startNodeInitialization() {
+    console.log("\u{1F527} Starting node initialization check...");
+    this._nodeCheckInterval = setInterval(async () => {
+      try {
+        await this.initializeFromPeerConnection();
+      } catch (error) {
+        console.log("\u23F3 Waiting for node...");
+      }
+    }, 2e3);
+    await this.initializeFromPeerConnection();
+  }
+  async initializeFromPeerConnection() {
+    try {
+      const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
+      if (!peerConnection) {
+        console.warn("\u274C PeerConnection component not found");
+        return false;
+      }
+      if (peerConnection.isNodeReady && peerConnection.isNodeReady()) {
+        const node = peerConnection.getNode();
+        if (node && node.services && node.services.pubsub) {
+          await this._actions.initializeLibp2p(node);
+          this.state.nodeReady = true;
+          if (this._nodeCheckInterval) {
+            clearInterval(this._nodeCheckInterval);
+            this._nodeCheckInterval = null;
+          }
+          console.log("\u2705 Node obtained from PeerConnection for GroupManager, PubSub is ready");
+          await this.safeUpdateUI();
+          return true;
+        } else {
+          console.log("\u23F3 Node found but PubSub not ready yet...");
+          return false;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("\u274C Failed to initialize from PeerConnection:", error);
+      return false;
+    }
+  }
+  async safeUpdateUI() {
+    try {
+      const updates = [];
+      const nodeStatusElement = this.shadowRoot.querySelector(".node-status-section");
+      if (nodeStatusElement && this.renderPart) {
+        updates.push(
+          this.renderPart({
+            partName: "renderNodeStatus",
+            state: this.state,
+            selector: ".node-status-section"
+          }).catch(() => {
+            console.log("\u26A0\uFE0F Node status element not available for renderPart");
+          })
+        );
+      }
+      const quickActionsElement = this.shadowRoot.querySelector(".quick-actions");
+      if (quickActionsElement && this.renderPart) {
+        updates.push(
+          this.renderPart({
+            partName: "renderQuickActions",
+            state: this.state,
+            selector: ".quick-actions"
+          }).catch(() => {
+            console.log("\u26A0\uFE0F Quick actions element not available for renderPart");
+          })
+        );
+      }
+      await Promise.allSettled(updates);
+    } catch (error) {
+      console.warn("\u26A0\uFE0F Error in safeUpdateUI:", error);
+      await this.fullRender(this.state);
+    }
+  }
+  async safeRenderPart(options) {
+    try {
+      if (!this.renderPart) {
+        console.warn("\u26A0\uFE0F renderPart method not available");
+        return false;
+      }
+      const element = this.shadowRoot.querySelector(options.selector);
+      if (!element) {
+        console.warn(`\u26A0\uFE0F Element with selector '${options.selector}' not found`);
+        return false;
+      }
+      await this.renderPart(options);
+      return true;
+    } catch (error) {
+      console.warn(`\u26A0\uFE0F Error in safeRenderPart for '${options.selector}':`, error);
+      return false;
+    }
+  }
   async createGroup(groupName) {
-    const group = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: groupName,
-      topic: `chat-group-${groupName}-${Date.now()}`,
-      memberCount: 1,
-      createdAt: Date.now(),
-      isPublic: true
-    };
-    this.state.groups.push(group);
-    await this.renderPart({
-      partName: "renderMyGroups",
-      state: this.state,
-      selector: "#my-groups-list"
-    });
-    return group;
+    if (!this.state.nodeReady) {
+      throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430. \u041F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.");
+    }
+    try {
+      console.log("\u{1F527} Creating group in GroupManager:", groupName);
+      const group = await this._actions.createGroup(groupName);
+      console.log("\u2705 Group created:", group);
+      await this.safeUpdateGroupsList();
+      return group;
+    } catch (error) {
+      console.error("\u274C Error creating group:", error);
+      if (error.message.includes("Pubsub has not started")) {
+        this.state.nodeReady = false;
+        await this.safeUpdateUI();
+        throw new Error("\u0421\u0435\u0440\u0432\u0438\u0441 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432. \u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0447\u0435\u0440\u0435\u0437 \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u043A\u0443\u043D\u0434.");
+      }
+      throw error;
+    }
+  }
+  async safeUpdateGroupsList() {
+    try {
+      const myGroupsUpdated = await this.safeRenderPart({
+        partName: "renderMyGroups",
+        state: this.state,
+        selector: "#my-groups-list"
+      });
+      if (!myGroupsUpdated) {
+        await this.fullRender(this.state);
+      }
+    } catch (error) {
+      console.warn("\u26A0\uFE0F Error updating groups list:", error);
+      await this.fullRender(this.state);
+    }
   }
   async discoverGroups() {
-    const mockDiscoveredGroups = [
-      {
-        id: "discovered-1",
-        name: "\u041E\u0431\u0449\u0438\u0439 \u0447\u0430\u0442",
-        topic: "chat-general",
-        memberCount: 5,
-        description: "\u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u0447\u0430\u0442 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F"
-      },
-      {
-        id: "discovered-2",
-        name: "\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0438",
-        topic: "chat-tech",
-        memberCount: 3,
-        description: "\u041E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0439"
+    if (!this.state.nodeReady) {
+      throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430.");
+    }
+    try {
+      await this._actions.discoverGroups();
+      await this.safeUpdateDiscoveredGroups();
+    } catch (error) {
+      console.error("\u274C Error discovering groups:", error);
+      throw error;
+    }
+  }
+  async safeUpdateDiscoveredGroups() {
+    try {
+      const updated = await this.safeRenderPart({
+        partName: "renderDiscoveredGroups",
+        state: this.state,
+        selector: "#discovered-groups-list"
+      });
+      if (!updated) {
+        console.log("\u26A0\uFE0F Discovered groups list not found, using full render");
+        await this.fullRender(this.state);
       }
-    ];
-    this.state.discoveredGroups = mockDiscoveredGroups;
-    await this.renderPart({
-      partName: "renderDiscoveredGroups",
-      state: this.state,
-      selector: "#discovered-groups-list"
-    });
+    } catch (error) {
+      console.warn("\u26A0\uFE0F Error updating discovered groups:", error);
+      await this.fullRender(this.state);
+    }
   }
   async searchGroups(query) {
-    this.state.searchQuery = query;
-    await this.renderPart({
-      partName: "renderSearchResults",
-      state: this.state,
-      selector: "#search-results"
-    });
+    try {
+      this.state.searchQuery = query;
+      const results = await this._actions.searchGroups(query);
+      await this.safeRenderPart({
+        partName: "renderSearchResults",
+        state: { ...this.state, searchResults: results },
+        selector: "#search-results"
+      });
+    } catch (error) {
+      console.error("\u274C Error searching groups:", error);
+      throw error;
+    }
   }
   async joinGroup(group) {
-    if (!this.state.joinedGroups.find((g) => g.id === group.id)) {
-      this.state.joinedGroups.push({
-        ...group,
-        joinedAt: Date.now()
-      });
+    if (!this.state.nodeReady) {
+      throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430.");
     }
-    await this.renderPart({
-      partName: "renderJoinedGroups",
-      state: this.state,
-      selector: "#joined-groups-list"
-    });
-    return group;
+    try {
+      console.log("\u{1F527} Joining group in GroupManager:", group.name);
+      const joinedGroup = await this._actions.joinGroup(group.topic || group.id);
+      console.log("\u2705 Group joined:", joinedGroup);
+      await this.safeUpdateJoinedGroups();
+      return joinedGroup;
+    } catch (error) {
+      console.error("\u274C Error joining group:", error);
+      throw error;
+    }
+  }
+  async safeUpdateJoinedGroups() {
+    try {
+      const updated = await this.safeRenderPart({
+        partName: "renderJoinedGroups",
+        state: this.state,
+        selector: "#joined-groups-list"
+      });
+      if (!updated) {
+        await this.fullRender(this.state);
+      }
+    } catch (error) {
+      console.warn("\u26A0\uFE0F Error updating joined groups:", error);
+      await this.fullRender(this.state);
+    }
   }
   async leaveGroup(groupId) {
-    this.state.joinedGroups = this.state.joinedGroups.filter((g) => g.id !== groupId);
-    await this.renderPart({
-      partName: "renderJoinedGroups",
-      state: this.state,
-      selector: "#joined-groups-list"
-    });
+    if (!this.state.nodeReady) {
+      throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430.");
+    }
+    try {
+      console.log("\u{1F527} Leaving group in GroupManager:", groupId);
+      await this._actions.leaveGroup(groupId);
+      console.log("\u2705 Group left:", groupId);
+      await this.safeUpdateJoinedGroups();
+    } catch (error) {
+      console.error("\u274C Error leaving group:", error);
+      throw error;
+    }
+  }
+  // Метод для принудительной проверки статуса ноды
+  async checkNodeStatus() {
+    try {
+      const wasReady = this.state.nodeReady;
+      await this.initializeFromPeerConnection();
+      if (!wasReady && this.state.nodeReady) {
+        await this.showModal({
+          title: "\u0413\u043E\u0442\u043E\u0432\u043E",
+          content: "<p>P2P \u043D\u043E\u0434\u0430 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u0440\u0430\u0431\u043E\u0442\u0435!</p>",
+          buttons: [{ text: "OK", type: "primary" }]
+        });
+      }
+      return this.state.nodeReady;
+    } catch (error) {
+      console.error("\u274C Error checking node status:", error);
+      return false;
+    }
   }
   async _componentDisconnected() {
+    if (this._nodeCheckInterval) {
+      clearInterval(this._nodeCheckInterval);
+      this._nodeCheckInterval = null;
+    }
     if (this._controller && this._controller.destroy) {
       await this._controller.destroy();
+    }
+    if (this._actions && this._actions.cleanup) {
+      await this._actions.cleanup();
     }
     this._templateMethods = null;
   }
@@ -16642,7 +17359,7 @@ __export(template_exports4, {
   renderConnectedPeersDetailed: () => renderConnectedPeersDetailed,
   renderConnectionControls: () => renderConnectionControls,
   renderPeersList: () => renderPeersList,
-  renderQuickActions: () => renderQuickActions2,
+  renderQuickActions: () => renderQuickActions3,
   renderStatistics: () => renderStatistics2,
   renderStatus: () => renderStatus2,
   renderSystemStatus: () => renderSystemStatus
@@ -16741,7 +17458,7 @@ function defaultTemplate4({ state = {} } = {}) {
                     </h3>
                 </div>
                 <div class="card-content">
-                    ${renderQuickActions2({ state })}
+                    ${renderQuickActions3({ state })}
                 </div>
             </section>
 
@@ -17046,7 +17763,7 @@ function renderAddressesList({ state = {} } = {}) {
     `;
 }
 __name(renderAddressesList, "renderAddressesList");
-function renderQuickActions2({ state = {} } = {}) {
+function renderQuickActions3({ state = {} } = {}) {
   return `
     <div class="actions-grid">
         <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>
@@ -17071,7 +17788,7 @@ function renderQuickActions2({ state = {} } = {}) {
     </div>
     `;
 }
-__name(renderQuickActions2, "renderQuickActions");
+__name(renderQuickActions3, "renderQuickActions");
 function renderStatistics2({ state = {} } = {}) {
   const peersCount = state.connectedPeers ? state.connectedPeers.length : 0;
   const addressesCount = state.listeningAddresses ? state.listeningAddresses.length : 0;

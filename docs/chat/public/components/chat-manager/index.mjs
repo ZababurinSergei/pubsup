@@ -368,6 +368,8 @@ export class ChatManager extends BaseComponent {
 
     async postMessage(event) {
         try {
+            console.log('📨 ChatManager received message:', event.type, event.data);
+
             switch (event.type) {
                 case 'SWITCH_MODE':
                     await this.switchMode(event.data.mode);
@@ -397,14 +399,59 @@ export class ChatManager extends BaseComponent {
                 case 'UPDATE_PEER_LIST':
                     await this.updatePeerList(event.data.peers);
                     break;
+                case 'GROUP_CREATED':
+                    // Обработка создания группы из group-manager
+                    console.log('✅ GROUP_CREATED received in ChatManager:', event.data);
+                    await this.handleGroupCreated(event.data);
+                    break;
                 default:
                     console.warn(`[ChatManager] Неизвестный тип сообщения: ${event.type}`);
             }
         } catch (error) {
+            console.error('❌ Error processing message in ChatManager:', error);
             this.addError({
                 componentName: this.constructor.name,
                 source: 'postMessage',
                 message: 'Ошибка обработки сообщения',
+                details: error
+            });
+        }
+    }
+
+    /**
+     * Обрабатывает создание новой группы
+     * @param {Object} groupData - Данные созданной группы
+     */
+    async handleGroupCreated(groupData) {
+        try {
+            console.log('🔧 Handling GROUP_CREATED in ChatManager:', groupData);
+
+            // Добавляем группу в список групп
+            if (!this.state.groups.find(g => g.id === groupData.id)) {
+                this.state.groups.push({
+                    ...groupData,
+                    joinedAt: Date.now()
+                });
+            }
+
+            // Автоматически присоединяемся к созданной группе
+            await this.joinGroup(groupData.topic, groupData.name);
+
+            // Обновляем UI списка групп
+            await this.renderPart({
+                partName: 'renderGroups',
+                state: this.state,
+                selector: '#groups-container'
+            });
+
+            console.log('✅ Successfully handled GROUP_CREATED and joined the group');
+
+        } catch (error) {
+            console.error('❌ Error handling GROUP_CREATED:', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'handleGroupCreated',
+                message: 'Ошибка обработки создания группы',
                 details: error
             });
         }

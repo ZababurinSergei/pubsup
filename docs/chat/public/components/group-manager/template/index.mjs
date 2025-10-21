@@ -2,21 +2,22 @@
  * Основной шаблон компонента GroupManager
  */
 export default function defaultTemplate({ state = {} } = {}) {
-    const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '' } = state;
+    const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '', nodeReady = false } = state;
 
     return `
         <div class="group-manager">
-            ${renderHeader({ groups, discoveredGroups, joinedGroups })}
+            ${renderHeader({ groups, discoveredGroups, joinedGroups, nodeReady })}
             ${renderSearch({ searchQuery })}
-            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery })}
+            ${renderNodeStatus({ state })}
+            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady })}
         </div>
     `;
 }
 
 /**
- * Шаблон заголовка
+ * Обновленный заголовок с информацией о статусе
  */
-export function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [] } = {}) {
+export function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [], nodeReady = false } = {}) {
     return `
         <header class="manager-header">
             <div class="header-content">
@@ -33,6 +34,12 @@ export function renderHeader({ groups = [], discoveredGroups = [], joinedGroups 
                     <div class="stat-item">
                         <span class="stat-label">Найдено</span>
                         <span class="stat-value">${discoveredGroups.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Сеть</span>
+                        <span class="stat-value ${nodeReady ? 'connected' : 'disconnected'}">
+                            ${nodeReady ? '🟢' : '🟠'}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -64,16 +71,36 @@ export function renderSearch({ searchQuery = '' } = {}) {
 }
 
 /**
+ * Шаблон для статуса ноды
+ */
+export function renderNodeStatus({state = {}} = {}) {
+    return `
+    <section class="node-status-section">
+        <div class="status-item ${state.nodeReady ? 'connected' : 'disconnected'}">
+            <div class="status-icon ${state.nodeReady ? 'connected' : 'disconnected'}">
+                ${state.nodeReady ? '🟢' : '🟠'}
+            </div>
+            <div class="status-info">
+                <span class="status-label">P2P Сеть</span>
+                <span class="status-value">${state.nodeReady ? 'Готова' : 'Подключается...'}</span>
+            </div>
+        </div>
+    </section>
+    `;
+}
+
+/**
  * Основное содержимое
  */
-export function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '' } = {}) {
+export function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '', nodeReady = false } = {}) {
     return `
         <main class="manager-main">
             <div class="content-grid">
-                ${renderMyGroups({ groups })}
-                ${renderDiscoveredGroups({ discoveredGroups })}
-                ${renderJoinedGroups({ joinedGroups })}
-                ${searchQuery ? renderSearchResults({ groups, discoveredGroups, joinedGroups, searchQuery }) : ''}
+                ${renderMyGroups({ groups, nodeReady })}
+                ${renderDiscoveredGroups({ discoveredGroups, nodeReady })}
+                ${renderJoinedGroups({ joinedGroups, nodeReady })}
+                ${renderQuickActions({ state: { nodeReady } })}
+                ${searchQuery ? renderSearchResults({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady }) : ''}
             </div>
         </main>
     `;
@@ -82,15 +109,20 @@ export function renderMainContent({ groups = [], discoveredGroups = [], joinedGr
 /**
  * Мои группы
  */
-export function renderMyGroups({ groups = [] } = {}) {
+export function renderMyGroups({ groups = [], nodeReady = false } = {}) {
     return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">Мои группы</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">🏠</span>
+                    Мои группы
+                </h3>
                 <span class="card-badge">${groups.length}</span>
             </div>
             <div class="card-content">
-                ${groups.length > 0 ? renderGroupsList(groups, 'my') : renderEmptyState('my')}
+                <div id="my-groups-list">
+                    ${groups.length > 0 ? renderGroupsList(groups, 'my', nodeReady) : renderEmptyState('my', nodeReady)}
+                </div>
             </div>
         </section>
     `;
@@ -99,15 +131,20 @@ export function renderMyGroups({ groups = [] } = {}) {
 /**
  * Обнаруженные группы
  */
-export function renderDiscoveredGroups({ discoveredGroups = [] } = {}) {
+export function renderDiscoveredGroups({ discoveredGroups = [], nodeReady = false } = {}) {
     return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">Обнаруженные</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">🌐</span>
+                    Обнаруженные
+                </h3>
                 <span class="card-badge">${discoveredGroups.length}</span>
             </div>
             <div class="card-content">
-                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, 'discovered') : renderEmptyState('discovered')}
+                <div id="discovered-groups-list">
+                    ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, 'discovered', nodeReady) : renderEmptyState('discovered', nodeReady)}
+                </div>
             </div>
         </section>
     `;
@@ -116,15 +153,20 @@ export function renderDiscoveredGroups({ discoveredGroups = [] } = {}) {
 /**
  * Присоединенные группы
  */
-export function renderJoinedGroups({ joinedGroups = [] } = {}) {
+export function renderJoinedGroups({ joinedGroups = [], nodeReady = false } = {}) {
     return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">Присоединенные</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">👥</span>
+                    Присоединенные
+                </h3>
                 <span class="card-badge">${joinedGroups.length}</span>
             </div>
             <div class="card-content">
-                ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, 'joined') : renderEmptyState('joined')}
+                <div id="joined-groups-list">
+                    ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, 'joined', nodeReady) : renderEmptyState('joined', nodeReady)}
+                </div>
             </div>
         </section>
     `;
@@ -133,7 +175,7 @@ export function renderJoinedGroups({ joinedGroups = [] } = {}) {
 /**
  * Результаты поиска
  */
-export function renderSearchResults({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '' } = {}) {
+export function renderSearchResults({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '', nodeReady = false } = {}) {
     const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
     const filteredGroups = allGroups.filter(group =>
         group.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,23 +185,62 @@ export function renderSearchResults({ groups = [], discoveredGroups = [], joined
     return `
         <section class="section-card">
             <div class="card-header">
-                <h3 class="card-title">Результаты поиска</h3>
+                <h3 class="card-title">
+                    <span class="card-icon">🔍</span>
+                    Результаты поиска
+                </h3>
                 <span class="card-badge">${filteredGroups.length}</span>
             </div>
             <div class="card-content">
-                ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, 'search') : renderEmptyState('search', searchQuery)}
+                <div id="search-results">
+                    ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, 'search', nodeReady) : renderEmptyState('search', nodeReady, searchQuery)}
+                </div>
             </div>
         </section>
     `;
 }
 
 /**
+ * Шаблон для быстрых действий
+ */
+export function renderQuickActions({state = {}} = {}) {
+    return `
+    <section class="section-card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <span class="card-icon">🚀</span>
+                Быстрые действия
+            </h3>
+        </div>
+        <div class="card-content">
+            <div class="quick-actions">
+                <button class="action-btn primary" id="create-group" ${!state.nodeReady ? 'disabled' : ''}>
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">${state.nodeReady ? 'Создать группу' : 'Ожидание сети...'}</span>
+                </button>
+                
+                <button class="action-btn secondary" id="discover-groups" ${!state.nodeReady ? 'disabled' : ''}>
+                    <span class="btn-icon">🔍</span>
+                    <span class="btn-text">Обнаружить</span>
+                </button>
+                
+                <button class="action-btn secondary" id="check-status">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Проверить статус</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    `;
+}
+
+/**
  * Список групп
  */
-function renderGroupsList(groups, type) {
+function renderGroupsList(groups, type, nodeReady = false) {
     return `
         <div class="groups-list">
-            ${groups.map(group => renderGroupItem(group, type)).join('')}
+            ${groups.map(group => renderGroupItem(group, type, nodeReady)).join('')}
         </div>
     `;
 }
@@ -167,7 +248,7 @@ function renderGroupsList(groups, type) {
 /**
  * Элемент группы
  */
-function renderGroupItem(group, type) {
+function renderGroupItem(group, type, nodeReady = false) {
     const { id, name, topic, memberCount = 1, description } = group;
 
     return `
@@ -183,7 +264,7 @@ function renderGroupItem(group, type) {
                 </div>
             </div>
             <div class="group-actions">
-                ${renderGroupActions(type, id, topic)}
+                ${renderGroupActions(type, id, topic, nodeReady)}
             </div>
         </div>
     `;
@@ -192,35 +273,35 @@ function renderGroupItem(group, type) {
 /**
  * Действия для группы
  */
-function renderGroupActions(type, groupId, topic) {
+function renderGroupActions(type, groupId, topic, nodeReady = false) {
     switch (type) {
         case 'my':
             return `
-                <button class="action-btn join" data-group-id="${groupId}" title="Перейти в чат">
+                <button class="action-btn join" data-group-id="${groupId}" ${!nodeReady ? 'disabled' : ''} title="Перейти в чат">
                     💬
                 </button>
-                <button class="action-btn leave" data-group-id="${groupId}" title="Удалить">
+                <button class="action-btn leave" data-group-id="${groupId}" ${!nodeReady ? 'disabled' : ''} title="Удалить">
                     🗑️
                 </button>
             `;
         case 'discovered':
             return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="Присоединиться">
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" ${!nodeReady ? 'disabled' : ''} title="Присоединиться">
                     ➕
                 </button>
             `;
         case 'joined':
             return `
-                <button class="action-btn join" data-group-id="${groupId}" title="Войти в чат">
+                <button class="action-btn join" data-group-id="${groupId}" ${!nodeReady ? 'disabled' : ''} title="Войти в чат">
                     💬
                 </button>
-                <button class="action-btn leave" data-group-id="${groupId}" title="Покинуть">
+                <button class="action-btn leave" data-group-id="${groupId}" ${!nodeReady ? 'disabled' : ''} title="Покинуть">
                     🚪
                 </button>
             `;
         case 'search':
             return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="Присоединиться">
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" ${!nodeReady ? 'disabled' : ''} title="Присоединиться">
                     ➕
                 </button>
             `;
@@ -232,31 +313,35 @@ function renderGroupActions(type, groupId, topic) {
 /**
  * Пустое состояние
  */
-function renderEmptyState(type, searchQuery = '') {
+function renderEmptyState(type, nodeReady = false, searchQuery = '') {
     const states = {
         my: {
             icon: '🏠',
             title: 'Нет созданных групп',
-            description: 'Создайте первую группу для общения',
-            action: 'Создать группу'
+            description: nodeReady ? 'Создайте первую группу для общения' : 'Ожидание готовности сети...',
+            action: nodeReady ? 'Создать группу' : 'Сеть не готова',
+            disabled: !nodeReady
         },
         discovered: {
             icon: '🌐',
             title: 'Группы не найдены',
-            description: 'Обнаружьте доступные группы в сети',
-            action: 'Обнаружить'
+            description: nodeReady ? 'Обнаружьте доступные группы в сети' : 'Ожидание готовности сети...',
+            action: nodeReady ? 'Обнаружить' : 'Сеть не готова',
+            disabled: !nodeReady
         },
         joined: {
             icon: '🤝',
             title: 'Нет присоединенных групп',
-            description: 'Присоединяйтесь к группам для общения',
-            action: 'Найти группы'
+            description: nodeReady ? 'Присоединяйтесь к группам для общения' : 'Ожидание готовности сети...',
+            action: nodeReady ? 'Найти группы' : 'Сеть не готова',
+            disabled: !nodeReady
         },
         search: {
             icon: '🔍',
             title: `По запросу "${searchQuery}" ничего не найдено`,
             description: 'Попробуйте изменить поисковый запрос',
-            action: 'Очистить поиск'
+            action: 'Очистить поиск',
+            disabled: false
         }
     };
 
@@ -266,7 +351,8 @@ function renderEmptyState(type, searchQuery = '') {
         <div class="empty-state">
             <div class="empty-icon">${state.icon}</div>
             <p class="empty-text">${state.title}</p>
-            <button class="empty-action" id="${type}-action">
+            <p class="empty-description">${state.description}</p>
+            <button class="empty-action" id="${type}-action" ${state.disabled ? 'disabled' : ''}>
                 ${state.action}
             </button>
         </div>
@@ -287,6 +373,7 @@ function getGroupTypeLabel(type) {
 }
 
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;

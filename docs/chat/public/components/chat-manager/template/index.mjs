@@ -181,11 +181,11 @@ export default function defaultTemplate({state = {}} = {}) {
         <footer class="manager-footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <span class="info-item">Peer ID: ${state.peerId ? state.peerId : 'Не доступен'}</span>
+                    <span class="info-text">Peer ID: ${state.peerId ? state.peerId : 'Не доступен'}</span>
                     <span class="info-divider">•</span>
-                    <span class="info-item">Режим: ${state.mode === 'listener' ? 'Слушатель' : 'Инициатор'}</span>
+                    <span class="info-text">Режим: ${state.mode === 'listener' ? 'Слушатель' : 'Инициатор'}</span>
                     <span class="info-divider">•</span>
-                    <span class="info-item">Relay: ${state.relayEnabled ? 'Включен' : 'Выключен'}</span>
+                    <span class="info-text">Relay: ${state.relayEnabled ? 'Включен' : 'Выключен'}</span>
                 </div>
                 <div class="container-button">
                     <div class="footer-actions">
@@ -228,14 +228,14 @@ export function renderMyGroups({state = {}} = {}) {
     }
 
     return `
-    <div class="groups-list">
-        ${groups.map(group => `
-        <div class="group-item ${state.currentGroup?.id === group.id ? 'active' : ''}" data-group-id="${group.id}">
+    <div class="groups-list" id="my-groups-list">
+        ${groups.map((group, index) => `
+        <div class="group-item ${state.currentGroup?.id === group.id ? 'active' : ''}" data-group-id="${group.id}" data-group-topic="${group.topic}">
             <div class="group-avatar">
                 <span class="avatar-icon">💬</span>
             </div>
             <div class="group-info">
-                <div class="group-name">${group.name}</div>
+                <div class="group-name">${escapeHtml(group.name)}</div>
                 <div class="group-meta">
                     <span class="meta-item">👥 ${group.memberCount || 1}</span>
                     <span class="meta-item">${formatDate(group.createdAt)}</span>
@@ -262,7 +262,7 @@ export function renderDiscoveredGroups({state = {}} = {}) {
         return `
         <div class="empty-state">
             <div class="empty-icon">🌐</div>
-            <p class="empty-text">Группы не обнаружены</p>
+            <p class="empty-text">Группы не найдены</p>
             <button class="empty-action" id="discover-groups">
                 Обнаружить
             </button>
@@ -271,14 +271,14 @@ export function renderDiscoveredGroups({state = {}} = {}) {
     }
 
     return `
-    <div class="groups-list">
+    <div class="groups-list" id="discovered-groups-list">
         ${groups.map(group => `
         <div class="group-item discovered" data-group-id="${group.id}" data-topic="${group.topic}">
             <div class="group-avatar">
                 <span class="avatar-icon">🔍</span>
             </div>
             <div class="group-info">
-                <div class="group-name">${group.name}</div>
+                <div class="group-name">${escapeHtml(group.name)}</div>
                 <div class="group-description">${group.description || 'Описание отсутствует'}</div>
                 <div class="group-meta">
                     <span class="meta-item">👥 ${group.memberCount || 0}</span>
@@ -312,14 +312,14 @@ export function renderJoinedGroups({state = {}} = {}) {
     }
 
     return `
-    <div class="groups-list">
+    <div class="groups-list" id="joined-groups-list">
         ${groups.map(group => `
         <div class="group-item joined ${state.currentGroup?.id === group.id ? 'active' : ''}" data-group-id="${group.id}">
             <div class="group-avatar">
                 <span class="avatar-icon">🤝</span>
             </div>
             <div class="group-info">
-                <div class="group-name">${group.name}</div>
+                <div class="group-name">${escapeHtml(group.name)}</div>
                 <div class="group-meta">
                     <span class="meta-item">👥 ${group.memberCount || 1}</span>
                     <span class="meta-item">${formatDate(group.joinedAt)}</span>
