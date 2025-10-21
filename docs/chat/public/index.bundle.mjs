@@ -16079,6 +16079,82 @@ var ChatManager = class extends BaseComponent {
       return false;
     }
   }
+  /**
+   * Отправка приватного сообщения пользователю
+   * @async
+   * @param {string} peerId - ID получателя
+   * @param {string} messageText - Текст сообщения
+   * @returns {Promise<boolean>} Успешность отправки
+   */
+  async sendPrivateMessage(peerId, messageText) {
+    if (!this.node || !this.state.connected) {
+      log5.error("Node not available for private message");
+      throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430");
+    }
+    try {
+      const stream = await this.node.dialProtocol(peerId, "/chat/1.0.0");
+      const lp = lpStream(stream);
+      const messageData = {
+        type: "private_message",
+        text: messageText,
+        from: this.state.peerId,
+        timestamp: Date.now(),
+        isPrivate: true
+      };
+      await lp.write(fromString2(JSON.stringify(messageData)));
+      await stream.close();
+      log5("Private message sent to user: %s", peerId);
+      await this.addMessage({
+        text: messageText,
+        to: peerId,
+        from: this.state.peerId,
+        type: "sent",
+        timestamp: Date.now(),
+        isPrivate: true
+      });
+      return true;
+    } catch (error) {
+      log5.error("Error sending private message: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "sendPrivateMessage",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: { peerId, messageText, error }
+      });
+      throw error;
+    }
+  }
+  /**
+   * Обработка входящих приватных сообщений
+   * @async
+   * @param {Object} messageData - Данные сообщения
+   */
+  async handleIncomingPrivateMessage(messageData) {
+    try {
+      log5("Incoming private message from: %s", messageData.from);
+      await this.addMessage({
+        text: messageData.text,
+        from: messageData.from,
+        to: this.state.peerId,
+        type: "received",
+        timestamp: messageData.timestamp || Date.now(),
+        isPrivate: true
+      });
+      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+      if (chatInterface && chatInterface._actions && chatInterface._actions.handleIncomingPrivateMessage) {
+        await chatInterface._actions.handleIncomingPrivateMessage(messageData);
+      }
+      log5("Private message processed from: %s", messageData.from);
+    } catch (error) {
+      log5.error("Error handling incoming private message: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "handleIncomingPrivateMessage",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: { messageData, error }
+      });
+    }
+  }
   async searchGroups(query) {
     this.state.searchQuery = query;
     const filteredGroups = this.state.groups.filter(
@@ -16170,6 +16246,14 @@ var ChatManager = class extends BaseComponent {
           log5("GROUP_CREATED received in ChatManager: %o", event.data);
           await this.handleGroupCreated(event.data);
           break;
+        case "PRIVATE_MESSAGE":
+          log5("PRIVATE_MESSAGE received in ChatManager: %o", event.data);
+          await this.handleIncomingPrivateMessage(event.data);
+          break;
+        case "SEND_PRIVATE_MESSAGE":
+          log5("SEND_PRIVATE_MESSAGE received in ChatManager: %o", event.data);
+          await this.sendPrivateMessage(event.data.peerId, event.data.message);
+          break;
         default:
           log5.error("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
       }
@@ -16241,6 +16325,7 @@ if (!customElements.get("chat-manager")) {
 var template_exports2 = {};
 __export(template_exports2, {
   default: () => defaultTemplate2,
+  renderChatHeader: () => renderChatHeader,
   renderConnectionStatus: () => renderConnectionStatus,
   renderMembersList: () => renderMembersList,
   renderMessage: () => renderMessage,
@@ -16255,35 +16340,7 @@ function defaultTemplate2({ state = {} } = {}) {
     <div class="chat-interface">
         <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->
         <header class="chat-header">
-            <div class="header-content">
-                <div class="chat-info">
-                    <div class="chat-avatar">
-                        ${getChatAvatar(state.currentGroup)}
-                    </div>
-                    <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "\u0427\u0430\u0442"}</h3>
-                        <div class="chat-status">
-                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
-                            <span class="status-text">${getStatusText(state)}</span>
-                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
-                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>
-                    </button>
-                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
-                        <span class="btn-icon">\u{1F50D}</span>
-                    </button>
-                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
-                        <span class="btn-icon">\u{1F465}</span>
-                    </button>
-                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
-                        <span class="btn-icon">\u2699\uFE0F</span>
-                    </button>
-                </div>
-            </div>
+            ${renderChatHeader({ state })}
         </header>
 
         <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
@@ -16338,12 +16395,12 @@ function defaultTemplate2({ state = {} } = {}) {
                         class="message-input" 
                         placeholder="${getInputPlaceholder2(state)}"
                         rows="1"
-                        ${!state.connected || !state.currentGroup ? "disabled" : ""}
+                        ${!state.connected || !state.currentGroup && !state.activeMember ? "disabled" : ""}
                     ></textarea>
                     <button 
                         id="send-button" 
                         class="send-button"
-                        ${!state.connected || !state.currentGroup ? "disabled" : ""}
+                        ${!state.connected || !state.currentGroup && !state.activeMember ? "disabled" : ""}
                         title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"
                     >
                         <span class="send-icon">\u2708\uFE0F</span>
@@ -16358,6 +16415,56 @@ function defaultTemplate2({ state = {} } = {}) {
     `;
 }
 __name(defaultTemplate2, "defaultTemplate");
+function renderChatHeader({ state = {} } = {}) {
+  if (state.isPrivateChat && state.activeMember) {
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F464}</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">${state.activeMember.name || "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C"}</h3>
+                <div class="chat-status">
+                    <span class="status-indicator connected"></span>
+                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>
+                </div>
+            </div>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F4AC}</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">\u0427\u0430\u0442</h3>
+                <div class="chat-status">
+                    <span class="status-indicator disconnected"></span>
+                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
+                </div>
+            </div>
+        </div>
+        `;
+  }
+  return `
+    <div class="chat-info">
+        <div class="chat-avatar">
+            ${getChatAvatar(state.currentGroup)}
+        </div>
+        <div class="chat-details">
+            <h3 class="chat-name">${state.currentGroup.name}</h3>
+            <div class="chat-status">
+                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
+                <span class="status-text">${getStatusText(state)}</span>
+                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderChatHeader, "renderChatHeader");
 function renderConnectionStatus({ state = {} } = {}) {
   if (!state.connected) {
     return `
@@ -16368,7 +16475,7 @@ function renderConnectionStatus({ state = {} } = {}) {
         </div>
         `;
   }
-  if (!state.currentGroup) {
+  if (!state.currentGroup && !state.activeMember) {
     return `
         <div class="status-message info">
             <span class="status-icon">\u2139\uFE0F</span>
@@ -16398,18 +16505,18 @@ function renderStatus({ state = {} } = {}) {
         </div>
         `;
   }
-  if (!state.currentGroup) {
+  if (!state.currentGroup && !state.activeMember) {
     return `
         <div class="status-message info">
             <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
         </div>
         `;
   }
   return `
     <div class="status-message connected">
         <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.currentGroup.name}</span>
+        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.activeMember ? state.activeMember.name : state.currentGroup.name}</span>
     </div>
     `;
 }
@@ -16434,7 +16541,11 @@ function renderMembersList({ state = {} } = {}) {
   return `
     <div class="members-container">
         ${allMembers.map((member) => `
-        <div class="member-item" data-peer-id="${member.id}">
+        <div class="member-item 
+                   ${member.isCurrentUser ? "current-user" : ""} 
+                   ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""}
+                   ${!member.isCurrentUser ? "clickable" : ""}" 
+             data-peer-id="${member.id}">
             <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
                 ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
             </div>
@@ -16453,13 +16564,27 @@ __name(renderMembersList, "renderMembersList");
 function renderMessages2({ state = {} } = {}) {
   const messages2 = state.messages || [];
   if (messages2.length === 0) {
+    let emptyTitle, emptyDescription, showAction;
+    if (state.isPrivateChat && state.activeMember) {
+      emptyTitle = `\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0441 ${state.activeMember.name}`;
+      emptyDescription = "\u041E\u0442\u043F\u0440\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442";
+      showAction = false;
+    } else if (!state.currentGroup) {
+      emptyTitle = "\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439";
+      emptyDescription = "\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435";
+      showAction = true;
+    } else {
+      emptyTitle = "\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439";
+      emptyDescription = "\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435";
+      showAction = false;
+    }
     return `
         <div class="empty-chat">
             <div class="empty-content">
                 <div class="empty-icon">\u{1F4AC}</div>
-                <h3 class="empty-title">\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
-                <p class="empty-description">\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435</p>
-                ${!state.currentGroup ? `
+                <h3 class="empty-title">${emptyTitle}</h3>
+                <p class="empty-description">${emptyDescription}</p>
+                ${showAction && !state.currentGroup ? `
                 <button class="empty-action" id="find-groups">
                     \u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B
                 </button>
@@ -16585,12 +16710,15 @@ function getChatAvatar(group) {
 __name(getChatAvatar, "getChatAvatar");
 function getStatusText(state) {
   if (!state.connected) return "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E";
-  if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443";
-  return state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432` : "\u0422\u043E\u043B\u044C\u043A\u043E \u0432\u044B";
+  if (!state.currentGroup && !state.activeMember) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442";
+  return state.currentGroup && state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432` : "\u0422\u043E\u043B\u044C\u043A\u043E \u0432\u044B";
 }
 __name(getStatusText, "getStatusText");
 function getInputPlaceholder2(state) {
   if (!state.connected) return "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0441\u0435\u0442\u0438...";
+  if (state.isPrivateChat && state.activeMember) {
+    return `\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F ${state.activeMember.name}...`;
+  }
   if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F...";
   return "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...";
 }
@@ -16696,6 +16824,43 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         toggleMembersBtn.addEventListener("click", toggleMembersHandler);
         eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
       }
+      const setupMemberClickHandlers = /* @__PURE__ */ __name(() => {
+        const memberItems = context.shadowRoot.querySelectorAll(".member-item");
+        memberItems.forEach((item) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            if (e2.target.closest(".member-actions")) {
+              return;
+            }
+            const peerId = e2.currentTarget.getAttribute("data-peer-id");
+            const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
+            if (member && !member.isCurrentUser) {
+              try {
+                log7("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name);
+                await context.setActiveMember(member);
+              } catch (error) {
+                log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0431\u043E\u0440\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
+              }
+            }
+          }, "handler");
+          item.addEventListener("click", handler);
+          eventListeners.push({ element: item, handler });
+        });
+      }, "setupMemberClickHandlers");
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "childList") {
+            setupMemberClickHandlers();
+          }
+        });
+      });
+      observer.observe(context.shadowRoot, {
+        childList: true,
+        subtree: true
+      });
+      context._memberObserver = observer;
+      setTimeout(() => {
+        setupMemberClickHandlers();
+      }, 100);
       log7("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
     },
     /**
@@ -16746,7 +16911,26 @@ async function createActions2(context) {
      * @async
      * @param {string} query - Поисковый запрос
      */
-    searchMessages: searchMessages.bind(context)
+    searchMessages: searchMessages.bind(context),
+    /**
+     * Установка активного пользователя для приватного чата
+     * @async
+     * @param {Object} member - Данные пользователя
+     */
+    setActiveMember: setActiveMember.bind(context),
+    /**
+     * Отправка приватного сообщения
+     * @async
+     * @param {string} message - Текст сообщения
+     * @param {string} peerId - ID получателя
+     */
+    sendPrivateMessage: sendPrivateMessage.bind(context),
+    /**
+     * Обработка входящего приватного сообщения
+     * @async
+     * @param {Object} messageData - Данные сообщения
+     */
+    handleIncomingPrivateMessage: handleIncomingPrivateMessage.bind(context)
   };
 }
 __name(createActions2, "createActions");
@@ -16871,6 +17055,8 @@ async function setActiveGroup(group) {
       throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B");
     }
     log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s (%s)", group.name, group.topic);
+    this.state.activeMember = null;
+    this.state.isPrivateChat = false;
     await this.showSkeleton({
       selector: "#messages-list",
       replace: true
@@ -16939,6 +17125,136 @@ async function searchMessages(query) {
   }
 }
 __name(searchMessages, "searchMessages");
+async function setActiveMember(member) {
+  const log7 = logger("chat-interface:actions:setActiveMember");
+  try {
+    if (!member || !member.id) {
+      log7.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
+      throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F");
+    }
+    if (member.isCurrentUser) {
+      log7("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
+      return;
+    }
+    log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", member.name, member.id);
+    this.state.activeMember = member;
+    this.state.isPrivateChat = true;
+    await this.updateMembersList();
+    await this.updateChatHeader();
+    this.state.messages = [];
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-list"
+    });
+    log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", member.name);
+  } catch (error) {
+    log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "setActiveMember",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430",
+      details: { member, error }
+    });
+  }
+}
+__name(setActiveMember, "setActiveMember");
+async function sendPrivateMessage(message2, peerId) {
+  const log7 = logger("chat-interface:actions:sendPrivateMessage");
+  try {
+    if (!message2.trim()) {
+      log7.error("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
+      await this.showModal({
+        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+        content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
+        buttons: [{ text: "OK", type: "primary" }]
+      });
+      return;
+    }
+    if (!peerId) {
+      log7.error("\u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C");
+      await this.showModal({
+        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+        content: "<p>\u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>",
+        buttons: [{ text: "OK", type: "primary" }]
+      });
+      return;
+    }
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager && chatManager.sendPrivateMessage) {
+      log7("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
+      await chatManager.sendPrivateMessage(peerId, message2);
+      await this.addMessage({
+        text: message2,
+        from: this.state.peerId,
+        to: peerId,
+        type: "sent",
+        timestamp: Date.now(),
+        isPrivate: true
+      });
+      const messageInput = this.shadowRoot.querySelector("#message-input");
+      if (messageInput) {
+        messageInput.value = "";
+      }
+      log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E");
+    } else {
+      log7.error("chat-manager \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0445 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
+      throw new Error("\u0427\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+    }
+  } catch (error) {
+    log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "sendPrivateMessage",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      details: { peerId, message: message2, error }
+    });
+    await this.showModal({
+      title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
+      content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
+      buttons: [{ text: "OK", type: "primary" }]
+    });
+  }
+}
+__name(sendPrivateMessage, "sendPrivateMessage");
+async function handleIncomingPrivateMessage(messageData) {
+  const log7 = logger("chat-interface:actions:handleIncomingPrivateMessage");
+  try {
+    const isForActiveChat = this.state.isPrivateChat && this.state.activeMember && messageData.from === this.state.activeMember.id;
+    const shouldActivateChat = !this.state.isPrivateChat && messageData.isPrivate;
+    if (isForActiveChat || shouldActivateChat) {
+      log7("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
+      if (shouldActivateChat) {
+        const senderMember = this.state.connectedPeers.find((p2) => p2.id === messageData.from);
+        if (senderMember) {
+          await this.setActiveMember(senderMember);
+        }
+      }
+      await this.addMessage({
+        text: messageData.text,
+        from: messageData.from,
+        to: this.state.peerId,
+        type: "received",
+        timestamp: messageData.timestamp || Date.now(),
+        isPrivate: true
+      });
+      if (document.hidden && this.state.activeMember) {
+        this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${this.state.activeMember.name}`);
+      }
+    } else if (messageData.isPrivate) {
+      log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u043D\u0435 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430", messageData.from);
+    }
+  } catch (error) {
+    log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "handleIncomingPrivateMessage",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      details: { messageData, error }
+    });
+  }
+}
+__name(handleIncomingPrivateMessage, "handleIncomingPrivateMessage");
 
 // public/components/chat-interface/index.mjs
 var ChatInterface = class extends BaseComponent {
@@ -16958,7 +17274,11 @@ var ChatInterface = class extends BaseComponent {
       totalPeers: 0,
       peerId: null,
       connectionMode: null,
-      uptime: null
+      uptime: null,
+      activeMember: null,
+      // Активный пользователь для приватного чата
+      isPrivateChat: false
+      // Флаг приватного чата
     };
   }
   async _componentReady() {
@@ -16992,6 +17312,8 @@ var ChatInterface = class extends BaseComponent {
   async setCurrentGroup(group) {
     this.state.currentGroup = group;
     this.state.messages = [];
+    this.state.activeMember = null;
+    this.state.isPrivateChat = false;
     this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group?.name);
     await this.fullRender(this.state);
   }
@@ -17025,6 +17347,9 @@ var ChatInterface = class extends BaseComponent {
           break;
         case "INCOMING_MESSAGE":
           await this.handleIncomingMessage(event.data);
+          break;
+        case "INCOMING_PRIVATE_MESSAGE":
+          await this.handleIncomingPrivateMessage(event.data);
           break;
         default:
           this._log.error("\u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
@@ -17106,6 +17431,80 @@ var ChatInterface = class extends BaseComponent {
       }
     } catch (error) {
       this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432: %o", error);
+    }
+  }
+  /**
+   * Установка активного пользователя для приватного чата
+   * @param {Object} member - Данные пользователя
+   */
+  async setActiveMember(member) {
+    this.state.activeMember = member;
+    this.state.isPrivateChat = true;
+    this.state.messages = [];
+    await this.updateMembersList();
+    await this.updateChatHeader();
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-list"
+    });
+    this._log("\u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D: %s", member.name);
+  }
+  /**
+   * Обновляет заголовок чата
+   */
+  async updateChatHeader() {
+    try {
+      const chatHeader = this.shadowRoot.querySelector(".chat-header");
+      if (chatHeader && this.renderPart) {
+        await this.renderPart({
+          partName: "renderChatHeader",
+          state: this.state,
+          selector: ".chat-header"
+        });
+      }
+    } catch (error) {
+      this._log.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u0430 \u0447\u0430\u0442\u0430: %o", error);
+    }
+  }
+  /**
+   * Обработка входящего приватного сообщения
+   * @param {Object} messageData - Данные сообщения
+   */
+  async handleIncomingPrivateMessage(messageData) {
+    try {
+      const isForActiveChat = this.state.isPrivateChat && this.state.activeMember && messageData.from === this.state.activeMember.id;
+      const shouldActivateChat = !this.state.isPrivateChat && messageData.isPrivate;
+      if (isForActiveChat || shouldActivateChat) {
+        this._log("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
+        if (shouldActivateChat) {
+          const senderMember = this.state.connectedPeers.find((p2) => p2.id === messageData.from);
+          if (senderMember) {
+            await this.setActiveMember(senderMember);
+          }
+        }
+        await this.addMessage({
+          text: messageData.text,
+          from: messageData.from,
+          to: this.state.peerId,
+          type: "received",
+          timestamp: messageData.timestamp || Date.now(),
+          isPrivate: true
+        });
+        if (document.hidden && this.state.activeMember) {
+          this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${this.state.activeMember.name}`);
+        }
+      } else if (messageData.isPrivate) {
+        this._log("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u043D\u0435 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430", messageData.from);
+      }
+    } catch (error) {
+      this._log.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "handleIncomingPrivateMessage",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: { messageData, error }
+      });
     }
   }
   async _componentDisconnected() {

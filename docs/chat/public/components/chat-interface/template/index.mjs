@@ -9,35 +9,7 @@ export default function defaultTemplate({state = {}} = {}) {
     <div class="chat-interface">
         <!-- Заголовок чата -->
         <header class="chat-header">
-            <div class="header-content">
-                <div class="chat-info">
-                    <div class="chat-avatar">
-                        ${getChatAvatar(state.currentGroup)}
-                    </div>
-                    <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : 'Чат'}</h3>
-                        <div class="chat-status">
-                            <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>
-                            <span class="status-text">${getStatusText(state)}</span>
-                            ${state.currentGroup ? `<span class="member-count">👥 ${state.currentGroup.memberCount || 1}</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="action-btn" id="clear-chat" title="Очистить чат">
-                        <span class="btn-icon">🗑️</span>
-                    </button>
-                    <button class="action-btn" id="search-messages" title="Поиск сообщений">
-                        <span class="btn-icon">🔍</span>
-                    </button>
-                    <button class="action-btn" id="toggle-members" title="Участники">
-                        <span class="btn-icon">👥</span>
-                    </button>
-                    <button class="action-btn" id="settings" title="Настройки">
-                        <span class="btn-icon">⚙️</span>
-                    </button>
-                </div>
-            </div>
+            ${renderChatHeader({state})}
         </header>
 
         <!-- Статус подключения -->
@@ -92,12 +64,12 @@ export default function defaultTemplate({state = {}} = {}) {
                         class="message-input" 
                         placeholder="${getInputPlaceholder(state)}"
                         rows="1"
-                        ${!state.connected || !state.currentGroup ? 'disabled' : ''}
+                        ${!state.connected || (!state.currentGroup && !state.activeMember) ? 'disabled' : ''}
                     ></textarea>
                     <button 
                         id="send-button" 
                         class="send-button"
-                        ${!state.connected || !state.currentGroup ? 'disabled' : ''}
+                        ${!state.connected || (!state.currentGroup && !state.activeMember) ? 'disabled' : ''}
                         title="Отправить сообщение"
                     >
                         <span class="send-icon">✈️</span>
@@ -108,6 +80,61 @@ export default function defaultTemplate({state = {}} = {}) {
 
         <!-- Оверлей поиска -->
         ${state.showSearch ? renderSearchOverlay({state}) : ''}
+    </div>
+    `;
+}
+
+/**
+ * Шаблон для заголовка приватного чата
+ */
+export function renderChatHeader({state = {}} = {}) {
+    if (state.isPrivateChat && state.activeMember) {
+        return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">👤</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">${state.activeMember.name || 'Пользователь'}</h3>
+                <div class="chat-status">
+                    <span class="status-indicator connected"></span>
+                    <span class="status-text">Приватный чат</span>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    if (!state.currentGroup) {
+        return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">💬</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">Чат</h3>
+                <div class="chat-status">
+                    <span class="status-indicator disconnected"></span>
+                    <span class="status-text">Выберите чат</span>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    return `
+    <div class="chat-info">
+        <div class="chat-avatar">
+            ${getChatAvatar(state.currentGroup)}
+        </div>
+        <div class="chat-details">
+            <h3 class="chat-name">${state.currentGroup.name}</h3>
+            <div class="chat-status">
+                <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>
+                <span class="status-text">${getStatusText(state)}</span>
+                ${state.currentGroup ? `<span class="member-count">👥 ${state.currentGroup.memberCount || 1}</span>` : ''}
+            </div>
+        </div>
     </div>
     `;
 }
@@ -126,7 +153,7 @@ export function renderConnectionStatus({state = {}} = {}) {
         `;
     }
 
-    if (!state.currentGroup) {
+    if (!state.currentGroup && !state.activeMember) {
         return `
         <div class="status-message info">
             <span class="status-icon">ℹ️</span>
@@ -161,11 +188,11 @@ export function renderStatus({state = {}} = {}) {
         `;
     }
 
-    if (!state.currentGroup) {
+    if (!state.currentGroup && !state.activeMember) {
         return `
         <div class="status-message info">
             <span class="status-icon">ℹ️</span>
-            <span class="status-text">Выберите группу</span>
+            <span class="status-text">Выберите чат</span>
         </div>
         `;
     }
@@ -173,7 +200,7 @@ export function renderStatus({state = {}} = {}) {
     return `
     <div class="status-message connected">
         <span class="status-icon">🟢</span>
-        <span class="status-text">В сети: ${state.currentGroup.name}</span>
+        <span class="status-text">В сети: ${state.activeMember ? state.activeMember.name : state.currentGroup.name}</span>
     </div>
     `;
 }
@@ -182,7 +209,6 @@ export function renderStatus({state = {}} = {}) {
  * Шаблон для списка участников
  */
 export function renderMembersList({state = {}} = {}) {
-    // Используем connectedPeers из состояния или создаем пустой массив
     const members = state.connectedPeers || [];
     const currentUser = state.peerId ? {
         id: state.peerId,
@@ -191,7 +217,6 @@ export function renderMembersList({state = {}} = {}) {
         isCurrentUser: true
     } : null;
 
-    // Добавляем текущего пользователя в начало списка
     const allMembers = currentUser ? [currentUser, ...members] : members;
 
     if (allMembers.length === 0) {
@@ -206,7 +231,11 @@ export function renderMembersList({state = {}} = {}) {
     return `
     <div class="members-container">
         ${allMembers.map(member => `
-        <div class="member-item" data-peer-id="${member.id}">
+        <div class="member-item 
+                   ${member.isCurrentUser ? 'current-user' : ''} 
+                   ${state.isPrivateChat && state.activeMember?.id === member.id ? 'active' : ''}
+                   ${!member.isCurrentUser ? 'clickable' : ''}" 
+             data-peer-id="${member.id}">
             <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">
                 ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}
             </div>
@@ -229,13 +258,29 @@ export function renderMessages({state = {}} = {}) {
     const messages = state.messages || [];
 
     if (messages.length === 0) {
+        let emptyTitle, emptyDescription, showAction;
+
+        if (state.isPrivateChat && state.activeMember) {
+            emptyTitle = `Начните общение с ${state.activeMember.name}`;
+            emptyDescription = 'Отправьте первое сообщение в приватный чат';
+            showAction = false;
+        } else if (!state.currentGroup) {
+            emptyTitle = 'Нет сообщений';
+            emptyDescription = 'Начните общение, отправив первое сообщение';
+            showAction = true;
+        } else {
+            emptyTitle = 'Нет сообщений';
+            emptyDescription = 'Начните общение, отправив первое сообщение';
+            showAction = false;
+        }
+
         return `
         <div class="empty-chat">
             <div class="empty-content">
                 <div class="empty-icon">💬</div>
-                <h3 class="empty-title">Нет сообщений</h3>
-                <p class="empty-description">Начните общение, отправив первое сообщение</p>
-                ${!state.currentGroup ? `
+                <h3 class="empty-title">${emptyTitle}</h3>
+                <p class="empty-description">${emptyDescription}</p>
+                ${showAction && !state.currentGroup ? `
                 <button class="empty-action" id="find-groups">
                     Найти группы
                 </button>
@@ -381,12 +426,15 @@ function getChatAvatar(group) {
 
 function getStatusText(state) {
     if (!state.connected) return 'Не подключено';
-    if (!state.currentGroup) return 'Выберите группу';
-    return state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} участников` : 'Только вы';
+    if (!state.currentGroup && !state.activeMember) return 'Выберите чат';
+    return state.currentGroup && state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} участников` : 'Только вы';
 }
 
 function getInputPlaceholder(state) {
     if (!state.connected) return 'Подключитесь к сети...';
+    if (state.isPrivateChat && state.activeMember) {
+        return `Сообщение для ${state.activeMember.name}...`;
+    }
     if (!state.currentGroup) return 'Выберите группу для общения...';
     return 'Введите сообщение...';
 }

@@ -306,6 +306,104 @@ export class ChatManager extends BaseComponent {
         }
     }
 
+    /**
+     * Отправка приватного сообщения пользователю
+     * @async
+     * @param {string} peerId - ID получателя
+     * @param {string} messageText - Текст сообщения
+     * @returns {Promise<boolean>} Успешность отправки
+     */
+    async sendPrivateMessage(peerId, messageText) {
+        if (!this.node || !this.state.connected) {
+            log.error('Node not available for private message');
+            throw new Error('P2P нода не готова');
+        }
+
+        try {
+            // Создаем стрим к пиру для приватного сообщения
+            const stream = await this.node.dialProtocol(peerId, '/chat/1.0.0');
+            const lp = lpStream(stream);
+
+            // Отправляем сообщение в формате JSON
+            const messageData = {
+                type: 'private_message',
+                text: messageText,
+                from: this.state.peerId,
+                timestamp: Date.now(),
+                isPrivate: true
+            };
+
+            await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
+
+            // Закрываем стрим после отправки
+            await stream.close();
+
+            log('Private message sent to user: %s', peerId);
+
+            // Добавляем сообщение в локальную историю как отправленное
+            await this.addMessage({
+                text: messageText,
+                to: peerId,
+                from: this.state.peerId,
+                type: 'sent',
+                timestamp: Date.now(),
+                isPrivate: true
+            });
+
+            return true;
+
+        } catch (error) {
+            log.error('Error sending private message: %o', error);
+
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'sendPrivateMessage',
+                message: 'Ошибка отправки приватного сообщения',
+                details: { peerId, messageText, error }
+            });
+
+            throw error;
+        }
+    }
+
+    /**
+     * Обработка входящих приватных сообщений
+     * @async
+     * @param {Object} messageData - Данные сообщения
+     */
+    async handleIncomingPrivateMessage(messageData) {
+        try {
+            log('Incoming private message from: %s', messageData.from);
+
+            // Добавляем сообщение в историю как полученное
+            await this.addMessage({
+                text: messageData.text,
+                from: messageData.from,
+                to: this.state.peerId,
+                type: 'received',
+                timestamp: messageData.timestamp || Date.now(),
+                isPrivate: true
+            });
+
+            // Передаем сообщение в chat-interface для отображения
+            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+            if (chatInterface && chatInterface._actions && chatInterface._actions.handleIncomingPrivateMessage) {
+                await chatInterface._actions.handleIncomingPrivateMessage(messageData);
+            }
+
+            log('Private message processed from: %s', messageData.from);
+
+        } catch (error) {
+            log.error('Error handling incoming private message: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'handleIncomingPrivateMessage',
+                message: 'Ошибка обработки приватного сообщения',
+                details: { messageData, error }
+            });
+        }
+    }
+
     async searchGroups(query) {
         this.state.searchQuery = query;
 
@@ -413,6 +511,16 @@ export class ChatManager extends BaseComponent {
                     // Обработка создания группы из group-manager
                     log('GROUP_CREATED received in ChatManager: %o', event.data);
                     await this.handleGroupCreated(event.data);
+                    break;
+                case 'PRIVATE_MESSAGE':
+                    // Обработка приватных сообщений
+                    log('PRIVATE_MESSAGE received in ChatManager: %o', event.data);
+                    await this.handleIncomingPrivateMessage(event.data);
+                    break;
+                case 'SEND_PRIVATE_MESSAGE':
+                    // Отправка приватного сообщения
+                    log('SEND_PRIVATE_MESSAGE received in ChatManager: %o', event.data);
+                    await this.sendPrivateMessage(event.data.peerId, event.data.message);
                     break;
                 default:
                     log.error('Неизвестный тип сообщения: %s', event.type);

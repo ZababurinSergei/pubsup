@@ -279,11 +279,40 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     transition: var(--transition);
+    position: relative;
+    cursor: pointer;
 }
 
 .member-item:hover {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* Active member selection */
+.member-item.active {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.4);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.member-item.active .member-avatar {
+    border: 2px solid #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.member-item.active .member-name {
+    color: #667eea;
+    font-weight: 600;
+}
+
+/* Private message indicator */
+.member-item.private-chat::before {
+    content: '💬';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
 }
 
 .member-avatar {
@@ -298,6 +327,7 @@
     font-weight: 600;
     font-size: 0.75rem;
     flex-shrink: 0;
+    transition: var(--transition);
 }
 
 /* Стили для текущего пользователя в списке участников */

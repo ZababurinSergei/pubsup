@@ -106,6 +106,58 @@ export const controller = async (context) => {
                 eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
             }
 
+            // Обработчики кликов на участников для приватного чата
+            const setupMemberClickHandlers = () => {
+                const memberItems = context.shadowRoot.querySelectorAll('.member-item');
+
+                memberItems.forEach(item => {
+                    const handler = async (e) => {
+                        // Предотвращаем срабатывание на кнопках действий
+                        if (e.target.closest('.member-actions')) {
+                            return;
+                        }
+
+                        const peerId = e.currentTarget.getAttribute('data-peer-id');
+                        const member = context.state.connectedPeers.find(p => p.id === peerId);
+
+                        if (member && !member.isCurrentUser) {
+                            try {
+                                log('выбор пользователя для приватного чата: %s', member.name);
+                                await context.setActiveMember(member);
+                            } catch (error) {
+                                log.error('ошибка выбора пользователя: %o', error);
+                            }
+                        }
+                    };
+
+                    item.addEventListener('click', handler);
+                    eventListeners.push({ element: item, handler: handler });
+                });
+            };
+
+            // Наблюдатель за изменениями DOM для динамических кнопок
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        setupMemberClickHandlers();
+                    }
+                });
+            });
+
+            // Начинаем наблюдение за изменениями в shadowRoot
+            observer.observe(context.shadowRoot, {
+                childList: true,
+                subtree: true
+            });
+
+            // Сохраняем observer для очистки
+            context._memberObserver = observer;
+
+            // Инициализация обработчиков при первом рендере
+            setTimeout(() => {
+                setupMemberClickHandlers();
+            }, 100);
+
             // Автофокус на поле ввода сообщения
             // if (messageInput) {
             //     setTimeout(() => {

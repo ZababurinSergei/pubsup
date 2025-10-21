@@ -18,7 +18,9 @@ export class ChatInterface extends BaseComponent {
             totalPeers: 0,
             peerId: null,
             connectionMode: null,
-            uptime: null
+            uptime: null,
+            activeMember: null,        // Активный пользователь для приватного чата
+            isPrivateChat: false       // Флаг приватного чата
         };
     }
 
@@ -61,6 +63,8 @@ export class ChatInterface extends BaseComponent {
     async setCurrentGroup(group) {
         this.state.currentGroup = group;
         this.state.messages = [];
+        this.state.activeMember = null;
+        this.state.isPrivateChat = false;
         this._log('установлена текущая группа: %s', group?.name);
         await this.fullRender(this.state);
     }
@@ -100,6 +104,10 @@ export class ChatInterface extends BaseComponent {
 
                 case 'INCOMING_MESSAGE':
                     await this.handleIncomingMessage(event.data);
+                    break;
+
+                case 'INCOMING_PRIVATE_MESSAGE':
+                    await this.handleIncomingPrivateMessage(event.data);
                     break;
 
                 default:
@@ -200,6 +208,100 @@ export class ChatInterface extends BaseComponent {
             }
         } catch (error) {
             this._log.error('❌ ошибка обновления списка участников: %o', error);
+        }
+    }
+
+    /**
+     * Установка активного пользователя для приватного чата
+     * @param {Object} member - Данные пользователя
+     */
+    async setActiveMember(member) {
+        this.state.activeMember = member;
+        this.state.isPrivateChat = true;
+        this.state.messages = []; // Очищаем историю при смене чата
+
+        await this.updateMembersList();
+        await this.updateChatHeader();
+        await this.renderPart({
+            partName: 'renderMessages',
+            state: this.state,
+            selector: '#messages-list'
+        });
+
+        this._log('активный пользователь установлен: %s', member.name);
+    }
+
+    /**
+     * Обновляет заголовок чата
+     */
+    async updateChatHeader() {
+        try {
+            const chatHeader = this.shadowRoot.querySelector('.chat-header');
+            if (chatHeader && this.renderPart) {
+                await this.renderPart({
+                    partName: 'renderChatHeader',
+                    state: this.state,
+                    selector: '.chat-header'
+                });
+            }
+        } catch (error) {
+            this._log.error('ошибка обновления заголовка чата: %o', error);
+        }
+    }
+
+    /**
+     * Обработка входящего приватного сообщения
+     * @param {Object} messageData - Данные сообщения
+     */
+    async handleIncomingPrivateMessage(messageData) {
+        try {
+            // Проверяем, относится ли сообщение к текущему активному приватному чату
+            const isForActiveChat = this.state.isPrivateChat &&
+                this.state.activeMember &&
+                messageData.from === this.state.activeMember.id;
+
+            // Или если это новое сообщение и у нас нет активного чата
+            const shouldActivateChat = !this.state.isPrivateChat &&
+                messageData.isPrivate;
+
+            if (isForActiveChat || shouldActivateChat) {
+                this._log('обработка входящего приватного сообщения от: %s', messageData.from);
+
+                // Если это новое сообщение, активируем чат с отправителем
+                if (shouldActivateChat) {
+                    const senderMember = this.state.connectedPeers.find(p => p.id === messageData.from);
+                    if (senderMember) {
+                        await this.setActiveMember(senderMember);
+                    }
+                }
+
+                // Добавляем сообщение в историю
+                await this.addMessage({
+                    text: messageData.text,
+                    from: messageData.from,
+                    to: this.state.peerId,
+                    type: 'received',
+                    timestamp: messageData.timestamp || Date.now(),
+                    isPrivate: true
+                });
+
+                // Показываем уведомление если окно не активно
+                if (document.hidden && this.state.activeMember) {
+                    this.showNotification(`Приватное сообщение от ${this.state.activeMember.name}`);
+                }
+            } else if (messageData.isPrivate) {
+                // Сообщение не для активного чата - просто логируем
+                this._log('приватное сообщение от %s не для активного чата', messageData.from);
+            }
+
+        } catch (error) {
+            this._log.error('ошибка обработки входящего приватного сообщения: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'handleIncomingPrivateMessage',
+                message: 'Ошибка обработки приватного сообщения',
+                details: { messageData, error }
+            });
         }
     }
 

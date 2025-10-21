@@ -42,7 +42,29 @@ export async function createActions(context) {
          * @async
          * @param {string} query - Поисковый запрос
          */
-        searchMessages: searchMessages.bind(context)
+        searchMessages: searchMessages.bind(context),
+
+        /**
+         * Установка активного пользователя для приватного чата
+         * @async
+         * @param {Object} member - Данные пользователя
+         */
+        setActiveMember: setActiveMember.bind(context),
+
+        /**
+         * Отправка приватного сообщения
+         * @async
+         * @param {string} message - Текст сообщения
+         * @param {string} peerId - ID получателя
+         */
+        sendPrivateMessage: sendPrivateMessage.bind(context),
+
+        /**
+         * Обработка входящего приватного сообщения
+         * @async
+         * @param {Object} messageData - Данные сообщения
+         */
+        handleIncomingPrivateMessage: handleIncomingPrivateMessage.bind(context)
     };
 }
 
@@ -217,6 +239,10 @@ async function setActiveGroup(group) {
 
         log('установка активной группы: %s (%s)', group.name, group.topic);
 
+        // Сбрасываем приватный чат при выборе группы
+        this.state.activeMember = null;
+        this.state.isPrivateChat = false;
+
         // Показываем индикатор загрузки
         await this.showSkeleton({
             selector: '#messages-list',
@@ -316,6 +342,198 @@ async function searchMessages(query) {
             source: 'searchMessages',
             message: 'Ошибка поиска по сообщениям',
             details: { query, error }
+        });
+    }
+}
+
+/**
+ * Установка активного пользователя для приватного чата
+ * @async
+ * @param {Object} member - Данные пользователя
+ * @this {HTMLElement} Контекст компонента
+ */
+async function setActiveMember(member) {
+    const log = logger('chat-interface:actions:setActiveMember');
+
+    try {
+        if (!member || !member.id) {
+            log.error('неверные данные пользователя: %o', member);
+            throw new Error('Неверные данные пользователя');
+        }
+
+        // Не выбираем себя
+        if (member.isCurrentUser) {
+            log('попытка выбрать себя - игнорируем');
+            return;
+        }
+
+        log('установка активного пользователя: %s (%s)', member.name, member.id);
+
+        // Обновляем состояние
+        this.state.activeMember = member;
+        this.state.isPrivateChat = true;
+
+        // Обновляем UI списка участников
+        await this.updateMembersList();
+
+        // Обновляем заголовок чата
+        await this.updateChatHeader();
+
+        // Очищаем историю сообщений для приватного чата
+        this.state.messages = [];
+
+        // Рендерим пустой чат
+        await this.renderPart({
+            partName: 'renderMessages',
+            state: this.state,
+            selector: '#messages-list'
+        });
+
+        log('приватный чат установлен с пользователем: %s', member.name);
+
+    } catch (error) {
+        log.error('ошибка установки активного пользователя: %o', error);
+        this.addError({
+            componentName: this.constructor.name,
+            source: 'setActiveMember',
+            message: 'Ошибка установки приватного чата',
+            details: { member, error }
+        });
+    }
+}
+
+/**
+ * Отправка приватного сообщения
+ * @async
+ * @param {string} message - Текст сообщения
+ * @param {string} peerId - ID получателя
+ * @this {HTMLElement} Контекст компонента
+ */
+async function sendPrivateMessage(message, peerId) {
+    const log = logger('chat-interface:actions:sendPrivateMessage');
+
+    try {
+        if (!message.trim()) {
+            log.error('попытка отправки пустого сообщения');
+            await this.showModal({
+                title: 'Ошибка',
+                content: '<p>Сообщение не может быть пустым</p>',
+                buttons: [{ text: 'OK', type: 'primary' }]
+            });
+            return;
+        }
+
+        if (!peerId) {
+            log.error('не указан получатель');
+            await this.showModal({
+                title: 'Ошибка',
+                content: '<p>Не указан получатель сообщения</p>',
+                buttons: [{ text: 'OK', type: 'primary' }]
+            });
+            return;
+        }
+
+        // Получаем chat-manager для отправки приватного сообщения
+        const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+        if (chatManager && chatManager.sendPrivateMessage) {
+            log('отправка приватного сообщения пользователю: %s', peerId);
+            await chatManager.sendPrivateMessage(peerId, message);
+
+            // Добавляем сообщение в локальную историю как отправленное
+            await this.addMessage({
+                text: message,
+                from: this.state.peerId,
+                to: peerId,
+                type: 'sent',
+                timestamp: Date.now(),
+                isPrivate: true
+            });
+
+            // Очищаем поле ввода
+            const messageInput = this.shadowRoot.querySelector('#message-input');
+            if (messageInput) {
+                messageInput.value = '';
+            }
+
+            log('приватное сообщение отправлено');
+        } else {
+            log.error('chat-manager не доступен для отправки приватных сообщений');
+            throw new Error('Чат менеджер не доступен');
+        }
+
+    } catch (error) {
+        log.error('ошибка отправки приватного сообщения: %o', error);
+        this.addError({
+            componentName: this.constructor.name,
+            source: 'sendPrivateMessage',
+            message: 'Ошибка отправки приватного сообщения',
+            details: { peerId, message, error }
+        });
+
+        await this.showModal({
+            title: 'Ошибка отправки',
+            content: `<p>Не удалось отправить приватное сообщение: ${error.message}</p>`,
+            buttons: [{ text: 'OK', type: 'primary' }]
+        });
+    }
+}
+
+/**
+ * Обработка входящего приватного сообщения
+ * @async
+ * @param {Object} messageData - Данные сообщения
+ * @this {HTMLElement} Контекст компонента
+ */
+async function handleIncomingPrivateMessage(messageData) {
+    const log = logger('chat-interface:actions:handleIncomingPrivateMessage');
+
+    try {
+        // Проверяем, относится ли сообщение к текущему активному приватному чату
+        const isForActiveChat = this.state.isPrivateChat &&
+            this.state.activeMember &&
+            messageData.from === this.state.activeMember.id;
+
+        // Или если это новое сообщение и у нас нет активного чата
+        const shouldActivateChat = !this.state.isPrivateChat &&
+            messageData.isPrivate;
+
+        if (isForActiveChat || shouldActivateChat) {
+            log('обработка входящего приватного сообщения от: %s', messageData.from);
+
+            // Если это новое сообщение, активируем чат с отправителем
+            if (shouldActivateChat) {
+                const senderMember = this.state.connectedPeers.find(p => p.id === messageData.from);
+                if (senderMember) {
+                    await this.setActiveMember(senderMember);
+                }
+            }
+
+            // Добавляем сообщение в историю
+            await this.addMessage({
+                text: messageData.text,
+                from: messageData.from,
+                to: this.state.peerId,
+                type: 'received',
+                timestamp: messageData.timestamp || Date.now(),
+                isPrivate: true
+            });
+
+            // Показываем уведомление если окно не активно
+            if (document.hidden && this.state.activeMember) {
+                this.showNotification(`Приватное сообщение от ${this.state.activeMember.name}`);
+            }
+        } else if (messageData.isPrivate) {
+            // Сообщение не для активного чата - просто логируем
+            log('приватное сообщение от %s не для активного чата', messageData.from);
+        }
+
+    } catch (error) {
+        log.error('ошибка обработки входящего приватного сообщения: %o', error);
+        this.addError({
+            componentName: this.constructor.name,
+            source: 'handleIncomingPrivateMessage',
+            message: 'Ошибка обработки приватного сообщения',
+            details: { messageData, error }
         });
     }
 }
