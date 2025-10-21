@@ -1,0 +1,10 @@
+{
+  "readme": "none",
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/connection-encryption/index.ts",
+    "./src/peer-discovery/index.ts",
+    "./src/stream-muxer/index.ts",
+    "./src/transport/index.ts"
+  ]
+}

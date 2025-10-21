@@ -7,6 +7,7 @@ export class PeerConnection extends BaseComponent {
     constructor() {
         super();
         this._templateMethods = template;
+        this.node = null
         this.state = {
             mode: 'listener',
             connected: false,
@@ -31,7 +32,7 @@ export class PeerConnection extends BaseComponent {
         await this._controller.init();
 
         // Автоматически инициализируем начальный режим
-        await this.initializeLibp2p(this.state.mode);
+        this.node = await this.initializeLibp2p(this.state.mode);
 
         return true;
     }
@@ -43,11 +44,6 @@ export class PeerConnection extends BaseComponent {
         this.state.connected = false;
 
         try {
-            await this.showSkeleton({
-                selector: '#connection-status',
-                replace: true
-            });
-
             const libp2p = await this._actions.initializeLibp2p(mode);
             this.state.peerId = libp2p.peerId.toString();
             this.state.listeningAddresses = libp2p.getMultiaddrs().map(ma => ma.toString());
@@ -62,6 +58,16 @@ export class PeerConnection extends BaseComponent {
             });
 
             await this.fullRender(this.state);
+
+            if(this.state.mode === 'listener') {
+                const relayAddress = await this.getRelayAddresses()
+                const peerAddressInput = this.shadowRoot.querySelector('#peer-address-input');
+                peerAddressInput.value = relayAddress
+            } else {
+                const peerAddressInput = this.shadowRoot.querySelector('#peer-address-input');
+                peerAddressInput.value = ''
+            }
+
             return libp2p;
         } catch (error) {
             console.error('❌ Libp2p initialization failed:', error);
@@ -129,9 +135,10 @@ export class PeerConnection extends BaseComponent {
     }
 
     async getRelayAddresses() {
-        return this.state.listeningAddresses.filter(addr =>
-            addr.includes('/p2p-circuit') || addr.includes('/webrtc')
-        );
+        return '/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i'
+        // return this.state.listeningAddresses.filter(addr =>
+        //     addr.includes('/p2p-circuit') || addr.includes('/webrtc')
+        // );
     }
 
     // Методы для отладки

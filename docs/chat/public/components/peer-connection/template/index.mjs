@@ -26,7 +26,7 @@ export default function defaultTemplate({state = {}} = {}) {
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Peer ID:</span>
-                    <span class="meta-value peer-id">${state.peerId ? state.peerId.substring(0, 16) + '...' : 'Не доступен'}</span>
+                    <span class="meta-value peer-id">${state.peerId ? state.peerId : 'Не доступен'}</span>
                 </div>
             </div>
         </header>
@@ -83,7 +83,9 @@ export default function defaultTemplate({state = {}} = {}) {
                     </h3>
                 </div>
                 <div class="card-content">
-                    ${renderAddressesList({state})}
+                     <div id="listening-addresses">
+                        ${renderAddressesList({state})}
+                    </div>
                 </div>
             </section>
 
@@ -110,6 +112,22 @@ export default function defaultTemplate({state = {}} = {}) {
                 </div>
                 <div class="card-content">
                     ${renderStatistics({state})}
+                </div>
+            </section>
+
+            <!-- Секция подключенных пиров для renderPart -->
+            <section class="grid-card connected-peers-section" style="display: none;">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">🔗</span>
+                        Активные подключения
+                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
+                    </h3>
+                </div>
+                <div class="card-content">
+                    <div id="connected-peers-list">
+                        ${renderConnectedPeersDetailed({state})}
+                    </div>
                 </div>
             </section>
         </main>
@@ -285,6 +303,91 @@ export function renderPeersList({state = {}} = {}) {
 }
 
 /**
+ * Детализированный шаблон для списка подключенных пиров (для renderPart)
+ */
+export function renderConnectedPeersDetailed({state = {}} = {}) {
+    const peers = state.connectedPeers || [];
+
+    if (peers.length === 0) {
+        return `
+        <div class="empty-state">
+            <div class="empty-icon">🔌</div>
+            <p class="empty-title">Нет активных подключений</p>
+            <p class="empty-description">Пиры появятся здесь после установки соединений</p>
+        </div>
+        `;
+    }
+
+    return `
+    <div class="peers-detailed-container">
+        ${peers.map((peer, index) => `
+        <div class="peer-detailed-item" data-peer-id="${peer.id}">
+            <div class="peer-header">
+                <div class="peer-avatar-large">
+                    ${peer.id ? peer.id.substring(2, 4).toUpperCase() : '??'}
+                </div>
+                <div class="peer-main-info">
+                    <div class="peer-name">Подключение #${index + 1}</div>
+                    <div class="peer-id-full">${peer.id}</div>
+                </div>
+                <div class="peer-status-indicator connected">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Подключен</span>
+                </div>
+            </div>
+            
+            <div class="peer-connections-info">
+                <div class="connections-header">
+                    <span class="connections-label">Активные соединения:</span>
+                    <span class="connections-count">${peer.connections ? peer.connections.length : 1}</span>
+                </div>
+                
+                ${peer.connections ? peer.connections.map(conn => `
+                <div class="connection-item">
+                    <div class="connection-protocol">
+                        <span class="protocol-icon">🔗</span>
+                        <span class="protocol-name">${getConnectionProtocol(conn.remoteAddr)}</span>
+                    </div>
+                    <div class="connection-address">${conn.remoteAddr}</div>
+                    <div class="connection-status ${conn.status}">
+                        <span class="status-badge">${conn.status}</span>
+                    </div>
+                </div>
+                `).join('') : `
+                <div class="connection-item">
+                    <div class="connection-protocol">
+                        <span class="protocol-icon">🌐</span>
+                        <span class="protocol-name">P2P</span>
+                    </div>
+                    <div class="connection-address">Прямое подключение</div>
+                    <div class="connection-status open">
+                        <span class="status-badge">active</span>
+                    </div>
+                </div>
+                `}
+            </div>
+            
+            <div class="peer-actions-detailed">
+                <button class="action-btn secondary disconnect-peer" data-peer-id="${peer.id}">
+                    <span class="btn-icon">🚫</span>
+                    Отключить
+                </button>
+                <button class="action-btn outline copy-peer-id" data-peer-id="${peer.id}">
+                    <span class="btn-icon">📋</span>
+                    ID
+                </button>
+                <button class="action-btn outline peer-info" data-peer-id="${peer.id}">
+                    <span class="btn-icon">ℹ️</span>
+                    Инфо
+                </button>
+            </div>
+        </div>
+        `).join('')}
+    </div>
+    `;
+}
+
+/**
  * Шаблон для списка адресов
  */
 export function renderAddressesList({state = {}} = {}) {
@@ -301,7 +404,7 @@ export function renderAddressesList({state = {}} = {}) {
     }
 
     return `
-    <div class="addresses-container" id="listening-addresses">
+    <div class="addresses-container">
         ${addresses.map((address, index) => `
         <div class="address-item" data-address="${address}">
             <div class="address-index">${index + 1}</div>
@@ -392,7 +495,7 @@ export function renderAddresses({state = {}} = {}) {
  * Шаблон для списка подключенных пиров (альтернативный метод для renderPart)
  */
 export function renderConnectedPeers({state = {}} = {}) {
-    return renderPeersList({state});
+    return renderConnectedPeersDetailed({state});
 }
 
 /**
@@ -444,4 +547,13 @@ function getProtocolName(address) {
     if (address.includes('/webrtc')) return 'WebRTC';
     if (address.includes('/p2p-circuit')) return 'Relay';
     return 'Unknown';
+}
+
+function getConnectionProtocol(address) {
+    if (address.includes('/ws')) return 'WebSocket';
+    if (address.includes('/wss')) return 'Secure WebSocket';
+    if (address.includes('/webrtc')) return 'WebRTC';
+    if (address.includes('/p2p-circuit')) return 'Circuit Relay';
+    if (address.includes('/tcp')) return 'TCP';
+    return 'Direct';
 }

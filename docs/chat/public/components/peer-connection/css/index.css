@@ -900,3 +900,191 @@ input:focus-visible {
         transform: none;
     }
 }
+
+/* Добавить в /10/public/components/peer-connection/css/index.css */
+
+/* Connected Peers Detailed Styles */
+.peers-detailed-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.peer-detailed-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: var(--transition);
+}
+
+.peer-detailed-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+}
+
+.peer-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.peer-avatar-large {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.peer-main-info {
+    flex: 1;
+}
+
+.peer-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cosmic-text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.peer-id-full {
+    font-size: 0.75rem;
+    color: var(--cosmic-text-secondary);
+    font-family: var(--font-family-mono);
+    word-break: break-all;
+}
+
+.peer-status-indicator.connected {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 176, 155, 0.1);
+    border: 1px solid rgba(0, 176, 155, 0.3);
+    border-radius: 20px;
+    color: #00b09b;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.peer-connections-info {
+    margin-bottom: 1rem;
+}
+
+.connections-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.connections-label {
+    font-size: 0.875rem;
+    color: var(--cosmic-text-secondary);
+    font-weight: 500;
+}
+
+.connections-count {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.connection-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.connection-protocol {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.protocol-icon {
+    font-size: 0.875rem;
+}
+
+.protocol-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cosmic-text-primary);
+}
+
+.connection-address {
+    flex: 1;
+    font-size: 0.75rem;
+    color: var(--cosmic-text-secondary);
+    font-family: var(--font-family-mono);
+    word-break: break-all;
+}
+
+.connection-status {
+    min-width: 80px;
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.connection-status.open .status-badge {
+    background: rgba(0, 176, 155, 0.2);
+    color: #00b09b;
+    border: 1px solid rgba(0, 176, 155, 0.3);
+}
+
+.connection-status.closing .status-badge {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.connection-status.closed .status-badge {
+    background: rgba(245, 87, 108, 0.2);
+    color: #f5576c;
+    border: 1px solid rgba(245, 87, 108, 0.3);
+}
+
+.peer-actions-detailed {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.peer-actions-detailed .action-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+}
+
+/* Скрытая секция для renderPart */
+.connected-peers-section {
+    display: none !important;
+}
+
+.connected-peers-section:target {
+    display: block !important;
+}

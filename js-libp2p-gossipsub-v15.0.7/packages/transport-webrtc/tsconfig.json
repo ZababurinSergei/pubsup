@@ -1,0 +1,34 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src",
+    "test",
+    "proto_ts"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-internal"
+    },
+    {
+      "path": "../keychain"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}

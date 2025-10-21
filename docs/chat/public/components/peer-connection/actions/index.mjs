@@ -74,10 +74,10 @@ export async function createActions(context) {
                 });
 
                 // Настройка обработчиков событий
-                self.setupEventHandlers();
+               await self.setupEventHandlers();
 
                 // Запускаем обновление списка подключенных пиров
-                self.startPeerListUpdates();
+               await self.startPeerListUpdates();
 
                 return libp2p;
 
@@ -271,7 +271,7 @@ export async function createActions(context) {
                     throw new Error('Libp2p не инициализирован');
                 }
 
-                const ma = multiaddr(multiaddrStr);
+                const ma = multiaddr(multiaddrStr.trim());
 
                 console.log('Подключаемся к:', ma.toString());
                 await libp2p.dial(ma);

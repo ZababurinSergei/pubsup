@@ -256,7 +256,10 @@ export class BaseComponent extends HTMLElement {
 
             if(type !== "server") {
                 await this._loadComponentStyles();
-                await this._render({state: state});
+                await this.showSkeleton({
+                    selector: '#connection-status',
+                    replace: false
+                })
             }
         }
 
@@ -285,7 +288,7 @@ export class BaseComponent extends HTMLElement {
      * @param {string} options.customHtml - Кастомный HTML для типа 'custom'
      * @returns {string} HTML строка скелетона
      */
-    renderSkeleton({ type = 'card', count = 3, customHtml = '' } = {}) {
+    renderSkeleton({ type = 'card', count = 4, customHtml = '' } = {}) {
         const skeletonStyles = `
       <style>
         .skeleton-loader {
@@ -423,7 +426,6 @@ export class BaseComponent extends HTMLElement {
     async showSkeleton(options = {}) {
         try {
             this._isLoading = true;
-
             const skeletonHtml = this.renderSkeleton(options);
             const selector = options.selector || '#root';
             const replace = options.replace !== false; // По умолчанию заменяем
@@ -463,7 +465,6 @@ export class BaseComponent extends HTMLElement {
     async hideSkeleton(options = {}) {
         try {
             this._isLoading = false;
-
             const selector = options.selector || '.skeleton-container, .skeleton-overlay';
             const skeletonElements = this.shadowRoot.querySelectorAll(selector);
 
@@ -609,6 +610,7 @@ export class BaseComponent extends HTMLElement {
 
                 await this._waitForDOMUpdate();
                 await this._setupEventListeners();
+                await this.hideSkeleton()
                 console.log(`[Компонент] ${this.constructor.name} отрендерен с состоянием:`, mergedState);
             } else {
                 console.error(`[Компонент] ${this.constructor.name} темплейт не определен`);

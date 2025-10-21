@@ -6,7 +6,7 @@ import { webSockets } from '@libp2p/websockets';
 import { webRTC } from '@libp2p/webrtc';
 import { identify } from '@libp2p/identify';
 import { floodsub } from '@libp2p/floodsub';
-import { gossipsub } from '@chainsafe/libp2p-gossipsub';
+import { gossipsub } from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm';
 import { bootstrap } from '@libp2p/bootstrap';
 import { pubsubPeerDiscovery } from '@libp2p/pubsub-peer-discovery';
 

@@ -439,322 +439,6 @@ var require_hashlru = __commonJS({
   }
 });
 
-// node_modules/denque/index.js
-var require_denque = __commonJS({
-  "node_modules/denque/index.js"(exports, module) {
-    "use strict";
-    function Denque2(array, options) {
-      var options = options || {};
-      this._capacity = options.capacity;
-      this._head = 0;
-      this._tail = 0;
-      if (Array.isArray(array)) {
-        this._fromArray(array);
-      } else {
-        this._capacityMask = 3;
-        this._list = new Array(4);
-      }
-    }
-    __name(Denque2, "Denque");
-    Denque2.prototype.peekAt = /* @__PURE__ */ __name(function peekAt(index) {
-      var i2 = index;
-      if (i2 !== (i2 | 0)) {
-        return void 0;
-      }
-      var len = this.size();
-      if (i2 >= len || i2 < -len) return void 0;
-      if (i2 < 0) i2 += len;
-      i2 = this._head + i2 & this._capacityMask;
-      return this._list[i2];
-    }, "peekAt");
-    Denque2.prototype.get = /* @__PURE__ */ __name(function get(i2) {
-      return this.peekAt(i2);
-    }, "get");
-    Denque2.prototype.peek = /* @__PURE__ */ __name(function peek() {
-      if (this._head === this._tail) return void 0;
-      return this._list[this._head];
-    }, "peek");
-    Denque2.prototype.peekFront = /* @__PURE__ */ __name(function peekFront() {
-      return this.peek();
-    }, "peekFront");
-    Denque2.prototype.peekBack = /* @__PURE__ */ __name(function peekBack() {
-      return this.peekAt(-1);
-    }, "peekBack");
-    Object.defineProperty(Denque2.prototype, "length", {
-      get: /* @__PURE__ */ __name(function length3() {
-        return this.size();
-      }, "length")
-    });
-    Denque2.prototype.size = /* @__PURE__ */ __name(function size() {
-      if (this._head === this._tail) return 0;
-      if (this._head < this._tail) return this._tail - this._head;
-      else return this._capacityMask + 1 - (this._head - this._tail);
-    }, "size");
-    Denque2.prototype.unshift = /* @__PURE__ */ __name(function unshift(item) {
-      if (arguments.length === 0) return this.size();
-      var len = this._list.length;
-      this._head = this._head - 1 + len & this._capacityMask;
-      this._list[this._head] = item;
-      if (this._tail === this._head) this._growArray();
-      if (this._capacity && this.size() > this._capacity) this.pop();
-      if (this._head < this._tail) return this._tail - this._head;
-      else return this._capacityMask + 1 - (this._head - this._tail);
-    }, "unshift");
-    Denque2.prototype.shift = /* @__PURE__ */ __name(function shift() {
-      var head = this._head;
-      if (head === this._tail) return void 0;
-      var item = this._list[head];
-      this._list[head] = void 0;
-      this._head = head + 1 & this._capacityMask;
-      if (head < 2 && this._tail > 1e4 && this._tail <= this._list.length >>> 2) this._shrinkArray();
-      return item;
-    }, "shift");
-    Denque2.prototype.push = /* @__PURE__ */ __name(function push(item) {
-      if (arguments.length === 0) return this.size();
-      var tail = this._tail;
-      this._list[tail] = item;
-      this._tail = tail + 1 & this._capacityMask;
-      if (this._tail === this._head) {
-        this._growArray();
-      }
-      if (this._capacity && this.size() > this._capacity) {
-        this.shift();
-      }
-      if (this._head < this._tail) return this._tail - this._head;
-      else return this._capacityMask + 1 - (this._head - this._tail);
-    }, "push");
-    Denque2.prototype.pop = /* @__PURE__ */ __name(function pop() {
-      var tail = this._tail;
-      if (tail === this._head) return void 0;
-      var len = this._list.length;
-      this._tail = tail - 1 + len & this._capacityMask;
-      var item = this._list[this._tail];
-      this._list[this._tail] = void 0;
-      if (this._head < 2 && tail > 1e4 && tail <= len >>> 2) this._shrinkArray();
-      return item;
-    }, "pop");
-    Denque2.prototype.removeOne = /* @__PURE__ */ __name(function removeOne(index) {
-      var i2 = index;
-      if (i2 !== (i2 | 0)) {
-        return void 0;
-      }
-      if (this._head === this._tail) return void 0;
-      var size = this.size();
-      var len = this._list.length;
-      if (i2 >= size || i2 < -size) return void 0;
-      if (i2 < 0) i2 += size;
-      i2 = this._head + i2 & this._capacityMask;
-      var item = this._list[i2];
-      var k;
-      if (index < size / 2) {
-        for (k = index; k > 0; k--) {
-          this._list[i2] = this._list[i2 = i2 - 1 + len & this._capacityMask];
-        }
-        this._list[i2] = void 0;
-        this._head = this._head + 1 + len & this._capacityMask;
-      } else {
-        for (k = size - 1 - index; k > 0; k--) {
-          this._list[i2] = this._list[i2 = i2 + 1 + len & this._capacityMask];
-        }
-        this._list[i2] = void 0;
-        this._tail = this._tail - 1 + len & this._capacityMask;
-      }
-      return item;
-    }, "removeOne");
-    Denque2.prototype.remove = /* @__PURE__ */ __name(function remove(index, count) {
-      var i2 = index;
-      var removed;
-      var del_count = count;
-      if (i2 !== (i2 | 0)) {
-        return void 0;
-      }
-      if (this._head === this._tail) return void 0;
-      var size = this.size();
-      var len = this._list.length;
-      if (i2 >= size || i2 < -size || count < 1) return void 0;
-      if (i2 < 0) i2 += size;
-      if (count === 1 || !count) {
-        removed = new Array(1);
-        removed[0] = this.removeOne(i2);
-        return removed;
-      }
-      if (i2 === 0 && i2 + count >= size) {
-        removed = this.toArray();
-        this.clear();
-        return removed;
-      }
-      if (i2 + count > size) count = size - i2;
-      var k;
-      removed = new Array(count);
-      for (k = 0; k < count; k++) {
-        removed[k] = this._list[this._head + i2 + k & this._capacityMask];
-      }
-      i2 = this._head + i2 & this._capacityMask;
-      if (index + count === size) {
-        this._tail = this._tail - count + len & this._capacityMask;
-        for (k = count; k > 0; k--) {
-          this._list[i2 = i2 + 1 + len & this._capacityMask] = void 0;
-        }
-        return removed;
-      }
-      if (index === 0) {
-        this._head = this._head + count + len & this._capacityMask;
-        for (k = count - 1; k > 0; k--) {
-          this._list[i2 = i2 + 1 + len & this._capacityMask] = void 0;
-        }
-        return removed;
-      }
-      if (i2 < size / 2) {
-        this._head = this._head + index + count + len & this._capacityMask;
-        for (k = index; k > 0; k--) {
-          this.unshift(this._list[i2 = i2 - 1 + len & this._capacityMask]);
-        }
-        i2 = this._head - 1 + len & this._capacityMask;
-        while (del_count > 0) {
-          this._list[i2 = i2 - 1 + len & this._capacityMask] = void 0;
-          del_count--;
-        }
-        if (index < 0) this._tail = i2;
-      } else {
-        this._tail = i2;
-        i2 = i2 + count + len & this._capacityMask;
-        for (k = size - (count + index); k > 0; k--) {
-          this.push(this._list[i2++]);
-        }
-        i2 = this._tail;
-        while (del_count > 0) {
-          this._list[i2 = i2 + 1 + len & this._capacityMask] = void 0;
-          del_count--;
-        }
-      }
-      if (this._head < 2 && this._tail > 1e4 && this._tail <= len >>> 2) this._shrinkArray();
-      return removed;
-    }, "remove");
-    Denque2.prototype.splice = /* @__PURE__ */ __name(function splice(index, count) {
-      var i2 = index;
-      if (i2 !== (i2 | 0)) {
-        return void 0;
-      }
-      var size = this.size();
-      if (i2 < 0) i2 += size;
-      if (i2 > size) return void 0;
-      if (arguments.length > 2) {
-        var k;
-        var temp;
-        var removed;
-        var arg_len = arguments.length;
-        var len = this._list.length;
-        var arguments_index = 2;
-        if (!size || i2 < size / 2) {
-          temp = new Array(i2);
-          for (k = 0; k < i2; k++) {
-            temp[k] = this._list[this._head + k & this._capacityMask];
-          }
-          if (count === 0) {
-            removed = [];
-            if (i2 > 0) {
-              this._head = this._head + i2 + len & this._capacityMask;
-            }
-          } else {
-            removed = this.remove(i2, count);
-            this._head = this._head + i2 + len & this._capacityMask;
-          }
-          while (arg_len > arguments_index) {
-            this.unshift(arguments[--arg_len]);
-          }
-          for (k = i2; k > 0; k--) {
-            this.unshift(temp[k - 1]);
-          }
-        } else {
-          temp = new Array(size - (i2 + count));
-          var leng = temp.length;
-          for (k = 0; k < leng; k++) {
-            temp[k] = this._list[this._head + i2 + count + k & this._capacityMask];
-          }
-          if (count === 0) {
-            removed = [];
-            if (i2 != size) {
-              this._tail = this._head + i2 + len & this._capacityMask;
-            }
-          } else {
-            removed = this.remove(i2, count);
-            this._tail = this._tail - leng + len & this._capacityMask;
-          }
-          while (arguments_index < arg_len) {
-            this.push(arguments[arguments_index++]);
-          }
-          for (k = 0; k < leng; k++) {
-            this.push(temp[k]);
-          }
-        }
-        return removed;
-      } else {
-        return this.remove(i2, count);
-      }
-    }, "splice");
-    Denque2.prototype.clear = /* @__PURE__ */ __name(function clear() {
-      this._list = new Array(this._list.length);
-      this._head = 0;
-      this._tail = 0;
-    }, "clear");
-    Denque2.prototype.isEmpty = /* @__PURE__ */ __name(function isEmpty() {
-      return this._head === this._tail;
-    }, "isEmpty");
-    Denque2.prototype.toArray = /* @__PURE__ */ __name(function toArray() {
-      return this._copyArray(false);
-    }, "toArray");
-    Denque2.prototype._fromArray = /* @__PURE__ */ __name(function _fromArray(array) {
-      var length3 = array.length;
-      var capacity = this._nextPowerOf2(length3);
-      this._list = new Array(capacity);
-      this._capacityMask = capacity - 1;
-      this._tail = length3;
-      for (var i2 = 0; i2 < length3; i2++) this._list[i2] = array[i2];
-    }, "_fromArray");
-    Denque2.prototype._copyArray = /* @__PURE__ */ __name(function _copyArray(fullCopy, size) {
-      var src2 = this._list;
-      var capacity = src2.length;
-      var length3 = this.length;
-      size = size | length3;
-      if (size == length3 && this._head < this._tail) {
-        return this._list.slice(this._head, this._tail);
-      }
-      var dest = new Array(size);
-      var k = 0;
-      var i2;
-      if (fullCopy || this._head > this._tail) {
-        for (i2 = this._head; i2 < capacity; i2++) dest[k++] = src2[i2];
-        for (i2 = 0; i2 < this._tail; i2++) dest[k++] = src2[i2];
-      } else {
-        for (i2 = this._head; i2 < this._tail; i2++) dest[k++] = src2[i2];
-      }
-      return dest;
-    }, "_copyArray");
-    Denque2.prototype._growArray = /* @__PURE__ */ __name(function _growArray() {
-      if (this._head != 0) {
-        var newList = this._copyArray(true, this._list.length << 1);
-        this._tail = this._list.length;
-        this._head = 0;
-        this._list = newList;
-      } else {
-        this._tail = this._list.length;
-        this._list.length <<= 1;
-      }
-      this._capacityMask = this._capacityMask << 1 | 1;
-    }, "_growArray");
-    Denque2.prototype._shrinkArray = /* @__PURE__ */ __name(function _shrinkArray() {
-      this._list.length >>>= 1;
-      this._capacityMask >>>= 1;
-    }, "_shrinkArray");
-    Denque2.prototype._nextPowerOf2 = /* @__PURE__ */ __name(function _nextPowerOf2(num) {
-      var log2 = Math.log(num) / Math.log(2);
-      var nextPow2 = 1 << log2 + 1;
-      return Math.max(nextPow2, 4);
-    }, "_nextPowerOf2");
-    module.exports = Denque2;
-  }
-});
-
 // public/base/base-component.mjs
 var exclusion = [];
 var BaseComponent = class _BaseComponent extends HTMLElement {
@@ -961,7 +645,10 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       this._templateImported = true;
       if (type !== "server") {
         await this._loadComponentStyles();
-        await this._render({ state });
+        await this.showSkeleton({
+          selector: "#connection-status",
+          replace: false
+        });
       }
     }
     await this._componentReady();
@@ -987,7 +674,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
    * @param {string} options.customHtml - Кастомный HTML для типа 'custom'
    * @returns {string} HTML строка скелетона
    */
-  renderSkeleton({ type = "card", count = 3, customHtml = "" } = {}) {
+  renderSkeleton({ type = "card", count = 4, customHtml = "" } = {}) {
     const skeletonStyles = `
       <style>
         .skeleton-loader {
@@ -1271,6 +958,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         }
         await this._waitForDOMUpdate();
         await this._setupEventListeners();
+        await this.hideSkeleton();
         console.log(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] ${this.constructor.name} \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D \u0441 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435\u043C:`, mergedState);
       } else {
         console.error(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] ${this.constructor.name} \u0442\u0435\u043C\u043F\u043B\u0435\u0439\u0442 \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0435\u043D`);
@@ -2464,7 +2152,7 @@ function base(ALPHABET, name3) {
   var LEADER = ALPHABET.charAt(0);
   var FACTOR = Math.log(BASE) / Math.log(256);
   var iFACTOR = Math.log(256) / Math.log(BASE);
-  function encode9(source) {
+  function encode8(source) {
     if (source instanceof Uint8Array)
       ;
     else if (ArrayBuffer.isView(source)) {
@@ -2512,7 +2200,7 @@ function base(ALPHABET, name3) {
     }
     return str;
   }
-  __name(encode9, "encode");
+  __name(encode8, "encode");
   function decodeUnsafe(source) {
     if (typeof source !== "string") {
       throw new TypeError("Expected String");
@@ -2564,18 +2252,18 @@ function base(ALPHABET, name3) {
     return vch;
   }
   __name(decodeUnsafe, "decodeUnsafe");
-  function decode10(string2) {
+  function decode9(string2) {
     var buffer = decodeUnsafe(string2);
     if (buffer) {
       return buffer;
     }
     throw new Error(`Non-${name3} character`);
   }
-  __name(decode10, "decode");
+  __name(decode9, "decode");
   return {
-    encode: encode9,
+    encode: encode8,
     decodeUnsafe,
-    decode: decode10
+    decode: decode9
   };
 }
 __name(base, "base");
@@ -2641,8 +2329,8 @@ var ComposedDecoder = class {
     __name(this, "ComposedDecoder");
   }
   decoders;
-  constructor(decoders4) {
-    this.decoders = decoders4;
+  constructor(decoders3) {
+    this.decoders = decoders3;
   }
   or(decoder) {
     return or(this, decoder);
@@ -2689,17 +2377,17 @@ var Codec = class {
     return this.decoder.decode(input);
   }
 };
-function from({ name: name3, prefix, encode: encode9, decode: decode10 }) {
-  return new Codec(name3, prefix, encode9, decode10);
+function from({ name: name3, prefix, encode: encode8, decode: decode9 }) {
+  return new Codec(name3, prefix, encode8, decode9);
 }
 __name(from, "from");
 function baseX({ name: name3, prefix, alphabet: alphabet2 }) {
-  const { encode: encode9, decode: decode10 } = base_x_default(alphabet2, name3);
+  const { encode: encode8, decode: decode9 } = base_x_default(alphabet2, name3);
   return from({
     prefix,
     name: name3,
-    encode: encode9,
-    decode: /* @__PURE__ */ __name((text) => coerce(decode10(text)), "decode")
+    encode: encode8,
+    decode: /* @__PURE__ */ __name((text) => coerce(decode9(text)), "decode")
   });
 }
 __name(baseX, "baseX");
@@ -4008,8 +3696,8 @@ __export(sha2_browser_exports, {
 
 // node_modules/multiformats/dist/src/hashes/hasher.js
 var DEFAULT_MIN_DIGEST_LENGTH = 20;
-function from2({ name: name3, code: code3, encode: encode9, minDigestLength, maxDigestLength }) {
-  return new Hasher(name3, code3, encode9, minDigestLength, maxDigestLength);
+function from2({ name: name3, code: code3, encode: encode8, minDigestLength, maxDigestLength }) {
+  return new Hasher(name3, code3, encode8, minDigestLength, maxDigestLength);
 }
 __name(from2, "from");
 var Hasher = class {
@@ -4021,10 +3709,10 @@ var Hasher = class {
   encode;
   minDigestLength;
   maxDigestLength;
-  constructor(name3, code3, encode9, minDigestLength, maxDigestLength) {
+  constructor(name3, code3, encode8, minDigestLength, maxDigestLength) {
     this.name = name3;
     this.code = code3;
-    this.encode = encode9;
+    this.encode = encode8;
     this.minDigestLength = minDigestLength ?? DEFAULT_MIN_DIGEST_LENGTH;
     this.maxDigestLength = maxDigestLength;
   }
@@ -4080,17 +3768,17 @@ var bases = { ...identity_exports2, ...base2_exports, ...base8_exports, ...base1
 var hashes = { ...sha2_browser_exports, ...identity_exports };
 
 // node_modules/uint8arrays/dist/src/util/bases.js
-function createCodec(name3, prefix, encode9, decode10) {
+function createCodec(name3, prefix, encode8, decode9) {
   return {
     name: name3,
     prefix,
     encoder: {
       name: name3,
       prefix,
-      encode: encode9
+      encode: encode8
     },
     decoder: {
-      decode: decode10
+      decode: decode9
     }
   };
 }
@@ -4305,8 +3993,8 @@ __name(encodeLength, "encodeLength");
 function encodeInteger(value2) {
   const contents = new Uint8ArrayList();
   const mask = 128;
-  const positive3 = (value2.subarray()[0] & mask) === mask;
-  if (positive3) {
+  const positive2 = (value2.subarray()[0] & mask) === mask;
+  if (positive2) {
     contents.append(Uint8Array.from([0]));
   }
   contents.append(value2);
@@ -8249,12 +7937,12 @@ var CODEC_TYPES;
   CODEC_TYPES2[CODEC_TYPES2["END_GROUP"] = 4] = "END_GROUP";
   CODEC_TYPES2[CODEC_TYPES2["BIT32"] = 5] = "BIT32";
 })(CODEC_TYPES || (CODEC_TYPES = {}));
-function createCodec2(name3, type, encode9, decode10) {
+function createCodec2(name3, type, encode8, decode9) {
   return {
     name: name3,
     type,
-    encode: encode9,
-    decode: decode10
+    encode: encode8,
+    decode: decode9
   };
 }
 __name(createCodec2, "createCodec");
@@ -8268,21 +7956,21 @@ function enumeration(v) {
     return v[val];
   }
   __name(findValue, "findValue");
-  const encode9 = /* @__PURE__ */ __name(function enumEncode(val, writer) {
+  const encode8 = /* @__PURE__ */ __name(function enumEncode(val, writer) {
     const enumValue = findValue(val);
     writer.int32(enumValue);
   }, "enumEncode");
-  const decode10 = /* @__PURE__ */ __name(function enumDecode(reader) {
+  const decode9 = /* @__PURE__ */ __name(function enumDecode(reader) {
     const val = reader.int32();
     return findValue(val);
   }, "enumDecode");
-  return createCodec2("enum", CODEC_TYPES.VARINT, encode9, decode10);
+  return createCodec2("enum", CODEC_TYPES.VARINT, encode8, decode9);
 }
 __name(enumeration, "enumeration");
 
 // node_modules/protons-runtime/dist/src/codecs/message.js
-function message(encode9, decode10) {
-  return createCodec2("message", CODEC_TYPES.LENGTH_DELIMITED, encode9, decode10);
+function message(encode8, decode9) {
+  return createCodec2("message", CODEC_TYPES.LENGTH_DELIMITED, encode8, decode9);
 }
 __name(message, "message");
 
@@ -11453,7 +11141,7 @@ var Parser = class {
         return void 0;
       }
       const hasLeadingZero = leadingChar === "0";
-      const maxValue3 = 2 ** (8 * maxBytes) - 1;
+      const maxValue2 = 2 ** (8 * maxBytes) - 1;
       while (true) {
         const digit = this.readAtomically(() => {
           const char = this.readChar();
@@ -11471,7 +11159,7 @@ var Parser = class {
         }
         result *= radix;
         result += digit;
-        if (result > maxValue3) {
+        if (result > maxValue2) {
           return void 0;
         }
         digitCount += 1;
@@ -14762,86 +14450,6 @@ function merge(...sources) {
 __name(merge, "merge");
 var src_default2 = merge;
 
-// node_modules/it-pipe/dist/src/index.js
-function pipe(first, ...rest) {
-  if (first == null) {
-    throw new Error("Empty pipeline");
-  }
-  if (isDuplex(first)) {
-    const duplex = first;
-    first = /* @__PURE__ */ __name(() => duplex.source, "first");
-  } else if (isIterable(first) || isAsyncIterable2(first)) {
-    const source = first;
-    first = /* @__PURE__ */ __name(() => source, "first");
-  }
-  const fns = [first, ...rest];
-  if (fns.length > 1) {
-    if (isDuplex(fns[fns.length - 1])) {
-      fns[fns.length - 1] = fns[fns.length - 1].sink;
-    }
-  }
-  if (fns.length > 2) {
-    for (let i2 = 1; i2 < fns.length - 1; i2++) {
-      if (isDuplex(fns[i2])) {
-        fns[i2] = duplexPipelineFn(fns[i2]);
-      }
-    }
-  }
-  return rawPipe(...fns);
-}
-__name(pipe, "pipe");
-var rawPipe = /* @__PURE__ */ __name((...fns) => {
-  let res;
-  while (fns.length > 0) {
-    res = fns.shift()(res);
-  }
-  return res;
-}, "rawPipe");
-var isAsyncIterable2 = /* @__PURE__ */ __name((obj) => {
-  return obj?.[Symbol.asyncIterator] != null;
-}, "isAsyncIterable");
-var isIterable = /* @__PURE__ */ __name((obj) => {
-  return obj?.[Symbol.iterator] != null;
-}, "isIterable");
-var isDuplex = /* @__PURE__ */ __name((obj) => {
-  if (obj == null) {
-    return false;
-  }
-  return obj.sink != null && obj.source != null;
-}, "isDuplex");
-var duplexPipelineFn = /* @__PURE__ */ __name((duplex) => {
-  return (source) => {
-    const p2 = duplex.sink(source);
-    if (p2?.then != null) {
-      const stream = pushable({
-        objectMode: true
-      });
-      p2.then(() => {
-        stream.end();
-      }, (err) => {
-        stream.end(err);
-      });
-      let sourceWrap;
-      const source2 = duplex.source;
-      if (isAsyncIterable2(source2)) {
-        sourceWrap = /* @__PURE__ */ __name(async function* () {
-          yield* source2;
-          stream.end();
-        }, "sourceWrap");
-      } else if (isIterable(source2)) {
-        sourceWrap = /* @__PURE__ */ __name(function* () {
-          yield* source2;
-          stream.end();
-        }, "sourceWrap");
-      } else {
-        throw new Error("Unknown duplex source type - must be Iterable or AsyncIterable");
-      }
-      return src_default2(stream, sourceWrap());
-    }
-    return duplex.source;
-  };
-}, "duplexPipelineFn");
-
 // node_modules/@libp2p/utils/dist/src/stream-utils.js
 var DEFAULT_MAX_BUFFER_SIZE = 4194304;
 var UnwrappedError = class extends Error {
@@ -15926,12 +15534,12 @@ var PeerRecord2 = class _PeerRecord {
 };
 
 // node_modules/it-all/dist/src/index.js
-function isAsyncIterable3(thing) {
+function isAsyncIterable2(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable3, "isAsyncIterable");
+__name(isAsyncIterable2, "isAsyncIterable");
 function all(source) {
-  if (isAsyncIterable3(source)) {
+  if (isAsyncIterable2(source)) {
     return (async () => {
       const arr2 = [];
       for await (const entry of source) {
@@ -18259,12 +17867,12 @@ var NotFoundError2 = class _NotFoundError extends Error {
 };
 
 // node_modules/it-drain/dist/src/index.js
-function isAsyncIterable4(thing) {
+function isAsyncIterable3(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable4, "isAsyncIterable");
+__name(isAsyncIterable3, "isAsyncIterable");
 function drain(source) {
-  if (isAsyncIterable4(source)) {
+  if (isAsyncIterable3(source)) {
     return (async () => {
       for await (const _ of source) {
       }
@@ -18306,13 +17914,13 @@ __name(peekable, "peekable");
 var src_default5 = peekable;
 
 // node_modules/it-filter/dist/src/index.js
-function isAsyncIterable5(thing) {
+function isAsyncIterable4(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable5, "isAsyncIterable");
+__name(isAsyncIterable4, "isAsyncIterable");
 function filter(source, fn) {
   let index = 0;
-  if (isAsyncIterable5(source)) {
+  if (isAsyncIterable4(source)) {
     return (async function* () {
       for await (const entry of source) {
         if (await fn(entry, index++)) {
@@ -18356,12 +17964,12 @@ __name(filter, "filter");
 var src_default6 = filter;
 
 // node_modules/it-sort/dist/src/index.js
-function isAsyncIterable6(thing) {
+function isAsyncIterable5(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable6, "isAsyncIterable");
+__name(isAsyncIterable5, "isAsyncIterable");
 function sort(source, sorter) {
-  if (isAsyncIterable6(source)) {
+  if (isAsyncIterable5(source)) {
     return (async function* () {
       const arr = await src_default3(source);
       yield* arr.sort(sorter);
@@ -18376,12 +17984,12 @@ __name(sort, "sort");
 var src_default7 = sort;
 
 // node_modules/it-take/dist/src/index.js
-function isAsyncIterable7(thing) {
+function isAsyncIterable6(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable7, "isAsyncIterable");
+__name(isAsyncIterable6, "isAsyncIterable");
 function take(source, limit) {
-  if (isAsyncIterable7(source)) {
+  if (isAsyncIterable6(source)) {
     return (async function* () {
       let items = 0;
       if (limit < 1) {
@@ -19786,15 +19394,15 @@ function defaultComponents(init = {}) {
 }
 __name(defaultComponents, "defaultComponents");
 function checkServiceDependencies(components) {
-  const serviceCapabilities3 = {};
+  const serviceCapabilities2 = {};
   for (const service of Object.values(components.components)) {
     for (const capability of getServiceCapabilities(service)) {
-      serviceCapabilities3[capability] = true;
+      serviceCapabilities2[capability] = true;
     }
   }
   for (const service of Object.values(components.components)) {
     for (const capability of getServiceDependencies(service)) {
-      if (serviceCapabilities3[capability] !== true) {
+      if (serviceCapabilities2[capability] !== true) {
         throw new UnmetServiceDependenciesError(`Service "${getServiceName(service)}" required capability "${capability}" but it was not provided by any component, you may need to add additional configuration when creating your node.`);
       }
     }
@@ -23438,10 +23046,10 @@ var UnexpectedEOFError2 = class extends Error {
 };
 
 // node_modules/@libp2p/multistream-select/node_modules/it-length-prefixed/dist/src/utils.js
-function isAsyncIterable8(thing) {
+function isAsyncIterable7(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable8, "isAsyncIterable");
+__name(isAsyncIterable7, "isAsyncIterable");
 
 // node_modules/@libp2p/multistream-select/node_modules/it-length-prefixed/dist/src/encode.js
 function validateMaxDataLength(chunk, maxDataLength) {
@@ -23477,7 +23085,7 @@ function encode6(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable8(source)) {
+  if (isAsyncIterable7(source)) {
     return (async function* () {
       for await (const chunk of source) {
         yield* maybeYield(chunk);
@@ -23501,9 +23109,9 @@ encode6.single = (chunk, options) => {
 
 // node_modules/@libp2p/multistream-select/node_modules/it-length-prefixed/dist/src/decode.js
 var ReadMode;
-(function(ReadMode4) {
-  ReadMode4[ReadMode4["LENGTH"] = 0] = "LENGTH";
-  ReadMode4[ReadMode4["DATA"] = 1] = "DATA";
+(function(ReadMode3) {
+  ReadMode3[ReadMode3["LENGTH"] = 0] = "LENGTH";
+  ReadMode3[ReadMode3["DATA"] = 1] = "DATA";
 })(ReadMode || (ReadMode = {}));
 var defaultDecoder = /* @__PURE__ */ __name((buf) => {
   const length3 = decode6(buf);
@@ -23560,7 +23168,7 @@ function decode7(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable8(source)) {
+  if (isAsyncIterable7(source)) {
     return (async function* () {
       for await (const buf of source) {
         buffer.append(buf);
@@ -29254,10 +28862,10 @@ var UnexpectedEOFError3 = class extends Error {
 };
 
 // node_modules/@libp2p/webrtc/node_modules/it-length-prefixed/dist/src/utils.js
-function isAsyncIterable9(thing) {
+function isAsyncIterable8(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable9, "isAsyncIterable");
+__name(isAsyncIterable8, "isAsyncIterable");
 
 // node_modules/@libp2p/webrtc/node_modules/it-length-prefixed/dist/src/encode.js
 function validateMaxDataLength2(chunk, maxDataLength) {
@@ -29293,7 +28901,7 @@ function encode7(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable9(source)) {
+  if (isAsyncIterable8(source)) {
     return (async function* () {
       for await (const chunk of source) {
         yield* maybeYield(chunk);
@@ -29317,9 +28925,9 @@ encode7.single = (chunk, options) => {
 
 // node_modules/@libp2p/webrtc/node_modules/it-length-prefixed/dist/src/decode.js
 var ReadMode2;
-(function(ReadMode4) {
-  ReadMode4[ReadMode4["LENGTH"] = 0] = "LENGTH";
-  ReadMode4[ReadMode4["DATA"] = 1] = "DATA";
+(function(ReadMode3) {
+  ReadMode3[ReadMode3["LENGTH"] = 0] = "LENGTH";
+  ReadMode3[ReadMode3["DATA"] = 1] = "DATA";
 })(ReadMode2 || (ReadMode2 = {}));
 var defaultDecoder2 = /* @__PURE__ */ __name((buf) => {
   const length3 = decode6(buf);
@@ -29376,7 +28984,7 @@ function decode8(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable9(source)) {
+  if (isAsyncIterable8(source)) {
     return (async function* () {
       for await (const buf of source) {
         buffer.append(buf);
@@ -31113,7 +30721,7 @@ var SimpleTimeCache = class {
 
 // node_modules/@libp2p/floodsub/dist/src/message/rpc.js
 var RPC;
-(function(RPC3) {
+(function(RPC2) {
   let SubOpts;
   (function(SubOpts2) {
     let _codec2;
@@ -31165,7 +30773,7 @@ var RPC;
     SubOpts2.decode = (buf, opts) => {
       return decodeMessage(buf, SubOpts2.codec(), opts);
     };
-  })(SubOpts = RPC3.SubOpts || (RPC3.SubOpts = {}));
+  })(SubOpts = RPC2.SubOpts || (RPC2.SubOpts = {}));
   let Message3;
   (function(Message4) {
     let _codec2;
@@ -31249,9 +30857,9 @@ var RPC;
     Message4.decode = (buf, opts) => {
       return decodeMessage(buf, Message4.codec(), opts);
     };
-  })(Message3 = RPC3.Message || (RPC3.Message = {}));
+  })(Message3 = RPC2.Message || (RPC2.Message = {}));
   let _codec;
-  RPC3.codec = () => {
+  RPC2.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -31260,13 +30868,13 @@ var RPC;
         if (obj.subscriptions != null) {
           for (const value2 of obj.subscriptions) {
             w.uint32(10);
-            RPC3.SubOpts.codec().encode(value2, w);
+            RPC2.SubOpts.codec().encode(value2, w);
           }
         }
         if (obj.messages != null) {
           for (const value2 of obj.messages) {
             w.uint32(18);
-            RPC3.Message.codec().encode(value2, w);
+            RPC2.Message.codec().encode(value2, w);
           }
         }
         if (obj.control != null) {
@@ -31289,7 +30897,7 @@ var RPC;
               if (opts.limits?.subscriptions != null && obj.subscriptions.length === opts.limits.subscriptions) {
                 throw new MaxLengthError('Decode error - map field "subscriptions" had too many elements');
               }
-              obj.subscriptions.push(RPC3.SubOpts.codec().decode(reader, reader.uint32(), {
+              obj.subscriptions.push(RPC2.SubOpts.codec().decode(reader, reader.uint32(), {
                 limits: opts.limits?.subscriptions$
               }));
               break;
@@ -31298,7 +30906,7 @@ var RPC;
               if (opts.limits?.messages != null && obj.messages.length === opts.limits.messages) {
                 throw new MaxLengthError('Decode error - map field "messages" had too many elements');
               }
-              obj.messages.push(RPC3.Message.codec().decode(reader, reader.uint32(), {
+              obj.messages.push(RPC2.Message.codec().decode(reader, reader.uint32(), {
                 limits: opts.limits?.messages$
               }));
               break;
@@ -31320,11 +30928,11 @@ var RPC;
     }
     return _codec;
   };
-  RPC3.encode = (obj) => {
-    return encodeMessage(obj, RPC3.codec());
+  RPC2.encode = (obj) => {
+    return encodeMessage(obj, RPC2.codec());
   };
-  RPC3.decode = (buf, opts) => {
-    return decodeMessage(buf, RPC3.codec(), opts);
+  RPC2.decode = (buf, opts) => {
+    return decodeMessage(buf, RPC2.codec(), opts);
   };
 })(RPC || (RPC = {}));
 var ControlMessage;
@@ -31783,10 +31391,10 @@ __name(randomSeqno, "randomSeqno");
 var msgId = /* @__PURE__ */ __name((key, seqno) => {
   const seqnoBytes = fromString2(seqno.toString(16).padStart(16, "0"), "base16");
   const keyBytes = publicKeyToProtobuf(key);
-  const msgId3 = new Uint8Array(keyBytes.byteLength + seqnoBytes.length);
-  msgId3.set(keyBytes, 0);
-  msgId3.set(seqnoBytes, keyBytes.byteLength);
-  return msgId3;
+  const msgId2 = new Uint8Array(keyBytes.byteLength + seqnoBytes.length);
+  msgId2.set(keyBytes, 0);
+  msgId2.set(seqnoBytes, keyBytes.byteLength);
+  return msgId2;
 }, "msgId");
 var noSignMsgId = /* @__PURE__ */ __name((data) => {
   return sha256.encode(data);
@@ -31862,7 +31470,7 @@ var bigIntFromBytes = /* @__PURE__ */ __name((num) => {
 
 // node_modules/@libp2p/floodsub/dist/src/sign.js
 var SignPrefix = fromString2("libp2p-pubsub:");
-async function signMessage(privateKey, message2, encode9) {
+async function signMessage(privateKey, message2, encode8) {
   const outputMessage = {
     type: "signed",
     topic: message2.topic,
@@ -31872,14 +31480,14 @@ async function signMessage(privateKey, message2, encode9) {
   };
   const bytes = concat([
     SignPrefix,
-    encode9(toRpcMessage(outputMessage)).subarray()
+    encode8(toRpcMessage(outputMessage)).subarray()
   ]);
   outputMessage.signature = await privateKey.sign(bytes);
   outputMessage.key = privateKey.publicKey;
   return outputMessage;
 }
 __name(signMessage, "signMessage");
-async function verifySignature(message2, encode9) {
+async function verifySignature(message2, encode8) {
   if (message2.type !== "signed") {
     throw new Error('Message type must be "signed" to be verified');
   }
@@ -31891,7 +31499,7 @@ async function verifySignature(message2, encode9) {
   }
   const bytes = concat([
     SignPrefix,
-    encode9({
+    encode8({
       ...toRpcMessage(message2),
       signature: void 0,
       key: void 0
@@ -32471,6195 +32079,18 @@ var FloodSub = class extends TypedEventEmitter {
 // node_modules/@libp2p/floodsub/dist/src/index.js
 var protocol = "/floodsub/1.0.0";
 var TopicValidatorResult;
-(function(TopicValidatorResult3) {
-  TopicValidatorResult3["Accept"] = "accept";
-  TopicValidatorResult3["Ignore"] = "ignore";
-  TopicValidatorResult3["Reject"] = "reject";
+(function(TopicValidatorResult2) {
+  TopicValidatorResult2["Accept"] = "accept";
+  TopicValidatorResult2["Ignore"] = "ignore";
+  TopicValidatorResult2["Reject"] = "reject";
 })(TopicValidatorResult || (TopicValidatorResult = {}));
 function floodsub(init = {}) {
   return (components) => new FloodSub(components, init);
 }
 __name(floodsub, "floodsub");
 
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@libp2p/interface/dist/src/peer-id.js
-var peerIdSymbol2 = Symbol.for("@libp2p/peer-id");
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@libp2p/interface/dist/src/pubsub.js
-var StrictSign2 = "StrictSign";
-var StrictNoSign2 = "StrictNoSign";
-var TopicValidatorResult2;
-(function(TopicValidatorResult3) {
-  TopicValidatorResult3["Accept"] = "accept";
-  TopicValidatorResult3["Ignore"] = "ignore";
-  TopicValidatorResult3["Reject"] = "reject";
-})(TopicValidatorResult2 || (TopicValidatorResult2 = {}));
-var pubSubSymbol2 = Symbol.for("@libp2p/pubsub");
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@libp2p/interface/dist/src/errors.js
-var InvalidParametersError3 = class extends Error {
-  static name = "InvalidParametersError";
-  constructor(message2 = "Invalid parameters") {
-    super(message2);
-    this.name = "InvalidParametersError";
-  }
-};
-var InvalidCIDError2 = class extends Error {
-  static name = "InvalidCIDError";
-  constructor(message2 = "Invalid CID") {
-    super(message2);
-    this.name = "InvalidCIDError";
-  }
-};
-var InvalidMultihashError2 = class extends Error {
-  static name = "InvalidMultihashError";
-  constructor(message2 = "Invalid Multihash") {
-    super(message2);
-    this.name = "InvalidMultihashError";
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@libp2p/interface/dist/src/index.js
-var serviceCapabilities2 = Symbol.for("@libp2p/service-capabilities");
-var serviceDependencies2 = Symbol.for("@libp2p/service-dependencies");
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@libp2p/peer-id/dist/src/peer-id.js
-var inspect3 = Symbol.for("nodejs.util.inspect.custom");
-var LIBP2P_KEY_CODE3 = 114;
-var PeerIdImpl2 = class {
-  static {
-    __name(this, "PeerIdImpl");
-  }
-  type;
-  multihash;
-  publicKey;
-  string;
-  constructor(init) {
-    this.type = init.type;
-    this.multihash = init.multihash;
-    Object.defineProperty(this, "string", {
-      enumerable: false,
-      writable: true
-    });
-  }
-  get [Symbol.toStringTag]() {
-    return `PeerId(${this.toString()})`;
-  }
-  [peerIdSymbol2] = true;
-  toString() {
-    if (this.string == null) {
-      this.string = base58btc.encode(this.multihash.bytes).slice(1);
-    }
-    return this.string;
-  }
-  toMultihash() {
-    return this.multihash;
-  }
-  // return self-describing String representation
-  // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
-  toCID() {
-    return CID.createV1(LIBP2P_KEY_CODE3, this.multihash);
-  }
-  toJSON() {
-    return this.toString();
-  }
-  /**
-   * Checks the equality of `this` peer against a given PeerId
-   */
-  equals(id) {
-    if (id == null) {
-      return false;
-    }
-    if (id instanceof Uint8Array) {
-      return equals3(this.multihash.bytes, id);
-    } else if (typeof id === "string") {
-      return this.toString() === id;
-    } else if (id?.toMultihash()?.bytes != null) {
-      return equals3(this.multihash.bytes, id.toMultihash().bytes);
-    } else {
-      throw new Error("not valid Id");
-    }
-  }
-  /**
-   * Returns PeerId as a human-readable string
-   * https://nodejs.org/api/util.html#utilinspectcustom
-   *
-   * @example
-   * ```TypeScript
-   * import { peerIdFromString } from '@libp2p/peer-id'
-   *
-   * console.info(peerIdFromString('QmFoo'))
-   * // 'PeerId(QmFoo)'
-   * ```
-   */
-  [inspect3]() {
-    return `PeerId(${this.toString()})`;
-  }
-};
-var RSAPeerId2 = class extends PeerIdImpl2 {
-  static {
-    __name(this, "RSAPeerId");
-  }
-  type = "RSA";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "RSA" });
-    this.publicKey = init.publicKey;
-  }
-};
-var Ed25519PeerId2 = class extends PeerIdImpl2 {
-  static {
-    __name(this, "Ed25519PeerId");
-  }
-  type = "Ed25519";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "Ed25519" });
-    this.publicKey = init.publicKey;
-  }
-};
-var Secp256k1PeerId2 = class extends PeerIdImpl2 {
-  static {
-    __name(this, "Secp256k1PeerId");
-  }
-  type = "secp256k1";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "secp256k1" });
-    this.publicKey = init.publicKey;
-  }
-};
-var TRANSPORT_IPFS_GATEWAY_HTTP_CODE3 = 2336;
-var URLPeerId2 = class {
-  static {
-    __name(this, "URLPeerId");
-  }
-  type = "url";
-  multihash;
-  publicKey;
-  url;
-  constructor(url) {
-    this.url = url.toString();
-    this.multihash = identity.digest(fromString2(this.url));
-  }
-  [inspect3]() {
-    return `PeerId(${this.url})`;
-  }
-  [peerIdSymbol2] = true;
-  toString() {
-    return this.toCID().toString();
-  }
-  toMultihash() {
-    return this.multihash;
-  }
-  toCID() {
-    return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE3, this.toMultihash());
-  }
-  toJSON() {
-    return this.toString();
-  }
-  equals(other) {
-    if (other == null) {
-      return false;
-    }
-    if (other instanceof Uint8Array) {
-      other = toString2(other);
-    }
-    return other.toString() === this.toString();
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@libp2p/peer-id/dist/src/index.js
-var LIBP2P_KEY_CODE4 = 114;
-var TRANSPORT_IPFS_GATEWAY_HTTP_CODE4 = 2336;
-function peerIdFromString3(str, decoder) {
-  let multihash;
-  if (str.charAt(0) === "1" || str.charAt(0) === "Q") {
-    multihash = decode4(base58btc.decode(`z${str}`));
-  } else if (str.startsWith("k51qzi5uqu5") || str.startsWith("kzwfwjn5ji4") || str.startsWith("k2k4r8") || str.startsWith("bafz")) {
-    return peerIdFromCID2(CID.parse(str));
-  } else {
-    if (decoder == null) {
-      throw new InvalidParametersError3('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
-    }
-    multihash = decode4(decoder.decode(str));
-  }
-  return peerIdFromMultihash2(multihash);
-}
-__name(peerIdFromString3, "peerIdFromString");
-function peerIdFromMultihash2(multihash) {
-  if (isSha256Multihash2(multihash)) {
-    return new RSAPeerId2({ multihash });
-  } else if (isIdentityMultihash2(multihash)) {
-    try {
-      const publicKey = publicKeyFromMultihash(multihash);
-      if (publicKey.type === "Ed25519") {
-        return new Ed25519PeerId2({ multihash, publicKey });
-      } else if (publicKey.type === "secp256k1") {
-        return new Secp256k1PeerId2({ multihash, publicKey });
-      }
-    } catch (err) {
-      const url = toString2(multihash.digest);
-      return new URLPeerId2(new URL(url));
-    }
-  }
-  throw new InvalidMultihashError2("Supplied PeerID Multihash is invalid");
-}
-__name(peerIdFromMultihash2, "peerIdFromMultihash");
-function peerIdFromCID2(cid) {
-  if (cid?.multihash == null || cid.version == null || cid.version === 1 && cid.code !== LIBP2P_KEY_CODE4 && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE4) {
-    throw new InvalidCIDError2("Supplied PeerID CID is invalid");
-  }
-  if (cid.code === TRANSPORT_IPFS_GATEWAY_HTTP_CODE4) {
-    const url = toString2(cid.multihash.digest);
-    return new URLPeerId2(new URL(url));
-  }
-  return peerIdFromMultihash2(cid.multihash);
-}
-__name(peerIdFromCID2, "peerIdFromCID");
-function isIdentityMultihash2(multihash) {
-  return multihash.code === identity.code;
-}
-__name(isIdentityMultihash2, "isIdentityMultihash");
-function isSha256Multihash2(multihash) {
-  return multihash.code === sha256.code;
-}
-__name(isSha256Multihash2, "isSha256Multihash");
-
-// node_modules/it-length-prefixed/dist/src/utils.js
-function isAsyncIterable10(thing) {
-  return thing[Symbol.asyncIterator] != null;
-}
-__name(isAsyncIterable10, "isAsyncIterable");
-
-// node_modules/it-length-prefixed/dist/src/encode.js
-var defaultEncoder3 = /* @__PURE__ */ __name((length3) => {
-  const lengthLength = encodingLength2(length3);
-  const lengthBuf = allocUnsafe(lengthLength);
-  encode5(length3, lengthBuf);
-  defaultEncoder3.bytes = lengthLength;
-  return lengthBuf;
-}, "defaultEncoder");
-defaultEncoder3.bytes = 0;
-function encode8(source, options) {
-  options = options ?? {};
-  const encodeLength2 = options.lengthEncoder ?? defaultEncoder3;
-  function* maybeYield(chunk) {
-    const length3 = encodeLength2(chunk.byteLength);
-    if (length3 instanceof Uint8Array) {
-      yield length3;
-    } else {
-      yield* length3;
-    }
-    if (chunk instanceof Uint8Array) {
-      yield chunk;
-    } else {
-      yield* chunk;
-    }
-  }
-  __name(maybeYield, "maybeYield");
-  if (isAsyncIterable10(source)) {
-    return (async function* () {
-      for await (const chunk of source) {
-        yield* maybeYield(chunk);
-      }
-    })();
-  }
-  return (function* () {
-    for (const chunk of source) {
-      yield* maybeYield(chunk);
-    }
-  })();
-}
-__name(encode8, "encode");
-encode8.single = (chunk, options) => {
-  options = options ?? {};
-  const encodeLength2 = options.lengthEncoder ?? defaultEncoder3;
-  return new Uint8ArrayList(encodeLength2(chunk.byteLength), chunk);
-};
-
-// node_modules/it-length-prefixed/dist/src/errors.js
-var InvalidMessageLengthError4 = class extends Error {
-  static {
-    __name(this, "InvalidMessageLengthError");
-  }
-  name = "InvalidMessageLengthError";
-  code = "ERR_INVALID_MSG_LENGTH";
-};
-var InvalidDataLengthError4 = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthError");
-  }
-  name = "InvalidDataLengthError";
-  code = "ERR_MSG_DATA_TOO_LONG";
-};
-var InvalidDataLengthLengthError4 = class extends Error {
-  static {
-    __name(this, "InvalidDataLengthLengthError");
-  }
-  name = "InvalidDataLengthLengthError";
-  code = "ERR_MSG_LENGTH_TOO_LONG";
-};
-var UnexpectedEOFError4 = class extends Error {
-  static {
-    __name(this, "UnexpectedEOFError");
-  }
-  name = "UnexpectedEOFError";
-  code = "ERR_UNEXPECTED_EOF";
-};
-
-// node_modules/it-length-prefixed/dist/src/decode.js
-var MAX_LENGTH_LENGTH3 = 8;
-var MAX_DATA_LENGTH3 = 1024 * 1024 * 4;
-var ReadMode3;
-(function(ReadMode4) {
-  ReadMode4[ReadMode4["LENGTH"] = 0] = "LENGTH";
-  ReadMode4[ReadMode4["DATA"] = 1] = "DATA";
-})(ReadMode3 || (ReadMode3 = {}));
-var defaultDecoder3 = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode6(buf);
-  defaultDecoder3.bytes = encodingLength2(length3);
-  return length3;
-}, "defaultDecoder");
-defaultDecoder3.bytes = 0;
-function decode9(source, options) {
-  const buffer = new Uint8ArrayList();
-  let mode = ReadMode3.LENGTH;
-  let dataLength = -1;
-  const lengthDecoder = options?.lengthDecoder ?? defaultDecoder3;
-  const maxLengthLength = options?.maxLengthLength ?? MAX_LENGTH_LENGTH3;
-  const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH3;
-  function* maybeYield() {
-    while (buffer.byteLength > 0) {
-      if (mode === ReadMode3.LENGTH) {
-        try {
-          dataLength = lengthDecoder(buffer);
-          if (dataLength < 0) {
-            throw new InvalidMessageLengthError4("Invalid message length");
-          }
-          if (dataLength > maxDataLength) {
-            throw new InvalidDataLengthError4("Message length too long");
-          }
-          const dataLengthLength = lengthDecoder.bytes;
-          buffer.consume(dataLengthLength);
-          if (options?.onLength != null) {
-            options.onLength(dataLength);
-          }
-          mode = ReadMode3.DATA;
-        } catch (err) {
-          if (err instanceof RangeError) {
-            if (buffer.byteLength > maxLengthLength) {
-              throw new InvalidDataLengthLengthError4("Message length length too long");
-            }
-            break;
-          }
-          throw err;
-        }
-      }
-      if (mode === ReadMode3.DATA) {
-        if (buffer.byteLength < dataLength) {
-          break;
-        }
-        const data = buffer.sublist(0, dataLength);
-        buffer.consume(dataLength);
-        if (options?.onData != null) {
-          options.onData(data);
-        }
-        yield data;
-        mode = ReadMode3.LENGTH;
-      }
-    }
-  }
-  __name(maybeYield, "maybeYield");
-  if (isAsyncIterable10(source)) {
-    return (async function* () {
-      for await (const buf of source) {
-        buffer.append(buf);
-        yield* maybeYield();
-      }
-      if (buffer.byteLength > 0) {
-        throw new UnexpectedEOFError4("Unexpected end of input");
-      }
-    })();
-  }
-  return (function* () {
-    for (const buf of source) {
-      buffer.append(buf);
-      yield* maybeYield();
-    }
-    if (buffer.byteLength > 0) {
-      throw new UnexpectedEOFError4("Unexpected end of input");
-    }
-  })();
-}
-__name(decode9, "decode");
-decode9.fromReader = (reader, options) => {
-  let byteLength = 1;
-  const varByteSource = (async function* () {
-    while (true) {
-      try {
-        const { done, value: value2 } = await reader.next(byteLength);
-        if (done === true) {
-          return;
-        }
-        if (value2 != null) {
-          yield value2;
-        }
-      } catch (err) {
-        if (err.code === "ERR_UNDER_READ") {
-          return { done: true, value: null };
-        }
-        throw err;
-      } finally {
-        byteLength = 1;
-      }
-    }
-  })();
-  const onLength = /* @__PURE__ */ __name((l2) => {
-    byteLength = l2;
-  }, "onLength");
-  return decode9(varByteSource, {
-    ...options ?? {},
-    onLength
-  });
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/constants.js
-var second2 = 1e3;
-var minute2 = 60 * second2;
-var FloodsubID = "/floodsub/1.0.0";
-var GossipsubIDv10 = "/meshsub/1.0.0";
-var GossipsubIDv11 = "/meshsub/1.1.0";
-var GossipsubIDv12 = "/meshsub/1.2.0";
-var GossipsubD = 6;
-var GossipsubDlo = 4;
-var GossipsubDhi = 12;
-var GossipsubDscore = 4;
-var GossipsubDout = 2;
-var GossipsubHistoryLength = 5;
-var GossipsubHistoryGossip = 3;
-var GossipsubDlazy = 6;
-var GossipsubGossipFactor = 0.25;
-var GossipsubGossipRetransmission = 3;
-var GossipsubHeartbeatInitialDelay = 100;
-var GossipsubHeartbeatInterval = second2;
-var GossipsubFanoutTTL = minute2;
-var GossipsubPrunePeers = 16;
-var GossipsubPruneBackoff = minute2;
-var GossipsubUnsubscribeBackoff = 10 * second2;
-var GossipsubPruneBackoffTicks = 15;
-var GossipsubConnectionTimeout = 30 * second2;
-var GossipsubDirectConnectTicks = 300;
-var GossipsubDirectConnectInitialDelay = second2;
-var GossipsubOpportunisticGraftTicks = 60;
-var GossipsubOpportunisticGraftPeers = 2;
-var GossipsubGraftFloodThreshold = 10 * second2;
-var GossipsubMaxIHaveLength = 5e3;
-var GossipsubMaxIHaveMessages = 10;
-var GossipsubIWantFollowupTime = 3 * second2;
-var GossipsubSeenTTL = 2 * minute2;
-var TimeCacheDuration = 120 * 1e3;
-var ERR_TOPIC_VALIDATOR_REJECT = "ERR_TOPIC_VALIDATOR_REJECT";
-var ERR_TOPIC_VALIDATOR_IGNORE = "ERR_TOPIC_VALIDATOR_IGNORE";
-var ACCEPT_FROM_WHITELIST_THRESHOLD_SCORE = 0;
-var ACCEPT_FROM_WHITELIST_MAX_MESSAGES = 128;
-var ACCEPT_FROM_WHITELIST_DURATION_MS = 1e3;
-var DEFAULT_METRIC_MESH_MESSAGE_DELIVERIES_WINDOWS = 1e3;
-var BACKOFF_SLACK = 1;
-var GossipsubIdontwantMinDataSize = 512;
-var GossipsubIdontwantMaxMessages = 512;
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/message/decodeRpc.js
-var defaultDecodeRpcLimits = {
-  maxSubscriptions: Infinity,
-  maxMessages: Infinity,
-  maxIhaveMessageIDs: Infinity,
-  maxIwantMessageIDs: Infinity,
-  maxIdontwantMessageIDs: Infinity,
-  maxControlMessages: Infinity,
-  maxPeerInfos: Infinity
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/message/rpc.js
-var RPC2;
-(function(RPC3) {
-  let SubOpts;
-  (function(SubOpts2) {
-    let _codec2;
-    SubOpts2.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.subscribe != null) {
-            w.uint32(8);
-            w.bool(obj.subscribe);
-          }
-          if (obj.topic != null) {
-            w.uint32(18);
-            w.string(obj.topic);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.subscribe = reader.bool();
-                break;
-              }
-              case 2: {
-                obj.topic = reader.string();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    SubOpts2.encode = (obj) => {
-      return encodeMessage(obj, SubOpts2.codec());
-    };
-    SubOpts2.decode = (buf, opts) => {
-      return decodeMessage(buf, SubOpts2.codec(), opts);
-    };
-  })(SubOpts = RPC3.SubOpts || (RPC3.SubOpts = {}));
-  let Message3;
-  (function(Message4) {
-    let _codec2;
-    Message4.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.from != null) {
-            w.uint32(10);
-            w.bytes(obj.from);
-          }
-          if (obj.data != null) {
-            w.uint32(18);
-            w.bytes(obj.data);
-          }
-          if (obj.seqno != null) {
-            w.uint32(26);
-            w.bytes(obj.seqno);
-          }
-          if (obj.topic != null && obj.topic !== "") {
-            w.uint32(34);
-            w.string(obj.topic);
-          }
-          if (obj.signature != null) {
-            w.uint32(42);
-            w.bytes(obj.signature);
-          }
-          if (obj.key != null) {
-            w.uint32(50);
-            w.bytes(obj.key);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {
-            topic: ""
-          };
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.from = reader.bytes();
-                break;
-              }
-              case 2: {
-                obj.data = reader.bytes();
-                break;
-              }
-              case 3: {
-                obj.seqno = reader.bytes();
-                break;
-              }
-              case 4: {
-                obj.topic = reader.string();
-                break;
-              }
-              case 5: {
-                obj.signature = reader.bytes();
-                break;
-              }
-              case 6: {
-                obj.key = reader.bytes();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    Message4.encode = (obj) => {
-      return encodeMessage(obj, Message4.codec());
-    };
-    Message4.decode = (buf, opts) => {
-      return decodeMessage(buf, Message4.codec(), opts);
-    };
-  })(Message3 = RPC3.Message || (RPC3.Message = {}));
-  let ControlMessage2;
-  (function(ControlMessage3) {
-    let _codec2;
-    ControlMessage3.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.ihave != null) {
-            for (const value2 of obj.ihave) {
-              w.uint32(10);
-              RPC3.ControlIHave.codec().encode(value2, w);
-            }
-          }
-          if (obj.iwant != null) {
-            for (const value2 of obj.iwant) {
-              w.uint32(18);
-              RPC3.ControlIWant.codec().encode(value2, w);
-            }
-          }
-          if (obj.graft != null) {
-            for (const value2 of obj.graft) {
-              w.uint32(26);
-              RPC3.ControlGraft.codec().encode(value2, w);
-            }
-          }
-          if (obj.prune != null) {
-            for (const value2 of obj.prune) {
-              w.uint32(34);
-              RPC3.ControlPrune.codec().encode(value2, w);
-            }
-          }
-          if (obj.idontwant != null) {
-            for (const value2 of obj.idontwant) {
-              w.uint32(42);
-              RPC3.ControlIDontWant.codec().encode(value2, w);
-            }
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {
-            ihave: [],
-            iwant: [],
-            graft: [],
-            prune: [],
-            idontwant: []
-          };
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                if (opts.limits?.ihave != null && obj.ihave.length === opts.limits.ihave) {
-                  throw new MaxLengthError('Decode error - map field "ihave" had too many elements');
-                }
-                obj.ihave.push(RPC3.ControlIHave.codec().decode(reader, reader.uint32(), {
-                  limits: opts.limits?.ihave$
-                }));
-                break;
-              }
-              case 2: {
-                if (opts.limits?.iwant != null && obj.iwant.length === opts.limits.iwant) {
-                  throw new MaxLengthError('Decode error - map field "iwant" had too many elements');
-                }
-                obj.iwant.push(RPC3.ControlIWant.codec().decode(reader, reader.uint32(), {
-                  limits: opts.limits?.iwant$
-                }));
-                break;
-              }
-              case 3: {
-                if (opts.limits?.graft != null && obj.graft.length === opts.limits.graft) {
-                  throw new MaxLengthError('Decode error - map field "graft" had too many elements');
-                }
-                obj.graft.push(RPC3.ControlGraft.codec().decode(reader, reader.uint32(), {
-                  limits: opts.limits?.graft$
-                }));
-                break;
-              }
-              case 4: {
-                if (opts.limits?.prune != null && obj.prune.length === opts.limits.prune) {
-                  throw new MaxLengthError('Decode error - map field "prune" had too many elements');
-                }
-                obj.prune.push(RPC3.ControlPrune.codec().decode(reader, reader.uint32(), {
-                  limits: opts.limits?.prune$
-                }));
-                break;
-              }
-              case 5: {
-                if (opts.limits?.idontwant != null && obj.idontwant.length === opts.limits.idontwant) {
-                  throw new MaxLengthError('Decode error - map field "idontwant" had too many elements');
-                }
-                obj.idontwant.push(RPC3.ControlIDontWant.codec().decode(reader, reader.uint32(), {
-                  limits: opts.limits?.idontwant$
-                }));
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    ControlMessage3.encode = (obj) => {
-      return encodeMessage(obj, ControlMessage3.codec());
-    };
-    ControlMessage3.decode = (buf, opts) => {
-      return decodeMessage(buf, ControlMessage3.codec(), opts);
-    };
-  })(ControlMessage2 = RPC3.ControlMessage || (RPC3.ControlMessage = {}));
-  let ControlIHave2;
-  (function(ControlIHave3) {
-    let _codec2;
-    ControlIHave3.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.topicID != null) {
-            w.uint32(10);
-            w.string(obj.topicID);
-          }
-          if (obj.messageIDs != null) {
-            for (const value2 of obj.messageIDs) {
-              w.uint32(18);
-              w.bytes(value2);
-            }
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {
-            messageIDs: []
-          };
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.topicID = reader.string();
-                break;
-              }
-              case 2: {
-                if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                  throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-                }
-                obj.messageIDs.push(reader.bytes());
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    ControlIHave3.encode = (obj) => {
-      return encodeMessage(obj, ControlIHave3.codec());
-    };
-    ControlIHave3.decode = (buf, opts) => {
-      return decodeMessage(buf, ControlIHave3.codec(), opts);
-    };
-  })(ControlIHave2 = RPC3.ControlIHave || (RPC3.ControlIHave = {}));
-  let ControlIWant2;
-  (function(ControlIWant3) {
-    let _codec2;
-    ControlIWant3.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.messageIDs != null) {
-            for (const value2 of obj.messageIDs) {
-              w.uint32(10);
-              w.bytes(value2);
-            }
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {
-            messageIDs: []
-          };
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                  throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-                }
-                obj.messageIDs.push(reader.bytes());
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    ControlIWant3.encode = (obj) => {
-      return encodeMessage(obj, ControlIWant3.codec());
-    };
-    ControlIWant3.decode = (buf, opts) => {
-      return decodeMessage(buf, ControlIWant3.codec(), opts);
-    };
-  })(ControlIWant2 = RPC3.ControlIWant || (RPC3.ControlIWant = {}));
-  let ControlGraft2;
-  (function(ControlGraft3) {
-    let _codec2;
-    ControlGraft3.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.topicID != null) {
-            w.uint32(10);
-            w.string(obj.topicID);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.topicID = reader.string();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    ControlGraft3.encode = (obj) => {
-      return encodeMessage(obj, ControlGraft3.codec());
-    };
-    ControlGraft3.decode = (buf, opts) => {
-      return decodeMessage(buf, ControlGraft3.codec(), opts);
-    };
-  })(ControlGraft2 = RPC3.ControlGraft || (RPC3.ControlGraft = {}));
-  let ControlPrune2;
-  (function(ControlPrune3) {
-    let _codec2;
-    ControlPrune3.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.topicID != null) {
-            w.uint32(10);
-            w.string(obj.topicID);
-          }
-          if (obj.peers != null) {
-            for (const value2 of obj.peers) {
-              w.uint32(18);
-              RPC3.PeerInfo.codec().encode(value2, w);
-            }
-          }
-          if (obj.backoff != null) {
-            w.uint32(24);
-            w.uint64Number(obj.backoff);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {
-            peers: []
-          };
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.topicID = reader.string();
-                break;
-              }
-              case 2: {
-                if (opts.limits?.peers != null && obj.peers.length === opts.limits.peers) {
-                  throw new MaxLengthError('Decode error - map field "peers" had too many elements');
-                }
-                obj.peers.push(RPC3.PeerInfo.codec().decode(reader, reader.uint32(), {
-                  limits: opts.limits?.peers$
-                }));
-                break;
-              }
-              case 3: {
-                obj.backoff = reader.uint64Number();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    ControlPrune3.encode = (obj) => {
-      return encodeMessage(obj, ControlPrune3.codec());
-    };
-    ControlPrune3.decode = (buf, opts) => {
-      return decodeMessage(buf, ControlPrune3.codec(), opts);
-    };
-  })(ControlPrune2 = RPC3.ControlPrune || (RPC3.ControlPrune = {}));
-  let PeerInfo2;
-  (function(PeerInfo3) {
-    let _codec2;
-    PeerInfo3.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.peerID != null) {
-            w.uint32(10);
-            w.bytes(obj.peerID);
-          }
-          if (obj.signedPeerRecord != null) {
-            w.uint32(18);
-            w.bytes(obj.signedPeerRecord);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.peerID = reader.bytes();
-                break;
-              }
-              case 2: {
-                obj.signedPeerRecord = reader.bytes();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    PeerInfo3.encode = (obj) => {
-      return encodeMessage(obj, PeerInfo3.codec());
-    };
-    PeerInfo3.decode = (buf, opts) => {
-      return decodeMessage(buf, PeerInfo3.codec(), opts);
-    };
-  })(PeerInfo2 = RPC3.PeerInfo || (RPC3.PeerInfo = {}));
-  let ControlIDontWant;
-  (function(ControlIDontWant2) {
-    let _codec2;
-    ControlIDontWant2.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.messageIDs != null) {
-            for (const value2 of obj.messageIDs) {
-              w.uint32(10);
-              w.bytes(value2);
-            }
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {
-            messageIDs: []
-          };
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                  throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-                }
-                obj.messageIDs.push(reader.bytes());
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    ControlIDontWant2.encode = (obj) => {
-      return encodeMessage(obj, ControlIDontWant2.codec());
-    };
-    ControlIDontWant2.decode = (buf, opts) => {
-      return decodeMessage(buf, ControlIDontWant2.codec(), opts);
-    };
-  })(ControlIDontWant = RPC3.ControlIDontWant || (RPC3.ControlIDontWant = {}));
-  let _codec;
-  RPC3.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.subscriptions != null) {
-          for (const value2 of obj.subscriptions) {
-            w.uint32(10);
-            RPC3.SubOpts.codec().encode(value2, w);
-          }
-        }
-        if (obj.messages != null) {
-          for (const value2 of obj.messages) {
-            w.uint32(18);
-            RPC3.Message.codec().encode(value2, w);
-          }
-        }
-        if (obj.control != null) {
-          w.uint32(26);
-          RPC3.ControlMessage.codec().encode(obj.control, w);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          subscriptions: [],
-          messages: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.subscriptions != null && obj.subscriptions.length === opts.limits.subscriptions) {
-                throw new MaxLengthError('Decode error - map field "subscriptions" had too many elements');
-              }
-              obj.subscriptions.push(RPC3.SubOpts.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.subscriptions$
-              }));
-              break;
-            }
-            case 2: {
-              if (opts.limits?.messages != null && obj.messages.length === opts.limits.messages) {
-                throw new MaxLengthError('Decode error - map field "messages" had too many elements');
-              }
-              obj.messages.push(RPC3.Message.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.messages$
-              }));
-              break;
-            }
-            case 3: {
-              obj.control = RPC3.ControlMessage.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.control
-              });
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  RPC3.encode = (obj) => {
-    return encodeMessage(obj, RPC3.codec());
-  };
-  RPC3.decode = (buf, opts) => {
-    return decodeMessage(buf, RPC3.codec(), opts);
-  };
-})(RPC2 || (RPC2 = {}));
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/message-cache.js
-var MessageCache = class {
-  static {
-    __name(this, "MessageCache");
-  }
-  gossip;
-  msgs = /* @__PURE__ */ new Map();
-  msgIdToStrFn;
-  history = [];
-  /** Track with accounting of messages in the mcache that are not yet validated */
-  notValidatedCount = 0;
-  /**
-   * Holds history of messages in timebounded history arrays
-   */
-  constructor(gossip, historyCapacity, msgIdToStrFn) {
-    this.gossip = gossip;
-    this.msgIdToStrFn = msgIdToStrFn;
-    for (let i2 = 0; i2 < historyCapacity; i2++) {
-      this.history[i2] = [];
-    }
-  }
-  get size() {
-    return this.msgs.size;
-  }
-  /**
-   * Adds a message to the current window and the cache
-   * Returns true if the message is not known and is inserted in the cache
-   */
-  put(messageId, msg, validated = false) {
-    const { msgIdStr } = messageId;
-    if (this.msgs.has(msgIdStr)) {
-      return false;
-    }
-    this.msgs.set(msgIdStr, {
-      message: msg,
-      validated,
-      originatingPeers: /* @__PURE__ */ new Set(),
-      iwantCounts: /* @__PURE__ */ new Map()
-    });
-    this.history[0].push({ ...messageId, topic: msg.topic });
-    if (!validated) {
-      this.notValidatedCount++;
-    }
-    return true;
-  }
-  observeDuplicate(msgId3, fromPeerIdStr) {
-    const entry = this.msgs.get(msgId3);
-    if (entry != null && // if the message is already validated, we don't need to store extra peers sending us
-    // duplicates as the message has already been forwarded
-    !entry.validated) {
-      entry.originatingPeers.add(fromPeerIdStr);
-    }
-  }
-  /**
-   * Retrieves a message from the cache by its ID, if it is still present
-   */
-  get(msgId3) {
-    return this.msgs.get(this.msgIdToStrFn(msgId3))?.message;
-  }
-  /**
-   * Increases the iwant count for the given message by one and returns the message together
-   * with the iwant if the message exists.
-   */
-  getWithIWantCount(msgIdStr, p2) {
-    const msg = this.msgs.get(msgIdStr);
-    if (msg == null) {
-      return null;
-    }
-    const count = (msg.iwantCounts.get(p2) ?? 0) + 1;
-    msg.iwantCounts.set(p2, count);
-    return { msg: msg.message, count };
-  }
-  /**
-   * Retrieves a list of message IDs for a set of topics
-   */
-  getGossipIDs(topics) {
-    const msgIdsByTopic = /* @__PURE__ */ new Map();
-    for (let i2 = 0; i2 < this.gossip; i2++) {
-      this.history[i2].forEach((entry) => {
-        const msg = this.msgs.get(entry.msgIdStr);
-        if ((msg?.validated ?? false) && topics.has(entry.topic)) {
-          let msgIds = msgIdsByTopic.get(entry.topic);
-          if (msgIds == null) {
-            msgIds = [];
-            msgIdsByTopic.set(entry.topic, msgIds);
-          }
-          msgIds.push(entry.msgId);
-        }
-      });
-    }
-    return msgIdsByTopic;
-  }
-  /**
-   * Gets a message with msgId and tags it as validated.
-   * This function also returns the known peers that have sent us this message. This is used to
-   * prevent us sending redundant messages to peers who have already propagated it.
-   */
-  validate(msgId3) {
-    const entry = this.msgs.get(msgId3);
-    if (entry == null) {
-      return null;
-    }
-    if (!entry.validated) {
-      this.notValidatedCount--;
-    }
-    const { message: message2, originatingPeers } = entry;
-    entry.validated = true;
-    entry.originatingPeers = /* @__PURE__ */ new Set();
-    return { message: message2, originatingPeers };
-  }
-  /**
-   * Shifts the current window, discarding messages older than this.history.length of the cache
-   */
-  shift() {
-    const lastCacheEntries = this.history[this.history.length - 1];
-    lastCacheEntries.forEach((cacheEntry) => {
-      const entry = this.msgs.get(cacheEntry.msgIdStr);
-      if (entry != null) {
-        this.msgs.delete(cacheEntry.msgIdStr);
-        if (!entry.validated) {
-          this.notValidatedCount--;
-        }
-      }
-    });
-    this.history.pop();
-    this.history.unshift([]);
-  }
-  remove(msgId3) {
-    const entry = this.msgs.get(msgId3);
-    if (entry == null) {
-      return null;
-    }
-    this.msgs.delete(msgId3);
-    return entry;
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/types.js
-var SignaturePolicy;
-(function(SignaturePolicy2) {
-  SignaturePolicy2["StrictSign"] = "StrictSign";
-  SignaturePolicy2["StrictNoSign"] = "StrictNoSign";
-})(SignaturePolicy || (SignaturePolicy = {}));
-var PublishConfigType;
-(function(PublishConfigType2) {
-  PublishConfigType2[PublishConfigType2["Signing"] = 0] = "Signing";
-  PublishConfigType2[PublishConfigType2["Anonymous"] = 1] = "Anonymous";
-})(PublishConfigType || (PublishConfigType = {}));
-var RejectReason;
-(function(RejectReason2) {
-  RejectReason2["Error"] = "error";
-  RejectReason2["Ignore"] = "ignore";
-  RejectReason2["Reject"] = "reject";
-  RejectReason2["Blacklisted"] = "blacklisted";
-})(RejectReason || (RejectReason = {}));
-var ValidateError;
-(function(ValidateError2) {
-  ValidateError2["InvalidSignature"] = "invalid_signature";
-  ValidateError2["InvalidSeqno"] = "invalid_seqno";
-  ValidateError2["InvalidPeerId"] = "invalid_peerid";
-  ValidateError2["SignaturePresent"] = "signature_present";
-  ValidateError2["SeqnoPresent"] = "seqno_present";
-  ValidateError2["FromPresent"] = "from_present";
-  ValidateError2["TransformFailed"] = "transform_failed";
-})(ValidateError || (ValidateError = {}));
-var MessageStatus;
-(function(MessageStatus2) {
-  MessageStatus2["duplicate"] = "duplicate";
-  MessageStatus2["invalid"] = "invalid";
-  MessageStatus2["valid"] = "valid";
-})(MessageStatus || (MessageStatus = {}));
-function rejectReasonFromAcceptance(acceptance) {
-  switch (acceptance) {
-    case TopicValidatorResult2.Ignore:
-      return RejectReason.Ignore;
-    case TopicValidatorResult2.Reject:
-      return RejectReason.Reject;
-    default:
-      throw new Error("Unreachable");
-  }
-}
-__name(rejectReasonFromAcceptance, "rejectReasonFromAcceptance");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/metrics.js
-var MessageSource;
-(function(MessageSource2) {
-  MessageSource2["forward"] = "forward";
-  MessageSource2["publish"] = "publish";
-})(MessageSource || (MessageSource = {}));
-var InclusionReason;
-(function(InclusionReason2) {
-  InclusionReason2["Fanout"] = "fanout";
-  InclusionReason2["Random"] = "random";
-  InclusionReason2["Subscribed"] = "subscribed";
-  InclusionReason2["Outbound"] = "outbound";
-  InclusionReason2["NotEnough"] = "not_enough";
-  InclusionReason2["Opportunistic"] = "opportunistic";
-})(InclusionReason || (InclusionReason = {}));
-var ChurnReason;
-(function(ChurnReason2) {
-  ChurnReason2["Dc"] = "disconnected";
-  ChurnReason2["BadScore"] = "bad_score";
-  ChurnReason2["Prune"] = "prune";
-  ChurnReason2["Excess"] = "excess";
-})(ChurnReason || (ChurnReason = {}));
-var ScorePenalty;
-(function(ScorePenalty2) {
-  ScorePenalty2["GraftBackoff"] = "graft_backoff";
-  ScorePenalty2["BrokenPromise"] = "broken_promise";
-  ScorePenalty2["MessageDeficit"] = "message_deficit";
-  ScorePenalty2["IPColocation"] = "IP_colocation";
-})(ScorePenalty || (ScorePenalty = {}));
-var IHaveIgnoreReason;
-(function(IHaveIgnoreReason2) {
-  IHaveIgnoreReason2["LowScore"] = "low_score";
-  IHaveIgnoreReason2["MaxIhave"] = "max_ihave";
-  IHaveIgnoreReason2["MaxIasked"] = "max_iasked";
-})(IHaveIgnoreReason || (IHaveIgnoreReason = {}));
-var ScoreThreshold;
-(function(ScoreThreshold2) {
-  ScoreThreshold2["graylist"] = "graylist";
-  ScoreThreshold2["publish"] = "publish";
-  ScoreThreshold2["gossip"] = "gossip";
-  ScoreThreshold2["mesh"] = "mesh";
-})(ScoreThreshold || (ScoreThreshold = {}));
-function getMetrics(register, topicStrToLabel, opts) {
-  return {
-    /* Metrics for static config */
-    protocolsEnabled: register.gauge({
-      name: "gossipsub_protocol",
-      help: "Status of enabled protocols",
-      labelNames: ["protocol"]
-    }),
-    /* Metrics per known topic */
-    /**
-     * Status of our subscription to this topic. This metric allows analyzing other topic metrics
-     * filtered by our current subscription status.
-     * = rust-libp2p `topic_subscription_status` */
-    topicSubscriptionStatus: register.gauge({
-      name: "gossipsub_topic_subscription_status",
-      help: "Status of our subscription to this topic",
-      labelNames: ["topicStr"]
-    }),
-    /** Number of peers subscribed to each topic. This allows us to analyze a topic's behaviour
-     * regardless of our subscription status. */
-    topicPeersCount: register.gauge({
-      name: "gossipsub_topic_peer_count",
-      help: "Number of peers subscribed to each topic",
-      labelNames: ["topicStr"]
-    }),
-    /* Metrics regarding mesh state */
-    /**
-     * Number of peers in our mesh. This metric should be updated with the count of peers for a
-     * topic in the mesh regardless of inclusion and churn events.
-     * = rust-libp2p `mesh_peer_counts` */
-    meshPeerCounts: register.gauge({
-      name: "gossipsub_mesh_peer_count",
-      help: "Number of peers in our mesh",
-      labelNames: ["topicStr"]
-    }),
-    /**
-     * Number of times we include peers in a topic mesh for different reasons.
-     * = rust-libp2p `mesh_peer_inclusion_events` */
-    meshPeerInclusionEventsFanout: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_fanout_total",
-      help: "Number of times we include peers in a topic mesh for fanout reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerInclusionEventsRandom: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_random_total",
-      help: "Number of times we include peers in a topic mesh for random reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerInclusionEventsSubscribed: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_subscribed_total",
-      help: "Number of times we include peers in a topic mesh for subscribed reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerInclusionEventsOutbound: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_outbound_total",
-      help: "Number of times we include peers in a topic mesh for outbound reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerInclusionEventsNotEnough: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_not_enough_total",
-      help: "Number of times we include peers in a topic mesh for not_enough reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerInclusionEventsOpportunistic: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_opportunistic_total",
-      help: "Number of times we include peers in a topic mesh for opportunistic reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerInclusionEventsUnknown: register.gauge({
-      name: "gossipsub_mesh_peer_inclusion_events_unknown_total",
-      help: "Number of times we include peers in a topic mesh for unknown reasons",
-      labelNames: ["topic"]
-    }),
-    /**
-     * Number of times we remove peers in a topic mesh for different reasons.
-     * = rust-libp2p `mesh_peer_churn_events` */
-    meshPeerChurnEventsDisconnected: register.gauge({
-      name: "gossipsub_peer_churn_events_disconnected_total",
-      help: "Number of times we remove peers in a topic mesh for disconnected reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerChurnEventsBadScore: register.gauge({
-      name: "gossipsub_peer_churn_events_bad_score_total",
-      help: "Number of times we remove peers in a topic mesh for bad_score reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerChurnEventsPrune: register.gauge({
-      name: "gossipsub_peer_churn_events_prune_total",
-      help: "Number of times we remove peers in a topic mesh for prune reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerChurnEventsExcess: register.gauge({
-      name: "gossipsub_peer_churn_events_excess_total",
-      help: "Number of times we remove peers in a topic mesh for excess reasons",
-      labelNames: ["topic"]
-    }),
-    meshPeerChurnEventsUnknown: register.gauge({
-      name: "gossipsub_peer_churn_events_unknown_total",
-      help: "Number of times we remove peers in a topic mesh for unknown reasons",
-      labelNames: ["topic"]
-    }),
-    /* General Metrics */
-    /**
-     * Gossipsub supports floodsub, gossipsub v1.0, v1.1, and v1.2. Peers are classified based
-     * on which protocol they support. This metric keeps track of the number of peers that are
-     * connected of each type. */
-    peersPerProtocol: register.gauge({
-      name: "gossipsub_peers_per_protocol_count",
-      help: "Peers connected for each topic",
-      labelNames: ["protocol"]
-    }),
-    /** The time it takes to complete one iteration of the heartbeat. */
-    heartbeatDuration: register.histogram({
-      name: "gossipsub_heartbeat_duration_seconds",
-      help: "The time it takes to complete one iteration of the heartbeat",
-      // Should take <10ms, over 1s it's a huge issue that needs debugging, since a heartbeat will be cancelled
-      buckets: [0.01, 0.1, 1]
-    }),
-    /** Heartbeat run took longer than heartbeat interval so next is skipped */
-    heartbeatSkipped: register.gauge({
-      name: "gossipsub_heartbeat_skipped",
-      help: "Heartbeat run took longer than heartbeat interval so next is skipped"
-    }),
-    /**
-     * Message validation results for each topic.
-     * Invalid == Reject?
-     * = rust-libp2p `invalid_messages`, `accepted_messages`, `ignored_messages`, `rejected_messages` */
-    acceptedMessagesTotal: register.gauge({
-      name: "gossipsub_accepted_messages_total",
-      help: "Total accepted messages for each topic",
-      labelNames: ["topic"]
-    }),
-    ignoredMessagesTotal: register.gauge({
-      name: "gossipsub_ignored_messages_total",
-      help: "Total ignored messages for each topic",
-      labelNames: ["topic"]
-    }),
-    rejectedMessagesTotal: register.gauge({
-      name: "gossipsub_rejected_messages_total",
-      help: "Total rejected messages for each topic",
-      labelNames: ["topic"]
-    }),
-    unknownValidationResultsTotal: register.gauge({
-      name: "gossipsub_unknown_validation_results_total",
-      help: "Total unknown validation results for each topic",
-      labelNames: ["topic"]
-    }),
-    /**
-     * When the user validates a message, it tries to re propagate it to its mesh peers. If the
-     * message expires from the memcache before it can be validated, we count this a cache miss
-     * and it is an indicator that the memcache size should be increased.
-     * = rust-libp2p `mcache_misses` */
-    asyncValidationMcacheHit: register.gauge({
-      name: "gossipsub_async_validation_mcache_hit_total",
-      help: "Async validation result reported by the user layer",
-      labelNames: ["hit"]
-    }),
-    asyncValidationDelayFromFirstSeenSec: register.histogram({
-      name: "gossipsub_async_validation_delay_from_first_seen",
-      help: "Async validation report delay from first seen in second",
-      buckets: [0.01, 0.03, 0.1, 0.3, 1, 3, 10]
-    }),
-    asyncValidationUnknownFirstSeen: register.gauge({
-      name: "gossipsub_async_validation_unknown_first_seen_count_total",
-      help: "Async validation report unknown first seen value for message"
-    }),
-    // peer stream
-    peerReadStreamError: register.gauge({
-      name: "gossipsub_peer_read_stream_err_count_total",
-      help: "Peer read stream error"
-    }),
-    // RPC outgoing. Track byte length + data structure sizes
-    rpcRecvBytes: register.gauge({ name: "gossipsub_rpc_recv_bytes_total", help: "RPC recv" }),
-    rpcRecvCount: register.gauge({ name: "gossipsub_rpc_recv_count_total", help: "RPC recv" }),
-    rpcRecvSubscription: register.gauge({ name: "gossipsub_rpc_recv_subscription_total", help: "RPC recv" }),
-    rpcRecvMessage: register.gauge({ name: "gossipsub_rpc_recv_message_total", help: "RPC recv" }),
-    rpcRecvControl: register.gauge({ name: "gossipsub_rpc_recv_control_total", help: "RPC recv" }),
-    rpcRecvIHave: register.gauge({ name: "gossipsub_rpc_recv_ihave_total", help: "RPC recv" }),
-    rpcRecvIWant: register.gauge({ name: "gossipsub_rpc_recv_iwant_total", help: "RPC recv" }),
-    rpcRecvGraft: register.gauge({ name: "gossipsub_rpc_recv_graft_total", help: "RPC recv" }),
-    rpcRecvPrune: register.gauge({ name: "gossipsub_rpc_recv_prune_total", help: "RPC recv" }),
-    rpcDataError: register.gauge({ name: "gossipsub_rpc_data_err_count_total", help: "RPC data error" }),
-    rpcRecvError: register.gauge({ name: "gossipsub_rpc_recv_err_count_total", help: "RPC recv error" }),
-    /** Total count of RPC dropped because acceptFrom() == false */
-    rpcRecvNotAccepted: register.gauge({
-      name: "gossipsub_rpc_rcv_not_accepted_total",
-      help: "Total count of RPC dropped because acceptFrom() == false"
-    }),
-    // RPC incoming. Track byte length + data structure sizes
-    rpcSentBytes: register.gauge({ name: "gossipsub_rpc_sent_bytes_total", help: "RPC sent" }),
-    rpcSentCount: register.gauge({ name: "gossipsub_rpc_sent_count_total", help: "RPC sent" }),
-    rpcSentSubscription: register.gauge({ name: "gossipsub_rpc_sent_subscription_total", help: "RPC sent" }),
-    rpcSentMessage: register.gauge({ name: "gossipsub_rpc_sent_message_total", help: "RPC sent" }),
-    rpcSentControl: register.gauge({ name: "gossipsub_rpc_sent_control_total", help: "RPC sent" }),
-    rpcSentIHave: register.gauge({ name: "gossipsub_rpc_sent_ihave_total", help: "RPC sent" }),
-    rpcSentIWant: register.gauge({ name: "gossipsub_rpc_sent_iwant_total", help: "RPC sent" }),
-    rpcSentGraft: register.gauge({ name: "gossipsub_rpc_sent_graft_total", help: "RPC sent" }),
-    rpcSentPrune: register.gauge({ name: "gossipsub_rpc_sent_prune_total", help: "RPC sent" }),
-    rpcSentIDontWant: register.gauge({ name: "gossipsub_rpc_sent_idontwant_total", help: "RPC sent" }),
-    // publish message. Track peers sent to and bytes
-    /** Total count of msg published by topic */
-    msgPublishCount: register.gauge({
-      name: "gossipsub_msg_publish_count_total",
-      help: "Total count of msg published by topic",
-      labelNames: ["topic"]
-    }),
-    /** Total count of peers that we publish a msg to */
-    msgPublishPeersByTopic: register.gauge({
-      name: "gossipsub_msg_publish_peers_total",
-      help: "Total count of peers that we publish a msg to",
-      labelNames: ["topic"]
-    }),
-    /** Total count of peers (by group) that we publish a msg to */
-    directPeersPublishedTotal: register.gauge({
-      name: "gossipsub_direct_peers_published_total",
-      help: "Total direct peers that we publish a msg to",
-      labelNames: ["topic"]
-    }),
-    floodsubPeersPublishedTotal: register.gauge({
-      name: "gossipsub_floodsub_peers_published_total",
-      help: "Total floodsub peers that we publish a msg to",
-      labelNames: ["topic"]
-    }),
-    meshPeersPublishedTotal: register.gauge({
-      name: "gossipsub_mesh_peers_published_total",
-      help: "Total mesh peers that we publish a msg to",
-      labelNames: ["topic"]
-    }),
-    fanoutPeersPublishedTotal: register.gauge({
-      name: "gossipsub_fanout_peers_published_total",
-      help: "Total fanout peers that we publish a msg to",
-      labelNames: ["topic"]
-    }),
-    /** Total count of msg publish data.length bytes */
-    msgPublishBytes: register.gauge({
-      name: "gossipsub_msg_publish_bytes_total",
-      help: "Total count of msg publish data.length bytes",
-      labelNames: ["topic"]
-    }),
-    /** Total time in seconds to publish a message */
-    msgPublishTime: register.histogram({
-      name: "gossipsub_msg_publish_seconds",
-      help: "Total time in seconds to publish a message",
-      buckets: [1e-3, 2e-3, 5e-3, 0.01, 0.1, 0.5, 1],
-      labelNames: ["topic"]
-    }),
-    /** Total count of msg forwarded by topic */
-    msgForwardCount: register.gauge({
-      name: "gossipsub_msg_forward_count_total",
-      help: "Total count of msg forwarded by topic",
-      labelNames: ["topic"]
-    }),
-    /** Total count of peers that we forward a msg to */
-    msgForwardPeers: register.gauge({
-      name: "gossipsub_msg_forward_peers_total",
-      help: "Total count of peers that we forward a msg to",
-      labelNames: ["topic"]
-    }),
-    /** Total count of recv msgs before any validation */
-    msgReceivedPreValidation: register.gauge({
-      name: "gossipsub_msg_received_prevalidation_total",
-      help: "Total count of recv msgs before any validation",
-      labelNames: ["topic"]
-    }),
-    /** Total count of recv msgs error */
-    msgReceivedError: register.gauge({
-      name: "gossipsub_msg_received_error_total",
-      help: "Total count of recv msgs error",
-      labelNames: ["topic"]
-    }),
-    /** Tracks distribution of recv msgs by duplicate, invalid, valid */
-    prevalidationInvalidTotal: register.gauge({
-      name: "gossipsub_pre_validation_invalid_total",
-      help: "Total count of invalid messages received",
-      labelNames: ["topic"]
-    }),
-    prevalidationValidTotal: register.gauge({
-      name: "gossipsub_pre_validation_valid_total",
-      help: "Total count of valid messages received",
-      labelNames: ["topic"]
-    }),
-    prevalidationDuplicateTotal: register.gauge({
-      name: "gossipsub_pre_validation_duplicate_total",
-      help: "Total count of duplicate messages received",
-      labelNames: ["topic"]
-    }),
-    prevalidationUnknownTotal: register.gauge({
-      name: "gossipsub_pre_validation_unknown_status_total",
-      help: "Total count of unknown_status messages received",
-      labelNames: ["topic"]
-    }),
-    /** Tracks specific reason of invalid */
-    msgReceivedInvalid: register.gauge({
-      name: "gossipsub_msg_received_invalid_total",
-      help: "Tracks specific reason of invalid",
-      labelNames: ["error"]
-    }),
-    msgReceivedInvalidByTopic: register.gauge({
-      name: "gossipsub_msg_received_invalid_by_topic_total",
-      help: "Tracks specific invalid message by topic",
-      labelNames: ["topic"]
-    }),
-    /** Track duplicate message delivery time */
-    duplicateMsgDeliveryDelay: register.histogram({
-      name: "gossisub_duplicate_msg_delivery_delay_seconds",
-      help: "Time since the 1st duplicated message validated",
-      labelNames: ["topic"],
-      buckets: [
-        0.25 * opts.maxMeshMessageDeliveriesWindowSec,
-        0.5 * opts.maxMeshMessageDeliveriesWindowSec,
-        Number(opts.maxMeshMessageDeliveriesWindowSec),
-        2 * opts.maxMeshMessageDeliveriesWindowSec,
-        4 * opts.maxMeshMessageDeliveriesWindowSec
-      ]
-    }),
-    /** Total count of late msg delivery total by topic */
-    duplicateMsgLateDelivery: register.gauge({
-      name: "gossisub_duplicate_msg_late_delivery_total",
-      help: "Total count of late duplicate message delivery by topic, which triggers P3 penalty",
-      labelNames: ["topic"]
-    }),
-    duplicateMsgIgnored: register.gauge({
-      name: "gossisub_ignored_published_duplicate_msgs_total",
-      help: "Total count of published duplicate message ignored by topic",
-      labelNames: ["topic"]
-    }),
-    /* Metrics related to scoring */
-    /** Total times score() is called */
-    scoreFnCalls: register.gauge({
-      name: "gossipsub_score_fn_calls_total",
-      help: "Total times score() is called"
-    }),
-    /** Total times score() call actually computed computeScore(), no cache */
-    scoreFnRuns: register.gauge({
-      name: "gossipsub_score_fn_runs_total",
-      help: "Total times score() call actually computed computeScore(), no cache"
-    }),
-    scoreCachedDelta: register.histogram({
-      name: "gossipsub_score_cache_delta",
-      help: "Delta of score between cached values that expired",
-      buckets: [10, 100, 1e3]
-    }),
-    /** Current count of peers by score threshold */
-    peersByScoreThreshold: register.gauge({
-      name: "gossipsub_peers_by_score_threshold_count",
-      help: "Current count of peers by score threshold",
-      labelNames: ["threshold"]
-    }),
-    score: register.avgMinMax({
-      name: "gossipsub_score",
-      help: "Avg min max of gossip scores"
-    }),
-    /**
-     * Separate score weights
-     * Need to use 2-label metrics in this case to debug the score weights
-     **/
-    scoreWeights: register.avgMinMax({
-      name: "gossipsub_score_weights",
-      help: "Separate score weights",
-      labelNames: ["topic", "p"]
-    }),
-    /** Histogram of the scores for each mesh topic. */
-    // TODO: Not implemented
-    scorePerMesh: register.avgMinMax({
-      name: "gossipsub_score_per_mesh",
-      help: "Histogram of the scores for each mesh topic",
-      labelNames: ["topic"]
-    }),
-    /** A counter of the kind of penalties being applied to peers. */
-    // TODO: Not fully implemented
-    scoringPenalties: register.gauge({
-      name: "gossipsub_scoring_penalties_total",
-      help: "A counter of the kind of penalties being applied to peers",
-      labelNames: ["penalty"]
-    }),
-    behaviourPenalty: register.histogram({
-      name: "gossipsub_peer_stat_behaviour_penalty",
-      help: "Current peer stat behaviour_penalty at each scrape",
-      buckets: [
-        0.25 * opts.behaviourPenaltyThreshold,
-        0.5 * opts.behaviourPenaltyThreshold,
-        Number(opts.behaviourPenaltyThreshold),
-        2 * opts.behaviourPenaltyThreshold,
-        4 * opts.behaviourPenaltyThreshold
-      ]
-    }),
-    // TODO:
-    // - iasked per peer (on heartbeat)
-    // - when promise is resolved, track messages from promises
-    /** Total received IHAVE messages that we ignore for some reason */
-    ihaveRcvIgnored: register.gauge({
-      name: "gossipsub_ihave_rcv_ignored_total",
-      help: "Total received IHAVE messages that we ignore for some reason",
-      labelNames: ["reason"]
-    }),
-    /** Total received IHAVE messages by topic */
-    ihaveRcvMsgids: register.gauge({
-      name: "gossipsub_ihave_rcv_msgids_total",
-      help: "Total received IHAVE messages by topic",
-      labelNames: ["topic"]
-    }),
-    /**
-     * Total messages per topic we don't have. Not actual requests.
-     * The number of times we have decided that an IWANT control message is required for this
-     * topic. A very high metric might indicate an underperforming network.
-     * = rust-libp2p `topic_iwant_msgs` */
-    ihaveRcvNotSeenMsgids: register.gauge({
-      name: "gossipsub_ihave_rcv_not_seen_msgids_total",
-      help: "Total messages per topic we do not have, not actual requests",
-      labelNames: ["topic"]
-    }),
-    /** Total received IWANT messages by topic */
-    iwantRcvMsgids: register.gauge({
-      name: "gossipsub_iwant_rcv_msgids_total",
-      help: "Total received IWANT messages by topic",
-      labelNames: ["topic"]
-    }),
-    /** Total requested messageIDs that we don't have */
-    iwantRcvDonthaveMsgids: register.gauge({
-      name: "gossipsub_iwant_rcv_dont_have_msgids_total",
-      help: "Total requested messageIDs that we do not have"
-    }),
-    /** Total received IDONTWANT messages */
-    idontwantRcvMsgids: register.gauge({
-      name: "gossipsub_idontwant_rcv_msgids_total",
-      help: "Total received IDONTWANT messages"
-    }),
-    /** Total received IDONTWANT messageIDs that we don't have */
-    idontwantRcvDonthaveMsgids: register.gauge({
-      name: "gossipsub_idontwant_rcv_dont_have_msgids_total",
-      help: "Total received IDONTWANT messageIDs that we do not have in mcache"
-    }),
-    iwantPromiseStarted: register.gauge({
-      name: "gossipsub_iwant_promise_sent_total",
-      help: "Total count of started IWANT promises"
-    }),
-    /** Total count of resolved IWANT promises */
-    iwantPromiseResolved: register.gauge({
-      name: "gossipsub_iwant_promise_resolved_total",
-      help: "Total count of resolved IWANT promises"
-    }),
-    /** Total count of resolved IWANT promises from duplicate messages */
-    iwantPromiseResolvedFromDuplicate: register.gauge({
-      name: "gossipsub_iwant_promise_resolved_from_duplicate_total",
-      help: "Total count of resolved IWANT promises from duplicate messages"
-    }),
-    /** Total count of peers we have asked IWANT promises that are resolved */
-    iwantPromiseResolvedPeers: register.gauge({
-      name: "gossipsub_iwant_promise_resolved_peers",
-      help: "Total count of peers we have asked IWANT promises that are resolved"
-    }),
-    iwantPromiseBroken: register.gauge({
-      name: "gossipsub_iwant_promise_broken",
-      help: "Total count of broken IWANT promises"
-    }),
-    iwantMessagePruned: register.gauge({
-      name: "gossipsub_iwant_message_pruned",
-      help: "Total count of pruned IWANT messages"
-    }),
-    /** Histogram of delivery time of resolved IWANT promises */
-    iwantPromiseDeliveryTime: register.histogram({
-      name: "gossipsub_iwant_promise_delivery_seconds",
-      help: "Histogram of delivery time of resolved IWANT promises",
-      buckets: [
-        0.5 * opts.gossipPromiseExpireSec,
-        Number(opts.gossipPromiseExpireSec),
-        2 * opts.gossipPromiseExpireSec,
-        4 * opts.gossipPromiseExpireSec
-      ]
-    }),
-    iwantPromiseUntracked: register.gauge({
-      name: "gossip_iwant_promise_untracked",
-      help: "Total count of untracked IWANT promise"
-    }),
-    /** Backoff time */
-    connectedPeersBackoffSec: register.histogram({
-      name: "gossipsub_connected_peers_backoff_seconds",
-      help: "Backoff time in seconds",
-      // Using 1 seconds as minimum as that's close to the heartbeat duration, no need for more resolution.
-      // As per spec, backoff times are 10 seconds for UnsubscribeBackoff and 60 seconds for PruneBackoff.
-      // Higher values of 60 seconds should not occur, but we add 120 seconds just in case
-      // https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md#overview-of-new-parameters
-      buckets: [1, 2, 4, 10, 20, 60, 120]
-    }),
-    /* Data structure sizes */
-    /** Unbounded cache sizes */
-    cacheSize: register.gauge({
-      name: "gossipsub_cache_size",
-      help: "Unbounded cache sizes",
-      labelNames: ["cache"]
-    }),
-    /** Current mcache msg count */
-    mcacheSize: register.gauge({
-      name: "gossipsub_mcache_size",
-      help: "Current mcache msg count"
-    }),
-    mcacheNotValidatedCount: register.gauge({
-      name: "gossipsub_mcache_not_validated_count",
-      help: "Current mcache msg count not validated"
-    }),
-    fastMsgIdCacheCollision: register.gauge({
-      name: "gossipsub_fastmsgid_cache_collision_total",
-      help: "Total count of key collisions on fastmsgid cache put"
-    }),
-    newConnectionCount: register.gauge({
-      name: "gossipsub_new_connection_total",
-      help: "Total new connection by status",
-      labelNames: ["status"]
-    }),
-    topicStrToLabel,
-    toTopic(topicStr) {
-      return this.topicStrToLabel.get(topicStr) ?? topicStr;
-    },
-    /** We joined a topic */
-    onJoin(topicStr) {
-      this.topicSubscriptionStatus.set({ topicStr }, 1);
-      this.meshPeerCounts.set({ topicStr }, 0);
-    },
-    /** We left a topic */
-    onLeave(topicStr) {
-      this.topicSubscriptionStatus.set({ topicStr }, 0);
-      this.meshPeerCounts.set({ topicStr }, 0);
-    },
-    /** Register the inclusion of peers in our mesh due to some reason. */
-    onAddToMesh(topicStr, reason, count) {
-      const topic = this.toTopic(topicStr);
-      switch (reason) {
-        case InclusionReason.Fanout:
-          this.meshPeerInclusionEventsFanout.inc({ topic }, count);
-          break;
-        case InclusionReason.Random:
-          this.meshPeerInclusionEventsRandom.inc({ topic }, count);
-          break;
-        case InclusionReason.Subscribed:
-          this.meshPeerInclusionEventsSubscribed.inc({ topic }, count);
-          break;
-        case InclusionReason.Outbound:
-          this.meshPeerInclusionEventsOutbound.inc({ topic }, count);
-          break;
-        case InclusionReason.NotEnough:
-          this.meshPeerInclusionEventsNotEnough.inc({ topic }, count);
-          break;
-        case InclusionReason.Opportunistic:
-          this.meshPeerInclusionEventsOpportunistic.inc({ topic }, count);
-          break;
-        default:
-          this.meshPeerInclusionEventsUnknown.inc({ topic }, count);
-          break;
-      }
-    },
-    /** Register the removal of peers in our mesh due to some reason */
-    // - remove_peer_from_mesh()
-    // - heartbeat() Churn::BadScore
-    // - heartbeat() Churn::Excess
-    // - on_disconnect() Churn::Ds
-    onRemoveFromMesh(topicStr, reason, count) {
-      const topic = this.toTopic(topicStr);
-      switch (reason) {
-        case ChurnReason.Dc:
-          this.meshPeerChurnEventsDisconnected.inc({ topic }, count);
-          break;
-        case ChurnReason.BadScore:
-          this.meshPeerChurnEventsBadScore.inc({ topic }, count);
-          break;
-        case ChurnReason.Prune:
-          this.meshPeerChurnEventsPrune.inc({ topic }, count);
-          break;
-        case ChurnReason.Excess:
-          this.meshPeerChurnEventsExcess.inc({ topic }, count);
-          break;
-        default:
-          this.meshPeerChurnEventsUnknown.inc({ topic }, count);
-          break;
-      }
-    },
-    /**
-     * Update validation result to metrics
-     *
-     * @param messageRecord - null means the message's mcache record was not known at the time of acceptance report
-     */
-    onReportValidation(messageRecord, acceptance, firstSeenTimestampMs) {
-      this.asyncValidationMcacheHit.inc({ hit: messageRecord != null ? "hit" : "miss" });
-      if (messageRecord != null) {
-        const topic = this.toTopic(messageRecord.message.topic);
-        switch (acceptance) {
-          case TopicValidatorResult2.Accept:
-            this.acceptedMessagesTotal.inc({ topic });
-            break;
-          case TopicValidatorResult2.Ignore:
-            this.ignoredMessagesTotal.inc({ topic });
-            break;
-          case TopicValidatorResult2.Reject:
-            this.rejectedMessagesTotal.inc({ topic });
-            break;
-          default:
-            this.unknownValidationResultsTotal.inc({ topic });
-            break;
-        }
-      }
-      if (firstSeenTimestampMs != null) {
-        this.asyncValidationDelayFromFirstSeenSec.observe((Date.now() - firstSeenTimestampMs) / 1e3);
-      } else {
-        this.asyncValidationUnknownFirstSeen.inc();
-      }
-    },
-    /**
-     * - in handle_graft() Penalty::GraftBackoff
-     * - in apply_iwant_penalties() Penalty::BrokenPromise
-     * - in metric_score() P3 Penalty::MessageDeficit
-     * - in metric_score() P6 Penalty::IPColocation
-     */
-    onScorePenalty(penalty) {
-      this.scoringPenalties.inc({ penalty }, 1);
-    },
-    onIhaveRcv(topicStr, ihave, idonthave) {
-      const topic = this.toTopic(topicStr);
-      this.ihaveRcvMsgids.inc({ topic }, ihave);
-      this.ihaveRcvNotSeenMsgids.inc({ topic }, idonthave);
-    },
-    onIwantRcv(iwantByTopic, iwantDonthave) {
-      for (const [topicStr, iwant] of iwantByTopic) {
-        const topic = this.toTopic(topicStr);
-        this.iwantRcvMsgids.inc({ topic }, iwant);
-      }
-      this.iwantRcvDonthaveMsgids.inc(iwantDonthave);
-    },
-    onIdontwantRcv(idontwant, idontwantDonthave) {
-      this.idontwantRcvMsgids.inc(idontwant);
-      this.idontwantRcvDonthaveMsgids.inc(idontwantDonthave);
-    },
-    onForwardMsg(topicStr, tosendCount) {
-      const topic = this.toTopic(topicStr);
-      this.msgForwardCount.inc({ topic }, 1);
-      this.msgForwardPeers.inc({ topic }, tosendCount);
-    },
-    onPublishMsg(topicStr, tosendGroupCount, tosendCount, dataLen, ms) {
-      const topic = this.toTopic(topicStr);
-      this.msgPublishCount.inc({ topic }, 1);
-      this.msgPublishBytes.inc({ topic }, tosendCount * dataLen);
-      this.msgPublishPeersByTopic.inc({ topic }, tosendCount);
-      this.directPeersPublishedTotal.inc({ topic }, tosendGroupCount.direct);
-      this.floodsubPeersPublishedTotal.inc({ topic }, tosendGroupCount.floodsub);
-      this.meshPeersPublishedTotal.inc({ topic }, tosendGroupCount.mesh);
-      this.fanoutPeersPublishedTotal.inc({ topic }, tosendGroupCount.fanout);
-      this.msgPublishTime.observe({ topic }, ms / 1e3);
-    },
-    onMsgRecvPreValidation(topicStr) {
-      const topic = this.toTopic(topicStr);
-      this.msgReceivedPreValidation.inc({ topic }, 1);
-    },
-    onMsgRecvError(topicStr) {
-      const topic = this.toTopic(topicStr);
-      this.msgReceivedError.inc({ topic }, 1);
-    },
-    onPrevalidationResult(topicStr, status) {
-      const topic = this.toTopic(topicStr);
-      switch (status) {
-        case MessageStatus.duplicate:
-          this.prevalidationDuplicateTotal.inc({ topic });
-          break;
-        case MessageStatus.invalid:
-          this.prevalidationInvalidTotal.inc({ topic });
-          break;
-        case MessageStatus.valid:
-          this.prevalidationValidTotal.inc({ topic });
-          break;
-        default:
-          this.prevalidationUnknownTotal.inc({ topic });
-          break;
-      }
-    },
-    onMsgRecvInvalid(topicStr, reason) {
-      const topic = this.toTopic(topicStr);
-      const error = reason.reason === RejectReason.Error ? reason.error : reason.reason;
-      this.msgReceivedInvalid.inc({ error }, 1);
-      this.msgReceivedInvalidByTopic.inc({ topic }, 1);
-    },
-    onDuplicateMsgDelivery(topicStr, deliveryDelayMs, isLateDelivery) {
-      const topic = this.toTopic(topicStr);
-      this.duplicateMsgDeliveryDelay.observe({ topic }, deliveryDelayMs / 1e3);
-      if (isLateDelivery) {
-        this.duplicateMsgLateDelivery.inc({ topic }, 1);
-      }
-    },
-    onPublishDuplicateMsg(topicStr) {
-      const topic = this.toTopic(topicStr);
-      this.duplicateMsgIgnored.inc({ topic }, 1);
-    },
-    onPeerReadStreamError() {
-      this.peerReadStreamError.inc(1);
-    },
-    onRpcRecvError() {
-      this.rpcRecvError.inc(1);
-    },
-    onRpcDataError() {
-      this.rpcDataError.inc(1);
-    },
-    onRpcRecv(rpc, rpcBytes) {
-      this.rpcRecvBytes.inc(rpcBytes);
-      this.rpcRecvCount.inc(1);
-      if (rpc.subscriptions != null)
-        this.rpcRecvSubscription.inc(rpc.subscriptions.length);
-      if (rpc.messages != null)
-        this.rpcRecvMessage.inc(rpc.messages.length);
-      if (rpc.control != null) {
-        this.rpcRecvControl.inc(1);
-        if (rpc.control.ihave != null)
-          this.rpcRecvIHave.inc(rpc.control.ihave.length);
-        if (rpc.control.iwant != null)
-          this.rpcRecvIWant.inc(rpc.control.iwant.length);
-        if (rpc.control.graft != null)
-          this.rpcRecvGraft.inc(rpc.control.graft.length);
-        if (rpc.control.prune != null)
-          this.rpcRecvPrune.inc(rpc.control.prune.length);
-      }
-    },
-    onRpcSent(rpc, rpcBytes) {
-      this.rpcSentBytes.inc(rpcBytes);
-      this.rpcSentCount.inc(1);
-      if (rpc.subscriptions != null)
-        this.rpcSentSubscription.inc(rpc.subscriptions.length);
-      if (rpc.messages != null)
-        this.rpcSentMessage.inc(rpc.messages.length);
-      if (rpc.control != null) {
-        const ihave = rpc.control.ihave?.length ?? 0;
-        const iwant = rpc.control.iwant?.length ?? 0;
-        const graft = rpc.control.graft?.length ?? 0;
-        const prune = rpc.control.prune?.length ?? 0;
-        const idontwant = rpc.control.idontwant?.length ?? 0;
-        if (ihave > 0)
-          this.rpcSentIHave.inc(ihave);
-        if (iwant > 0)
-          this.rpcSentIWant.inc(iwant);
-        if (graft > 0)
-          this.rpcSentGraft.inc(graft);
-        if (prune > 0)
-          this.rpcSentPrune.inc(prune);
-        if (idontwant > 0)
-          this.rpcSentIDontWant.inc(idontwant);
-        if (ihave > 0 || iwant > 0 || graft > 0 || prune > 0 || idontwant > 0)
-          this.rpcSentControl.inc(1);
-      }
-    },
-    registerScores(scores, scoreThresholds) {
-      let graylist = 0;
-      let publish = 0;
-      let gossip = 0;
-      let mesh = 0;
-      for (const score of scores) {
-        if (score >= scoreThresholds.graylistThreshold)
-          graylist++;
-        if (score >= scoreThresholds.publishThreshold)
-          publish++;
-        if (score >= scoreThresholds.gossipThreshold)
-          gossip++;
-        if (score >= 0)
-          mesh++;
-      }
-      this.peersByScoreThreshold.set({ threshold: ScoreThreshold.graylist }, graylist);
-      this.peersByScoreThreshold.set({ threshold: ScoreThreshold.publish }, publish);
-      this.peersByScoreThreshold.set({ threshold: ScoreThreshold.gossip }, gossip);
-      this.peersByScoreThreshold.set({ threshold: ScoreThreshold.mesh }, mesh);
-      this.score.set(scores);
-    },
-    registerScoreWeights(sw) {
-      for (const [topic, wsTopic] of sw.byTopic) {
-        this.scoreWeights.set({ topic, p: "p1" }, wsTopic.p1w);
-        this.scoreWeights.set({ topic, p: "p2" }, wsTopic.p2w);
-        this.scoreWeights.set({ topic, p: "p3" }, wsTopic.p3w);
-        this.scoreWeights.set({ topic, p: "p3b" }, wsTopic.p3bw);
-        this.scoreWeights.set({ topic, p: "p4" }, wsTopic.p4w);
-      }
-      this.scoreWeights.set({ p: "p5" }, sw.p5w);
-      this.scoreWeights.set({ p: "p6" }, sw.p6w);
-      this.scoreWeights.set({ p: "p7" }, sw.p7w);
-    },
-    registerScorePerMesh(mesh, scoreByPeer) {
-      const peersPerTopicLabel = /* @__PURE__ */ new Map();
-      mesh.forEach((peers, topicStr) => {
-        const topicLabel = this.topicStrToLabel.get(topicStr) ?? "unknown";
-        let peersInMesh = peersPerTopicLabel.get(topicLabel);
-        if (peersInMesh == null) {
-          peersInMesh = /* @__PURE__ */ new Set();
-          peersPerTopicLabel.set(topicLabel, peersInMesh);
-        }
-        peers.forEach((p2) => peersInMesh?.add(p2));
-      });
-      for (const [topic, peers] of peersPerTopicLabel) {
-        const meshScores = [];
-        peers.forEach((peer) => {
-          meshScores.push(scoreByPeer.get(peer) ?? 0);
-        });
-        this.scorePerMesh.set({ topic }, meshScores);
-      }
-    }
-  };
-}
-__name(getMetrics, "getMetrics");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/errors.js
-var InvalidPeerScoreParamsError = class extends Error {
-  static name = "InvalidPeerScoreParamsError";
-  constructor(message2 = "Invalid peer score params") {
-    super(message2);
-    this.name = "InvalidPeerScoreParamsError";
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/score/peer-score-params.js
-var defaultPeerScoreParams = {
-  topics: {},
-  topicScoreCap: 10,
-  appSpecificScore: /* @__PURE__ */ __name(() => 0, "appSpecificScore"),
-  appSpecificWeight: 10,
-  IPColocationFactorWeight: -5,
-  IPColocationFactorThreshold: 10,
-  IPColocationFactorWhitelist: /* @__PURE__ */ new Set(),
-  behaviourPenaltyWeight: -10,
-  behaviourPenaltyThreshold: 0,
-  behaviourPenaltyDecay: 0.2,
-  decayInterval: 1e3,
-  decayToZero: 0.1,
-  retainScore: 3600 * 1e3
-};
-var defaultTopicScoreParams = {
-  topicWeight: 0.5,
-  timeInMeshWeight: 1,
-  timeInMeshQuantum: 1,
-  timeInMeshCap: 3600,
-  firstMessageDeliveriesWeight: 1,
-  firstMessageDeliveriesDecay: 0.5,
-  firstMessageDeliveriesCap: 2e3,
-  meshMessageDeliveriesWeight: -1,
-  meshMessageDeliveriesDecay: 0.5,
-  meshMessageDeliveriesCap: 100,
-  meshMessageDeliveriesThreshold: 20,
-  meshMessageDeliveriesWindow: 10,
-  meshMessageDeliveriesActivation: 5e3,
-  meshFailurePenaltyWeight: -1,
-  meshFailurePenaltyDecay: 0.5,
-  invalidMessageDeliveriesWeight: -1,
-  invalidMessageDeliveriesDecay: 0.3
-};
-function createPeerScoreParams(p2 = {}) {
-  return {
-    ...defaultPeerScoreParams,
-    ...p2,
-    topics: p2.topics != null ? Object.entries(p2.topics).reduce((topics, [topic, topicScoreParams]) => {
-      topics[topic] = createTopicScoreParams(topicScoreParams);
-      return topics;
-    }, {}) : {}
-  };
-}
-__name(createPeerScoreParams, "createPeerScoreParams");
-function createTopicScoreParams(p2 = {}) {
-  return {
-    ...defaultTopicScoreParams,
-    ...p2
-  };
-}
-__name(createTopicScoreParams, "createTopicScoreParams");
-function validatePeerScoreParams(p2) {
-  for (const [topic, params] of Object.entries(p2.topics)) {
-    try {
-      validateTopicScoreParams(params);
-    } catch (e2) {
-      throw new InvalidPeerScoreParamsError(`invalid score parameters for topic ${topic}: ${e2.message}`);
-    }
-  }
-  if (p2.topicScoreCap < 0) {
-    throw new InvalidPeerScoreParamsError("invalid topic score cap; must be positive (or 0 for no cap)");
-  }
-  if (p2.appSpecificScore === null || p2.appSpecificScore === void 0) {
-    throw new InvalidPeerScoreParamsError("missing application specific score function");
-  }
-  if (p2.IPColocationFactorWeight > 0) {
-    throw new InvalidPeerScoreParamsError("invalid IPColocationFactorWeight; must be negative (or 0 to disable)");
-  }
-  if (p2.IPColocationFactorWeight !== 0 && p2.IPColocationFactorThreshold < 1) {
-    throw new InvalidPeerScoreParamsError("invalid IPColocationFactorThreshold; must be at least 1");
-  }
-  if (p2.behaviourPenaltyWeight > 0) {
-    throw new InvalidPeerScoreParamsError("invalid BehaviourPenaltyWeight; must be negative (or 0 to disable)");
-  }
-  if (p2.behaviourPenaltyWeight !== 0 && (p2.behaviourPenaltyDecay <= 0 || p2.behaviourPenaltyDecay >= 1)) {
-    throw new InvalidPeerScoreParamsError("invalid BehaviourPenaltyDecay; must be between 0 and 1");
-  }
-  if (p2.decayInterval < 1e3) {
-    throw new InvalidPeerScoreParamsError("invalid DecayInterval; must be at least 1s");
-  }
-  if (p2.decayToZero <= 0 || p2.decayToZero >= 1) {
-    throw new InvalidPeerScoreParamsError("invalid DecayToZero; must be between 0 and 1");
-  }
-}
-__name(validatePeerScoreParams, "validatePeerScoreParams");
-function validateTopicScoreParams(p2) {
-  if (p2.topicWeight < 0) {
-    throw new InvalidPeerScoreParamsError("invalid topic weight; must be >= 0");
-  }
-  if (p2.timeInMeshQuantum === 0) {
-    throw new InvalidPeerScoreParamsError("invalid TimeInMeshQuantum; must be non zero");
-  }
-  if (p2.timeInMeshWeight < 0) {
-    throw new InvalidPeerScoreParamsError("invalid TimeInMeshWeight; must be positive (or 0 to disable)");
-  }
-  if (p2.timeInMeshWeight !== 0 && p2.timeInMeshQuantum <= 0) {
-    throw new InvalidPeerScoreParamsError("invalid TimeInMeshQuantum; must be positive");
-  }
-  if (p2.timeInMeshWeight !== 0 && p2.timeInMeshCap <= 0) {
-    throw new InvalidPeerScoreParamsError("invalid TimeInMeshCap; must be positive");
-  }
-  if (p2.firstMessageDeliveriesWeight < 0) {
-    throw new InvalidPeerScoreParamsError("invallid FirstMessageDeliveriesWeight; must be positive (or 0 to disable)");
-  }
-  if (p2.firstMessageDeliveriesWeight !== 0 && (p2.firstMessageDeliveriesDecay <= 0 || p2.firstMessageDeliveriesDecay >= 1)) {
-    throw new InvalidPeerScoreParamsError("invalid FirstMessageDeliveriesDecay; must be between 0 and 1");
-  }
-  if (p2.firstMessageDeliveriesWeight !== 0 && p2.firstMessageDeliveriesCap <= 0) {
-    throw new InvalidPeerScoreParamsError("invalid FirstMessageDeliveriesCap; must be positive");
-  }
-  if (p2.meshMessageDeliveriesWeight > 0) {
-    throw new InvalidPeerScoreParamsError("invalid MeshMessageDeliveriesWeight; must be negative (or 0 to disable)");
-  }
-  if (p2.meshMessageDeliveriesWeight !== 0 && (p2.meshMessageDeliveriesDecay <= 0 || p2.meshMessageDeliveriesDecay >= 1)) {
-    throw new InvalidPeerScoreParamsError("invalid MeshMessageDeliveriesDecay; must be between 0 and 1");
-  }
-  if (p2.meshMessageDeliveriesWeight !== 0 && p2.meshMessageDeliveriesCap <= 0) {
-    throw new InvalidPeerScoreParamsError("invalid MeshMessageDeliveriesCap; must be positive");
-  }
-  if (p2.meshMessageDeliveriesWeight !== 0 && p2.meshMessageDeliveriesThreshold <= 0) {
-    throw new InvalidPeerScoreParamsError("invalid MeshMessageDeliveriesThreshold; must be positive");
-  }
-  if (p2.meshMessageDeliveriesWindow < 0) {
-    throw new InvalidPeerScoreParamsError("invalid MeshMessageDeliveriesWindow; must be non-negative");
-  }
-  if (p2.meshMessageDeliveriesWeight !== 0 && p2.meshMessageDeliveriesActivation < 1e3) {
-    throw new InvalidPeerScoreParamsError("invalid MeshMessageDeliveriesActivation; must be at least 1s");
-  }
-  if (p2.meshFailurePenaltyWeight > 0) {
-    throw new InvalidPeerScoreParamsError("invalid MeshFailurePenaltyWeight; must be negative (or 0 to disable)");
-  }
-  if (p2.meshFailurePenaltyWeight !== 0 && (p2.meshFailurePenaltyDecay <= 0 || p2.meshFailurePenaltyDecay >= 1)) {
-    throw new InvalidPeerScoreParamsError("invalid MeshFailurePenaltyDecay; must be between 0 and 1");
-  }
-  if (p2.invalidMessageDeliveriesWeight > 0) {
-    throw new InvalidPeerScoreParamsError("invalid InvalidMessageDeliveriesWeight; must be negative (or 0 to disable)");
-  }
-  if (p2.invalidMessageDeliveriesDecay <= 0 || p2.invalidMessageDeliveriesDecay >= 1) {
-    throw new InvalidPeerScoreParamsError("invalid InvalidMessageDeliveriesDecay; must be between 0 and 1");
-  }
-}
-__name(validateTopicScoreParams, "validateTopicScoreParams");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/score/peer-score-thresholds.js
-var defaultPeerScoreThresholds = {
-  gossipThreshold: -10,
-  publishThreshold: -50,
-  graylistThreshold: -80,
-  acceptPXThreshold: 10,
-  opportunisticGraftThreshold: 20
-};
-function createPeerScoreThresholds(p2 = {}) {
-  return {
-    ...defaultPeerScoreThresholds,
-    ...p2
-  };
-}
-__name(createPeerScoreThresholds, "createPeerScoreThresholds");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/set.js
-function removeItemsFromSet(superSet, ineed, cond = () => true) {
-  const subset = /* @__PURE__ */ new Set();
-  if (ineed <= 0)
-    return subset;
-  for (const id of superSet) {
-    if (subset.size >= ineed)
-      break;
-    if (cond(id)) {
-      subset.add(id);
-      superSet.delete(id);
-    }
-  }
-  return subset;
-}
-__name(removeItemsFromSet, "removeItemsFromSet");
-function removeFirstNItemsFromSet(superSet, ineed) {
-  return removeItemsFromSet(superSet, ineed, () => true);
-}
-__name(removeFirstNItemsFromSet, "removeFirstNItemsFromSet");
-var MapDef = class extends Map {
-  static {
-    __name(this, "MapDef");
-  }
-  getDefault;
-  constructor(getDefault) {
-    super();
-    this.getDefault = getDefault;
-  }
-  getOrDefault(key) {
-    let value2 = super.get(key);
-    if (value2 === void 0) {
-      value2 = this.getDefault();
-      this.set(key, value2);
-    }
-    return value2;
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/score/compute-score.js
-function computeScore(peer, pstats, params, peerIPs) {
-  let score = 0;
-  Object.entries(pstats.topics).forEach(([topic, tstats]) => {
-    const topicParams = params.topics[topic];
-    if (topicParams === void 0) {
-      return;
-    }
-    let topicScore = 0;
-    if (tstats.inMesh) {
-      let p1 = tstats.meshTime / topicParams.timeInMeshQuantum;
-      if (p1 > topicParams.timeInMeshCap) {
-        p1 = topicParams.timeInMeshCap;
-      }
-      topicScore += p1 * topicParams.timeInMeshWeight;
-    }
-    let p2 = tstats.firstMessageDeliveries;
-    if (p2 > topicParams.firstMessageDeliveriesCap) {
-      p2 = topicParams.firstMessageDeliveriesCap;
-    }
-    topicScore += p2 * topicParams.firstMessageDeliveriesWeight;
-    if (tstats.meshMessageDeliveriesActive && tstats.meshMessageDeliveries < topicParams.meshMessageDeliveriesThreshold) {
-      const deficit = topicParams.meshMessageDeliveriesThreshold - tstats.meshMessageDeliveries;
-      const p3 = deficit * deficit;
-      topicScore += p3 * topicParams.meshMessageDeliveriesWeight;
-    }
-    const p3b = tstats.meshFailurePenalty;
-    topicScore += p3b * topicParams.meshFailurePenaltyWeight;
-    const p4 = tstats.invalidMessageDeliveries * tstats.invalidMessageDeliveries;
-    topicScore += p4 * topicParams.invalidMessageDeliveriesWeight;
-    score += topicScore * topicParams.topicWeight;
-  });
-  if (params.topicScoreCap > 0 && score > params.topicScoreCap) {
-    score = params.topicScoreCap;
-  }
-  const p5 = params.appSpecificScore(peer);
-  score += p5 * params.appSpecificWeight;
-  pstats.knownIPs.forEach((ip) => {
-    if (params.IPColocationFactorWhitelist.has(ip)) {
-      return;
-    }
-    const peersInIP = peerIPs.get(ip);
-    const numPeersInIP = peersInIP != null ? peersInIP.size : 0;
-    if (numPeersInIP > params.IPColocationFactorThreshold) {
-      const surplus = numPeersInIP - params.IPColocationFactorThreshold;
-      const p6 = surplus * surplus;
-      score += p6 * params.IPColocationFactorWeight;
-    }
-  });
-  if (pstats.behaviourPenalty > params.behaviourPenaltyThreshold) {
-    const excess = pstats.behaviourPenalty - params.behaviourPenaltyThreshold;
-    const p7 = excess * excess;
-    score += p7 * params.behaviourPenaltyWeight;
-  }
-  return score;
-}
-__name(computeScore, "computeScore");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/score/message-deliveries.js
-var import_denque = __toESM(require_denque(), 1);
-var DeliveryRecordStatus;
-(function(DeliveryRecordStatus2) {
-  DeliveryRecordStatus2[DeliveryRecordStatus2["unknown"] = 0] = "unknown";
-  DeliveryRecordStatus2[DeliveryRecordStatus2["valid"] = 1] = "valid";
-  DeliveryRecordStatus2[DeliveryRecordStatus2["invalid"] = 2] = "invalid";
-  DeliveryRecordStatus2[DeliveryRecordStatus2["ignored"] = 3] = "ignored";
-})(DeliveryRecordStatus || (DeliveryRecordStatus = {}));
-var MessageDeliveries = class {
-  static {
-    __name(this, "MessageDeliveries");
-  }
-  records;
-  queue;
-  constructor() {
-    this.records = /* @__PURE__ */ new Map();
-    this.queue = new import_denque.default();
-  }
-  getRecord(msgIdStr) {
-    return this.records.get(msgIdStr);
-  }
-  ensureRecord(msgIdStr) {
-    let drec = this.records.get(msgIdStr);
-    if (drec != null) {
-      return drec;
-    }
-    drec = {
-      status: DeliveryRecordStatus.unknown,
-      firstSeenTsMs: Date.now(),
-      validated: 0,
-      peers: /* @__PURE__ */ new Set()
-    };
-    this.records.set(msgIdStr, drec);
-    const entry = {
-      msgId: msgIdStr,
-      expire: Date.now() + TimeCacheDuration
-    };
-    this.queue.push(entry);
-    return drec;
-  }
-  gc() {
-    const now = Date.now();
-    let head = this.queue.peekFront();
-    while (head != null && head.expire < now) {
-      this.records.delete(head.msgId);
-      this.queue.shift();
-      head = this.queue.peekFront();
-    }
-  }
-  clear() {
-    this.records.clear();
-    this.queue.clear();
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/score/peer-score.js
-var PeerScore = class {
-  static {
-    __name(this, "PeerScore");
-  }
-  params;
-  metrics;
-  /**
-   * Per-peer stats for score calculation
-   */
-  peerStats = /* @__PURE__ */ new Map();
-  /**
-   * IP colocation tracking; maps IP => set of peers.
-   */
-  peerIPs = new MapDef(() => /* @__PURE__ */ new Set());
-  /**
-   * Cache score up to decayInterval if topic stats are unchanged.
-   */
-  scoreCache = /* @__PURE__ */ new Map();
-  /**
-   * Recent message delivery timing/participants
-   */
-  deliveryRecords = new MessageDeliveries();
-  _backgroundInterval;
-  scoreCacheValidityMs;
-  computeScore;
-  log;
-  constructor(params, metrics, componentLogger, opts) {
-    this.params = params;
-    this.metrics = metrics;
-    validatePeerScoreParams(params);
-    this.scoreCacheValidityMs = opts.scoreCacheValidityMs;
-    this.computeScore = opts.computeScore ?? computeScore;
-    this.log = componentLogger.forComponent("libp2p:gossipsub:score");
-  }
-  get size() {
-    return this.peerStats.size;
-  }
-  /**
-   * Start PeerScore instance
-   */
-  start() {
-    if (this._backgroundInterval != null) {
-      this.log("Peer score already running");
-      return;
-    }
-    this._backgroundInterval = setInterval(() => {
-      this.background();
-    }, this.params.decayInterval);
-    this.log("started");
-  }
-  /**
-   * Stop PeerScore instance
-   */
-  stop() {
-    if (this._backgroundInterval == null) {
-      this.log("Peer score already stopped");
-      return;
-    }
-    clearInterval(this._backgroundInterval);
-    delete this._backgroundInterval;
-    this.peerIPs.clear();
-    this.peerStats.clear();
-    this.deliveryRecords.clear();
-    this.log("stopped");
-  }
-  /**
-   * Periodic maintenance
-   */
-  background() {
-    this.refreshScores();
-    this.deliveryRecords.gc();
-  }
-  dumpPeerScoreStats() {
-    return Object.fromEntries(Array.from(this.peerStats.entries()).map(([peer, stats]) => [peer, stats]));
-  }
-  messageFirstSeenTimestampMs(msgIdStr) {
-    const drec = this.deliveryRecords.getRecord(msgIdStr);
-    return drec != null ? drec.firstSeenTsMs : null;
-  }
-  /**
-   * Decays scores, and purges score records for disconnected peers once their expiry has elapsed.
-   */
-  refreshScores() {
-    const now = Date.now();
-    const decayToZero = this.params.decayToZero;
-    this.peerStats.forEach((pstats, id) => {
-      if (!pstats.connected) {
-        if (now > pstats.expire) {
-          this.removeIPsForPeer(id, pstats.knownIPs);
-          this.peerStats.delete(id);
-          this.scoreCache.delete(id);
-        }
-        return;
-      }
-      Object.entries(pstats.topics).forEach(([topic, tstats]) => {
-        const tparams = this.params.topics[topic];
-        if (tparams === void 0) {
-          return;
-        }
-        tstats.firstMessageDeliveries *= tparams.firstMessageDeliveriesDecay;
-        if (tstats.firstMessageDeliveries < decayToZero) {
-          tstats.firstMessageDeliveries = 0;
-        }
-        tstats.meshMessageDeliveries *= tparams.meshMessageDeliveriesDecay;
-        if (tstats.meshMessageDeliveries < decayToZero) {
-          tstats.meshMessageDeliveries = 0;
-        }
-        tstats.meshFailurePenalty *= tparams.meshFailurePenaltyDecay;
-        if (tstats.meshFailurePenalty < decayToZero) {
-          tstats.meshFailurePenalty = 0;
-        }
-        tstats.invalidMessageDeliveries *= tparams.invalidMessageDeliveriesDecay;
-        if (tstats.invalidMessageDeliveries < decayToZero) {
-          tstats.invalidMessageDeliveries = 0;
-        }
-        if (tstats.inMesh) {
-          tstats.meshTime = now - tstats.graftTime;
-          if (tstats.meshTime > tparams.meshMessageDeliveriesActivation) {
-            tstats.meshMessageDeliveriesActive = true;
-          }
-        }
-      });
-      pstats.behaviourPenalty *= this.params.behaviourPenaltyDecay;
-      if (pstats.behaviourPenalty < decayToZero) {
-        pstats.behaviourPenalty = 0;
-      }
-    });
-  }
-  /**
-   * Return the score for a peer
-   */
-  score(id) {
-    this.metrics?.scoreFnCalls.inc();
-    const pstats = this.peerStats.get(id);
-    if (pstats == null) {
-      return 0;
-    }
-    const now = Date.now();
-    const cacheEntry = this.scoreCache.get(id);
-    if (cacheEntry != null && cacheEntry.cacheUntil > now) {
-      return cacheEntry.score;
-    }
-    this.metrics?.scoreFnRuns.inc();
-    const score = this.computeScore(id, pstats, this.params, this.peerIPs);
-    const cacheUntil = now + this.scoreCacheValidityMs;
-    if (cacheEntry != null) {
-      this.metrics?.scoreCachedDelta.observe(Math.abs(score - cacheEntry.score));
-      cacheEntry.score = score;
-      cacheEntry.cacheUntil = cacheUntil;
-    } else {
-      this.scoreCache.set(id, { score, cacheUntil });
-    }
-    return score;
-  }
-  /**
-   * Apply a behavioural penalty to a peer
-   */
-  addPenalty(id, penalty, penaltyLabel) {
-    const pstats = this.peerStats.get(id);
-    if (pstats != null) {
-      pstats.behaviourPenalty += penalty;
-      this.metrics?.onScorePenalty(penaltyLabel);
-    }
-  }
-  addPeer(id) {
-    const pstats = {
-      connected: true,
-      expire: 0,
-      topics: {},
-      knownIPs: /* @__PURE__ */ new Set(),
-      behaviourPenalty: 0
-    };
-    this.peerStats.set(id, pstats);
-  }
-  /** Adds a new IP to a peer, if the peer is not known the update is ignored */
-  addIP(id, ip) {
-    const pstats = this.peerStats.get(id);
-    if (pstats != null) {
-      pstats.knownIPs.add(ip);
-    }
-    this.peerIPs.getOrDefault(ip).add(id);
-  }
-  /** Remove peer association with IP */
-  removeIP(id, ip) {
-    const pstats = this.peerStats.get(id);
-    if (pstats != null) {
-      pstats.knownIPs.delete(ip);
-    }
-    const peersWithIP = this.peerIPs.get(ip);
-    if (peersWithIP != null) {
-      peersWithIP.delete(id);
-      if (peersWithIP.size === 0) {
-        this.peerIPs.delete(ip);
-      }
-    }
-  }
-  removePeer(id) {
-    const pstats = this.peerStats.get(id);
-    if (pstats == null) {
-      return;
-    }
-    if (this.score(id) > 0) {
-      this.removeIPsForPeer(id, pstats.knownIPs);
-      this.peerStats.delete(id);
-      return;
-    }
-    Object.entries(pstats.topics).forEach(([topic, tstats]) => {
-      tstats.firstMessageDeliveries = 0;
-      const threshold = this.params.topics[topic].meshMessageDeliveriesThreshold;
-      if (tstats.inMesh && tstats.meshMessageDeliveriesActive && tstats.meshMessageDeliveries < threshold) {
-        const deficit = threshold - tstats.meshMessageDeliveries;
-        tstats.meshFailurePenalty += deficit * deficit;
-      }
-      tstats.inMesh = false;
-      tstats.meshMessageDeliveriesActive = false;
-    });
-    pstats.connected = false;
-    pstats.expire = Date.now() + this.params.retainScore;
-  }
-  /** Handles scoring functionality as a peer GRAFTs to a topic. */
-  graft(id, topic) {
-    const pstats = this.peerStats.get(id);
-    if (pstats != null) {
-      const tstats = this.getPtopicStats(pstats, topic);
-      if (tstats != null) {
-        tstats.inMesh = true;
-        tstats.graftTime = Date.now();
-        tstats.meshTime = 0;
-        tstats.meshMessageDeliveriesActive = false;
-      }
-    }
-  }
-  /** Handles scoring functionality as a peer PRUNEs from a topic. */
-  prune(id, topic) {
-    const pstats = this.peerStats.get(id);
-    if (pstats != null) {
-      const tstats = this.getPtopicStats(pstats, topic);
-      if (tstats != null) {
-        const threshold = this.params.topics[topic].meshMessageDeliveriesThreshold;
-        if (tstats.meshMessageDeliveriesActive && tstats.meshMessageDeliveries < threshold) {
-          const deficit = threshold - tstats.meshMessageDeliveries;
-          tstats.meshFailurePenalty += deficit * deficit;
-        }
-        tstats.meshMessageDeliveriesActive = false;
-        tstats.inMesh = false;
-      }
-    }
-  }
-  validateMessage(msgIdStr) {
-    this.deliveryRecords.ensureRecord(msgIdStr);
-  }
-  deliverMessage(from3, msgIdStr, topic) {
-    this.markFirstMessageDelivery(from3, topic);
-    const drec = this.deliveryRecords.ensureRecord(msgIdStr);
-    const now = Date.now();
-    if (drec.status !== DeliveryRecordStatus.unknown) {
-      this.log("unexpected delivery: message from %s was first seen %s ago and has delivery status %s", from3, now - drec.firstSeenTsMs, DeliveryRecordStatus[drec.status]);
-      return;
-    }
-    drec.status = DeliveryRecordStatus.valid;
-    drec.validated = now;
-    drec.peers.forEach((p2) => {
-      if (p2 !== from3.toString()) {
-        this.markDuplicateMessageDelivery(p2, topic);
-      }
-    });
-  }
-  /**
-   * Similar to `rejectMessage` except does not require the message id or reason for an invalid message.
-   */
-  rejectInvalidMessage(from3, topic) {
-    this.markInvalidMessageDelivery(from3, topic);
-  }
-  rejectMessage(from3, msgIdStr, topic, reason) {
-    switch (reason) {
-      // these messages are not tracked, but the peer is penalized as they are invalid
-      case RejectReason.Error:
-        this.markInvalidMessageDelivery(from3, topic);
-        return;
-      // we ignore those messages, so do nothing.
-      case RejectReason.Blacklisted:
-        return;
-    }
-    const drec = this.deliveryRecords.ensureRecord(msgIdStr);
-    if (drec.status !== DeliveryRecordStatus.unknown) {
-      this.log("unexpected rejection: message from %s was first seen %s ago and has delivery status %d", from3, Date.now() - drec.firstSeenTsMs, DeliveryRecordStatus[drec.status]);
-      return;
-    }
-    if (reason === RejectReason.Ignore) {
-      drec.status = DeliveryRecordStatus.ignored;
-      drec.peers.clear();
-      return;
-    }
-    drec.status = DeliveryRecordStatus.invalid;
-    this.markInvalidMessageDelivery(from3, topic);
-    drec.peers.forEach((p2) => {
-      this.markInvalidMessageDelivery(p2, topic);
-    });
-    drec.peers.clear();
-  }
-  duplicateMessage(from3, msgIdStr, topic) {
-    const drec = this.deliveryRecords.ensureRecord(msgIdStr);
-    if (drec.peers.has(from3)) {
-      return;
-    }
-    switch (drec.status) {
-      case DeliveryRecordStatus.unknown:
-        drec.peers.add(from3);
-        break;
-      case DeliveryRecordStatus.valid:
-        drec.peers.add(from3);
-        this.markDuplicateMessageDelivery(from3, topic, drec.validated);
-        break;
-      case DeliveryRecordStatus.invalid:
-        this.markInvalidMessageDelivery(from3, topic);
-        break;
-      case DeliveryRecordStatus.ignored:
-        break;
-    }
-  }
-  /**
-   * Increments the "invalid message deliveries" counter for all scored topics the message is published in.
-   */
-  markInvalidMessageDelivery(from3, topic) {
-    const pstats = this.peerStats.get(from3);
-    if (pstats != null) {
-      const tstats = this.getPtopicStats(pstats, topic);
-      if (tstats != null) {
-        tstats.invalidMessageDeliveries += 1;
-      }
-    }
-  }
-  /**
-   * Increments the "first message deliveries" counter for all scored topics the message is published in,
-   * as well as the "mesh message deliveries" counter, if the peer is in the mesh for the topic.
-   * Messages already known (with the seenCache) are counted with markDuplicateMessageDelivery()
-   */
-  markFirstMessageDelivery(from3, topic) {
-    const pstats = this.peerStats.get(from3);
-    if (pstats != null) {
-      const tstats = this.getPtopicStats(pstats, topic);
-      if (tstats != null) {
-        let cap = this.params.topics[topic].firstMessageDeliveriesCap;
-        tstats.firstMessageDeliveries = Math.min(cap, tstats.firstMessageDeliveries + 1);
-        if (tstats.inMesh) {
-          cap = this.params.topics[topic].meshMessageDeliveriesCap;
-          tstats.meshMessageDeliveries = Math.min(cap, tstats.meshMessageDeliveries + 1);
-        }
-      }
-    }
-  }
-  /**
-   * Increments the "mesh message deliveries" counter for messages we've seen before,
-   * as long the message was received within the P3 window.
-   */
-  markDuplicateMessageDelivery(from3, topic, validatedTime) {
-    const pstats = this.peerStats.get(from3);
-    if (pstats != null) {
-      const now = validatedTime !== void 0 ? Date.now() : 0;
-      const tstats = this.getPtopicStats(pstats, topic);
-      if (tstats != null && tstats.inMesh) {
-        const tparams = this.params.topics[topic];
-        if (validatedTime !== void 0) {
-          const deliveryDelayMs = now - validatedTime;
-          const isLateDelivery = deliveryDelayMs > tparams.meshMessageDeliveriesWindow;
-          this.metrics?.onDuplicateMsgDelivery(topic, deliveryDelayMs, isLateDelivery);
-          if (isLateDelivery) {
-            return;
-          }
-        }
-        const cap = tparams.meshMessageDeliveriesCap;
-        tstats.meshMessageDeliveries = Math.min(cap, tstats.meshMessageDeliveries + 1);
-      }
-    }
-  }
-  /**
-   * Removes an IP list from the tracking list for a peer.
-   */
-  removeIPsForPeer(id, ipsToRemove) {
-    for (const ipToRemove of ipsToRemove) {
-      const peerSet2 = this.peerIPs.get(ipToRemove);
-      if (peerSet2 != null) {
-        peerSet2.delete(id);
-        if (peerSet2.size === 0) {
-          this.peerIPs.delete(ipToRemove);
-        }
-      }
-    }
-  }
-  /**
-   * Returns topic stats if they exist, otherwise if the supplied parameters score the
-   * topic, inserts the default stats and returns a reference to those. If neither apply, returns None.
-   */
-  getPtopicStats(pstats, topic) {
-    let topicStats = pstats.topics[topic];
-    if (topicStats !== void 0) {
-      return topicStats;
-    }
-    if (this.params.topics[topic] !== void 0) {
-      topicStats = {
-        inMesh: false,
-        graftTime: 0,
-        meshTime: 0,
-        firstMessageDeliveries: 0,
-        meshMessageDeliveries: 0,
-        meshMessageDeliveriesActive: false,
-        meshFailurePenalty: 0,
-        invalidMessageDeliveries: 0
-      };
-      pstats.topics[topic] = topicStats;
-      return topicStats;
-    }
-    return null;
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/score/scoreMetrics.js
-function computeScoreWeights(peer, pstats, params, peerIPs, topicStrToLabel) {
-  let score = 0;
-  const byTopic = /* @__PURE__ */ new Map();
-  Object.entries(pstats.topics).forEach(([topic, tstats]) => {
-    const topicLabel = topicStrToLabel.get(topic) ?? "unknown";
-    const topicParams = params.topics[topic];
-    if (topicParams === void 0) {
-      return;
-    }
-    let topicScores = byTopic.get(topicLabel);
-    if (topicScores == null) {
-      topicScores = {
-        p1w: 0,
-        p2w: 0,
-        p3w: 0,
-        p3bw: 0,
-        p4w: 0
-      };
-      byTopic.set(topicLabel, topicScores);
-    }
-    let p1w = 0;
-    let p2w = 0;
-    let p3w = 0;
-    let p3bw = 0;
-    let p4w = 0;
-    if (tstats.inMesh) {
-      const p1 = Math.max(tstats.meshTime / topicParams.timeInMeshQuantum, topicParams.timeInMeshCap);
-      p1w += p1 * topicParams.timeInMeshWeight;
-    }
-    let p2 = tstats.firstMessageDeliveries;
-    if (p2 > topicParams.firstMessageDeliveriesCap) {
-      p2 = topicParams.firstMessageDeliveriesCap;
-    }
-    p2w += p2 * topicParams.firstMessageDeliveriesWeight;
-    if (tstats.meshMessageDeliveriesActive && tstats.meshMessageDeliveries < topicParams.meshMessageDeliveriesThreshold) {
-      const deficit = topicParams.meshMessageDeliveriesThreshold - tstats.meshMessageDeliveries;
-      const p3 = deficit * deficit;
-      p3w += p3 * topicParams.meshMessageDeliveriesWeight;
-    }
-    const p3b = tstats.meshFailurePenalty;
-    p3bw += p3b * topicParams.meshFailurePenaltyWeight;
-    const p4 = tstats.invalidMessageDeliveries * tstats.invalidMessageDeliveries;
-    p4w += p4 * topicParams.invalidMessageDeliveriesWeight;
-    score += (p1w + p2w + p3w + p3bw + p4w) * topicParams.topicWeight;
-    topicScores.p1w += p1w;
-    topicScores.p2w += p2w;
-    topicScores.p3w += p3w;
-    topicScores.p3bw += p3bw;
-    topicScores.p4w += p4w;
-  });
-  if (params.topicScoreCap > 0 && score > params.topicScoreCap) {
-    score = params.topicScoreCap;
-    const capF = params.topicScoreCap / score;
-    for (const ws of byTopic.values()) {
-      ws.p1w *= capF;
-      ws.p2w *= capF;
-      ws.p3w *= capF;
-      ws.p3bw *= capF;
-      ws.p4w *= capF;
-    }
-  }
-  let p5w = 0;
-  let p6w = 0;
-  let p7w = 0;
-  const p5 = params.appSpecificScore(peer);
-  p5w += p5 * params.appSpecificWeight;
-  pstats.knownIPs.forEach((ip) => {
-    if (params.IPColocationFactorWhitelist.has(ip)) {
-      return;
-    }
-    const peersInIP = peerIPs.get(ip);
-    const numPeersInIP = peersInIP != null ? peersInIP.size : 0;
-    if (numPeersInIP > params.IPColocationFactorThreshold) {
-      const surplus = numPeersInIP - params.IPColocationFactorThreshold;
-      const p6 = surplus * surplus;
-      p6w += p6 * params.IPColocationFactorWeight;
-    }
-  });
-  const p7 = pstats.behaviourPenalty * pstats.behaviourPenalty;
-  p7w += p7 * params.behaviourPenaltyWeight;
-  score += p5w + p6w + p7w;
-  return {
-    byTopic,
-    p5w,
-    p6w,
-    p7w,
-    score
-  };
-}
-__name(computeScoreWeights, "computeScoreWeights");
-function computeAllPeersScoreWeights(peerIdStrs, peerStats, params, peerIPs, topicStrToLabel) {
-  const sw = {
-    byTopic: /* @__PURE__ */ new Map(),
-    p5w: [],
-    p6w: [],
-    p7w: [],
-    score: []
-  };
-  for (const peerIdStr of peerIdStrs) {
-    const pstats = peerStats.get(peerIdStr);
-    if (pstats != null) {
-      const swPeer = computeScoreWeights(peerIdStr, pstats, params, peerIPs, topicStrToLabel);
-      for (const [topic, swPeerTopic] of swPeer.byTopic) {
-        let swTopic = sw.byTopic.get(topic);
-        if (swTopic == null) {
-          swTopic = {
-            p1w: [],
-            p2w: [],
-            p3w: [],
-            p3bw: [],
-            p4w: []
-          };
-          sw.byTopic.set(topic, swTopic);
-        }
-        swTopic.p1w.push(swPeerTopic.p1w);
-        swTopic.p2w.push(swPeerTopic.p2w);
-        swTopic.p3w.push(swPeerTopic.p3w);
-        swTopic.p3bw.push(swPeerTopic.p3bw);
-        swTopic.p4w.push(swPeerTopic.p4w);
-      }
-      sw.p5w.push(swPeer.p5w);
-      sw.p6w.push(swPeer.p6w);
-      sw.p7w.push(swPeer.p7w);
-      sw.score.push(swPeer.score);
-    } else {
-      sw.p5w.push(0);
-      sw.p6w.push(0);
-      sw.p7w.push(0);
-      sw.score.push(0);
-    }
-  }
-  return sw;
-}
-__name(computeAllPeersScoreWeights, "computeAllPeersScoreWeights");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/stream.js
-var OutboundStream = class {
-  static {
-    __name(this, "OutboundStream");
-  }
-  rawStream;
-  pushable;
-  closeController;
-  maxBufferSize;
-  constructor(rawStream, errCallback, opts) {
-    this.rawStream = rawStream;
-    this.pushable = pushable();
-    this.closeController = new AbortController();
-    this.maxBufferSize = opts.maxBufferSize ?? Infinity;
-    this.closeController.signal.addEventListener("abort", () => {
-      rawStream.close().catch((err) => {
-        rawStream.abort(err);
-      });
-    });
-    pipe(this.pushable, this.rawStream).catch(errCallback);
-  }
-  get protocol() {
-    return this.rawStream.protocol;
-  }
-  push(data) {
-    if (this.pushable.readableLength > this.maxBufferSize) {
-      throw Error(`OutboundStream buffer full, size > ${this.maxBufferSize}`);
-    }
-    this.pushable.push(encode8.single(data));
-  }
-  /**
-   * Same to push() but this is prefixed data so no need to encode length prefixed again
-   */
-  pushPrefixed(data) {
-    if (this.pushable.readableLength > this.maxBufferSize) {
-      throw Error(`OutboundStream buffer full, size > ${this.maxBufferSize}`);
-    }
-    this.pushable.push(data);
-  }
-  async close() {
-    this.closeController.abort();
-    await this.pushable.return();
-  }
-};
-var InboundStream = class {
-  static {
-    __name(this, "InboundStream");
-  }
-  source;
-  rawStream;
-  closeController;
-  constructor(rawStream, opts = {}) {
-    this.rawStream = rawStream;
-    this.closeController = new AbortController();
-    this.closeController.signal.addEventListener("abort", () => {
-      rawStream.close().catch((err) => {
-        rawStream.abort(err);
-      });
-    });
-    this.source = pipe(this.rawStream, (source) => decode9(source, opts));
-  }
-  async close() {
-    this.closeController.abort();
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/tracer.js
-var IWantTracer = class {
-  static {
-    __name(this, "IWantTracer");
-  }
-  gossipsubIWantFollowupMs;
-  msgIdToStrFn;
-  metrics;
-  /**
-   * Promises to deliver a message
-   * Map per message id, per peer, promise expiration time
-   */
-  promises = /* @__PURE__ */ new Map();
-  /**
-   * First request time by msgId. Used for metrics to track expire times.
-   * Necessary to know if peers are actually breaking promises or simply sending them a bit later
-   */
-  requestMsByMsg = /* @__PURE__ */ new Map();
-  requestMsByMsgExpire;
-  constructor(gossipsubIWantFollowupMs, msgIdToStrFn, metrics) {
-    this.gossipsubIWantFollowupMs = gossipsubIWantFollowupMs;
-    this.msgIdToStrFn = msgIdToStrFn;
-    this.metrics = metrics;
-    this.requestMsByMsgExpire = 10 * gossipsubIWantFollowupMs;
-  }
-  get size() {
-    return this.promises.size;
-  }
-  get requestMsByMsgSize() {
-    return this.requestMsByMsg.size;
-  }
-  /**
-   * Track a promise to deliver a message from a list of msgIds we are requesting
-   */
-  addPromise(from3, msgIds) {
-    const ix = Math.floor(Math.random() * msgIds.length);
-    const msgId3 = msgIds[ix];
-    const msgIdStr = this.msgIdToStrFn(msgId3);
-    let expireByPeer = this.promises.get(msgIdStr);
-    if (expireByPeer == null) {
-      expireByPeer = /* @__PURE__ */ new Map();
-      this.promises.set(msgIdStr, expireByPeer);
-    }
-    const now = Date.now();
-    if (!expireByPeer.has(from3)) {
-      expireByPeer.set(from3, now + this.gossipsubIWantFollowupMs);
-      if (this.metrics != null) {
-        this.metrics.iwantPromiseStarted.inc(1);
-        if (!this.requestMsByMsg.has(msgIdStr)) {
-          this.requestMsByMsg.set(msgIdStr, now);
-        }
-      }
-    }
-  }
-  /**
-   * Returns the number of broken promises for each peer who didn't follow up on an IWANT request.
-   *
-   * This should be called not too often relative to the expire times, since it iterates over the whole data.
-   */
-  getBrokenPromises() {
-    const now = Date.now();
-    const result = /* @__PURE__ */ new Map();
-    let brokenPromises = 0;
-    this.promises.forEach((expireByPeer, msgId3) => {
-      expireByPeer.forEach((expire, p2) => {
-        if (expire < now) {
-          result.set(p2, (result.get(p2) ?? 0) + 1);
-          expireByPeer.delete(p2);
-          brokenPromises++;
-        }
-      });
-      if (expireByPeer.size === 0) {
-        this.promises.delete(msgId3);
-      }
-    });
-    this.metrics?.iwantPromiseBroken.inc(brokenPromises);
-    return result;
-  }
-  /**
-   * Someone delivered a message, stop tracking promises for it
-   */
-  deliverMessage(msgIdStr, isDuplicate = false) {
-    this.trackMessage(msgIdStr);
-    const expireByPeer = this.promises.get(msgIdStr);
-    if (expireByPeer != null) {
-      this.promises.delete(msgIdStr);
-      if (this.metrics != null) {
-        this.metrics.iwantPromiseResolved.inc(1);
-        if (isDuplicate)
-          this.metrics.iwantPromiseResolvedFromDuplicate.inc(1);
-        this.metrics.iwantPromiseResolvedPeers.inc(expireByPeer.size);
-      }
-    }
-  }
-  /**
-   * A message got rejected, so we can stop tracking promises and let the score penalty apply from invalid message delivery,
-   * unless its an obviously invalid message.
-   */
-  rejectMessage(msgIdStr, reason) {
-    this.trackMessage(msgIdStr);
-    switch (reason) {
-      case RejectReason.Error:
-        return;
-      default:
-        break;
-    }
-    this.promises.delete(msgIdStr);
-  }
-  clear() {
-    this.promises.clear();
-  }
-  prune() {
-    const maxMs = Date.now() - this.requestMsByMsgExpire;
-    let count = 0;
-    for (const [k, v] of this.requestMsByMsg.entries()) {
-      if (v < maxMs) {
-        this.requestMsByMsg.delete(k);
-        count++;
-      } else {
-        break;
-      }
-    }
-    this.metrics?.iwantMessagePruned.inc(count);
-  }
-  trackMessage(msgIdStr) {
-    if (this.metrics != null) {
-      const requestMs = this.requestMsByMsg.get(msgIdStr);
-      if (requestMs !== void 0) {
-        this.metrics.iwantPromiseDeliveryTime.observe((Date.now() - requestMs) / 1e3);
-        this.requestMsByMsg.delete(msgIdStr);
-      }
-    }
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/buildRawMessage.js
-var SignPrefix2 = fromString2("libp2p-pubsub:");
-async function buildRawMessage(publishConfig, topic, originalData, transformedData) {
-  switch (publishConfig.type) {
-    case PublishConfigType.Signing: {
-      const rpcMsg = {
-        from: publishConfig.author.toMultihash().bytes,
-        data: transformedData,
-        seqno: randomBytes2(8),
-        topic,
-        signature: void 0,
-        // Exclude signature field for signing
-        key: void 0
-        // Exclude key field for signing
-      };
-      const bytes = concat([SignPrefix2, RPC2.Message.encode(rpcMsg)]);
-      rpcMsg.signature = await publishConfig.privateKey.sign(bytes);
-      rpcMsg.key = publishConfig.key;
-      const msg = {
-        type: "signed",
-        from: publishConfig.author,
-        data: originalData,
-        sequenceNumber: BigInt(`0x${toString2(rpcMsg.seqno ?? new Uint8Array(0), "base16")}`),
-        topic,
-        signature: rpcMsg.signature,
-        key: publicKeyFromProtobuf(rpcMsg.key)
-      };
-      return {
-        raw: rpcMsg,
-        msg
-      };
-    }
-    case PublishConfigType.Anonymous: {
-      return {
-        raw: {
-          from: void 0,
-          data: transformedData,
-          seqno: void 0,
-          topic,
-          signature: void 0,
-          key: void 0
-        },
-        msg: {
-          type: "unsigned",
-          data: originalData,
-          topic
-        }
-      };
-    }
-    default:
-      throw new Error("Unreachable");
-  }
-}
-__name(buildRawMessage, "buildRawMessage");
-async function validateToRawMessage(signaturePolicy, msg) {
-  switch (signaturePolicy) {
-    case StrictNoSign2:
-      if (msg.signature != null)
-        return { valid: false, error: ValidateError.SignaturePresent };
-      if (msg.seqno != null)
-        return { valid: false, error: ValidateError.SeqnoPresent };
-      if (msg.from != null)
-        return { valid: false, error: ValidateError.FromPresent };
-      return { valid: true, message: { type: "unsigned", topic: msg.topic, data: msg.data ?? new Uint8Array(0) } };
-    case StrictSign2: {
-      if (msg.seqno == null)
-        return { valid: false, error: ValidateError.InvalidSeqno };
-      if (msg.seqno.length !== 8) {
-        return { valid: false, error: ValidateError.InvalidSeqno };
-      }
-      if (msg.signature == null)
-        return { valid: false, error: ValidateError.InvalidSignature };
-      if (msg.from == null)
-        return { valid: false, error: ValidateError.InvalidPeerId };
-      let fromPeerId;
-      try {
-        fromPeerId = peerIdFromMultihash2(decode4(msg.from));
-      } catch (e2) {
-        return { valid: false, error: ValidateError.InvalidPeerId };
-      }
-      let publicKey;
-      if (msg.key != null) {
-        publicKey = publicKeyFromProtobuf(msg.key);
-        if (fromPeerId.publicKey !== void 0 && !publicKey.equals(fromPeerId.publicKey)) {
-          return { valid: false, error: ValidateError.InvalidPeerId };
-        }
-      } else {
-        if (fromPeerId.publicKey == null) {
-          return { valid: false, error: ValidateError.InvalidPeerId };
-        }
-        publicKey = fromPeerId.publicKey;
-      }
-      const rpcMsgPreSign = {
-        from: msg.from,
-        data: msg.data,
-        seqno: msg.seqno,
-        topic: msg.topic,
-        signature: void 0,
-        // Exclude signature field for signing
-        key: void 0
-        // Exclude key field for signing
-      };
-      const bytes = concat([SignPrefix2, RPC2.Message.encode(rpcMsgPreSign)]);
-      if (!await publicKey.verify(bytes, msg.signature)) {
-        return { valid: false, error: ValidateError.InvalidSignature };
-      }
-      return {
-        valid: true,
-        message: {
-          type: "signed",
-          from: fromPeerId,
-          data: msg.data ?? new Uint8Array(0),
-          sequenceNumber: BigInt(`0x${toString2(msg.seqno, "base16")}`),
-          topic: msg.topic,
-          signature: msg.signature,
-          key: publicKey
-        }
-      };
-    }
-    default:
-      throw new Error("Unreachable");
-  }
-}
-__name(validateToRawMessage, "validateToRawMessage");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/create-gossip-rpc.js
-function createGossipRpc(messages2 = [], control) {
-  return {
-    subscriptions: [],
-    messages: messages2,
-    control: control !== void 0 ? {
-      graft: control.graft ?? [],
-      prune: control.prune ?? [],
-      ihave: control.ihave ?? [],
-      iwant: control.iwant ?? [],
-      idontwant: control.idontwant ?? []
-    } : void 0
-  };
-}
-__name(createGossipRpc, "createGossipRpc");
-function ensureControl(rpc) {
-  if (rpc.control === void 0) {
-    rpc.control = {
-      graft: [],
-      prune: [],
-      ihave: [],
-      iwant: [],
-      idontwant: []
-    };
-  }
-  return rpc;
-}
-__name(ensureControl, "ensureControl");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/shuffle.js
-function shuffle(arr) {
-  if (arr.length <= 1) {
-    return arr;
-  }
-  const randInt = /* @__PURE__ */ __name(() => {
-    return Math.floor(Math.random() * Math.floor(arr.length));
-  }, "randInt");
-  for (let i2 = 0; i2 < arr.length; i2++) {
-    const j = randInt();
-    const tmp = arr[i2];
-    arr[i2] = arr[j];
-    arr[j] = tmp;
-  }
-  return arr;
-}
-__name(shuffle, "shuffle");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/messageIdToString.js
-function messageIdToString(msgId3) {
-  return toString2(msgId3, "base64");
-}
-__name(messageIdToString, "messageIdToString");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/publishConfig.js
-function getPublishConfigFromPeerId(signaturePolicy, peerId, privateKey) {
-  switch (signaturePolicy) {
-    case StrictSign2: {
-      return {
-        type: PublishConfigType.Signing,
-        author: peerId,
-        key: publicKeyToProtobuf(privateKey.publicKey),
-        privateKey
-      };
-    }
-    case StrictNoSign2:
-      return {
-        type: PublishConfigType.Anonymous
-      };
-    default:
-      throw new Error(`Unknown signature policy "${signaturePolicy}"`);
-  }
-}
-__name(getPublishConfigFromPeerId, "getPublishConfigFromPeerId");
-
-// node_modules/@libp2p/pubsub/dist/src/utils.js
-var msgId2 = /* @__PURE__ */ __name((key, seqno) => {
-  const seqnoBytes = fromString2(seqno.toString(16).padStart(16, "0"), "base16");
-  const keyBytes = publicKeyToProtobuf(key);
-  const msgId3 = new Uint8Array(keyBytes.byteLength + seqnoBytes.length);
-  msgId3.set(keyBytes, 0);
-  msgId3.set(seqnoBytes, keyBytes.byteLength);
-  return msgId3;
-}, "msgId");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/msgIdFn.js
-function msgIdFnStrictSign(msg) {
-  if (msg.type !== "signed") {
-    throw new Error("expected signed message type");
-  }
-  if (msg.sequenceNumber == null)
-    throw Error("missing seqno field");
-  return msgId2(msg.from.publicKey ?? msg.key, msg.sequenceNumber);
-}
-__name(msgIdFnStrictSign, "msgIdFnStrictSign");
-async function msgIdFnStrictNoSign(msg) {
-  return sha256.encode(msg.data);
-}
-__name(msgIdFnStrictNoSign, "msgIdFnStrictNoSign");
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@multiformats/multiaddr/dist/src/constants.js
-var CODE_IP42 = 4;
-var CODE_TCP2 = 6;
-var CODE_UDP2 = 273;
-var CODE_DCCP2 = 33;
-var CODE_IP62 = 41;
-var CODE_IP6ZONE2 = 42;
-var CODE_IPCIDR2 = 43;
-var CODE_DNS2 = 53;
-var CODE_DNS42 = 54;
-var CODE_DNS62 = 55;
-var CODE_DNSADDR2 = 56;
-var CODE_SCTP2 = 132;
-var CODE_UDT2 = 301;
-var CODE_UTP2 = 302;
-var CODE_UNIX2 = 400;
-var CODE_P2P2 = 421;
-var CODE_ONION2 = 444;
-var CODE_ONION32 = 445;
-var CODE_GARLIC642 = 446;
-var CODE_GARLIC322 = 447;
-var CODE_TLS2 = 448;
-var CODE_SNI2 = 449;
-var CODE_NOISE2 = 454;
-var CODE_QUIC2 = 460;
-var CODE_QUIC_V12 = 461;
-var CODE_WEBTRANSPORT2 = 465;
-var CODE_CERTHASH2 = 466;
-var CODE_HTTP2 = 480;
-var CODE_HTTP_PATH2 = 481;
-var CODE_HTTPS2 = 443;
-var CODE_WS2 = 477;
-var CODE_WSS2 = 478;
-var CODE_P2P_WEBSOCKET_STAR2 = 479;
-var CODE_P2P_STARDUST2 = 277;
-var CODE_P2P_WEBRTC_STAR2 = 275;
-var CODE_P2P_WEBRTC_DIRECT2 = 276;
-var CODE_WEBRTC_DIRECT2 = 280;
-var CODE_WEBRTC2 = 281;
-var CODE_P2P_CIRCUIT2 = 290;
-var CODE_MEMORY2 = 777;
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@multiformats/multiaddr/dist/src/errors.js
-var InvalidMultiaddrError3 = class extends Error {
-  static name = "InvalidMultiaddrError";
-  name = "InvalidMultiaddrError";
-};
-var ValidationError2 = class extends Error {
-  static name = "ValidationError";
-  name = "ValidationError";
-};
-var UnknownProtocolError2 = class extends Error {
-  static name = "UnknownProtocolError";
-  name = "UnknownProtocolError";
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@multiformats/multiaddr/dist/src/utils.js
-function bytesToString2(base3) {
-  return (buf) => {
-    return toString2(buf, base3);
-  };
-}
-__name(bytesToString2, "bytesToString");
-function stringToBytes2(base3) {
-  return (buf) => {
-    return fromString2(buf, base3);
-  };
-}
-__name(stringToBytes2, "stringToBytes");
-function bytes2port2(buf) {
-  const view = new DataView(buf.buffer);
-  return view.getUint16(buf.byteOffset).toString();
-}
-__name(bytes2port2, "bytes2port");
-function port2bytes2(port) {
-  const buf = new ArrayBuffer(2);
-  const view = new DataView(buf);
-  view.setUint16(0, typeof port === "string" ? parseInt(port) : port);
-  return new Uint8Array(buf);
-}
-__name(port2bytes2, "port2bytes");
-function onion2bytes2(str) {
-  const addr = str.split(":");
-  if (addr.length !== 2) {
-    throw new Error(`failed to parse onion addr: ["'${addr.join('", "')}'"]' does not contain a port number`);
-  }
-  if (addr[0].length !== 16) {
-    throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion address.`);
-  }
-  const buf = fromString2(addr[0], "base32");
-  const port = parseInt(addr[1], 10);
-  if (port < 1 || port > 65536) {
-    throw new Error("Port number is not in range(1, 65536)");
-  }
-  const portBuf = port2bytes2(port);
-  return concat([buf, portBuf], buf.length + portBuf.length);
-}
-__name(onion2bytes2, "onion2bytes");
-function onion32bytes2(str) {
-  const addr = str.split(":");
-  if (addr.length !== 2) {
-    throw new Error(`failed to parse onion addr: ["'${addr.join('", "')}'"]' does not contain a port number`);
-  }
-  if (addr[0].length !== 56) {
-    throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion3 address.`);
-  }
-  const buf = base32.decode(`b${addr[0]}`);
-  const port = parseInt(addr[1], 10);
-  if (port < 1 || port > 65536) {
-    throw new Error("Port number is not in range(1, 65536)");
-  }
-  const portBuf = port2bytes2(port);
-  return concat([buf, portBuf], buf.length + portBuf.length);
-}
-__name(onion32bytes2, "onion32bytes");
-function bytes2onion2(buf) {
-  const addrBytes = buf.subarray(0, buf.length - 2);
-  const portBytes = buf.subarray(buf.length - 2);
-  const addr = toString2(addrBytes, "base32");
-  const port = bytes2port2(portBytes);
-  return `${addr}:${port}`;
-}
-__name(bytes2onion2, "bytes2onion");
-var ip4ToBytes2 = /* @__PURE__ */ __name(function(ip) {
-  ip = ip.toString().trim();
-  const bytes = new Uint8Array(4);
-  ip.split(/\./g).forEach((byte, index) => {
-    const value2 = parseInt(byte, 10);
-    if (isNaN(value2) || value2 < 0 || value2 > 255) {
-      throw new InvalidMultiaddrError3("Invalid byte value in IP address");
-    }
-    bytes[index] = value2;
-  });
-  return bytes;
-}, "ip4ToBytes");
-var ip6ToBytes2 = /* @__PURE__ */ __name(function(ip) {
-  let offset = 0;
-  ip = ip.toString().trim();
-  const sections = ip.split(":", 8);
-  let i2;
-  for (i2 = 0; i2 < sections.length; i2++) {
-    const isv4 = isIPv4(sections[i2]);
-    let v4Buffer;
-    if (isv4) {
-      v4Buffer = ip4ToBytes2(sections[i2]);
-      sections[i2] = toString2(v4Buffer.subarray(0, 2), "base16");
-    }
-    if (v4Buffer != null && ++i2 < 8) {
-      sections.splice(i2, 0, toString2(v4Buffer.subarray(2, 4), "base16"));
-    }
-  }
-  if (sections[0] === "") {
-    while (sections.length < 8) {
-      sections.unshift("0");
-    }
-  } else if (sections[sections.length - 1] === "") {
-    while (sections.length < 8) {
-      sections.push("0");
-    }
-  } else if (sections.length < 8) {
-    for (i2 = 0; i2 < sections.length && sections[i2] !== ""; i2++) {
-    }
-    const argv = [i2, 1];
-    for (i2 = 9 - sections.length; i2 > 0; i2--) {
-      argv.push("0");
-    }
-    sections.splice.apply(sections, argv);
-  }
-  const bytes = new Uint8Array(offset + 16);
-  for (i2 = 0; i2 < sections.length; i2++) {
-    if (sections[i2] === "") {
-      sections[i2] = "0";
-    }
-    const word = parseInt(sections[i2], 16);
-    if (isNaN(word) || word < 0 || word > 65535) {
-      throw new InvalidMultiaddrError3("Invalid byte value in IP address");
-    }
-    bytes[offset++] = word >> 8 & 255;
-    bytes[offset++] = word & 255;
-  }
-  return bytes;
-}, "ip6ToBytes");
-var ip4ToString2 = /* @__PURE__ */ __name(function(buf) {
-  if (buf.byteLength !== 4) {
-    throw new InvalidMultiaddrError3("IPv4 address was incorrect length");
-  }
-  const result = [];
-  for (let i2 = 0; i2 < buf.byteLength; i2++) {
-    result.push(buf[i2]);
-  }
-  return result.join(".");
-}, "ip4ToString");
-var ip6ToString2 = /* @__PURE__ */ __name(function(buf) {
-  if (buf.byteLength !== 16) {
-    throw new InvalidMultiaddrError3("IPv6 address was incorrect length");
-  }
-  const result = [];
-  for (let i2 = 0; i2 < buf.byteLength; i2 += 2) {
-    const byte1 = buf[i2];
-    const byte2 = buf[i2 + 1];
-    const tuple = `${byte1.toString(16).padStart(2, "0")}${byte2.toString(16).padStart(2, "0")}`;
-    result.push(tuple);
-  }
-  const ip = result.join(":");
-  try {
-    const url = new URL(`http://[${ip}]`);
-    return url.hostname.substring(1, url.hostname.length - 1);
-  } catch {
-    throw new InvalidMultiaddrError3(`Invalid IPv6 address "${ip}"`);
-  }
-}, "ip6ToString");
-function ip6StringToValue2(str) {
-  try {
-    const url = new URL(`http://[${str}]`);
-    return url.hostname.substring(1, url.hostname.length - 1);
-  } catch {
-    throw new InvalidMultiaddrError3(`Invalid IPv6 address "${str}"`);
-  }
-}
-__name(ip6StringToValue2, "ip6StringToValue");
-var decoders3 = Object.values(bases).map((c2) => c2.decoder);
-var anybaseDecoder2 = (function() {
-  let acc = decoders3[0].or(decoders3[1]);
-  decoders3.slice(2).forEach((d2) => acc = acc.or(d2));
-  return acc;
-})();
-function mb2bytes2(mbstr) {
-  return anybaseDecoder2.decode(mbstr);
-}
-__name(mb2bytes2, "mb2bytes");
-function bytes2mb2(base3) {
-  return (buf) => {
-    return base3.encoder.encode(buf);
-  };
-}
-__name(bytes2mb2, "bytes2mb");
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@multiformats/multiaddr/dist/src/validation.js
-function integer2(value2) {
-  const int = parseInt(value2);
-  if (int.toString() !== value2) {
-    throw new ValidationError2("Value must be an integer");
-  }
-}
-__name(integer2, "integer");
-function positive2(value2) {
-  if (value2 < 0) {
-    throw new ValidationError2("Value must be a positive integer, or zero");
-  }
-}
-__name(positive2, "positive");
-function maxValue2(max) {
-  return (value2) => {
-    if (value2 > max) {
-      throw new ValidationError2(`Value must be smaller than or equal to ${max}`);
-    }
-  };
-}
-__name(maxValue2, "maxValue");
-function validate3(...funcs) {
-  return (value2) => {
-    for (const fn of funcs) {
-      fn(value2);
-    }
-  };
-}
-__name(validate3, "validate");
-var validatePort2 = validate3(integer2, positive2, maxValue2(65535));
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@multiformats/multiaddr/dist/src/registry.js
-var V2 = -1;
-var Registry2 = class {
-  static {
-    __name(this, "Registry");
-  }
-  protocolsByCode = /* @__PURE__ */ new Map();
-  protocolsByName = /* @__PURE__ */ new Map();
-  getProtocol(key) {
-    let codec;
-    if (typeof key === "string") {
-      codec = this.protocolsByName.get(key);
-    } else {
-      codec = this.protocolsByCode.get(key);
-    }
-    if (codec == null) {
-      throw new UnknownProtocolError2(`Protocol ${key} was unknown`);
-    }
-    return codec;
-  }
-  addProtocol(codec) {
-    this.protocolsByCode.set(codec.code, codec);
-    this.protocolsByName.set(codec.name, codec);
-    codec.aliases?.forEach((alias) => {
-      this.protocolsByName.set(alias, codec);
-    });
-  }
-  removeProtocol(code3) {
-    const codec = this.protocolsByCode.get(code3);
-    if (codec == null) {
-      return;
-    }
-    this.protocolsByCode.delete(codec.code);
-    this.protocolsByName.delete(codec.name);
-    codec.aliases?.forEach((alias) => {
-      this.protocolsByName.delete(alias);
-    });
-  }
-};
-var registry2 = new Registry2();
-var codecs2 = [{
-  code: CODE_IP42,
-  name: "ip4",
-  size: 32,
-  valueToBytes: ip4ToBytes2,
-  bytesToValue: ip4ToString2,
-  validate: /* @__PURE__ */ __name((value2) => {
-    if (!isIPv4(value2)) {
-      throw new ValidationError2(`Invalid IPv4 address "${value2}"`);
-    }
-  }, "validate")
-}, {
-  code: CODE_TCP2,
-  name: "tcp",
-  size: 16,
-  valueToBytes: port2bytes2,
-  bytesToValue: bytes2port2,
-  validate: validatePort2
-}, {
-  code: CODE_UDP2,
-  name: "udp",
-  size: 16,
-  valueToBytes: port2bytes2,
-  bytesToValue: bytes2port2,
-  validate: validatePort2
-}, {
-  code: CODE_DCCP2,
-  name: "dccp",
-  size: 16,
-  valueToBytes: port2bytes2,
-  bytesToValue: bytes2port2,
-  validate: validatePort2
-}, {
-  code: CODE_IP62,
-  name: "ip6",
-  size: 128,
-  valueToBytes: ip6ToBytes2,
-  bytesToValue: ip6ToString2,
-  stringToValue: ip6StringToValue2,
-  validate: /* @__PURE__ */ __name((value2) => {
-    if (!isIPv6(value2)) {
-      throw new ValidationError2(`Invalid IPv6 address "${value2}"`);
-    }
-  }, "validate")
-}, {
-  code: CODE_IP6ZONE2,
-  name: "ip6zone",
-  size: V2
-}, {
-  code: CODE_IPCIDR2,
-  name: "ipcidr",
-  size: 8,
-  bytesToValue: bytesToString2("base10"),
-  valueToBytes: stringToBytes2("base10")
-}, {
-  code: CODE_DNS2,
-  name: "dns",
-  size: V2,
-  resolvable: true
-}, {
-  code: CODE_DNS42,
-  name: "dns4",
-  size: V2,
-  resolvable: true
-}, {
-  code: CODE_DNS62,
-  name: "dns6",
-  size: V2,
-  resolvable: true
-}, {
-  code: CODE_DNSADDR2,
-  name: "dnsaddr",
-  size: V2,
-  resolvable: true
-}, {
-  code: CODE_SCTP2,
-  name: "sctp",
-  size: 16,
-  valueToBytes: port2bytes2,
-  bytesToValue: bytes2port2,
-  validate: validatePort2
-}, {
-  code: CODE_UDT2,
-  name: "udt"
-}, {
-  code: CODE_UTP2,
-  name: "utp"
-}, {
-  code: CODE_UNIX2,
-  name: "unix",
-  size: V2,
-  path: true,
-  stringToValue: /* @__PURE__ */ __name((str) => decodeURIComponent(str), "stringToValue"),
-  valueToString: /* @__PURE__ */ __name((val) => encodeURIComponent(val), "valueToString")
-}, {
-  code: CODE_P2P2,
-  name: "p2p",
-  aliases: ["ipfs"],
-  size: V2,
-  bytesToValue: bytesToString2("base58btc"),
-  valueToBytes: /* @__PURE__ */ __name((val) => {
-    if (val.startsWith("Q") || val.startsWith("1")) {
-      return stringToBytes2("base58btc")(val);
-    }
-    return CID.parse(val).multihash.bytes;
-  }, "valueToBytes")
-}, {
-  code: CODE_ONION2,
-  name: "onion",
-  size: 96,
-  bytesToValue: bytes2onion2,
-  valueToBytes: onion2bytes2
-}, {
-  code: CODE_ONION32,
-  name: "onion3",
-  size: 296,
-  bytesToValue: bytes2onion2,
-  valueToBytes: onion32bytes2
-}, {
-  code: CODE_GARLIC642,
-  name: "garlic64",
-  size: V2
-}, {
-  code: CODE_GARLIC322,
-  name: "garlic32",
-  size: V2
-}, {
-  code: CODE_TLS2,
-  name: "tls"
-}, {
-  code: CODE_SNI2,
-  name: "sni",
-  size: V2
-}, {
-  code: CODE_NOISE2,
-  name: "noise"
-}, {
-  code: CODE_QUIC2,
-  name: "quic"
-}, {
-  code: CODE_QUIC_V12,
-  name: "quic-v1"
-}, {
-  code: CODE_WEBTRANSPORT2,
-  name: "webtransport"
-}, {
-  code: CODE_CERTHASH2,
-  name: "certhash",
-  size: V2,
-  bytesToValue: bytes2mb2(base64url),
-  valueToBytes: mb2bytes2
-}, {
-  code: CODE_HTTP2,
-  name: "http"
-}, {
-  code: CODE_HTTP_PATH2,
-  name: "http-path",
-  size: V2,
-  stringToValue: /* @__PURE__ */ __name((str) => `/${decodeURIComponent(str)}`, "stringToValue"),
-  valueToString: /* @__PURE__ */ __name((val) => encodeURIComponent(val.substring(1)), "valueToString")
-}, {
-  code: CODE_HTTPS2,
-  name: "https"
-}, {
-  code: CODE_WS2,
-  name: "ws"
-}, {
-  code: CODE_WSS2,
-  name: "wss"
-}, {
-  code: CODE_P2P_WEBSOCKET_STAR2,
-  name: "p2p-websocket-star"
-}, {
-  code: CODE_P2P_STARDUST2,
-  name: "p2p-stardust"
-}, {
-  code: CODE_P2P_WEBRTC_STAR2,
-  name: "p2p-webrtc-star"
-}, {
-  code: CODE_P2P_WEBRTC_DIRECT2,
-  name: "p2p-webrtc-direct"
-}, {
-  code: CODE_WEBRTC_DIRECT2,
-  name: "webrtc-direct"
-}, {
-  code: CODE_WEBRTC2,
-  name: "webrtc"
-}, {
-  code: CODE_P2P_CIRCUIT2,
-  name: "p2p-circuit"
-}, {
-  code: CODE_MEMORY2,
-  name: "memory",
-  size: V2
-}];
-codecs2.forEach((codec) => {
-  registry2.addProtocol(codec);
-});
-
-// node_modules/@chainsafe/libp2p-gossipsub/node_modules/@multiformats/multiaddr/dist/src/convert.js
-function convertToString(proto, buf) {
-  const protocol2 = registry2.getProtocol(proto);
-  return protocol2.bytesToValue?.(buf) ?? toString2(buf, "base16");
-}
-__name(convertToString, "convertToString");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/multiaddr.js
-var Protocol;
-(function(Protocol2) {
-  Protocol2[Protocol2["ip4"] = 4] = "ip4";
-  Protocol2[Protocol2["ip6"] = 41] = "ip6";
-})(Protocol || (Protocol = {}));
-function multiaddrToIPStr(multiaddr2) {
-  for (const tuple of multiaddr2.tuples()) {
-    switch (tuple[0]) {
-      case Protocol.ip4:
-      case Protocol.ip6:
-        return convertToString(tuple[0], tuple[1]);
-      default:
-        break;
-    }
-  }
-  return null;
-}
-__name(multiaddrToIPStr, "multiaddrToIPStr");
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/utils/time-cache.js
-var SimpleTimeCache2 = class {
-  static {
-    __name(this, "SimpleTimeCache");
-  }
-  entries = /* @__PURE__ */ new Map();
-  validityMs;
-  constructor(opts) {
-    this.validityMs = opts.validityMs;
-  }
-  get size() {
-    return this.entries.size;
-  }
-  /** Returns true if there was a key collision and the entry is dropped */
-  put(key, value2) {
-    if (this.entries.has(key)) {
-      return true;
-    }
-    this.entries.set(key, { value: value2, validUntilMs: Date.now() + this.validityMs });
-    return false;
-  }
-  prune() {
-    const now = Date.now();
-    for (const [k, v] of this.entries.entries()) {
-      if (v.validUntilMs < now) {
-        this.entries.delete(k);
-      } else {
-        break;
-      }
-    }
-  }
-  has(key) {
-    return this.entries.has(key);
-  }
-  get(key) {
-    const value2 = this.entries.get(key);
-    return value2 != null && value2.validUntilMs >= Date.now() ? value2.value : void 0;
-  }
-  clear() {
-    this.entries.clear();
-  }
-};
-
-// node_modules/@chainsafe/libp2p-gossipsub/dist/src/index.js
-var GossipStatusCode;
-(function(GossipStatusCode2) {
-  GossipStatusCode2[GossipStatusCode2["started"] = 0] = "started";
-  GossipStatusCode2[GossipStatusCode2["stopped"] = 1] = "stopped";
-})(GossipStatusCode || (GossipStatusCode = {}));
-var GossipSub = class extends TypedEventEmitter {
-  static {
-    __name(this, "GossipSub");
-  }
-  /**
-   * The signature policy to follow by default
-   */
-  globalSignaturePolicy;
-  multicodecs = [GossipsubIDv12, GossipsubIDv11, GossipsubIDv10];
-  publishConfig;
-  dataTransform;
-  // State
-  peers = /* @__PURE__ */ new Map();
-  streamsInbound = /* @__PURE__ */ new Map();
-  streamsOutbound = /* @__PURE__ */ new Map();
-  /** Ensures outbound streams are created sequentially */
-  outboundInflightQueue = pushable({ objectMode: true });
-  /** Direct peers */
-  direct = /* @__PURE__ */ new Set();
-  /** Floodsub peers */
-  floodsubPeers = /* @__PURE__ */ new Set();
-  /** Cache of seen messages */
-  seenCache;
-  /**
-   * Map of peer id and AcceptRequestWhileListEntry
-   */
-  acceptFromWhitelist = /* @__PURE__ */ new Map();
-  /**
-   * Map of topics to which peers are subscribed to
-   */
-  topics = /* @__PURE__ */ new Map();
-  /**
-   * List of our subscriptions
-   */
-  subscriptions = /* @__PURE__ */ new Set();
-  /**
-   * Map of topic meshes
-   * topic => peer id set
-   */
-  mesh = /* @__PURE__ */ new Map();
-  /**
-   * Map of topics to set of peers. These mesh peers are the ones to which we are publishing without a topic membership
-   * topic => peer id set
-   */
-  fanout = /* @__PURE__ */ new Map();
-  /**
-   * Map of last publish time for fanout topics
-   * topic => last publish time
-   */
-  fanoutLastpub = /* @__PURE__ */ new Map();
-  /**
-   * Map of pending messages to gossip
-   * peer id => control messages
-   */
-  gossip = /* @__PURE__ */ new Map();
-  /**
-   * Map of control messages
-   * peer id => control message
-   */
-  control = /* @__PURE__ */ new Map();
-  /**
-   * Number of IHAVEs received from peer in the last heartbeat
-   */
-  peerhave = /* @__PURE__ */ new Map();
-  /** Number of messages we have asked from peer in the last heartbeat */
-  iasked = /* @__PURE__ */ new Map();
-  /** Prune backoff map */
-  backoff = /* @__PURE__ */ new Map();
-  /**
-   * Connection direction cache, marks peers with outbound connections
-   * peer id => direction
-   */
-  outbound = /* @__PURE__ */ new Map();
-  msgIdFn;
-  /**
-   * A fast message id function used for internal message de-duplication
-   */
-  fastMsgIdFn;
-  msgIdToStrFn;
-  /** Maps fast message-id to canonical message-id */
-  fastMsgIdCache;
-  /**
-   * Short term cache for published message ids. This is used for penalizing peers sending
-   * our own messages back if the messages are anonymous or use a random author.
-   */
-  publishedMessageIds;
-  /**
-   * A message cache that contains the messages for last few heartbeat ticks
-   */
-  mcache;
-  /** Peer score tracking */
-  score;
-  /**
-   * Custom validator function per topic.
-   * Must return or resolve quickly (< 100ms) to prevent causing penalties for late messages.
-   * If you need to apply validation that may require longer times use `asyncValidation` option and callback the
-   * validation result through `Gossipsub.reportValidationResult`
-   */
-  topicValidators = /* @__PURE__ */ new Map();
-  /**
-   * Make this protected so child class may want to redirect to its own log.
-   */
-  log;
-  /**
-   * Number of heartbeats since the beginning of time
-   * This allows us to amortize some resource cleanup -- eg: backoff cleanup
-   */
-  heartbeatTicks = 0;
-  /**
-   * Tracks IHAVE/IWANT promises broken by peers
-   */
-  gossipTracer;
-  /**
-   * Tracks IDONTWANT messages received by peers in the current heartbeat
-   */
-  idontwantCounts = /* @__PURE__ */ new Map();
-  /**
-   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in
-   *
-   * idontwants are stored for `mcacheLength` heartbeats before being pruned,
-   * so this map is bounded by peerCount * idontwantMaxMessages * mcacheLength
-   */
-  idontwants = /* @__PURE__ */ new Map();
-  components;
-  directPeerInitial = null;
-  static multicodec = GossipsubIDv12;
-  // Options
-  opts;
-  decodeRpcLimits;
-  metrics;
-  status = { code: GossipStatusCode.stopped };
-  maxInboundStreams;
-  maxOutboundStreams;
-  runOnLimitedConnection;
-  allowedTopics;
-  heartbeatTimer = null;
-  constructor(components, options = {}) {
-    super();
-    const opts = {
-      fallbackToFloodsub: true,
-      floodPublish: true,
-      batchPublish: false,
-      tagMeshPeers: true,
-      doPX: false,
-      directPeers: [],
-      D: GossipsubD,
-      Dlo: GossipsubDlo,
-      Dhi: GossipsubDhi,
-      Dscore: GossipsubDscore,
-      Dout: GossipsubDout,
-      Dlazy: GossipsubDlazy,
-      heartbeatInterval: GossipsubHeartbeatInterval,
-      fanoutTTL: GossipsubFanoutTTL,
-      mcacheLength: GossipsubHistoryLength,
-      mcacheGossip: GossipsubHistoryGossip,
-      seenTTL: GossipsubSeenTTL,
-      gossipsubIWantFollowupMs: GossipsubIWantFollowupTime,
-      prunePeers: GossipsubPrunePeers,
-      pruneBackoff: GossipsubPruneBackoff,
-      unsubcribeBackoff: GossipsubUnsubscribeBackoff,
-      graftFloodThreshold: GossipsubGraftFloodThreshold,
-      opportunisticGraftPeers: GossipsubOpportunisticGraftPeers,
-      opportunisticGraftTicks: GossipsubOpportunisticGraftTicks,
-      directConnectTicks: GossipsubDirectConnectTicks,
-      gossipFactor: GossipsubGossipFactor,
-      idontwantMinDataSize: GossipsubIdontwantMinDataSize,
-      idontwantMaxMessages: GossipsubIdontwantMaxMessages,
-      ...options,
-      scoreParams: createPeerScoreParams(options.scoreParams),
-      scoreThresholds: createPeerScoreThresholds(options.scoreThresholds)
-    };
-    this.components = components;
-    this.decodeRpcLimits = opts.decodeRpcLimits ?? defaultDecodeRpcLimits;
-    this.globalSignaturePolicy = opts.globalSignaturePolicy ?? StrictSign2;
-    if (opts.fallbackToFloodsub) {
-      this.multicodecs.push(FloodsubID);
-    }
-    this.log = components.logger.forComponent(opts.debugName ?? "libp2p:gossipsub");
-    this.opts = opts;
-    this.direct = new Set(opts.directPeers.map((p2) => p2.id.toString()));
-    this.seenCache = new SimpleTimeCache2({ validityMs: opts.seenTTL });
-    this.publishedMessageIds = new SimpleTimeCache2({ validityMs: opts.seenTTL });
-    if (options.msgIdFn != null) {
-      this.msgIdFn = options.msgIdFn;
-    } else {
-      switch (this.globalSignaturePolicy) {
-        case StrictSign2:
-          this.msgIdFn = msgIdFnStrictSign;
-          break;
-        case StrictNoSign2:
-          this.msgIdFn = msgIdFnStrictNoSign;
-          break;
-        default:
-          throw new Error(`Invalid globalSignaturePolicy: ${this.globalSignaturePolicy}`);
-      }
-    }
-    if (options.fastMsgIdFn != null) {
-      this.fastMsgIdFn = options.fastMsgIdFn;
-      this.fastMsgIdCache = new SimpleTimeCache2({ validityMs: opts.seenTTL });
-    }
-    this.msgIdToStrFn = options.msgIdToStrFn ?? messageIdToString;
-    this.mcache = options.messageCache ?? new MessageCache(opts.mcacheGossip, opts.mcacheLength, this.msgIdToStrFn);
-    if (options.dataTransform != null) {
-      this.dataTransform = options.dataTransform;
-    }
-    if (options.metricsRegister != null) {
-      if (options.metricsTopicStrToLabel == null) {
-        throw Error("Must set metricsTopicStrToLabel with metrics");
-      }
-      const maxMeshMessageDeliveriesWindowMs = Math.max(...Object.values(opts.scoreParams.topics).map((topicParam) => topicParam.meshMessageDeliveriesWindow), DEFAULT_METRIC_MESH_MESSAGE_DELIVERIES_WINDOWS);
-      const metrics = getMetrics(options.metricsRegister, options.metricsTopicStrToLabel, {
-        gossipPromiseExpireSec: this.opts.gossipsubIWantFollowupMs / 1e3,
-        behaviourPenaltyThreshold: opts.scoreParams.behaviourPenaltyThreshold,
-        maxMeshMessageDeliveriesWindowSec: maxMeshMessageDeliveriesWindowMs / 1e3
-      });
-      metrics.mcacheSize.addCollect(() => {
-        this.onScrapeMetrics(metrics);
-      });
-      for (const protocol2 of this.multicodecs) {
-        metrics.protocolsEnabled.set({ protocol: protocol2 }, 1);
-      }
-      this.metrics = metrics;
-    } else {
-      this.metrics = null;
-    }
-    this.gossipTracer = new IWantTracer(this.opts.gossipsubIWantFollowupMs, this.msgIdToStrFn, this.metrics);
-    this.score = new PeerScore(this.opts.scoreParams, this.metrics, this.components.logger, {
-      scoreCacheValidityMs: opts.heartbeatInterval
-    });
-    this.maxInboundStreams = options.maxInboundStreams;
-    this.maxOutboundStreams = options.maxOutboundStreams;
-    this.runOnLimitedConnection = options.runOnLimitedConnection;
-    this.allowedTopics = opts.allowedTopics != null ? new Set(opts.allowedTopics) : null;
-  }
-  [Symbol.toStringTag] = "@chainsafe/libp2p-gossipsub";
-  [serviceCapabilities2] = [
-    "@libp2p/pubsub"
-  ];
-  [serviceDependencies2] = [
-    "@libp2p/identify"
-  ];
-  getPeers() {
-    return [...this.peers.values()];
-  }
-  isStarted() {
-    return this.status.code === GossipStatusCode.started;
-  }
-  // LIFECYCLE METHODS
-  /**
-   * Mounts the gossipsub protocol onto the libp2p node and sends our
-   * our subscriptions to every peer connected
-   */
-  async start() {
-    if (this.isStarted()) {
-      return;
-    }
-    this.log("starting");
-    this.publishConfig = getPublishConfigFromPeerId(this.globalSignaturePolicy, this.components.peerId, this.components.privateKey);
-    this.outboundInflightQueue = pushable({ objectMode: true });
-    pipe(this.outboundInflightQueue, async (source) => {
-      for await (const { peerId, connection } of source) {
-        await this.createOutboundStream(peerId, connection);
-      }
-    }).catch((e2) => {
-      this.log.error("outbound inflight queue error", e2);
-    });
-    await Promise.all(this.opts.directPeers.map(async (p2) => {
-      await this.components.peerStore.merge(p2.id, {
-        multiaddrs: p2.addrs
-      });
-    }));
-    const registrar = this.components.registrar;
-    await Promise.all(this.multicodecs.map(async (multicodec) => registrar.handle(multicodec, this.onIncomingStream.bind(this), {
-      maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams,
-      runOnLimitedConnection: this.runOnLimitedConnection
-    })));
-    const topology = {
-      onConnect: this.onPeerConnected.bind(this),
-      onDisconnect: this.onPeerDisconnected.bind(this),
-      notifyOnLimitedConnection: this.runOnLimitedConnection
-    };
-    const registrarTopologyIds = await Promise.all(this.multicodecs.map(async (multicodec) => registrar.register(multicodec, topology)));
-    const heartbeatTimeout = setTimeout(this.runHeartbeat, GossipsubHeartbeatInitialDelay);
-    this.status = {
-      code: GossipStatusCode.started,
-      registrarTopologyIds,
-      heartbeatTimeout,
-      hearbeatStartMs: Date.now() + GossipsubHeartbeatInitialDelay
-    };
-    this.score.start();
-    this.directPeerInitial = setTimeout(() => {
-      Promise.resolve().then(async () => {
-        await Promise.all(Array.from(this.direct).map(async (id) => this.connect(id)));
-      }).catch((err) => {
-        this.log(err);
-      });
-    }, GossipsubDirectConnectInitialDelay);
-    if (this.opts.tagMeshPeers) {
-      this.addEventListener("gossipsub:graft", this.tagMeshPeer);
-      this.addEventListener("gossipsub:prune", this.untagMeshPeer);
-    }
-    this.log("started");
-  }
-  /**
-   * Unmounts the gossipsub protocol and shuts down every connection
-   */
-  async stop() {
-    this.log("stopping");
-    if (this.status.code !== GossipStatusCode.started) {
-      return;
-    }
-    const { registrarTopologyIds } = this.status;
-    this.status = { code: GossipStatusCode.stopped };
-    if (this.opts.tagMeshPeers) {
-      this.removeEventListener("gossipsub:graft", this.tagMeshPeer);
-      this.removeEventListener("gossipsub:prune", this.untagMeshPeer);
-    }
-    const registrar = this.components.registrar;
-    await Promise.all(this.multicodecs.map(async (multicodec) => registrar.unhandle(multicodec)));
-    registrarTopologyIds.forEach((id) => {
-      registrar.unregister(id);
-    });
-    this.outboundInflightQueue.end();
-    const closePromises = [];
-    for (const outboundStream of this.streamsOutbound.values()) {
-      closePromises.push(outboundStream.close());
-    }
-    this.streamsOutbound.clear();
-    for (const inboundStream of this.streamsInbound.values()) {
-      closePromises.push(inboundStream.close());
-    }
-    this.streamsInbound.clear();
-    await Promise.all(closePromises);
-    this.peers.clear();
-    this.subscriptions.clear();
-    if (this.heartbeatTimer != null) {
-      this.heartbeatTimer.cancel();
-      this.heartbeatTimer = null;
-    }
-    this.score.stop();
-    this.mesh.clear();
-    this.fanout.clear();
-    this.fanoutLastpub.clear();
-    this.gossip.clear();
-    this.control.clear();
-    this.peerhave.clear();
-    this.iasked.clear();
-    this.backoff.clear();
-    this.outbound.clear();
-    this.gossipTracer.clear();
-    this.seenCache.clear();
-    if (this.fastMsgIdCache != null)
-      this.fastMsgIdCache.clear();
-    if (this.directPeerInitial != null)
-      clearTimeout(this.directPeerInitial);
-    this.idontwantCounts.clear();
-    this.idontwants.clear();
-    this.log("stopped");
-  }
-  /** FOR DEBUG ONLY - Dump peer stats for all peers. Data is cloned, safe to mutate */
-  dumpPeerScoreStats() {
-    return this.score.dumpPeerScoreStats();
-  }
-  /**
-   * On an inbound stream opened
-   */
-  onIncomingStream({ stream, connection }) {
-    if (!this.isStarted()) {
-      return;
-    }
-    const peerId = connection.remotePeer;
-    this.addPeer(peerId, connection.direction, connection.remoteAddr);
-    this.createInboundStream(peerId, stream);
-    this.outboundInflightQueue.push({ peerId, connection });
-  }
-  /**
-   * Registrar notifies an established connection with pubsub protocol
-   */
-  onPeerConnected(peerId, connection) {
-    this.metrics?.newConnectionCount.inc({ status: connection.status });
-    if (!this.isStarted() || connection.status !== "open") {
-      return;
-    }
-    this.addPeer(peerId, connection.direction, connection.remoteAddr);
-    this.outboundInflightQueue.push({ peerId, connection });
-  }
-  /**
-   * Registrar notifies a closing connection with pubsub protocol
-   */
-  onPeerDisconnected(peerId) {
-    this.log("connection ended %p", peerId);
-    this.removePeer(peerId);
-  }
-  async createOutboundStream(peerId, connection) {
-    if (!this.isStarted()) {
-      return;
-    }
-    const id = peerId.toString();
-    if (!this.peers.has(id)) {
-      return;
-    }
-    if (this.streamsOutbound.has(id)) {
-      return;
-    }
-    try {
-      const stream = new OutboundStream(await connection.newStream(this.multicodecs, {
-        runOnLimitedConnection: this.runOnLimitedConnection
-      }), (e2) => {
-        this.log.error("outbound pipe error", e2);
-      }, { maxBufferSize: this.opts.maxOutboundBufferSize });
-      this.log("create outbound stream %p", peerId);
-      this.streamsOutbound.set(id, stream);
-      const protocol2 = stream.protocol;
-      if (protocol2 === FloodsubID) {
-        this.floodsubPeers.add(id);
-      }
-      this.metrics?.peersPerProtocol.inc({ protocol: protocol2 }, 1);
-      if (this.subscriptions.size > 0) {
-        this.log("send subscriptions to", id);
-        this.sendSubscriptions(id, Array.from(this.subscriptions), true);
-      }
-    } catch (e2) {
-      this.log.error("createOutboundStream error", e2);
-    }
-  }
-  createInboundStream(peerId, stream) {
-    if (!this.isStarted()) {
-      return;
-    }
-    const id = peerId.toString();
-    if (!this.peers.has(id)) {
-      return;
-    }
-    const priorInboundStream = this.streamsInbound.get(id);
-    if (priorInboundStream !== void 0) {
-      this.log("replacing existing inbound steam %s", id);
-      priorInboundStream.close().catch((err) => {
-        this.log.error(err);
-      });
-    }
-    this.log("create inbound stream %s", id);
-    const inboundStream = new InboundStream(stream, { maxDataLength: this.opts.maxInboundDataLength });
-    this.streamsInbound.set(id, inboundStream);
-    this.pipePeerReadStream(peerId, inboundStream.source).catch((err) => {
-      this.log(err);
-    });
-  }
-  /**
-   * Add a peer to the router
-   */
-  addPeer(peerId, direction, addr) {
-    const id = peerId.toString();
-    if (!this.peers.has(id)) {
-      this.log("new peer %p", peerId);
-      this.peers.set(id, peerId);
-      this.score.addPeer(id);
-      const currentIP = multiaddrToIPStr(addr);
-      if (currentIP !== null) {
-        this.score.addIP(id, currentIP);
-      } else {
-        this.log("Added peer has no IP in current address %s %s", id, addr.toString());
-      }
-      if (!this.outbound.has(id)) {
-        this.outbound.set(id, direction === "outbound");
-      }
-    }
-  }
-  /**
-   * Removes a peer from the router
-   */
-  removePeer(peerId) {
-    const id = peerId.toString();
-    if (!this.peers.has(id)) {
-      return;
-    }
-    this.log("delete peer %p", peerId);
-    this.peers.delete(id);
-    const outboundStream = this.streamsOutbound.get(id);
-    const inboundStream = this.streamsInbound.get(id);
-    if (outboundStream != null) {
-      this.metrics?.peersPerProtocol.inc({ protocol: outboundStream.protocol }, -1);
-    }
-    outboundStream?.close().catch((err) => {
-      this.log.error(err);
-    });
-    inboundStream?.close().catch((err) => {
-      this.log.error(err);
-    });
-    this.streamsOutbound.delete(id);
-    this.streamsInbound.delete(id);
-    for (const peers of this.topics.values()) {
-      peers.delete(id);
-    }
-    for (const [topicStr, peers] of this.mesh) {
-      if (peers.delete(id)) {
-        this.metrics?.onRemoveFromMesh(topicStr, ChurnReason.Dc, 1);
-      }
-    }
-    for (const peers of this.fanout.values()) {
-      peers.delete(id);
-    }
-    this.floodsubPeers.delete(id);
-    this.gossip.delete(id);
-    this.control.delete(id);
-    this.outbound.delete(id);
-    this.idontwantCounts.delete(id);
-    this.idontwants.delete(id);
-    this.score.removePeer(id);
-    this.acceptFromWhitelist.delete(id);
-  }
-  // API METHODS
-  get started() {
-    return this.status.code === GossipStatusCode.started;
-  }
-  /**
-   * Get a the peer-ids in a topic mesh
-   */
-  getMeshPeers(topic) {
-    const peersInTopic = this.mesh.get(topic);
-    return peersInTopic != null ? Array.from(peersInTopic) : [];
-  }
-  /**
-   * Get a list of the peer-ids that are subscribed to one topic.
-   */
-  getSubscribers(topic) {
-    const peersInTopic = this.topics.get(topic);
-    return (peersInTopic != null ? Array.from(peersInTopic) : []).map((str) => this.peers.get(str) ?? peerIdFromString3(str));
-  }
-  /**
-   * Get the list of topics which the peer is subscribed to.
-   */
-  getTopics() {
-    return Array.from(this.subscriptions);
-  }
-  // TODO: Reviewing Pubsub API
-  // MESSAGE METHODS
-  /**
-   * Responsible for processing each RPC message received by other peers.
-   */
-  async pipePeerReadStream(peerId, stream) {
-    try {
-      await pipe(stream, async (source) => {
-        for await (const data of source) {
-          try {
-            const rpcBytes = data.subarray();
-            const rpc = RPC2.decode(rpcBytes, {
-              limits: {
-                subscriptions: this.decodeRpcLimits.maxSubscriptions,
-                messages: this.decodeRpcLimits.maxMessages,
-                control$: {
-                  ihave: this.decodeRpcLimits.maxIhaveMessageIDs,
-                  iwant: this.decodeRpcLimits.maxIwantMessageIDs,
-                  graft: this.decodeRpcLimits.maxControlMessages,
-                  prune: this.decodeRpcLimits.maxControlMessages,
-                  prune$: {
-                    peers: this.decodeRpcLimits.maxPeerInfos
-                  },
-                  idontwant: this.decodeRpcLimits.maxControlMessages,
-                  idontwant$: {
-                    messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs
-                  }
-                }
-              }
-            });
-            this.metrics?.onRpcRecv(rpc, rpcBytes.length);
-            if (this.opts.awaitRpcHandler) {
-              try {
-                await this.handleReceivedRpc(peerId, rpc);
-              } catch (err) {
-                this.metrics?.onRpcRecvError();
-                this.log(err);
-              }
-            } else {
-              this.handleReceivedRpc(peerId, rpc).catch((err) => {
-                this.metrics?.onRpcRecvError();
-                this.log(err);
-              });
-            }
-          } catch (e2) {
-            this.metrics?.onRpcDataError();
-            this.log(e2);
-          }
-        }
-      });
-    } catch (err) {
-      this.metrics?.onPeerReadStreamError();
-      this.handlePeerReadStreamError(err, peerId);
-    }
-  }
-  /**
-   * Handle error when read stream pipe throws, less of the functional use but more
-   * to for testing purposes to spy on the error handling
-   * */
-  handlePeerReadStreamError(err, peerId) {
-    this.log.error(err);
-    this.onPeerDisconnected(peerId);
-  }
-  /**
-   * Handles an rpc request from a peer
-   */
-  async handleReceivedRpc(from3, rpc) {
-    if (!this.acceptFrom(from3.toString())) {
-      this.log("received message from unacceptable peer %p", from3);
-      this.metrics?.rpcRecvNotAccepted.inc();
-      return;
-    }
-    const subscriptions = rpc.subscriptions != null ? rpc.subscriptions.length : 0;
-    const messages2 = rpc.messages != null ? rpc.messages.length : 0;
-    let ihave = 0;
-    let iwant = 0;
-    let graft = 0;
-    let prune = 0;
-    if (rpc.control != null) {
-      if (rpc.control.ihave != null)
-        ihave = rpc.control.ihave.length;
-      if (rpc.control.iwant != null)
-        iwant = rpc.control.iwant.length;
-      if (rpc.control.graft != null)
-        graft = rpc.control.graft.length;
-      if (rpc.control.prune != null)
-        prune = rpc.control.prune.length;
-    }
-    this.log(`rpc.from ${from3.toString()} subscriptions ${subscriptions} messages ${messages2} ihave ${ihave} iwant ${iwant} graft ${graft} prune ${prune}`);
-    if (rpc.subscriptions != null && rpc.subscriptions.length > 0) {
-      const subscriptions2 = [];
-      rpc.subscriptions.forEach((subOpt) => {
-        const topic = subOpt.topic;
-        const subscribe = subOpt.subscribe === true;
-        if (topic != null) {
-          if (this.allowedTopics != null && !this.allowedTopics.has(topic)) {
-            return;
-          }
-          this.handleReceivedSubscription(from3, topic, subscribe);
-          subscriptions2.push({ topic, subscribe });
-        }
-      });
-      this.safeDispatchEvent("subscription-change", {
-        detail: { peerId: from3, subscriptions: subscriptions2 }
-      });
-    }
-    for (const message2 of rpc.messages) {
-      if (this.allowedTopics != null && !this.allowedTopics.has(message2.topic)) {
-        continue;
-      }
-      const handleReceivedMessagePromise = this.handleReceivedMessage(from3, message2).catch((err) => {
-        this.metrics?.onMsgRecvError(message2.topic);
-        this.log(err);
-      });
-      if (this.opts.awaitRpcMessageHandler) {
-        await handleReceivedMessagePromise;
-      }
-    }
-    if (rpc.control != null) {
-      await this.handleControlMessage(from3.toString(), rpc.control);
-    }
-  }
-  /**
-   * Handles a subscription change from a peer
-   */
-  handleReceivedSubscription(from3, topic, subscribe) {
-    this.log("subscription update from %p topic %s", from3, topic);
-    let topicSet = this.topics.get(topic);
-    if (topicSet == null) {
-      topicSet = /* @__PURE__ */ new Set();
-      this.topics.set(topic, topicSet);
-    }
-    if (subscribe) {
-      topicSet.add(from3.toString());
-    } else {
-      topicSet.delete(from3.toString());
-    }
-  }
-  /**
-   * Handles a newly received message from an RPC.
-   * May forward to all peers in the mesh.
-   */
-  async handleReceivedMessage(from3, rpcMsg) {
-    this.metrics?.onMsgRecvPreValidation(rpcMsg.topic);
-    const validationResult = await this.validateReceivedMessage(from3, rpcMsg);
-    this.metrics?.onPrevalidationResult(rpcMsg.topic, validationResult.code);
-    const validationCode = validationResult.code;
-    switch (validationCode) {
-      case MessageStatus.duplicate:
-        this.score.duplicateMessage(from3.toString(), validationResult.msgIdStr, rpcMsg.topic);
-        this.gossipTracer.deliverMessage(validationResult.msgIdStr, true);
-        this.mcache.observeDuplicate(validationResult.msgIdStr, from3.toString());
-        return;
-      case MessageStatus.invalid:
-        if (validationResult.msgIdStr != null) {
-          const msgIdStr = validationResult.msgIdStr;
-          this.score.rejectMessage(from3.toString(), msgIdStr, rpcMsg.topic, validationResult.reason);
-          this.gossipTracer.rejectMessage(msgIdStr, validationResult.reason);
-        } else {
-          this.score.rejectInvalidMessage(from3.toString(), rpcMsg.topic);
-        }
-        this.metrics?.onMsgRecvInvalid(rpcMsg.topic, validationResult);
-        return;
-      case MessageStatus.valid:
-        this.score.validateMessage(validationResult.messageId.msgIdStr);
-        this.gossipTracer.deliverMessage(validationResult.messageId.msgIdStr);
-        this.mcache.put(validationResult.messageId, rpcMsg, !this.opts.asyncValidation);
-        if (this.subscriptions.has(rpcMsg.topic)) {
-          const isFromSelf = this.components.peerId.equals(from3);
-          if (!isFromSelf || this.opts.emitSelf) {
-            super.dispatchEvent(new CustomEvent("gossipsub:message", {
-              detail: {
-                propagationSource: from3,
-                msgId: validationResult.messageId.msgIdStr,
-                msg: validationResult.msg
-              }
-            }));
-            super.dispatchEvent(new CustomEvent("message", { detail: validationResult.msg }));
-          }
-        }
-        if (!this.opts.asyncValidation) {
-          this.forwardMessage(validationResult.messageId.msgIdStr, rpcMsg, from3.toString());
-        }
-        break;
-      default:
-        throw new Error(`Invalid validation result: ${validationCode}`);
-    }
-  }
-  /**
-   * Handles a newly received message from an RPC.
-   * May forward to all peers in the mesh.
-   */
-  async validateReceivedMessage(propagationSource, rpcMsg) {
-    const fastMsgIdStr = this.fastMsgIdFn?.(rpcMsg);
-    const msgIdCached = fastMsgIdStr !== void 0 ? this.fastMsgIdCache?.get(fastMsgIdStr) : void 0;
-    if (msgIdCached != null) {
-      return { code: MessageStatus.duplicate, msgIdStr: msgIdCached };
-    }
-    const validationResult = await validateToRawMessage(this.globalSignaturePolicy, rpcMsg);
-    if (!validationResult.valid) {
-      return { code: MessageStatus.invalid, reason: RejectReason.Error, error: validationResult.error };
-    }
-    const msg = validationResult.message;
-    try {
-      if (this.dataTransform != null) {
-        msg.data = this.dataTransform.inboundTransform(rpcMsg.topic, msg.data);
-      }
-    } catch (e2) {
-      this.log("Invalid message, transform failed", e2);
-      return { code: MessageStatus.invalid, reason: RejectReason.Error, error: ValidateError.TransformFailed };
-    }
-    const msgId3 = await this.msgIdFn(msg);
-    const msgIdStr = this.msgIdToStrFn(msgId3);
-    const messageId = { msgId: msgId3, msgIdStr };
-    if (fastMsgIdStr !== void 0 && this.fastMsgIdCache != null) {
-      const collision = this.fastMsgIdCache.put(fastMsgIdStr, msgIdStr);
-      if (collision) {
-        this.metrics?.fastMsgIdCacheCollision.inc();
-      }
-    }
-    if (this.seenCache.has(msgIdStr)) {
-      return { code: MessageStatus.duplicate, msgIdStr };
-    } else {
-      this.seenCache.put(msgIdStr);
-    }
-    if ((rpcMsg.data?.length ?? 0) >= this.opts.idontwantMinDataSize) {
-      this.sendIDontWants(msgId3, rpcMsg.topic, propagationSource.toString());
-    }
-    const topicValidator = this.topicValidators.get(rpcMsg.topic);
-    if (topicValidator != null) {
-      let acceptance;
-      try {
-        acceptance = await topicValidator(propagationSource, msg);
-      } catch (e2) {
-        const errCode = e2.code;
-        if (errCode === ERR_TOPIC_VALIDATOR_IGNORE)
-          acceptance = TopicValidatorResult2.Ignore;
-        if (errCode === ERR_TOPIC_VALIDATOR_REJECT)
-          acceptance = TopicValidatorResult2.Reject;
-        else
-          acceptance = TopicValidatorResult2.Ignore;
-      }
-      if (acceptance !== TopicValidatorResult2.Accept) {
-        return { code: MessageStatus.invalid, reason: rejectReasonFromAcceptance(acceptance), msgIdStr };
-      }
-    }
-    return { code: MessageStatus.valid, messageId, msg };
-  }
-  /**
-   * Return score of a peer.
-   */
-  getScore(peerId) {
-    return this.score.score(peerId);
-  }
-  /**
-   * Send an rpc object to a peer with subscriptions
-   */
-  sendSubscriptions(toPeer, topics, subscribe) {
-    this.sendRpc(toPeer, {
-      subscriptions: topics.map((topic) => ({ topic, subscribe })),
-      messages: []
-    });
-  }
-  /**
-   * Handles an rpc control message from a peer
-   */
-  async handleControlMessage(id, controlMsg) {
-    if (controlMsg === void 0) {
-      return;
-    }
-    const iwant = controlMsg.ihave?.length > 0 ? this.handleIHave(id, controlMsg.ihave) : [];
-    const ihave = controlMsg.iwant?.length > 0 ? this.handleIWant(id, controlMsg.iwant) : [];
-    const prune = controlMsg.graft?.length > 0 ? await this.handleGraft(id, controlMsg.graft) : [];
-    controlMsg.prune?.length > 0 && await this.handlePrune(id, controlMsg.prune);
-    controlMsg.idontwant?.length > 0 && this.handleIdontwant(id, controlMsg.idontwant);
-    if (iwant.length === 0 && ihave.length === 0 && prune.length === 0) {
-      return;
-    }
-    const sent = this.sendRpc(id, createGossipRpc(ihave, { iwant, prune }));
-    const iwantMessageIds = iwant[0]?.messageIDs;
-    if (iwantMessageIds != null) {
-      if (sent) {
-        this.gossipTracer.addPromise(id, iwantMessageIds);
-      } else {
-        this.metrics?.iwantPromiseUntracked.inc(1);
-      }
-    }
-  }
-  /**
-   * Whether to accept a message from a peer
-   */
-  acceptFrom(id) {
-    if (this.direct.has(id)) {
-      return true;
-    }
-    const now = Date.now();
-    const entry = this.acceptFromWhitelist.get(id);
-    if (entry != null && entry.messagesAccepted < ACCEPT_FROM_WHITELIST_MAX_MESSAGES && entry.acceptUntil >= now) {
-      entry.messagesAccepted += 1;
-      return true;
-    }
-    const score = this.score.score(id);
-    if (score >= ACCEPT_FROM_WHITELIST_THRESHOLD_SCORE) {
-      this.acceptFromWhitelist.set(id, {
-        messagesAccepted: 0,
-        acceptUntil: now + ACCEPT_FROM_WHITELIST_DURATION_MS
-      });
-    } else {
-      this.acceptFromWhitelist.delete(id);
-    }
-    return score >= this.opts.scoreThresholds.graylistThreshold;
-  }
-  /**
-   * Handles IHAVE messages
-   */
-  handleIHave(id, ihave) {
-    if (ihave.length === 0) {
-      return [];
-    }
-    const score = this.score.score(id);
-    if (score < this.opts.scoreThresholds.gossipThreshold) {
-      this.log("IHAVE: ignoring peer %s with score below threshold [ score = %d ]", id, score);
-      this.metrics?.ihaveRcvIgnored.inc({ reason: IHaveIgnoreReason.LowScore });
-      return [];
-    }
-    const peerhave = (this.peerhave.get(id) ?? 0) + 1;
-    this.peerhave.set(id, peerhave);
-    if (peerhave > GossipsubMaxIHaveMessages) {
-      this.log("IHAVE: peer %s has advertised too many times (%d) within this heartbeat interval; ignoring", id, peerhave);
-      this.metrics?.ihaveRcvIgnored.inc({ reason: IHaveIgnoreReason.MaxIhave });
-      return [];
-    }
-    const iasked = this.iasked.get(id) ?? 0;
-    if (iasked >= GossipsubMaxIHaveLength) {
-      this.log("IHAVE: peer %s has already advertised too many messages (%d); ignoring", id, iasked);
-      this.metrics?.ihaveRcvIgnored.inc({ reason: IHaveIgnoreReason.MaxIasked });
-      return [];
-    }
-    const iwant = /* @__PURE__ */ new Map();
-    ihave.forEach(({ topicID, messageIDs }) => {
-      if (topicID == null || messageIDs == null || !this.mesh.has(topicID)) {
-        return;
-      }
-      let idonthave = 0;
-      messageIDs.forEach((msgId3) => {
-        const msgIdStr = this.msgIdToStrFn(msgId3);
-        if (!this.seenCache.has(msgIdStr)) {
-          iwant.set(msgIdStr, msgId3);
-          idonthave++;
-        }
-      });
-      this.metrics?.onIhaveRcv(topicID, messageIDs.length, idonthave);
-    });
-    if (iwant.size === 0) {
-      return [];
-    }
-    let iask = iwant.size;
-    if (iask + iasked > GossipsubMaxIHaveLength) {
-      iask = GossipsubMaxIHaveLength - iasked;
-    }
-    this.log("IHAVE: Asking for %d out of %d messages from %s", iask, iwant.size, id);
-    let iwantList = Array.from(iwant.values());
-    shuffle(iwantList);
-    iwantList = iwantList.slice(0, iask);
-    this.iasked.set(id, iasked + iask);
-    return [
-      {
-        messageIDs: iwantList
-      }
-    ];
-  }
-  /**
-   * Handles IWANT messages
-   * Returns messages to send back to peer
-   */
-  handleIWant(id, iwant) {
-    if (iwant.length === 0) {
-      return [];
-    }
-    const score = this.score.score(id);
-    if (score < this.opts.scoreThresholds.gossipThreshold) {
-      this.log("IWANT: ignoring peer %s with score below threshold [score = %d]", id, score);
-      return [];
-    }
-    const ihave = /* @__PURE__ */ new Map();
-    const iwantByTopic = /* @__PURE__ */ new Map();
-    let iwantDonthave = 0;
-    iwant.forEach(({ messageIDs }) => {
-      messageIDs?.forEach((msgId3) => {
-        const msgIdStr = this.msgIdToStrFn(msgId3);
-        const entry = this.mcache.getWithIWantCount(msgIdStr, id);
-        if (entry == null) {
-          iwantDonthave++;
-          return;
-        }
-        iwantByTopic.set(entry.msg.topic, 1 + (iwantByTopic.get(entry.msg.topic) ?? 0));
-        if (entry.count > GossipsubGossipRetransmission) {
-          this.log("IWANT: Peer %s has asked for message %s too many times: ignoring request", id, msgId3);
-          return;
-        }
-        ihave.set(msgIdStr, entry.msg);
-      });
-    });
-    this.metrics?.onIwantRcv(iwantByTopic, iwantDonthave);
-    if (ihave.size === 0) {
-      this.log("IWANT: Could not provide any wanted messages to %s", id);
-      return [];
-    }
-    this.log("IWANT: Sending %d messages to %s", ihave.size, id);
-    return Array.from(ihave.values());
-  }
-  /**
-   * Handles Graft messages
-   */
-  async handleGraft(id, graft) {
-    const prune = [];
-    const score = this.score.score(id);
-    const now = Date.now();
-    let doPX = this.opts.doPX;
-    graft.forEach(({ topicID }) => {
-      if (topicID == null) {
-        return;
-      }
-      const peersInMesh = this.mesh.get(topicID);
-      if (peersInMesh == null) {
-        doPX = false;
-        return;
-      }
-      if (peersInMesh.has(id)) {
-        return;
-      }
-      const backoffExpiry = this.backoff.get(topicID)?.get(id);
-      if (this.direct.has(id)) {
-        this.log("GRAFT: ignoring request from direct peer %s", id);
-        prune.push(topicID);
-        doPX = false;
-      } else if (typeof backoffExpiry === "number" && now < backoffExpiry) {
-        this.log("GRAFT: ignoring backed off peer %s", id);
-        this.score.addPenalty(id, 1, ScorePenalty.GraftBackoff);
-        doPX = false;
-        const floodCutoff = backoffExpiry + this.opts.graftFloodThreshold - this.opts.pruneBackoff;
-        if (now < floodCutoff) {
-          this.score.addPenalty(id, 1, ScorePenalty.GraftBackoff);
-        }
-        this.addBackoff(id, topicID);
-        prune.push(topicID);
-      } else if (score < 0) {
-        this.log("GRAFT: ignoring peer %s with negative score: score=%d, topic=%s", id, score, topicID);
-        prune.push(topicID);
-        doPX = false;
-        this.addBackoff(id, topicID);
-      } else if (peersInMesh.size >= this.opts.Dhi && !(this.outbound.get(id) ?? false)) {
-        prune.push(topicID);
-        this.addBackoff(id, topicID);
-      } else {
-        this.log("GRAFT: Add mesh link from %s in %s", id, topicID);
-        this.score.graft(id, topicID);
-        peersInMesh.add(id);
-        this.metrics?.onAddToMesh(topicID, InclusionReason.Subscribed, 1);
-      }
-      this.safeDispatchEvent("gossipsub:graft", { detail: { peerId: id, topic: topicID, direction: "inbound" } });
-    });
-    if (prune.length === 0) {
-      return [];
-    }
-    const onUnsubscribe = false;
-    return Promise.all(prune.map(async (topic) => this.makePrune(id, topic, doPX, onUnsubscribe)));
-  }
-  /**
-   * Handles Prune messages
-   */
-  async handlePrune(id, prune) {
-    const score = this.score.score(id);
-    for (const { topicID, backoff, peers } of prune) {
-      if (topicID == null) {
-        continue;
-      }
-      const peersInMesh = this.mesh.get(topicID);
-      if (peersInMesh == null) {
-        return;
-      }
-      this.log("PRUNE: Remove mesh link to %s in %s", id, topicID);
-      this.score.prune(id, topicID);
-      if (peersInMesh.has(id)) {
-        peersInMesh.delete(id);
-        this.metrics?.onRemoveFromMesh(topicID, ChurnReason.Prune, 1);
-      }
-      if (typeof backoff === "number" && backoff > 0) {
-        this.doAddBackoff(id, topicID, backoff * 1e3);
-      } else {
-        this.addBackoff(id, topicID);
-      }
-      if (peers != null && peers.length > 0) {
-        if (score < this.opts.scoreThresholds.acceptPXThreshold) {
-          this.log("PRUNE: ignoring PX from peer %s with insufficient score [score = %d, topic = %s]", id, score, topicID);
-        } else {
-          await this.pxConnect(peers);
-        }
-      }
-      this.safeDispatchEvent("gossipsub:prune", { detail: { peerId: id, topic: topicID, direction: "inbound" } });
-    }
-  }
-  handleIdontwant(id, idontwant) {
-    let idontwantCount = this.idontwantCounts.get(id) ?? 0;
-    if (idontwantCount >= this.opts.idontwantMaxMessages) {
-      return;
-    }
-    const startIdontwantCount = idontwantCount;
-    let idontwants = this.idontwants.get(id);
-    if (idontwants == null) {
-      idontwants = /* @__PURE__ */ new Map();
-      this.idontwants.set(id, idontwants);
-    }
-    let idonthave = 0;
-    out: for (const { messageIDs } of idontwant) {
-      for (const msgId3 of messageIDs) {
-        if (idontwantCount >= this.opts.idontwantMaxMessages) {
-          break out;
-        }
-        idontwantCount++;
-        const msgIdStr = this.msgIdToStrFn(msgId3);
-        idontwants.set(msgIdStr, this.heartbeatTicks);
-        if (!this.mcache.msgs.has(msgIdStr))
-          idonthave++;
-      }
-    }
-    this.idontwantCounts.set(id, idontwantCount);
-    const total = idontwantCount - startIdontwantCount;
-    this.metrics?.onIdontwantRcv(total, idonthave);
-  }
-  /**
-   * Add standard backoff log for a peer in a topic
-   */
-  addBackoff(id, topic) {
-    this.doAddBackoff(id, topic, this.opts.pruneBackoff);
-  }
-  /**
-   * Add backoff expiry interval for a peer in a topic
-   *
-   * @param id
-   * @param topic
-   * @param intervalMs - backoff duration in milliseconds
-   */
-  doAddBackoff(id, topic, intervalMs) {
-    let backoff = this.backoff.get(topic);
-    if (backoff == null) {
-      backoff = /* @__PURE__ */ new Map();
-      this.backoff.set(topic, backoff);
-    }
-    const expire = Date.now() + intervalMs;
-    const existingExpire = backoff.get(id) ?? 0;
-    if (existingExpire < expire) {
-      backoff.set(id, expire);
-    }
-  }
-  /**
-   * Apply penalties from broken IHAVE/IWANT promises
-   */
-  applyIwantPenalties() {
-    this.gossipTracer.getBrokenPromises().forEach((count, p2) => {
-      this.log("peer %s didn't follow up in %d IWANT requests; adding penalty", p2, count);
-      this.score.addPenalty(p2, count, ScorePenalty.BrokenPromise);
-    });
-  }
-  /**
-   * Clear expired backoff expiries
-   */
-  clearBackoff() {
-    if (this.heartbeatTicks % GossipsubPruneBackoffTicks !== 0) {
-      return;
-    }
-    const now = Date.now();
-    this.backoff.forEach((backoff, topic) => {
-      backoff.forEach((expire, id) => {
-        if (expire + BACKOFF_SLACK * this.opts.heartbeatInterval < now) {
-          backoff.delete(id);
-        }
-      });
-      if (backoff.size === 0) {
-        this.backoff.delete(topic);
-      }
-    });
-  }
-  /**
-   * Maybe reconnect to direct peers
-   */
-  async directConnect() {
-    const toconnect = [];
-    this.direct.forEach((id) => {
-      if (!this.streamsOutbound.has(id)) {
-        toconnect.push(id);
-      }
-    });
-    await Promise.all(toconnect.map(async (id) => this.connect(id)));
-  }
-  /**
-   * Maybe attempt connection given signed peer records
-   */
-  async pxConnect(peers) {
-    if (peers.length > this.opts.prunePeers) {
-      shuffle(peers);
-      peers = peers.slice(0, this.opts.prunePeers);
-    }
-    const toconnect = [];
-    await Promise.all(peers.map(async (pi) => {
-      if (pi.peerID == null) {
-        return;
-      }
-      const peer = peerIdFromMultihash2(decode4(pi.peerID));
-      const p2 = peer.toString();
-      if (this.peers.has(p2)) {
-        return;
-      }
-      if (pi.signedPeerRecord == null) {
-        toconnect.push(p2);
-        return;
-      }
-      try {
-        if (!await this.components.peerStore.consumePeerRecord(pi.signedPeerRecord, peer)) {
-          this.log("bogus peer record obtained through px: could not add peer record to address book");
-          return;
-        }
-        toconnect.push(p2);
-      } catch (e2) {
-        this.log("bogus peer record obtained through px: invalid signature or not a peer record");
-      }
-    }));
-    if (toconnect.length === 0) {
-      return;
-    }
-    await Promise.all(toconnect.map(async (id) => this.connect(id)));
-  }
-  /**
-   * Connect to a peer using the gossipsub protocol
-   */
-  async connect(id) {
-    this.log("Initiating connection with %s", id);
-    const peerId = peerIdFromString3(id);
-    const connection = await this.components.connectionManager.openConnection(peerId);
-    for (const multicodec of this.multicodecs) {
-      for (const topology of this.components.registrar.getTopologies(multicodec)) {
-        topology.onConnect?.(peerId, connection);
-      }
-    }
-  }
-  /**
-   * Subscribes to a topic
-   */
-  subscribe(topic) {
-    if (this.status.code !== GossipStatusCode.started) {
-      throw new Error("Pubsub has not started");
-    }
-    if (!this.subscriptions.has(topic)) {
-      this.subscriptions.add(topic);
-      for (const peerId of this.peers.keys()) {
-        this.sendSubscriptions(peerId, [topic], true);
-      }
-    }
-    this.join(topic);
-  }
-  /**
-   * Unsubscribe to a topic
-   */
-  unsubscribe(topic) {
-    if (this.status.code !== GossipStatusCode.started) {
-      throw new Error("Pubsub is not started");
-    }
-    const wasSubscribed = this.subscriptions.delete(topic);
-    this.log("unsubscribe from %s - am subscribed %s", topic, wasSubscribed);
-    if (wasSubscribed) {
-      for (const peerId of this.peers.keys()) {
-        this.sendSubscriptions(peerId, [topic], false);
-      }
-    }
-    this.leave(topic);
-  }
-  /**
-   * Join topic
-   */
-  join(topic) {
-    if (this.status.code !== GossipStatusCode.started) {
-      throw new Error("Gossipsub has not started");
-    }
-    if (this.mesh.has(topic)) {
-      return;
-    }
-    this.log("JOIN %s", topic);
-    this.metrics?.onJoin(topic);
-    const toAdd = /* @__PURE__ */ new Set();
-    const backoff = this.backoff.get(topic);
-    const fanoutPeers = this.fanout.get(topic);
-    if (fanoutPeers != null) {
-      this.fanout.delete(topic);
-      this.fanoutLastpub.delete(topic);
-      fanoutPeers.forEach((id) => {
-        if (!this.direct.has(id) && this.score.score(id) >= 0 && backoff?.has(id) !== true) {
-          toAdd.add(id);
-        }
-      });
-      this.metrics?.onAddToMesh(topic, InclusionReason.Fanout, toAdd.size);
-    }
-    if (toAdd.size < this.opts.D) {
-      const fanoutCount = toAdd.size;
-      const newPeers = this.getRandomGossipPeers(topic, this.opts.D, (id) => (
-        // filter direct peers and peers with negative score
-        !toAdd.has(id) && !this.direct.has(id) && this.score.score(id) >= 0 && backoff?.has(id) !== true
-      ));
-      newPeers.forEach((peer) => {
-        toAdd.add(peer);
-      });
-      this.metrics?.onAddToMesh(topic, InclusionReason.Random, toAdd.size - fanoutCount);
-    }
-    this.mesh.set(topic, toAdd);
-    toAdd.forEach((id) => {
-      this.log("JOIN: Add mesh link to %s in %s", id, topic);
-      this.sendGraft(id, topic);
-    });
-  }
-  /**
-   * Leave topic
-   */
-  leave(topic) {
-    if (this.status.code !== GossipStatusCode.started) {
-      throw new Error("Gossipsub has not started");
-    }
-    this.log("LEAVE %s", topic);
-    this.metrics?.onLeave(topic);
-    const meshPeers = this.mesh.get(topic);
-    if (meshPeers != null) {
-      Promise.all(Array.from(meshPeers).map(async (id) => {
-        this.log("LEAVE: Remove mesh link to %s in %s", id, topic);
-        await this.sendPrune(id, topic);
-      })).catch((err) => {
-        this.log("Error sending prunes to mesh peers", err);
-      });
-      this.mesh.delete(topic);
-    }
-  }
-  selectPeersToForward(topic, propagationSource, excludePeers) {
-    const tosend = /* @__PURE__ */ new Set();
-    const peersInTopic = this.topics.get(topic);
-    if (peersInTopic != null) {
-      this.direct.forEach((peer) => {
-        if (peersInTopic.has(peer) && propagationSource !== peer && !(excludePeers?.has(peer) ?? false)) {
-          tosend.add(peer);
-        }
-      });
-      this.floodsubPeers.forEach((peer) => {
-        if (peersInTopic.has(peer) && propagationSource !== peer && !(excludePeers?.has(peer) ?? false) && this.score.score(peer) >= this.opts.scoreThresholds.publishThreshold) {
-          tosend.add(peer);
-        }
-      });
-    }
-    const meshPeers = this.mesh.get(topic);
-    if (meshPeers != null && meshPeers.size > 0) {
-      meshPeers.forEach((peer) => {
-        if (propagationSource !== peer && !(excludePeers?.has(peer) ?? false)) {
-          tosend.add(peer);
-        }
-      });
-    }
-    return tosend;
-  }
-  selectPeersToPublish(topic) {
-    const tosend = /* @__PURE__ */ new Set();
-    const tosendCount = {
-      direct: 0,
-      floodsub: 0,
-      mesh: 0,
-      fanout: 0
-    };
-    const peersInTopic = this.topics.get(topic);
-    if (peersInTopic != null) {
-      if (this.opts.floodPublish) {
-        peersInTopic.forEach((id) => {
-          if (this.direct.has(id)) {
-            tosend.add(id);
-            tosendCount.direct++;
-          } else if (this.score.score(id) >= this.opts.scoreThresholds.publishThreshold) {
-            tosend.add(id);
-            tosendCount.floodsub++;
-          }
-        });
-      } else {
-        this.direct.forEach((id) => {
-          if (peersInTopic.has(id)) {
-            tosend.add(id);
-            tosendCount.direct++;
-          }
-        });
-        this.floodsubPeers.forEach((id) => {
-          if (peersInTopic.has(id) && this.score.score(id) >= this.opts.scoreThresholds.publishThreshold) {
-            tosend.add(id);
-            tosendCount.floodsub++;
-          }
-        });
-        const meshPeers = this.mesh.get(topic);
-        if (meshPeers != null && meshPeers.size > 0) {
-          meshPeers.forEach((peer) => {
-            tosend.add(peer);
-            tosendCount.mesh++;
-          });
-          if (meshPeers.size < this.opts.D) {
-            const topicPeers = this.getRandomGossipPeers(topic, this.opts.D - meshPeers.size, (id) => {
-              return !meshPeers.has(id) && !this.direct.has(id) && !this.floodsubPeers.has(id) && this.score.score(id) >= this.opts.scoreThresholds.publishThreshold;
-            });
-            topicPeers.forEach((peer) => {
-              tosend.add(peer);
-              tosendCount.mesh++;
-            });
-          }
-        } else {
-          const fanoutPeers = this.fanout.get(topic);
-          if (fanoutPeers != null && fanoutPeers.size > 0) {
-            fanoutPeers.forEach((peer) => {
-              tosend.add(peer);
-              tosendCount.fanout++;
-            });
-          } else {
-            const newFanoutPeers = this.getRandomGossipPeers(topic, this.opts.D, (id) => {
-              return this.score.score(id) >= this.opts.scoreThresholds.publishThreshold;
-            });
-            if (newFanoutPeers.size > 0) {
-              this.fanout.set(topic, newFanoutPeers);
-              newFanoutPeers.forEach((peer) => {
-                tosend.add(peer);
-                tosendCount.fanout++;
-              });
-            }
-          }
-          this.fanoutLastpub.set(topic, Date.now());
-        }
-      }
-    }
-    return { tosend, tosendCount };
-  }
-  /**
-   * Forwards a message from our peers.
-   *
-   * For messages published by us (the app layer), this class uses `publish`
-   */
-  forwardMessage(msgIdStr, rawMsg, propagationSource, excludePeers) {
-    if (propagationSource != null) {
-      this.score.deliverMessage(propagationSource, msgIdStr, rawMsg.topic);
-    }
-    const tosend = this.selectPeersToForward(rawMsg.topic, propagationSource, excludePeers);
-    tosend.forEach((id) => {
-      this.sendRpc(id, createGossipRpc([rawMsg]));
-    });
-    this.metrics?.onForwardMsg(rawMsg.topic, tosend.size);
-  }
-  /**
-   * App layer publishes a message to peers, return number of peers this message is published to
-   * Note: `async` due to crypto only if `StrictSign`, otherwise it's a sync fn.
-   *
-   * For messages not from us, this class uses `forwardMessage`.
-   */
-  async publish(topic, data, opts) {
-    const startMs = Date.now();
-    const transformedData = this.dataTransform != null ? this.dataTransform.outboundTransform(topic, data) : data;
-    if (this.publishConfig == null) {
-      throw Error("PublishError.Uninitialized");
-    }
-    const { raw: rawMsg, msg } = await buildRawMessage(this.publishConfig, topic, data, transformedData);
-    const msgId3 = await this.msgIdFn(msg);
-    const msgIdStr = this.msgIdToStrFn(msgId3);
-    const ignoreDuplicatePublishError = opts?.ignoreDuplicatePublishError ?? this.opts.ignoreDuplicatePublishError;
-    if (this.seenCache.has(msgIdStr)) {
-      if (ignoreDuplicatePublishError) {
-        this.metrics?.onPublishDuplicateMsg(topic);
-        return { recipients: [] };
-      }
-      throw Error("PublishError.Duplicate");
-    }
-    const { tosend, tosendCount } = this.selectPeersToPublish(topic);
-    const willSendToSelf = this.opts.emitSelf && this.subscriptions.has(topic);
-    const allowPublishToZeroTopicPeers = opts?.allowPublishToZeroTopicPeers ?? this.opts.allowPublishToZeroTopicPeers;
-    if (tosend.size === 0 && !allowPublishToZeroTopicPeers && !willSendToSelf) {
-      throw Error("PublishError.NoPeersSubscribedToTopic");
-    }
-    this.seenCache.put(msgIdStr);
-    this.mcache.put({ msgId: msgId3, msgIdStr }, rawMsg, true);
-    this.gossipTracer.deliverMessage(msgIdStr);
-    this.publishedMessageIds.put(msgIdStr);
-    const batchPublish = opts?.batchPublish ?? this.opts.batchPublish;
-    const rpc = createGossipRpc([rawMsg]);
-    if (batchPublish) {
-      this.sendRpcInBatch(tosend, rpc);
-    } else {
-      for (const id of tosend) {
-        const sent = this.sendRpc(id, rpc);
-        if (!sent) {
-          tosend.delete(id);
-        }
-      }
-    }
-    const durationMs = Date.now() - startMs;
-    this.metrics?.onPublishMsg(topic, tosendCount, tosend.size, rawMsg.data != null ? rawMsg.data.length : 0, durationMs);
-    if (willSendToSelf) {
-      tosend.add(this.components.peerId.toString());
-      super.dispatchEvent(new CustomEvent("gossipsub:message", {
-        detail: {
-          propagationSource: this.components.peerId,
-          msgId: msgIdStr,
-          msg
-        }
-      }));
-      super.dispatchEvent(new CustomEvent("message", { detail: msg }));
-    }
-    return {
-      recipients: Array.from(tosend.values()).map((str) => this.peers.get(str) ?? peerIdFromString3(str))
-    };
-  }
-  /**
-   * Send the same data in batch to tosend list without considering cached control messages
-   * This is not only faster but also avoid allocating memory for each peer
-   * see https://github.com/ChainSafe/js-libp2p-gossipsub/issues/344
-   */
-  sendRpcInBatch(tosend, rpc) {
-    const rpcBytes = RPC2.encode(rpc);
-    const prefixedData = encode8.single(rpcBytes);
-    for (const id of tosend) {
-      const outboundStream = this.streamsOutbound.get(id);
-      if (outboundStream == null) {
-        this.log(`Cannot send RPC to ${id} as there is no open stream to it available`);
-        tosend.delete(id);
-        continue;
-      }
-      try {
-        outboundStream.pushPrefixed(prefixedData);
-      } catch (e2) {
-        tosend.delete(id);
-        this.log.error(`Cannot send rpc to ${id}`, e2);
-      }
-      this.metrics?.onRpcSent(rpc, rpcBytes.length);
-    }
-  }
-  /**
-   * This function should be called when `asyncValidation` is `true` after
-   * the message got validated by the caller. Messages are stored in the `mcache` and
-   * validation is expected to be fast enough that the messages should still exist in the cache.
-   * There are three possible validation outcomes and the outcome is given in acceptance.
-   *
-   * If acceptance = `MessageAcceptance.Accept` the message will get propagated to the
-   * network. The `propagation_source` parameter indicates who the message was received by and
-   * will not be forwarded back to that peer.
-   *
-   * If acceptance = `MessageAcceptance.Reject` the message will be deleted from the memcache
-   * and the P₄ penalty will be applied to the `propagationSource`.
-   *
-   * If acceptance = `MessageAcceptance.Ignore` the message will be deleted from the memcache
-   * but no P₄ penalty will be applied.
-   *
-   * This function will return true if the message was found in the cache and false if was not
-   * in the cache anymore.
-   *
-   * This should only be called once per message.
-   */
-  reportMessageValidationResult(msgId3, propagationSource, acceptance) {
-    let cacheEntry;
-    if (acceptance === TopicValidatorResult2.Accept) {
-      cacheEntry = this.mcache.validate(msgId3);
-      if (cacheEntry != null) {
-        const { message: rawMsg, originatingPeers } = cacheEntry;
-        this.score.deliverMessage(propagationSource, msgId3, rawMsg.topic);
-        this.forwardMessage(msgId3, cacheEntry.message, propagationSource, originatingPeers);
-      }
-    } else {
-      cacheEntry = this.mcache.remove(msgId3);
-      if (cacheEntry != null) {
-        const rejectReason = rejectReasonFromAcceptance(acceptance);
-        const { message: rawMsg, originatingPeers } = cacheEntry;
-        this.score.rejectMessage(propagationSource, msgId3, rawMsg.topic, rejectReason);
-        for (const peer of originatingPeers) {
-          this.score.rejectMessage(peer, msgId3, rawMsg.topic, rejectReason);
-        }
-      }
-    }
-    const firstSeenTimestampMs = this.score.messageFirstSeenTimestampMs(msgId3);
-    this.metrics?.onReportValidation(cacheEntry, acceptance, firstSeenTimestampMs);
-  }
-  /**
-   * Sends a GRAFT message to a peer
-   */
-  sendGraft(id, topic) {
-    const graft = [
-      {
-        topicID: topic
-      }
-    ];
-    const out = createGossipRpc([], { graft });
-    this.sendRpc(id, out);
-  }
-  /**
-   * Sends a PRUNE message to a peer
-   */
-  async sendPrune(id, topic) {
-    const onUnsubscribe = true;
-    const prune = [await this.makePrune(id, topic, this.opts.doPX, onUnsubscribe)];
-    const out = createGossipRpc([], { prune });
-    this.sendRpc(id, out);
-  }
-  sendIDontWants(msgId3, topic, source) {
-    const ids = this.mesh.get(topic);
-    if (ids == null) {
-      return;
-    }
-    const tosend = new Set(ids);
-    tosend.delete(source);
-    for (const id of tosend) {
-      if (this.streamsOutbound.get(id)?.protocol !== GossipsubIDv12) {
-        tosend.delete(id);
-      }
-    }
-    const idontwantRpc = createGossipRpc([], { idontwant: [{ messageIDs: [msgId3] }] });
-    this.sendRpcInBatch(tosend, idontwantRpc);
-  }
-  /**
-   * Send an rpc object to a peer
-   */
-  sendRpc(id, rpc) {
-    const outboundStream = this.streamsOutbound.get(id);
-    if (outboundStream == null) {
-      this.log(`Cannot send RPC to ${id} as there is no open stream to it available`);
-      return false;
-    }
-    const ctrl = this.control.get(id);
-    if (ctrl != null) {
-      this.piggybackControl(id, rpc, ctrl);
-      this.control.delete(id);
-    }
-    const ihave = this.gossip.get(id);
-    if (ihave != null) {
-      this.piggybackGossip(id, rpc, ihave);
-      this.gossip.delete(id);
-    }
-    const rpcBytes = RPC2.encode(rpc);
-    try {
-      outboundStream.push(rpcBytes);
-    } catch (e2) {
-      this.log.error(`Cannot send rpc to ${id}`, e2);
-      if (ctrl != null) {
-        this.control.set(id, ctrl);
-      }
-      if (ihave != null) {
-        this.gossip.set(id, ihave);
-      }
-      return false;
-    }
-    this.metrics?.onRpcSent(rpc, rpcBytes.length);
-    if (rpc.control?.graft != null) {
-      for (const topic of rpc.control?.graft) {
-        if (topic.topicID != null) {
-          this.safeDispatchEvent("gossipsub:graft", { detail: { peerId: id, topic: topic.topicID, direction: "outbound" } });
-        }
-      }
-    }
-    if (rpc.control?.prune != null) {
-      for (const topic of rpc.control?.prune) {
-        if (topic.topicID != null) {
-          this.safeDispatchEvent("gossipsub:prune", { detail: { peerId: id, topic: topic.topicID, direction: "outbound" } });
-        }
-      }
-    }
-    return true;
-  }
-  /** Mutates `outRpc` adding graft and prune control messages */
-  piggybackControl(id, outRpc, ctrl) {
-    const rpc = ensureControl(outRpc);
-    for (const graft of ctrl.graft) {
-      if (graft.topicID != null && (this.mesh.get(graft.topicID)?.has(id) ?? false)) {
-        rpc.control.graft.push(graft);
-      }
-    }
-    for (const prune of ctrl.prune) {
-      if (prune.topicID != null && !(this.mesh.get(prune.topicID)?.has(id) ?? false)) {
-        rpc.control.prune.push(prune);
-      }
-    }
-  }
-  /** Mutates `outRpc` adding ihave control messages */
-  piggybackGossip(id, outRpc, ihave) {
-    const rpc = ensureControl(outRpc);
-    rpc.control.ihave = ihave;
-  }
-  /**
-   * Send graft and prune messages
-   *
-   * @param tograft - peer id => topic[]
-   * @param toprune - peer id => topic[]
-   */
-  async sendGraftPrune(tograft, toprune, noPX) {
-    const doPX = this.opts.doPX;
-    const onUnsubscribe = false;
-    for (const [id, topics] of tograft) {
-      const graft = topics.map((topicID) => ({ topicID }));
-      let prune = [];
-      const pruning = toprune.get(id);
-      if (pruning != null) {
-        prune = await Promise.all(pruning.map(async (topicID) => this.makePrune(id, topicID, doPX && !(noPX.get(id) ?? false), onUnsubscribe)));
-        toprune.delete(id);
-      }
-      this.sendRpc(id, createGossipRpc([], { graft, prune }));
-    }
-    for (const [id, topics] of toprune) {
-      const prune = await Promise.all(topics.map(async (topicID) => this.makePrune(id, topicID, doPX && !(noPX.get(id) ?? false), onUnsubscribe)));
-      this.sendRpc(id, createGossipRpc([], { prune }));
-    }
-  }
-  /**
-   * Emits gossip - Send IHAVE messages to a random set of gossip peers
-   */
-  emitGossip(peersToGossipByTopic) {
-    const gossipIDsByTopic = this.mcache.getGossipIDs(new Set(peersToGossipByTopic.keys()));
-    for (const [topic, peersToGossip] of peersToGossipByTopic) {
-      this.doEmitGossip(topic, peersToGossip, gossipIDsByTopic.get(topic) ?? []);
-    }
-  }
-  /**
-   * Send gossip messages to GossipFactor peers above threshold with a minimum of D_lazy
-   * Peers are randomly selected from the heartbeat which exclude mesh + fanout peers
-   * We also exclude direct peers, as there is no reason to emit gossip to them
-   *
-   * @param topic
-   * @param candidateToGossip - peers to gossip
-   * @param messageIDs - message ids to gossip
-   */
-  doEmitGossip(topic, candidateToGossip, messageIDs) {
-    if (messageIDs.length === 0) {
-      return;
-    }
-    shuffle(messageIDs);
-    if (messageIDs.length > GossipsubMaxIHaveLength) {
-      this.log("too many messages for gossip; will truncate IHAVE list (%d messages)", messageIDs.length);
-    }
-    if (candidateToGossip.size === 0)
-      return;
-    let target = this.opts.Dlazy;
-    const gossipFactor = this.opts.gossipFactor;
-    const factor = gossipFactor * candidateToGossip.size;
-    let peersToGossip = candidateToGossip;
-    if (factor > target) {
-      target = factor;
-    }
-    if (target > peersToGossip.size) {
-      target = peersToGossip.size;
-    } else {
-      peersToGossip = shuffle(Array.from(peersToGossip)).slice(0, target);
-    }
-    peersToGossip.forEach((id) => {
-      let peerMessageIDs = messageIDs;
-      if (messageIDs.length > GossipsubMaxIHaveLength) {
-        peerMessageIDs = shuffle(peerMessageIDs.slice()).slice(0, GossipsubMaxIHaveLength);
-      }
-      this.pushGossip(id, {
-        topicID: topic,
-        messageIDs: peerMessageIDs
-      });
-    });
-  }
-  /**
-   * Flush gossip and control messages
-   */
-  flush() {
-    for (const [peer, ihave] of this.gossip.entries()) {
-      this.gossip.delete(peer);
-      this.sendRpc(peer, createGossipRpc([], { ihave }));
-    }
-    for (const [peer, control] of this.control.entries()) {
-      this.control.delete(peer);
-      const out = createGossipRpc([], { graft: control.graft, prune: control.prune });
-      this.sendRpc(peer, out);
-    }
-  }
-  /**
-   * Adds new IHAVE messages to pending gossip
-   */
-  pushGossip(id, controlIHaveMsgs) {
-    this.log("Add gossip to %s", id);
-    const gossip = this.gossip.get(id) ?? [];
-    this.gossip.set(id, gossip.concat(controlIHaveMsgs));
-  }
-  /**
-   * Make a PRUNE control message for a peer in a topic
-   */
-  async makePrune(id, topic, doPX, onUnsubscribe) {
-    this.score.prune(id, topic);
-    if (this.streamsOutbound.get(id)?.protocol === GossipsubIDv10) {
-      return {
-        topicID: topic,
-        peers: []
-      };
-    }
-    const backoffMs = onUnsubscribe ? this.opts.unsubcribeBackoff : this.opts.pruneBackoff;
-    const backoff = backoffMs / 1e3;
-    this.doAddBackoff(id, topic, backoffMs);
-    if (!doPX) {
-      return {
-        topicID: topic,
-        peers: [],
-        backoff
-      };
-    }
-    const peers = this.getRandomGossipPeers(topic, this.opts.prunePeers, (xid) => {
-      return xid !== id && this.score.score(xid) >= 0;
-    });
-    const px = await Promise.all(Array.from(peers).map(async (peerId) => {
-      const id2 = this.peers.get(peerId) ?? peerIdFromString3(peerId);
-      let peerInfo;
-      try {
-        peerInfo = await this.components.peerStore.get(id2);
-      } catch (err) {
-        if (err.name !== "NotFoundError") {
-          throw err;
-        }
-      }
-      return {
-        peerID: id2.toMultihash().bytes,
-        signedPeerRecord: peerInfo?.peerRecordEnvelope
-      };
-    }));
-    return {
-      topicID: topic,
-      peers: px,
-      backoff
-    };
-  }
-  runHeartbeat = /* @__PURE__ */ __name(() => {
-    const timer = this.metrics?.heartbeatDuration.startTimer();
-    this.heartbeat().catch((err) => {
-      this.log("Error running heartbeat", err);
-    }).finally(() => {
-      if (timer != null) {
-        timer();
-      }
-      if (this.status.code === GossipStatusCode.started) {
-        clearTimeout(this.status.heartbeatTimeout);
-        let msToNextHeartbeat = this.opts.heartbeatInterval - (Date.now() - this.status.hearbeatStartMs) % this.opts.heartbeatInterval;
-        if (msToNextHeartbeat < this.opts.heartbeatInterval * 0.25) {
-          msToNextHeartbeat += this.opts.heartbeatInterval;
-          this.metrics?.heartbeatSkipped.inc();
-        }
-        this.status.heartbeatTimeout = setTimeout(this.runHeartbeat, msToNextHeartbeat);
-      }
-    });
-  }, "runHeartbeat");
-  /**
-   * Maintains the mesh and fanout maps in gossipsub.
-   */
-  async heartbeat() {
-    const { D, Dlo, Dhi, Dscore, Dout, fanoutTTL } = this.opts;
-    this.heartbeatTicks++;
-    const scores = /* @__PURE__ */ new Map();
-    const getScore = /* @__PURE__ */ __name((id) => {
-      let s2 = scores.get(id);
-      if (s2 === void 0) {
-        s2 = this.score.score(id);
-        scores.set(id, s2);
-      }
-      return s2;
-    }, "getScore");
-    const tograft = /* @__PURE__ */ new Map();
-    const toprune = /* @__PURE__ */ new Map();
-    const noPX = /* @__PURE__ */ new Map();
-    this.clearBackoff();
-    this.peerhave.clear();
-    this.metrics?.cacheSize.set({ cache: "iasked" }, this.iasked.size);
-    this.iasked.clear();
-    this.applyIwantPenalties();
-    this.idontwantCounts.clear();
-    for (const idontwants of this.idontwants.values()) {
-      for (const [msgId3, heartbeatTick] of idontwants) {
-        if (this.heartbeatTicks - heartbeatTick >= this.opts.mcacheLength) {
-          idontwants.delete(msgId3);
-        }
-      }
-    }
-    if (this.heartbeatTicks % this.opts.directConnectTicks === 0) {
-      await this.directConnect();
-    }
-    this.fastMsgIdCache?.prune();
-    this.seenCache.prune();
-    this.gossipTracer.prune();
-    this.publishedMessageIds.prune();
-    const peersToGossipByTopic = /* @__PURE__ */ new Map();
-    this.mesh.forEach((peers, topic) => {
-      const peersInTopic = this.topics.get(topic);
-      const candidateMeshPeers = /* @__PURE__ */ new Set();
-      const peersToGossip = /* @__PURE__ */ new Set();
-      peersToGossipByTopic.set(topic, peersToGossip);
-      if (peersInTopic != null) {
-        const shuffledPeers = shuffle(Array.from(peersInTopic));
-        const backoff = this.backoff.get(topic);
-        for (const id of shuffledPeers) {
-          const peerStreams = this.streamsOutbound.get(id);
-          if (peerStreams != null && this.multicodecs.includes(peerStreams.protocol) && !peers.has(id) && !this.direct.has(id)) {
-            const score = getScore(id);
-            if (backoff?.has(id) !== true && score >= 0)
-              candidateMeshPeers.add(id);
-            if (score >= this.opts.scoreThresholds.gossipThreshold)
-              peersToGossip.add(id);
-          }
-        }
-      }
-      const prunePeer = /* @__PURE__ */ __name((id, reason) => {
-        this.log("HEARTBEAT: Remove mesh link to %s in %s", id, topic);
-        this.addBackoff(id, topic);
-        peers.delete(id);
-        if (getScore(id) >= this.opts.scoreThresholds.gossipThreshold)
-          peersToGossip.add(id);
-        this.metrics?.onRemoveFromMesh(topic, reason, 1);
-        const topics = toprune.get(id);
-        if (topics == null) {
-          toprune.set(id, [topic]);
-        } else {
-          topics.push(topic);
-        }
-      }, "prunePeer");
-      const graftPeer = /* @__PURE__ */ __name((id, reason) => {
-        this.log("HEARTBEAT: Add mesh link to %s in %s", id, topic);
-        this.score.graft(id, topic);
-        peers.add(id);
-        peersToGossip.delete(id);
-        this.metrics?.onAddToMesh(topic, reason, 1);
-        const topics = tograft.get(id);
-        if (topics == null) {
-          tograft.set(id, [topic]);
-        } else {
-          topics.push(topic);
-        }
-      }, "graftPeer");
-      peers.forEach((id) => {
-        const score = getScore(id);
-        if (score < 0) {
-          this.log("HEARTBEAT: Prune peer %s with negative score: score=%d, topic=%s", id, score, topic);
-          prunePeer(id, ChurnReason.BadScore);
-          noPX.set(id, true);
-        }
-      });
-      if (peers.size < Dlo) {
-        const ineed = D - peers.size;
-        const newMeshPeers = removeFirstNItemsFromSet(candidateMeshPeers, ineed);
-        newMeshPeers.forEach((p2) => {
-          graftPeer(p2, InclusionReason.NotEnough);
-        });
-      }
-      if (peers.size > Dhi) {
-        let peersArray = Array.from(peers);
-        peersArray.sort((a2, b) => getScore(b) - getScore(a2));
-        peersArray = peersArray.slice(0, Dscore).concat(shuffle(peersArray.slice(Dscore)));
-        let outbound = 0;
-        peersArray.slice(0, D).forEach((p2) => {
-          if (this.outbound.get(p2) ?? false) {
-            outbound++;
-          }
-        });
-        if (outbound < Dout) {
-          const rotate = /* @__PURE__ */ __name((i2) => {
-            const p2 = peersArray[i2];
-            for (let j = i2; j > 0; j--) {
-              peersArray[j] = peersArray[j - 1];
-            }
-            peersArray[0] = p2;
-          }, "rotate");
-          if (outbound > 0) {
-            let ihave = outbound;
-            for (let i2 = 1; i2 < D && ihave > 0; i2++) {
-              if (this.outbound.get(peersArray[i2]) ?? false) {
-                rotate(i2);
-                ihave--;
-              }
-            }
-          }
-          let ineed = D - outbound;
-          for (let i2 = D; i2 < peersArray.length && ineed > 0; i2++) {
-            if (this.outbound.get(peersArray[i2]) ?? false) {
-              rotate(i2);
-              ineed--;
-            }
-          }
-        }
-        peersArray.slice(D).forEach((p2) => {
-          prunePeer(p2, ChurnReason.Excess);
-        });
-      }
-      if (peers.size >= Dlo) {
-        let outbound = 0;
-        peers.forEach((p2) => {
-          if (this.outbound.get(p2) ?? false) {
-            outbound++;
-          }
-        });
-        if (outbound < Dout) {
-          const ineed = Dout - outbound;
-          const newMeshPeers = removeItemsFromSet(candidateMeshPeers, ineed, (id) => this.outbound.get(id) === true);
-          newMeshPeers.forEach((p2) => {
-            graftPeer(p2, InclusionReason.Outbound);
-          });
-        }
-      }
-      if (this.heartbeatTicks % this.opts.opportunisticGraftTicks === 0 && peers.size > 1) {
-        const peersList = Array.from(peers).sort((a2, b) => getScore(a2) - getScore(b));
-        const medianIndex = Math.floor(peers.size / 2);
-        const medianScore = getScore(peersList[medianIndex]);
-        if (medianScore < this.opts.scoreThresholds.opportunisticGraftThreshold) {
-          const ineed = this.opts.opportunisticGraftPeers;
-          const newMeshPeers = removeItemsFromSet(candidateMeshPeers, ineed, (id) => getScore(id) > medianScore);
-          for (const id of newMeshPeers) {
-            this.log("HEARTBEAT: Opportunistically graft peer %s on topic %s", id, topic);
-            graftPeer(id, InclusionReason.Opportunistic);
-          }
-        }
-      }
-    });
-    const now = Date.now();
-    this.fanoutLastpub.forEach((lastpb, topic) => {
-      if (lastpb + fanoutTTL < now) {
-        this.fanout.delete(topic);
-        this.fanoutLastpub.delete(topic);
-      }
-    });
-    this.fanout.forEach((fanoutPeers, topic) => {
-      const topicPeers = this.topics.get(topic);
-      fanoutPeers.forEach((id) => {
-        if (!(topicPeers?.has(id) ?? false) || getScore(id) < this.opts.scoreThresholds.publishThreshold) {
-          fanoutPeers.delete(id);
-        }
-      });
-      const peersInTopic = this.topics.get(topic);
-      const candidateFanoutPeers = [];
-      const peersToGossip = /* @__PURE__ */ new Set();
-      peersToGossipByTopic.set(topic, peersToGossip);
-      if (peersInTopic != null) {
-        const shuffledPeers = shuffle(Array.from(peersInTopic));
-        for (const id of shuffledPeers) {
-          const peerStreams = this.streamsOutbound.get(id);
-          if (peerStreams != null && this.multicodecs.includes(peerStreams.protocol) && !fanoutPeers.has(id) && !this.direct.has(id)) {
-            const score = getScore(id);
-            if (score >= this.opts.scoreThresholds.publishThreshold)
-              candidateFanoutPeers.push(id);
-            if (score >= this.opts.scoreThresholds.gossipThreshold)
-              peersToGossip.add(id);
-          }
-        }
-      }
-      if (fanoutPeers.size < D) {
-        const ineed = D - fanoutPeers.size;
-        candidateFanoutPeers.slice(0, ineed).forEach((id) => {
-          fanoutPeers.add(id);
-          peersToGossip?.delete(id);
-        });
-      }
-    });
-    this.emitGossip(peersToGossipByTopic);
-    await this.sendGraftPrune(tograft, toprune, noPX);
-    this.flush();
-    this.mcache.shift();
-    this.dispatchEvent(new CustomEvent("gossipsub:heartbeat"));
-  }
-  /**
-   * Given a topic, returns up to count peers subscribed to that topic
-   * that pass an optional filter function
-   *
-   * @param topic
-   * @param count
-   * @param filter - a function to filter acceptable peers
-   */
-  getRandomGossipPeers(topic, count, filter2 = () => true) {
-    const peersInTopic = this.topics.get(topic);
-    if (peersInTopic == null) {
-      return /* @__PURE__ */ new Set();
-    }
-    let peers = [];
-    peersInTopic.forEach((id) => {
-      const peerStreams = this.streamsOutbound.get(id);
-      if (peerStreams == null) {
-        return;
-      }
-      if (this.multicodecs.includes(peerStreams.protocol) && filter2(id)) {
-        peers.push(id);
-      }
-    });
-    peers = shuffle(peers);
-    if (count > 0 && peers.length > count) {
-      peers = peers.slice(0, count);
-    }
-    return new Set(peers);
-  }
-  onScrapeMetrics(metrics) {
-    metrics.mcacheSize.set(this.mcache.size);
-    metrics.mcacheNotValidatedCount.set(this.mcache.notValidatedCount);
-    metrics.cacheSize.set({ cache: "direct" }, this.direct.size);
-    metrics.cacheSize.set({ cache: "seenCache" }, this.seenCache.size);
-    metrics.cacheSize.set({ cache: "fastMsgIdCache" }, this.fastMsgIdCache?.size ?? 0);
-    metrics.cacheSize.set({ cache: "publishedMessageIds" }, this.publishedMessageIds.size);
-    metrics.cacheSize.set({ cache: "mcache" }, this.mcache.size);
-    metrics.cacheSize.set({ cache: "score" }, this.score.size);
-    metrics.cacheSize.set({ cache: "gossipTracer.promises" }, this.gossipTracer.size);
-    metrics.cacheSize.set({ cache: "gossipTracer.requests" }, this.gossipTracer.requestMsByMsgSize);
-    metrics.cacheSize.set({ cache: "topics" }, this.topics.size);
-    metrics.cacheSize.set({ cache: "subscriptions" }, this.subscriptions.size);
-    metrics.cacheSize.set({ cache: "mesh" }, this.mesh.size);
-    metrics.cacheSize.set({ cache: "fanout" }, this.fanout.size);
-    metrics.cacheSize.set({ cache: "peers" }, this.peers.size);
-    metrics.cacheSize.set({ cache: "streamsOutbound" }, this.streamsOutbound.size);
-    metrics.cacheSize.set({ cache: "streamsInbound" }, this.streamsInbound.size);
-    metrics.cacheSize.set({ cache: "acceptFromWhitelist" }, this.acceptFromWhitelist.size);
-    metrics.cacheSize.set({ cache: "gossip" }, this.gossip.size);
-    metrics.cacheSize.set({ cache: "control" }, this.control.size);
-    metrics.cacheSize.set({ cache: "peerhave" }, this.peerhave.size);
-    metrics.cacheSize.set({ cache: "outbound" }, this.outbound.size);
-    let backoffSize = 0;
-    const now = Date.now();
-    metrics.connectedPeersBackoffSec.reset();
-    for (const backoff of this.backoff.values()) {
-      backoffSize += backoff.size;
-      for (const [peer, expiredMs] of backoff.entries()) {
-        if (this.peers.has(peer)) {
-          metrics.connectedPeersBackoffSec.observe(Math.max(0, expiredMs - now) / 1e3);
-        }
-      }
-    }
-    metrics.cacheSize.set({ cache: "backoff" }, backoffSize);
-    let idontwantsCount = 0;
-    for (const idontwant of this.idontwants.values()) {
-      idontwantsCount += idontwant.size;
-    }
-    metrics.cacheSize.set({ cache: "idontwants" }, idontwantsCount);
-    for (const [topicStr, peers] of this.topics) {
-      metrics.topicPeersCount.set({ topicStr }, peers.size);
-    }
-    for (const [topicStr, peers] of this.mesh) {
-      metrics.meshPeerCounts.set({ topicStr }, peers.size);
-    }
-    const scores = [];
-    const scoreByPeer = /* @__PURE__ */ new Map();
-    metrics.behaviourPenalty.reset();
-    for (const peerIdStr of this.peers.keys()) {
-      const score = this.score.score(peerIdStr);
-      scores.push(score);
-      scoreByPeer.set(peerIdStr, score);
-      metrics.behaviourPenalty.observe(this.score.peerStats.get(peerIdStr)?.behaviourPenalty ?? 0);
-    }
-    metrics.registerScores(scores, this.opts.scoreThresholds);
-    metrics.registerScorePerMesh(this.mesh, scoreByPeer);
-    const sw = computeAllPeersScoreWeights(this.peers.keys(), this.score.peerStats, this.score.params, this.score.peerIPs, metrics.topicStrToLabel);
-    metrics.registerScoreWeights(sw);
-  }
-  tagMeshPeer = /* @__PURE__ */ __name((evt) => {
-    const { peerId, topic } = evt.detail;
-    this.components.peerStore.merge(this.peers.get(peerId) ?? peerIdFromString3(peerId), {
-      tags: {
-        [topic]: {
-          value: 100
-        }
-      }
-    }).catch((err) => {
-      this.log.error("Error tagging peer %s with topic %s", peerId, topic, err);
-    });
-  }, "tagMeshPeer");
-  untagMeshPeer = /* @__PURE__ */ __name((evt) => {
-    const { peerId, topic } = evt.detail;
-    this.components.peerStore.merge(this.peers.get(peerId) ?? peerIdFromString3(peerId), {
-      tags: {
-        [topic]: void 0
-      }
-    }).catch((err) => {
-      this.log.error("Error untagging peer %s with topic %s", peerId, topic, err);
-    });
-  }, "untagMeshPeer");
-};
-function gossipsub(init = {}) {
-  return (components) => new GossipSub(components, init);
-}
-__name(gossipsub, "gossipsub");
+// public/components/chat-manager/actions/libp2p-config.js
+import { gossipsub } from "https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm";
 
 // node_modules/@libp2p/bootstrap/dist/src/index.js
 var DEFAULT_BOOTSTRAP_TAG_NAME = "bootstrap";
@@ -41047,6 +34478,7 @@ __export(template_exports4, {
   renderAddresses: () => renderAddresses,
   renderAddressesList: () => renderAddressesList,
   renderConnectedPeers: () => renderConnectedPeers,
+  renderConnectedPeersDetailed: () => renderConnectedPeersDetailed,
   renderConnectionControls: () => renderConnectionControls,
   renderPeersList: () => renderPeersList,
   renderQuickActions: () => renderQuickActions2,
@@ -41076,7 +34508,7 @@ function defaultTemplate4({ state = {} } = {}) {
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Peer ID:</span>
-                    <span class="meta-value peer-id">${state.peerId ? state.peerId.substring(0, 16) + "..." : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
+                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
                 </div>
             </div>
         </header>
@@ -41133,7 +34565,9 @@ function defaultTemplate4({ state = {} } = {}) {
                     </h3>
                 </div>
                 <div class="card-content">
-                    ${renderAddressesList({ state })}
+                     <div id="listening-addresses">
+                        ${renderAddressesList({ state })}
+                    </div>
                 </div>
             </section>
 
@@ -41160,6 +34594,22 @@ function defaultTemplate4({ state = {} } = {}) {
                 </div>
                 <div class="card-content">
                     ${renderStatistics2({ state })}
+                </div>
+            </section>
+
+            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->
+            <section class="grid-card connected-peers-section" style="display: none;">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F517}</span>
+                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F
+                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
+                    </h3>
+                </div>
+                <div class="card-content">
+                    <div id="connected-peers-list">
+                        ${renderConnectedPeersDetailed({ state })}
+                    </div>
                 </div>
             </section>
         </main>
@@ -41323,6 +34773,86 @@ function renderPeersList({ state = {} } = {}) {
     `;
 }
 __name(renderPeersList, "renderPeersList");
+function renderConnectedPeersDetailed({ state = {} } = {}) {
+  const peers = state.connectedPeers || [];
+  if (peers.length === 0) {
+    return `
+        <div class="empty-state">
+            <div class="empty-icon">\u{1F50C}</div>
+            <p class="empty-title">\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</p>
+            <p class="empty-description">\u041F\u0438\u0440\u044B \u043F\u043E\u044F\u0432\u044F\u0442\u0441\u044F \u0437\u0434\u0435\u0441\u044C \u043F\u043E\u0441\u043B\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</p>
+        </div>
+        `;
+  }
+  return `
+    <div class="peers-detailed-container">
+        ${peers.map((peer, index) => `
+        <div class="peer-detailed-item" data-peer-id="${peer.id}">
+            <div class="peer-header">
+                <div class="peer-avatar-large">
+                    ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
+                </div>
+                <div class="peer-main-info">
+                    <div class="peer-name">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 #${index + 1}</div>
+                    <div class="peer-id-full">${peer.id}</div>
+                </div>
+                <div class="peer-status-indicator connected">
+                    <span class="status-dot"></span>
+                    <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D</span>
+                </div>
+            </div>
+            
+            <div class="peer-connections-info">
+                <div class="connections-header">
+                    <span class="connections-label">\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F:</span>
+                    <span class="connections-count">${peer.connections ? peer.connections.length : 1}</span>
+                </div>
+                
+                ${peer.connections ? peer.connections.map((conn) => `
+                <div class="connection-item">
+                    <div class="connection-protocol">
+                        <span class="protocol-icon">\u{1F517}</span>
+                        <span class="protocol-name">${getConnectionProtocol(conn.remoteAddr)}</span>
+                    </div>
+                    <div class="connection-address">${conn.remoteAddr}</div>
+                    <div class="connection-status ${conn.status}">
+                        <span class="status-badge">${conn.status}</span>
+                    </div>
+                </div>
+                `).join("") : `
+                <div class="connection-item">
+                    <div class="connection-protocol">
+                        <span class="protocol-icon">\u{1F310}</span>
+                        <span class="protocol-name">P2P</span>
+                    </div>
+                    <div class="connection-address">\u041F\u0440\u044F\u043C\u043E\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435</div>
+                    <div class="connection-status open">
+                        <span class="status-badge">active</span>
+                    </div>
+                </div>
+                `}
+            </div>
+            
+            <div class="peer-actions-detailed">
+                <button class="action-btn secondary disconnect-peer" data-peer-id="${peer.id}">
+                    <span class="btn-icon">\u{1F6AB}</span>
+                    \u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C
+                </button>
+                <button class="action-btn outline copy-peer-id" data-peer-id="${peer.id}">
+                    <span class="btn-icon">\u{1F4CB}</span>
+                    ID
+                </button>
+                <button class="action-btn outline peer-info" data-peer-id="${peer.id}">
+                    <span class="btn-icon">\u2139\uFE0F</span>
+                    \u0418\u043D\u0444\u043E
+                </button>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderConnectedPeersDetailed, "renderConnectedPeersDetailed");
 function renderAddressesList({ state = {} } = {}) {
   const addresses = state.listeningAddresses || [];
   if (addresses.length === 0) {
@@ -41335,7 +34865,7 @@ function renderAddressesList({ state = {} } = {}) {
         `;
   }
   return `
-    <div class="addresses-container" id="listening-addresses">
+    <div class="addresses-container">
         ${addresses.map((address, index) => `
         <div class="address-item" data-address="${address}">
             <div class="address-index">${index + 1}</div>
@@ -41412,7 +34942,7 @@ function renderAddresses({ state = {} } = {}) {
 }
 __name(renderAddresses, "renderAddresses");
 function renderConnectedPeers({ state = {} } = {}) {
-  return renderPeersList({ state });
+  return renderConnectedPeersDetailed({ state });
 }
 __name(renderConnectedPeers, "renderConnectedPeers");
 function renderStatus2({ state = {} } = {}) {
@@ -41458,6 +34988,15 @@ function getProtocolName(address) {
   return "Unknown";
 }
 __name(getProtocolName, "getProtocolName");
+function getConnectionProtocol(address) {
+  if (address.includes("/ws")) return "WebSocket";
+  if (address.includes("/wss")) return "Secure WebSocket";
+  if (address.includes("/webrtc")) return "WebRTC";
+  if (address.includes("/p2p-circuit")) return "Circuit Relay";
+  if (address.includes("/tcp")) return "TCP";
+  return "Direct";
+}
+__name(getConnectionProtocol, "getConnectionProtocol");
 
 // public/components/peer-connection/controller/index.mjs
 var controller4 = /* @__PURE__ */ __name(async (context) => {
@@ -41469,6 +35008,8 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
      */
     async init() {
       console.log("\u{1F527} PeerConnection controller initializing...");
+      const connectBtn = context.shadowRoot.querySelector("#connect-peer-btn");
+      const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode-btn");
       console.log("\u{1F50D} Debug: button elements found", {
@@ -41538,10 +35079,9 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
         console.log("\u2705 Mode switcher delegation handler attached");
       }
-      const connectBtn = context.shadowRoot.querySelector("#connect-peer-btn");
-      const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
       if (connectBtn && peerAddressInput) {
         const connectHandler = /* @__PURE__ */ __name(async () => {
+          debugger;
           const address = peerAddressInput.value.trim();
           if (address) {
             try {
@@ -41700,8 +35240,8 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (restartNodeBtn) {
         const restartHandler = /* @__PURE__ */ __name(async () => {
           try {
+            console.log("=======================================", context2.state.mode);
             console.log("\u{1F527} Restarting node...");
-            await context2.switchMode(context2.state.mode);
             console.log("\u2705 \u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
           } catch (error) {
             console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430:", error);
@@ -41803,8 +35343,8 @@ async function createActions4(context) {
           mode,
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString())
         });
-        self.setupEventHandlers();
-        self.startPeerListUpdates();
+        await self.setupEventHandlers();
+        await self.startPeerListUpdates();
         return libp2p;
       } catch (error) {
         console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p:", error);
@@ -41954,7 +35494,7 @@ async function createActions4(context) {
         if (!libp2p) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
-        const ma = multiaddr(multiaddrStr);
+        const ma = multiaddr(multiaddrStr.trim());
         console.log("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u043C\u0441\u044F \u043A:", ma.toString());
         await libp2p.dial(ma);
         console.log("\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u044B \u043A:", ma.toString());
@@ -42138,6 +35678,7 @@ var PeerConnection = class extends BaseComponent {
   constructor() {
     super();
     this._templateMethods = template_exports4;
+    this.node = null;
     this.state = {
       mode: "listener",
       connected: false,
@@ -42156,7 +35697,7 @@ var PeerConnection = class extends BaseComponent {
       hasActions: !!this._actions
     });
     await this._controller.init();
-    await this.initializeLibp2p(this.state.mode);
+    this.node = await this.initializeLibp2p(this.state.mode);
     return true;
   }
   async initializeLibp2p(mode = "listener") {
@@ -42164,10 +35705,6 @@ var PeerConnection = class extends BaseComponent {
     this.state.mode = mode;
     this.state.connected = false;
     try {
-      await this.showSkeleton({
-        selector: "#connection-status",
-        replace: true
-      });
       const libp2p = await this._actions.initializeLibp2p(mode);
       this.state.peerId = libp2p.peerId.toString();
       this.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
@@ -42180,6 +35717,14 @@ var PeerConnection = class extends BaseComponent {
         addresses: this.state.listeningAddresses
       });
       await this.fullRender(this.state);
+      if (this.state.mode === "listener") {
+        const relayAddress = await this.getRelayAddresses();
+        const peerAddressInput = this.shadowRoot.querySelector("#peer-address-input");
+        peerAddressInput.value = relayAddress;
+      } else {
+        const peerAddressInput = this.shadowRoot.querySelector("#peer-address-input");
+        peerAddressInput.value = "";
+      }
       return libp2p;
     } catch (error) {
       console.error("\u274C Libp2p initialization failed:", error);
@@ -42235,9 +35780,7 @@ var PeerConnection = class extends BaseComponent {
     }
   }
   async getRelayAddresses() {
-    return this.state.listeningAddresses.filter(
-      (addr) => addr.includes("/p2p-circuit") || addr.includes("/webrtc")
-    );
+    return "/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
   }
   // Методы для отладки
   async manualUpdate() {

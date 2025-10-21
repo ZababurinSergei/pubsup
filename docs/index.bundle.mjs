@@ -1801,12 +1801,12 @@ var require_eventemitter3 = __commonJS({
       else delete emitter._events[evt];
     }
     __name(clearEvent, "clearEvent");
-    function EventEmitter3() {
+    function EventEmitter2() {
       this._events = new Events();
       this._eventsCount = 0;
     }
-    __name(EventEmitter3, "EventEmitter");
-    EventEmitter3.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
+    __name(EventEmitter2, "EventEmitter");
+    EventEmitter2.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
       var names2 = [], events, name3;
       if (this._eventsCount === 0) return names2;
       for (name3 in events = this._events) {
@@ -1817,7 +1817,7 @@ var require_eventemitter3 = __commonJS({
       }
       return names2;
     }, "eventNames");
-    EventEmitter3.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
+    EventEmitter2.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
       var evt = prefix ? prefix + event : event, handlers = this._events[evt];
       if (!handlers) return [];
       if (handlers.fn) return [handlers.fn];
@@ -1826,13 +1826,13 @@ var require_eventemitter3 = __commonJS({
       }
       return ee;
     }, "listeners");
-    EventEmitter3.prototype.listenerCount = /* @__PURE__ */ __name(function listenerCount(event) {
+    EventEmitter2.prototype.listenerCount = /* @__PURE__ */ __name(function listenerCount(event) {
       var evt = prefix ? prefix + event : event, listeners = this._events[evt];
       if (!listeners) return 0;
       if (listeners.fn) return 1;
       return listeners.length;
     }, "listenerCount");
-    EventEmitter3.prototype.emit = /* @__PURE__ */ __name(function emit(event, a1, a2, a3, a4, a5) {
+    EventEmitter2.prototype.emit = /* @__PURE__ */ __name(function emit(event, a1, a2, a3, a4, a5) {
       var evt = prefix ? prefix + event : event;
       if (!this._events[evt]) return false;
       var listeners = this._events[evt], len = arguments.length, args, i2;
@@ -1883,13 +1883,13 @@ var require_eventemitter3 = __commonJS({
       }
       return true;
     }, "emit");
-    EventEmitter3.prototype.on = /* @__PURE__ */ __name(function on(event, fn, context) {
+    EventEmitter2.prototype.on = /* @__PURE__ */ __name(function on(event, fn, context) {
       return addListener2(this, event, fn, context, false);
     }, "on");
-    EventEmitter3.prototype.once = /* @__PURE__ */ __name(function once(event, fn, context) {
+    EventEmitter2.prototype.once = /* @__PURE__ */ __name(function once(event, fn, context) {
       return addListener2(this, event, fn, context, true);
     }, "once");
-    EventEmitter3.prototype.removeListener = /* @__PURE__ */ __name(function removeListener2(event, fn, context, once) {
+    EventEmitter2.prototype.removeListener = /* @__PURE__ */ __name(function removeListener2(event, fn, context, once) {
       var evt = prefix ? prefix + event : event;
       if (!this._events[evt]) return this;
       if (!fn) {
@@ -1912,7 +1912,7 @@ var require_eventemitter3 = __commonJS({
       }
       return this;
     }, "removeListener");
-    EventEmitter3.prototype.removeAllListeners = /* @__PURE__ */ __name(function removeAllListeners(event) {
+    EventEmitter2.prototype.removeAllListeners = /* @__PURE__ */ __name(function removeAllListeners(event) {
       var evt;
       if (event) {
         evt = prefix ? prefix + event : event;
@@ -1923,12 +1923,12 @@ var require_eventemitter3 = __commonJS({
       }
       return this;
     }, "removeAllListeners");
-    EventEmitter3.prototype.off = EventEmitter3.prototype.removeListener;
-    EventEmitter3.prototype.addListener = EventEmitter3.prototype.on;
-    EventEmitter3.prefixed = prefix;
-    EventEmitter3.EventEmitter = EventEmitter3;
+    EventEmitter2.prototype.off = EventEmitter2.prototype.removeListener;
+    EventEmitter2.prototype.addListener = EventEmitter2.prototype.on;
+    EventEmitter2.prefixed = prefix;
+    EventEmitter2.EventEmitter = EventEmitter2;
     if ("undefined" !== typeof module) {
-      module.exports = EventEmitter3;
+      module.exports = EventEmitter2;
     }
   }
 });
@@ -1977,173 +1977,6 @@ var require_hashlru = __commonJS({
         }, "clear")
       };
     };
-  }
-});
-
-// node_modules/@libp2p/floodsub/node_modules/eventemitter3/index.js
-var require_eventemitter32 = __commonJS({
-  "node_modules/@libp2p/floodsub/node_modules/eventemitter3/index.js"(exports, module) {
-    "use strict";
-    var has = Object.prototype.hasOwnProperty;
-    var prefix = "~";
-    function Events() {
-    }
-    __name(Events, "Events");
-    if (Object.create) {
-      Events.prototype = /* @__PURE__ */ Object.create(null);
-      if (!new Events().__proto__) prefix = false;
-    }
-    function EE(fn, context, once) {
-      this.fn = fn;
-      this.context = context;
-      this.once = once || false;
-    }
-    __name(EE, "EE");
-    function addListener2(emitter, event, fn, context, once) {
-      if (typeof fn !== "function") {
-        throw new TypeError("The listener must be a function");
-      }
-      var listener = new EE(fn, context || emitter, once), evt = prefix ? prefix + event : event;
-      if (!emitter._events[evt]) emitter._events[evt] = listener, emitter._eventsCount++;
-      else if (!emitter._events[evt].fn) emitter._events[evt].push(listener);
-      else emitter._events[evt] = [emitter._events[evt], listener];
-      return emitter;
-    }
-    __name(addListener2, "addListener");
-    function clearEvent(emitter, evt) {
-      if (--emitter._eventsCount === 0) emitter._events = new Events();
-      else delete emitter._events[evt];
-    }
-    __name(clearEvent, "clearEvent");
-    function EventEmitter3() {
-      this._events = new Events();
-      this._eventsCount = 0;
-    }
-    __name(EventEmitter3, "EventEmitter");
-    EventEmitter3.prototype.eventNames = /* @__PURE__ */ __name(function eventNames() {
-      var names2 = [], events, name3;
-      if (this._eventsCount === 0) return names2;
-      for (name3 in events = this._events) {
-        if (has.call(events, name3)) names2.push(prefix ? name3.slice(1) : name3);
-      }
-      if (Object.getOwnPropertySymbols) {
-        return names2.concat(Object.getOwnPropertySymbols(events));
-      }
-      return names2;
-    }, "eventNames");
-    EventEmitter3.prototype.listeners = /* @__PURE__ */ __name(function listeners(event) {
-      var evt = prefix ? prefix + event : event, handlers = this._events[evt];
-      if (!handlers) return [];
-      if (handlers.fn) return [handlers.fn];
-      for (var i2 = 0, l2 = handlers.length, ee = new Array(l2); i2 < l2; i2++) {
-        ee[i2] = handlers[i2].fn;
-      }
-      return ee;
-    }, "listeners");
-    EventEmitter3.prototype.listenerCount = /* @__PURE__ */ __name(function listenerCount(event) {
-      var evt = prefix ? prefix + event : event, listeners = this._events[evt];
-      if (!listeners) return 0;
-      if (listeners.fn) return 1;
-      return listeners.length;
-    }, "listenerCount");
-    EventEmitter3.prototype.emit = /* @__PURE__ */ __name(function emit(event, a1, a2, a3, a4, a5) {
-      var evt = prefix ? prefix + event : event;
-      if (!this._events[evt]) return false;
-      var listeners = this._events[evt], len = arguments.length, args, i2;
-      if (listeners.fn) {
-        if (listeners.once) this.removeListener(event, listeners.fn, void 0, true);
-        switch (len) {
-          case 1:
-            return listeners.fn.call(listeners.context), true;
-          case 2:
-            return listeners.fn.call(listeners.context, a1), true;
-          case 3:
-            return listeners.fn.call(listeners.context, a1, a2), true;
-          case 4:
-            return listeners.fn.call(listeners.context, a1, a2, a3), true;
-          case 5:
-            return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
-          case 6:
-            return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
-        }
-        for (i2 = 1, args = new Array(len - 1); i2 < len; i2++) {
-          args[i2 - 1] = arguments[i2];
-        }
-        listeners.fn.apply(listeners.context, args);
-      } else {
-        var length3 = listeners.length, j;
-        for (i2 = 0; i2 < length3; i2++) {
-          if (listeners[i2].once) this.removeListener(event, listeners[i2].fn, void 0, true);
-          switch (len) {
-            case 1:
-              listeners[i2].fn.call(listeners[i2].context);
-              break;
-            case 2:
-              listeners[i2].fn.call(listeners[i2].context, a1);
-              break;
-            case 3:
-              listeners[i2].fn.call(listeners[i2].context, a1, a2);
-              break;
-            case 4:
-              listeners[i2].fn.call(listeners[i2].context, a1, a2, a3);
-              break;
-            default:
-              if (!args) for (j = 1, args = new Array(len - 1); j < len; j++) {
-                args[j - 1] = arguments[j];
-              }
-              listeners[i2].fn.apply(listeners[i2].context, args);
-          }
-        }
-      }
-      return true;
-    }, "emit");
-    EventEmitter3.prototype.on = /* @__PURE__ */ __name(function on(event, fn, context) {
-      return addListener2(this, event, fn, context, false);
-    }, "on");
-    EventEmitter3.prototype.once = /* @__PURE__ */ __name(function once(event, fn, context) {
-      return addListener2(this, event, fn, context, true);
-    }, "once");
-    EventEmitter3.prototype.removeListener = /* @__PURE__ */ __name(function removeListener2(event, fn, context, once) {
-      var evt = prefix ? prefix + event : event;
-      if (!this._events[evt]) return this;
-      if (!fn) {
-        clearEvent(this, evt);
-        return this;
-      }
-      var listeners = this._events[evt];
-      if (listeners.fn) {
-        if (listeners.fn === fn && (!once || listeners.once) && (!context || listeners.context === context)) {
-          clearEvent(this, evt);
-        }
-      } else {
-        for (var i2 = 0, events = [], length3 = listeners.length; i2 < length3; i2++) {
-          if (listeners[i2].fn !== fn || once && !listeners[i2].once || context && listeners[i2].context !== context) {
-            events.push(listeners[i2]);
-          }
-        }
-        if (events.length) this._events[evt] = events.length === 1 ? events[0] : events;
-        else clearEvent(this, evt);
-      }
-      return this;
-    }, "removeListener");
-    EventEmitter3.prototype.removeAllListeners = /* @__PURE__ */ __name(function removeAllListeners(event) {
-      var evt;
-      if (event) {
-        evt = prefix ? prefix + event : event;
-        if (this._events[evt]) clearEvent(this, evt);
-      } else {
-        this._events = new Events();
-        this._eventsCount = 0;
-      }
-      return this;
-    }, "removeAllListeners");
-    EventEmitter3.prototype.off = EventEmitter3.prototype.removeListener;
-    EventEmitter3.prototype.addListener = EventEmitter3.prototype.on;
-    EventEmitter3.prefixed = prefix;
-    EventEmitter3.EventEmitter = EventEmitter3;
-    if ("undefined" !== typeof module) {
-      module.exports = EventEmitter3;
-    }
   }
 });
 
@@ -13710,19 +13543,19 @@ function stringToComponents(string2) {
   const components = [];
   let collecting = "protocol";
   let value2 = "";
-  let protocol2 = "";
+  let protocol = "";
   for (let i2 = 1; i2 < string2.length; i2++) {
     const char = string2.charAt(i2);
     if (char !== "/") {
       if (collecting === "protocol") {
-        protocol2 += string2.charAt(i2);
+        protocol += string2.charAt(i2);
       } else {
         value2 += string2.charAt(i2);
       }
     }
     const ended = i2 === string2.length - 1;
     if (char === "/" || ended) {
-      const codec = registry.getProtocol(protocol2);
+      const codec = registry.getProtocol(protocol);
       if (collecting === "protocol") {
         if (codec.size == null || codec.size === 0) {
           components.push({
@@ -13730,11 +13563,11 @@ function stringToComponents(string2) {
             name: codec.name
           });
           value2 = "";
-          protocol2 = "";
+          protocol = "";
           collecting = "protocol";
           continue;
         } else if (ended) {
-          throw new InvalidMultiaddrError2(`Component ${protocol2} was missing value`);
+          throw new InvalidMultiaddrError2(`Component ${protocol} was missing value`);
         }
         collecting = "value";
       } else if (collecting === "value") {
@@ -13744,18 +13577,18 @@ function stringToComponents(string2) {
         };
         if (codec.size != null && codec.size !== 0) {
           if (value2 === "") {
-            throw new InvalidMultiaddrError2(`Component ${protocol2} was missing value`);
+            throw new InvalidMultiaddrError2(`Component ${protocol} was missing value`);
           }
           component.value = codec.stringToValue?.(value2) ?? value2;
         }
         components.push(component);
         value2 = "";
-        protocol2 = "";
+        protocol = "";
         collecting = "protocol";
       }
     }
   }
-  if (protocol2 !== "" && value2 !== "") {
+  if (protocol !== "" && value2 !== "") {
     throw new InvalidMultiaddrError2("Incomplete multiaddr");
   }
   return components;
@@ -17639,8 +17472,8 @@ var Noise = class {
     }
     const streamMuxers = this.components.upgrader.getStreamMuxers();
     if (streamMuxers != null) {
-      for (const protocol2 of protocols) {
-        const streamMuxer = streamMuxers.get(protocol2);
+      for (const protocol of protocols) {
+        const streamMuxer = streamMuxers.get(protocol);
         if (streamMuxer != null) {
           return streamMuxer;
         }
@@ -36416,14 +36249,14 @@ var interpreters = {
     if (maHasTLS && sni != null) {
       return `https://${sni}${port2}`;
     }
-    const protocol2 = maHasTLS ? "https://" : "http://";
+    const protocol = maHasTLS ? "https://" : "http://";
     const tail = rest.pop();
     if (tail == null) {
       throw new Error("Unexpected end of multiaddr");
     }
     let baseVal = interpretNext(tail, rest);
     baseVal = baseVal?.replace("tcp://", "");
-    return `${protocol2}${baseVal}`;
+    return `${protocol}${baseVal}`;
   }, "http"),
   "http-path": /* @__PURE__ */ __name((head, rest) => {
     const tail = rest.pop();
@@ -36464,14 +36297,14 @@ var interpreters = {
     if (maHasTLS && sni != null) {
       return `wss://${sni}${port2}`;
     }
-    const protocol2 = maHasTLS ? "wss://" : "ws://";
+    const protocol = maHasTLS ? "wss://" : "ws://";
     const tail = rest.pop();
     if (tail == null) {
       throw new Error("Unexpected end of multiaddr");
     }
     let baseVal = interpretNext(tail, rest);
     baseVal = baseVal?.replace("tcp://", "");
-    return `${protocol2}${baseVal}`;
+    return `${protocol}${baseVal}`;
   }, "ws"),
   wss: /* @__PURE__ */ __name((head, rest) => {
     const tail = rest.pop();
@@ -39907,8 +39740,8 @@ var IPMappings = class {
     }
     return false;
   }
-  add(internalIp, internalPort, externalIp, externalPort = internalPort, protocol2 = "tcp") {
-    const key = `${internalIp}-${internalPort}-${protocol2}`;
+  add(internalIp, internalPort, externalIp, externalPort = internalPort, protocol = "tcp") {
+    const key = `${internalIp}-${internalPort}-${protocol}`;
     const mappings = this.mappings.get(key) ?? [];
     const mapping = {
       internalIp,
@@ -39916,7 +39749,7 @@ var IPMappings = class {
       externalIp,
       externalPort,
       externalFamily: isIPv4(externalIp) ? 4 : 6,
-      protocol: protocol2,
+      protocol,
       verified: false,
       expires: 0
     };
@@ -39980,10 +39813,10 @@ var IPMappings = class {
     }
     return ipMappedAddresses;
   }
-  maybeOverrideIp(ma, externalIp, externalFamily, protocol2, externalPort) {
+  maybeOverrideIp(ma, externalIp, externalFamily, protocol, externalPort) {
     const components = ma.getComponents();
     const ipIndex = components.findIndex((c2) => c2.code === CODE_IP4 || c2.code === CODE_IP6);
-    const portIndex = components.findIndex((c2) => c2.name === protocol2);
+    const portIndex = components.findIndex((c2) => c2.name === protocol);
     if (ipIndex > -1 && portIndex > -1) {
       components[ipIndex].value = externalIp;
       components[ipIndex].code = externalFamily === 4 ? CODE_IP4 : CODE_IP6;
@@ -40465,12 +40298,12 @@ var AddressManager = class {
       this._updatePeerStoreAddresses();
     }
   }
-  addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol2 = "tcp") {
-    this.ipMappings.add(internalIp, internalPort, externalIp, externalPort, protocol2);
-    this.observed.removePrefixed(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol2}/${externalPort}`);
+  addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol = "tcp") {
+    this.ipMappings.add(internalIp, internalPort, externalIp, externalPort, protocol);
+    this.observed.removePrefixed(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`);
   }
-  removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol2 = "tcp") {
-    if (this.ipMappings.remove(multiaddr(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol2}/${externalPort}`))) {
+  removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol = "tcp") {
+    if (this.ipMappings.remove(multiaddr(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`))) {
       this._updatePeerStoreAddresses();
     }
   }
@@ -42691,17 +42524,17 @@ var DefaultConnectionManager = class {
               const key = `${stream.direction} ${stream.protocol ?? "unnegotiated"}`;
               streams[key] = (streams[key] ?? 0) + 1;
             }
-            for (const [protocol2, count] of Object.entries(streams)) {
-              allStreams[protocol2] = allStreams[protocol2] ?? [];
-              allStreams[protocol2].push(count);
+            for (const [protocol, count] of Object.entries(streams)) {
+              allStreams[protocol] = allStreams[protocol] ?? [];
+              allStreams[protocol].push(count);
             }
           }
         }
         const metric = {};
-        for (let [protocol2, counts] of Object.entries(allStreams)) {
+        for (let [protocol, counts] of Object.entries(allStreams)) {
           counts = counts.sort((a2, b) => a2 - b);
           const index = Math.floor(counts.length * 0.9);
-          metric[protocol2] = counts[index];
+          metric[protocol] = counts[index];
         }
         return metric;
       }, "calculate")
@@ -42864,9 +42697,9 @@ var DefaultConnectionManager = class {
       this.outboundPendingConnections--;
     }
   }
-  async openStream(peerIdOrMultiaddr, protocol2, options = {}) {
+  async openStream(peerIdOrMultiaddr, protocol, options = {}) {
     const connection = await this.openConnection(peerIdOrMultiaddr, options);
-    return connection.newStream(protocol2, options);
+    return connection.newStream(protocol, options);
   }
   async closeConnections(peerId, options = {}) {
     const connections = this.connections.get(peerId) ?? [];
@@ -43484,15 +43317,15 @@ var Registrar = class {
       ...this.handlers.keys()
     ])).sort();
   }
-  getHandler(protocol2) {
-    const handler = this.handlers.get(protocol2);
+  getHandler(protocol) {
+    const handler = this.handlers.get(protocol);
     if (handler == null) {
-      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol2}`);
+      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol}`);
     }
     return handler;
   }
-  getTopologies(protocol2) {
-    const topologies = this.topologies.get(protocol2);
+  getTopologies(protocol) {
+    const topologies = this.topologies.get(protocol);
     if (topologies == null) {
       return [];
     }
@@ -43503,11 +43336,11 @@ var Registrar = class {
   /**
    * Registers the `handler` for each protocol
    */
-  async handle(protocol2, handler, opts) {
-    if (this.handlers.has(protocol2) && opts?.force !== true) {
-      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol2}`);
+  async handle(protocol, handler, opts) {
+    if (this.handlers.has(protocol) && opts?.force !== true) {
+      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`);
     }
-    this.handlers.set(protocol2, {
+    this.handlers.set(protocol, {
       handler,
       options: {
         maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
@@ -43516,7 +43349,7 @@ var Registrar = class {
       }
     });
     await this.components.peerStore.merge(this.components.peerId, {
-      protocols: [protocol2]
+      protocols: [protocol]
     }, opts);
   }
   /**
@@ -43525,8 +43358,8 @@ var Registrar = class {
    */
   async unhandle(protocols, options) {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols];
-    protocolList.forEach((protocol2) => {
-      this.handlers.delete(protocol2);
+    protocolList.forEach((protocol) => {
+      this.handlers.delete(protocol);
     });
     await this.components.peerStore.patch(this.components.peerId, {
       protocols: this.getProtocols()
@@ -43535,15 +43368,15 @@ var Registrar = class {
   /**
    * Register handlers for a set of multicodecs given
    */
-  async register(protocol2, topology) {
+  async register(protocol, topology) {
     if (topology == null) {
       throw new InvalidParametersError("invalid topology");
     }
     const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`;
-    let topologies = this.topologies.get(protocol2);
+    let topologies = this.topologies.get(protocol);
     if (topologies == null) {
       topologies = /* @__PURE__ */ new Map();
-      this.topologies.set(protocol2, topologies);
+      this.topologies.set(protocol, topologies);
     }
     topologies.set(id, topology);
     return id;
@@ -43552,23 +43385,23 @@ var Registrar = class {
    * Unregister topology
    */
   unregister(id) {
-    for (const [protocol2, topologies] of this.topologies.entries()) {
+    for (const [protocol, topologies] of this.topologies.entries()) {
       if (topologies.has(id)) {
         topologies.delete(id);
         if (topologies.size === 0) {
-          this.topologies.delete(protocol2);
+          this.topologies.delete(protocol);
         }
       }
     }
   }
-  use(protocol2, middleware) {
-    this.middleware.set(protocol2, middleware);
+  use(protocol, middleware) {
+    this.middleware.set(protocol, middleware);
   }
-  unuse(protocol2) {
-    this.middleware.delete(protocol2);
+  unuse(protocol) {
+    this.middleware.delete(protocol);
   }
-  getMiddleware(protocol2) {
-    return this.middleware.get(protocol2) ?? [];
+  getMiddleware(protocol) {
+    return this.middleware.get(protocol) ?? [];
   }
   /**
    * Remove a disconnected peer from the record
@@ -43580,8 +43413,8 @@ var Registrar = class {
     };
     try {
       const peer = await this.components.peerStore.get(remotePeer, options);
-      for (const protocol2 of peer.protocols) {
-        const topologies = this.topologies.get(protocol2);
+      for (const protocol of peer.protocols) {
+        const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
@@ -43606,10 +43439,10 @@ var Registrar = class {
    */
   async _onPeerUpdate(evt) {
     const { peer, previous } = evt.detail;
-    const removed = (previous?.protocols ?? []).filter((protocol2) => !peer.protocols.includes(protocol2));
+    const removed = (previous?.protocols ?? []).filter((protocol) => !peer.protocols.includes(protocol));
     try {
-      for (const protocol2 of removed) {
-        const topologies = this.topologies.get(protocol2);
+      for (const protocol of removed) {
+        const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
@@ -43634,8 +43467,8 @@ var Registrar = class {
     const connection = evt.detail.connection;
     const peerId = evt.detail.peerId;
     try {
-      for (const protocol2 of protocols) {
-        const topologies = this.topologies.get(protocol2);
+      for (const protocol of protocols) {
+        const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
@@ -43962,13 +43795,13 @@ async function select(stream, protocols, options = {}) {
     maxDataLength: MAX_PROTOCOL_LENGTH
   });
   for (let i2 = 0; i2 < protocols.length; i2++) {
-    const protocol2 = protocols[i2];
+    const protocol = protocols[i2];
     let response;
     if (i2 === 0) {
-      log4.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol2);
+      log4.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
       const p1 = fromString2(`${PROTOCOL_ID}
 `);
-      const p2 = fromString2(`${protocol2}
+      const p2 = fromString2(`${protocol}
 `);
       await lp.writeV([p1, p2], options);
       log4.trace("reading multistream-select header");
@@ -43979,17 +43812,17 @@ async function select(stream, protocols, options = {}) {
         break;
       }
     } else {
-      log4.trace('write "%s"', protocol2);
-      await lp.write(fromString2(`${protocol2}
+      log4.trace('write "%s"', protocol);
+      await lp.write(fromString2(`${protocol}
 `), options);
     }
     log4.trace("reading protocol response");
     response = await readString(lp, options);
     log4.trace('read "%s"', response);
-    if (response === protocol2) {
+    if (response === protocol) {
       log4.trace('selected "%s" after negotiation', response);
       lp.unwrap();
-      return protocol2;
+      return protocol;
     }
   }
   throw new UnsupportedProtocolError(`Protocol selection failed - could not negotiate ${protocols}`);
@@ -44218,34 +44051,34 @@ async function handle(stream, protocols, options = {}) {
   });
   while (true) {
     log4.trace("reading incoming string");
-    const protocol2 = await readString(lp, options);
-    log4.trace('read "%s"', protocol2);
-    if (protocol2 === PROTOCOL_ID) {
-      log4.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol2);
+    const protocol = await readString(lp, options);
+    log4.trace('read "%s"', protocol);
+    if (protocol === PROTOCOL_ID) {
+      log4.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol);
       await lp.write(fromString2(`${PROTOCOL_ID}
 `), options);
-      log4.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol2);
+      log4.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol);
       continue;
     }
-    if (protocols.includes(protocol2)) {
-      log4.trace('respond with "%s" for "%s"', protocol2, protocol2);
-      await lp.write(fromString2(`${protocol2}
+    if (protocols.includes(protocol)) {
+      log4.trace('respond with "%s" for "%s"', protocol, protocol);
+      await lp.write(fromString2(`${protocol}
 `), options);
-      log4.trace('responded with "%s" for "%s"', protocol2, protocol2);
+      log4.trace('responded with "%s" for "%s"', protocol, protocol);
       lp.unwrap();
-      return protocol2;
+      return protocol;
     }
-    if (protocol2 === "ls") {
+    if (protocol === "ls") {
       const protos = new Uint8ArrayList(...protocols.map((p2) => encode7.single(fromString2(`${p2}
 `))), fromString2("\n"));
-      log4.trace('respond with "%s" for %s', protocols, protocol2);
+      log4.trace('respond with "%s" for %s', protocols, protocol);
       await lp.write(protos, options);
-      log4.trace('responded with "%s" for %s', protocols, protocol2);
+      log4.trace('responded with "%s" for %s', protocols, protocol);
       continue;
     }
-    log4.trace('respond with "na" for "%s"', protocol2);
+    log4.trace('respond with "na" for "%s"', protocol);
     await lp.write(fromString2("na\n"), options);
-    log4('responded with "na" for "%s"', protocol2);
+    log4('responded with "na" for "%s"', protocol);
   }
 }
 __name(handle, "handle");
@@ -44463,9 +44296,9 @@ function createConnection(components, init) {
   return new Connection(components, init);
 }
 __name(createConnection, "createConnection");
-function findIncomingStreamLimit(protocol2, registrar) {
+function findIncomingStreamLimit(protocol, registrar) {
   try {
-    const { options } = registrar.getHandler(protocol2);
+    const { options } = registrar.getHandler(protocol);
     if (options.maxInboundStreams != null) {
       return options.maxInboundStreams;
     }
@@ -44477,9 +44310,9 @@ function findIncomingStreamLimit(protocol2, registrar) {
   return DEFAULT_MAX_INBOUND_STREAMS;
 }
 __name(findIncomingStreamLimit, "findIncomingStreamLimit");
-function findOutgoingStreamLimit(protocol2, registrar, options = {}) {
+function findOutgoingStreamLimit(protocol, registrar, options = {}) {
   try {
-    const { options: options2 } = registrar.getHandler(protocol2);
+    const { options: options2 } = registrar.getHandler(protocol);
     if (options2.maxOutboundStreams != null) {
       return options2.maxOutboundStreams;
     }
@@ -44491,10 +44324,10 @@ function findOutgoingStreamLimit(protocol2, registrar, options = {}) {
   return options.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS;
 }
 __name(findOutgoingStreamLimit, "findOutgoingStreamLimit");
-function countStreams(protocol2, direction, connection) {
+function countStreams(protocol, direction, connection) {
   let streamCount = 0;
   connection.streams.forEach((stream) => {
-    if (stream.direction === direction && stream.protocol === protocol2) {
+    if (stream.direction === direction && stream.protocol === protocol) {
       streamCount++;
     }
   });
@@ -44724,15 +44557,15 @@ var Upgrader = class {
   async _encryptInbound(connection, options) {
     const protocols = Array.from(this.connectionEncrypters.keys());
     try {
-      const protocol2 = await handle(connection, protocols, options);
-      const encrypter = this.connectionEncrypters.get(protocol2);
+      const protocol = await handle(connection, protocols, options);
+      const encrypter = this.connectionEncrypters.get(protocol);
       if (encrypter == null) {
-        throw new EncryptionFailedError(`no crypto module found for ${protocol2}`);
+        throw new EncryptionFailedError(`no crypto module found for ${protocol}`);
       }
-      connection.log("encrypting inbound connection using %s", protocol2);
+      connection.log("encrypting inbound connection using %s", protocol);
       return {
         ...await encrypter.secureInbound(connection, options),
-        protocol: protocol2
+        protocol
       };
     } catch (err) {
       throw new EncryptionFailedError(err.message);
@@ -44746,15 +44579,15 @@ var Upgrader = class {
     const protocols = Array.from(this.connectionEncrypters.keys());
     try {
       connection.log.trace("selecting encrypter from %s", protocols);
-      const protocol2 = await select(connection, protocols, options);
-      const encrypter = this.connectionEncrypters.get(protocol2);
+      const protocol = await select(connection, protocols, options);
+      const encrypter = this.connectionEncrypters.get(protocol);
       if (encrypter == null) {
-        throw new EncryptionFailedError(`no crypto module found for ${protocol2}`);
+        throw new EncryptionFailedError(`no crypto module found for ${protocol}`);
       }
-      connection.log("encrypting outbound connection using %s", protocol2);
+      connection.log("encrypting outbound connection using %s", protocol);
       return {
         ...await encrypter.secureOutbound(connection, options),
-        protocol: protocol2
+        protocol
       };
     } catch (err) {
       throw new EncryptionFailedError(err.message);
@@ -44769,12 +44602,12 @@ var Upgrader = class {
     maConn.log("outbound selecting muxer %s", protocols);
     try {
       maConn.log.trace("selecting stream muxer from %s", protocols);
-      const protocol2 = await select(maConn, protocols, options);
-      const muxerFactory = muxers.get(protocol2);
+      const protocol = await select(maConn, protocols, options);
+      const muxerFactory = muxers.get(protocol);
       if (muxerFactory == null) {
-        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol2}"`);
+        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol}"`);
       }
-      maConn.log("selected %s as muxer protocol", protocol2);
+      maConn.log("selected %s as muxer protocol", protocol);
       return muxerFactory;
     } catch (err) {
       maConn.log.error("error multiplexing outbound connection - %e", err);
@@ -44790,12 +44623,12 @@ var Upgrader = class {
     maConn.log("inbound handling muxers %s", protocols);
     try {
       maConn.log.trace("selecting stream muxer from %s", protocols);
-      const protocol2 = await handle(maConn, protocols, options);
-      const muxerFactory = muxers.get(protocol2);
+      const protocol = await handle(maConn, protocols, options);
+      const muxerFactory = muxers.get(protocol);
       if (muxerFactory == null) {
-        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol2}"`);
+        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol}"`);
       }
-      maConn.log("selected %s as muxer protocol", protocol2);
+      maConn.log("selected %s as muxer protocol", protocol);
       return muxerFactory;
     } catch (err) {
       maConn.log.error("error multiplexing inbound connection - %e", err);
@@ -45069,29 +44902,29 @@ var Libp2p = class extends TypedEventEmitter {
     if (!Array.isArray(protocols)) {
       protocols = [protocols];
     }
-    await Promise.all(protocols.map(async (protocol2) => {
-      await this.components.registrar.handle(protocol2, handler, options);
+    await Promise.all(protocols.map(async (protocol) => {
+      await this.components.registrar.handle(protocol, handler, options);
     }));
   }
   async unhandle(protocols, options) {
     if (!Array.isArray(protocols)) {
       protocols = [protocols];
     }
-    await Promise.all(protocols.map(async (protocol2) => {
-      await this.components.registrar.unhandle(protocol2, options);
+    await Promise.all(protocols.map(async (protocol) => {
+      await this.components.registrar.unhandle(protocol, options);
     }));
   }
-  async register(protocol2, topology, options) {
-    return this.components.registrar.register(protocol2, topology, options);
+  async register(protocol, topology, options) {
+    return this.components.registrar.register(protocol, topology, options);
   }
   unregister(id) {
     this.components.registrar.unregister(id);
   }
-  use(protocol2, middleware) {
-    this.components.registrar.use(protocol2, Array.isArray(middleware) ? middleware : [middleware]);
+  use(protocol, middleware) {
+    this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware]);
   }
-  unuse(protocol2) {
-    this.components.registrar.unuse(protocol2);
+  unuse(protocol) {
+    this.components.registrar.unuse(protocol);
   }
   async isDialable(multiaddr2, options = {}) {
     return this.components.connectionManager.isDialable(multiaddr2, options);
@@ -46628,2128 +46461,8 @@ var FaultTolerance2;
   FaultTolerance3[FaultTolerance3["NO_FATAL"] = 1] = "NO_FATAL";
 })(FaultTolerance2 || (FaultTolerance2 = {}));
 
-// node_modules/@libp2p/floodsub/dist/src/constants.js
-var pubSubSymbol = Symbol.for("@libp2p/pubsub");
-
-// node_modules/@libp2p/floodsub/node_modules/eventemitter3/index.mjs
-var import_index12 = __toESM(require_eventemitter32(), 1);
-
-// node_modules/@libp2p/floodsub/node_modules/p-timeout/index.js
-var TimeoutError3 = class _TimeoutError extends Error {
-  static {
-    __name(this, "TimeoutError");
-  }
-  name = "TimeoutError";
-  constructor(message2, options) {
-    super(message2, options);
-    Error.captureStackTrace?.(this, _TimeoutError);
-  }
-};
-var getAbortedReason2 = /* @__PURE__ */ __name((signal) => signal.reason ?? new DOMException("This operation was aborted.", "AbortError"), "getAbortedReason");
-function pTimeout2(promise, options) {
-  const {
-    milliseconds,
-    fallback,
-    message: message2,
-    customTimers = { setTimeout, clearTimeout },
-    signal
-  } = options;
-  let timer;
-  let abortHandler;
-  const wrappedPromise = new Promise((resolve, reject) => {
-    if (typeof milliseconds !== "number" || Math.sign(milliseconds) !== 1) {
-      throw new TypeError(`Expected \`milliseconds\` to be a positive number, got \`${milliseconds}\``);
-    }
-    if (signal?.aborted) {
-      reject(getAbortedReason2(signal));
-      return;
-    }
-    if (signal) {
-      abortHandler = /* @__PURE__ */ __name(() => {
-        reject(getAbortedReason2(signal));
-      }, "abortHandler");
-      signal.addEventListener("abort", abortHandler, { once: true });
-    }
-    promise.then(resolve, reject);
-    if (milliseconds === Number.POSITIVE_INFINITY) {
-      return;
-    }
-    const timeoutError = new TimeoutError3();
-    timer = customTimers.setTimeout.call(void 0, () => {
-      if (fallback) {
-        try {
-          resolve(fallback());
-        } catch (error) {
-          reject(error);
-        }
-        return;
-      }
-      if (typeof promise.cancel === "function") {
-        promise.cancel();
-      }
-      if (message2 === false) {
-        resolve();
-      } else if (message2 instanceof Error) {
-        reject(message2);
-      } else {
-        timeoutError.message = message2 ?? `Promise timed out after ${milliseconds} milliseconds`;
-        reject(timeoutError);
-      }
-    }, milliseconds);
-  });
-  const cancelablePromise = wrappedPromise.finally(() => {
-    cancelablePromise.clear();
-    if (abortHandler && signal) {
-      signal.removeEventListener("abort", abortHandler);
-    }
-  });
-  cancelablePromise.clear = () => {
-    customTimers.clearTimeout.call(void 0, timer);
-    timer = void 0;
-  };
-  return cancelablePromise;
-}
-__name(pTimeout2, "pTimeout");
-
-// node_modules/@libp2p/floodsub/node_modules/p-queue/dist/lower-bound.js
-function lowerBound2(array, value2, comparator) {
-  let first = 0;
-  let count = array.length;
-  while (count > 0) {
-    const step = Math.trunc(count / 2);
-    let it = first + step;
-    if (comparator(array[it], value2) <= 0) {
-      first = ++it;
-      count -= step + 1;
-    } else {
-      count = step;
-    }
-  }
-  return first;
-}
-__name(lowerBound2, "lowerBound");
-
-// node_modules/@libp2p/floodsub/node_modules/p-queue/dist/priority-queue.js
-var PriorityQueue3 = class {
-  static {
-    __name(this, "PriorityQueue");
-  }
-  #queue = [];
-  enqueue(run, options) {
-    const { priority = 0, id } = options ?? {};
-    const element = {
-      priority,
-      id,
-      run
-    };
-    if (this.size === 0 || this.#queue[this.size - 1].priority >= priority) {
-      this.#queue.push(element);
-      return;
-    }
-    const index = lowerBound2(this.#queue, element, (a2, b) => b.priority - a2.priority);
-    this.#queue.splice(index, 0, element);
-  }
-  setPriority(id, priority) {
-    const index = this.#queue.findIndex((element) => element.id === id);
-    if (index === -1) {
-      throw new ReferenceError(`No promise function with the id "${id}" exists in the queue.`);
-    }
-    const [item] = this.#queue.splice(index, 1);
-    this.enqueue(item.run, { priority, id });
-  }
-  dequeue() {
-    const item = this.#queue.shift();
-    return item?.run;
-  }
-  filter(options) {
-    return this.#queue.filter((element) => element.priority === options.priority).map((element) => element.run);
-  }
-  get size() {
-    return this.#queue.length;
-  }
-};
-
-// node_modules/@libp2p/floodsub/node_modules/p-queue/dist/index.js
-var PQueue2 = class extends import_index12.default {
-  static {
-    __name(this, "PQueue");
-  }
-  #carryoverIntervalCount;
-  #isIntervalIgnored;
-  #intervalCount = 0;
-  #intervalCap;
-  #rateLimitedInInterval = false;
-  #rateLimitFlushScheduled = false;
-  #interval;
-  #intervalEnd = 0;
-  #lastExecutionTime = 0;
-  #intervalId;
-  #timeoutId;
-  #queue;
-  #queueClass;
-  #pending = 0;
-  // The `!` is needed because of https://github.com/microsoft/TypeScript/issues/32194
-  #concurrency;
-  #isPaused;
-  // Use to assign a unique identifier to a promise function, if not explicitly specified
-  #idAssigner = 1n;
-  // Track currently running tasks for debugging
-  #runningTasks = /* @__PURE__ */ new Map();
-  /**
-      Get or set the default timeout for all tasks. Can be changed at runtime.
-  
-      Operations will throw a `TimeoutError` if they don't complete within the specified time.
-  
-      The timeout begins when the operation is dequeued and starts execution, not while it's waiting in the queue.
-  
-      @example
-      ```
-      const queue = new PQueue({timeout: 5000});
-  
-      // Change timeout for all future tasks
-      queue.timeout = 10000;
-      ```
-      */
-  timeout;
-  constructor(options) {
-    super();
-    options = {
-      carryoverIntervalCount: false,
-      intervalCap: Number.POSITIVE_INFINITY,
-      interval: 0,
-      concurrency: Number.POSITIVE_INFINITY,
-      autoStart: true,
-      queueClass: PriorityQueue3,
-      ...options
-    };
-    if (!(typeof options.intervalCap === "number" && options.intervalCap >= 1)) {
-      throw new TypeError(`Expected \`intervalCap\` to be a number from 1 and up, got \`${options.intervalCap?.toString() ?? ""}\` (${typeof options.intervalCap})`);
-    }
-    if (options.interval === void 0 || !(Number.isFinite(options.interval) && options.interval >= 0)) {
-      throw new TypeError(`Expected \`interval\` to be a finite number >= 0, got \`${options.interval?.toString() ?? ""}\` (${typeof options.interval})`);
-    }
-    this.#carryoverIntervalCount = options.carryoverIntervalCount ?? options.carryoverConcurrencyCount ?? false;
-    this.#isIntervalIgnored = options.intervalCap === Number.POSITIVE_INFINITY || options.interval === 0;
-    this.#intervalCap = options.intervalCap;
-    this.#interval = options.interval;
-    this.#queue = new options.queueClass();
-    this.#queueClass = options.queueClass;
-    this.concurrency = options.concurrency;
-    if (options.timeout !== void 0 && !(Number.isFinite(options.timeout) && options.timeout > 0)) {
-      throw new TypeError(`Expected \`timeout\` to be a positive finite number, got \`${options.timeout}\` (${typeof options.timeout})`);
-    }
-    this.timeout = options.timeout;
-    this.#isPaused = options.autoStart === false;
-    this.#setupRateLimitTracking();
-  }
-  get #doesIntervalAllowAnother() {
-    return this.#isIntervalIgnored || this.#intervalCount < this.#intervalCap;
-  }
-  get #doesConcurrentAllowAnother() {
-    return this.#pending < this.#concurrency;
-  }
-  #next() {
-    this.#pending--;
-    if (this.#pending === 0) {
-      this.emit("pendingZero");
-    }
-    this.#tryToStartAnother();
-    this.emit("next");
-  }
-  #onResumeInterval() {
-    this.#onInterval();
-    this.#initializeIntervalIfNeeded();
-    this.#timeoutId = void 0;
-  }
-  get #isIntervalPaused() {
-    const now = Date.now();
-    if (this.#intervalId === void 0) {
-      const delay3 = this.#intervalEnd - now;
-      if (delay3 < 0) {
-        if (this.#lastExecutionTime > 0) {
-          const timeSinceLastExecution = now - this.#lastExecutionTime;
-          if (timeSinceLastExecution < this.#interval) {
-            this.#createIntervalTimeout(this.#interval - timeSinceLastExecution);
-            return true;
-          }
-        }
-        this.#intervalCount = this.#carryoverIntervalCount ? this.#pending : 0;
-      } else {
-        this.#createIntervalTimeout(delay3);
-        return true;
-      }
-    }
-    return false;
-  }
-  #createIntervalTimeout(delay3) {
-    if (this.#timeoutId !== void 0) {
-      return;
-    }
-    this.#timeoutId = setTimeout(() => {
-      this.#onResumeInterval();
-    }, delay3);
-  }
-  #clearIntervalTimer() {
-    if (this.#intervalId) {
-      clearInterval(this.#intervalId);
-      this.#intervalId = void 0;
-    }
-  }
-  #clearTimeoutTimer() {
-    if (this.#timeoutId) {
-      clearTimeout(this.#timeoutId);
-      this.#timeoutId = void 0;
-    }
-  }
-  #tryToStartAnother() {
-    if (this.#queue.size === 0) {
-      this.#clearIntervalTimer();
-      this.emit("empty");
-      if (this.#pending === 0) {
-        this.#clearTimeoutTimer();
-        this.emit("idle");
-      }
-      return false;
-    }
-    let taskStarted = false;
-    if (!this.#isPaused) {
-      const canInitializeInterval = !this.#isIntervalPaused;
-      if (this.#doesIntervalAllowAnother && this.#doesConcurrentAllowAnother) {
-        const job = this.#queue.dequeue();
-        if (!this.#isIntervalIgnored) {
-          this.#intervalCount++;
-          this.#scheduleRateLimitUpdate();
-        }
-        this.emit("active");
-        this.#lastExecutionTime = Date.now();
-        job();
-        if (canInitializeInterval) {
-          this.#initializeIntervalIfNeeded();
-        }
-        taskStarted = true;
-      }
-    }
-    return taskStarted;
-  }
-  #initializeIntervalIfNeeded() {
-    if (this.#isIntervalIgnored || this.#intervalId !== void 0) {
-      return;
-    }
-    this.#intervalId = setInterval(() => {
-      this.#onInterval();
-    }, this.#interval);
-    this.#intervalEnd = Date.now() + this.#interval;
-  }
-  #onInterval() {
-    if (this.#intervalCount === 0 && this.#pending === 0 && this.#intervalId) {
-      this.#clearIntervalTimer();
-    }
-    this.#intervalCount = this.#carryoverIntervalCount ? this.#pending : 0;
-    this.#processQueue();
-    this.#scheduleRateLimitUpdate();
-  }
-  /**
-  Executes all queued functions until it reaches the limit.
-  */
-  #processQueue() {
-    while (this.#tryToStartAnother()) {
-    }
-  }
-  get concurrency() {
-    return this.#concurrency;
-  }
-  set concurrency(newConcurrency) {
-    if (!(typeof newConcurrency === "number" && newConcurrency >= 1)) {
-      throw new TypeError(`Expected \`concurrency\` to be a number from 1 and up, got \`${newConcurrency}\` (${typeof newConcurrency})`);
-    }
-    this.#concurrency = newConcurrency;
-    this.#processQueue();
-  }
-  async #throwOnAbort(signal) {
-    return new Promise((_resolve, reject) => {
-      signal.addEventListener("abort", () => {
-        reject(signal.reason);
-      }, { once: true });
-    });
-  }
-  /**
-      Updates the priority of a promise function by its id, affecting its execution order. Requires a defined concurrency limit to take effect.
-  
-      For example, this can be used to prioritize a promise function to run earlier.
-  
-      ```js
-      import PQueue from 'p-queue';
-  
-      const queue = new PQueue({concurrency: 1});
-  
-      queue.add(async () => '🦄', {priority: 1});
-      queue.add(async () => '🦀', {priority: 0, id: '🦀'});
-      queue.add(async () => '🦄', {priority: 1});
-      queue.add(async () => '🦄', {priority: 1});
-  
-      queue.setPriority('🦀', 2);
-      ```
-  
-      In this case, the promise function with `id: '🦀'` runs second.
-  
-      You can also deprioritize a promise function to delay its execution:
-  
-      ```js
-      import PQueue from 'p-queue';
-  
-      const queue = new PQueue({concurrency: 1});
-  
-      queue.add(async () => '🦄', {priority: 1});
-      queue.add(async () => '🦀', {priority: 1, id: '🦀'});
-      queue.add(async () => '🦄');
-      queue.add(async () => '🦄', {priority: 0});
-  
-      queue.setPriority('🦀', -1);
-      ```
-      Here, the promise function with `id: '🦀'` executes last.
-      */
-  setPriority(id, priority) {
-    if (typeof priority !== "number" || !Number.isFinite(priority)) {
-      throw new TypeError(`Expected \`priority\` to be a finite number, got \`${priority}\` (${typeof priority})`);
-    }
-    this.#queue.setPriority(id, priority);
-  }
-  async add(function_, options = {}) {
-    options.id ??= (this.#idAssigner++).toString();
-    options = {
-      timeout: this.timeout,
-      ...options
-    };
-    return new Promise((resolve, reject) => {
-      const taskSymbol = Symbol(`task-${options.id}`);
-      this.#queue.enqueue(async () => {
-        this.#pending++;
-        this.#runningTasks.set(taskSymbol, {
-          id: options.id,
-          priority: options.priority ?? 0,
-          // Match priority-queue default
-          startTime: Date.now(),
-          timeout: options.timeout
-        });
-        try {
-          try {
-            options.signal?.throwIfAborted();
-          } catch (error) {
-            if (!this.#isIntervalIgnored) {
-              this.#intervalCount--;
-            }
-            this.#runningTasks.delete(taskSymbol);
-            throw error;
-          }
-          let operation = function_({ signal: options.signal });
-          if (options.timeout) {
-            operation = pTimeout2(Promise.resolve(operation), {
-              milliseconds: options.timeout,
-              message: `Task timed out after ${options.timeout}ms (queue has ${this.#pending} running, ${this.#queue.size} waiting)`
-            });
-          }
-          if (options.signal) {
-            operation = Promise.race([operation, this.#throwOnAbort(options.signal)]);
-          }
-          const result = await operation;
-          resolve(result);
-          this.emit("completed", result);
-        } catch (error) {
-          reject(error);
-          this.emit("error", error);
-        } finally {
-          this.#runningTasks.delete(taskSymbol);
-          queueMicrotask(() => {
-            this.#next();
-          });
-        }
-      }, options);
-      this.emit("add");
-      this.#tryToStartAnother();
-    });
-  }
-  async addAll(functions, options) {
-    return Promise.all(functions.map(async (function_) => this.add(function_, options)));
-  }
-  /**
-  Start (or resume) executing enqueued tasks within concurrency limit. No need to call this if queue is not paused (via `options.autoStart = false` or by `.pause()` method.)
-  */
-  start() {
-    if (!this.#isPaused) {
-      return this;
-    }
-    this.#isPaused = false;
-    this.#processQueue();
-    return this;
-  }
-  /**
-  Put queue execution on hold.
-  */
-  pause() {
-    this.#isPaused = true;
-  }
-  /**
-  Clear the queue.
-  */
-  clear() {
-    this.#queue = new this.#queueClass();
-    this.#updateRateLimitState();
-  }
-  /**
-      Can be called multiple times. Useful if you for example add additional items at a later time.
-  
-      @returns A promise that settles when the queue becomes empty.
-      */
-  async onEmpty() {
-    if (this.#queue.size === 0) {
-      return;
-    }
-    await this.#onEvent("empty");
-  }
-  /**
-      @returns A promise that settles when the queue size is less than the given limit: `queue.size < limit`.
-  
-      If you want to avoid having the queue grow beyond a certain size you can `await queue.onSizeLessThan()` before adding a new item.
-  
-      Note that this only limits the number of items waiting to start. There could still be up to `concurrency` jobs already running that this call does not include in its calculation.
-      */
-  async onSizeLessThan(limit) {
-    if (this.#queue.size < limit) {
-      return;
-    }
-    await this.#onEvent("next", () => this.#queue.size < limit);
-  }
-  /**
-      The difference with `.onEmpty` is that `.onIdle` guarantees that all work from the queue has finished. `.onEmpty` merely signals that the queue is empty, but it could mean that some promises haven't completed yet.
-  
-      @returns A promise that settles when the queue becomes empty, and all promises have completed; `queue.size === 0 && queue.pending === 0`.
-      */
-  async onIdle() {
-    if (this.#pending === 0 && this.#queue.size === 0) {
-      return;
-    }
-    await this.#onEvent("idle");
-  }
-  /**
-      The difference with `.onIdle` is that `.onPendingZero` only waits for currently running tasks to finish, ignoring queued tasks.
-  
-      @returns A promise that settles when all currently running tasks have completed; `queue.pending === 0`.
-      */
-  async onPendingZero() {
-    if (this.#pending === 0) {
-      return;
-    }
-    await this.#onEvent("pendingZero");
-  }
-  /**
-  @returns A promise that settles when the queue becomes rate-limited due to intervalCap.
-  */
-  async onRateLimit() {
-    if (this.isRateLimited) {
-      return;
-    }
-    await this.#onEvent("rateLimit");
-  }
-  /**
-  @returns A promise that settles when the queue is no longer rate-limited.
-  */
-  async onRateLimitCleared() {
-    if (!this.isRateLimited) {
-      return;
-    }
-    await this.#onEvent("rateLimitCleared");
-  }
-  /**
-      @returns A promise that rejects when any task in the queue errors.
-  
-      Use with `Promise.race([queue.onError(), queue.onIdle()])` to fail fast on the first error while still resolving normally when the queue goes idle.
-  
-      Important: The promise returned by `add()` still rejects. You must handle each `add()` promise (for example, `.catch(() => {})`) to avoid unhandled rejections.
-  
-      @example
-      ```
-      import PQueue from 'p-queue';
-  
-      const queue = new PQueue({concurrency: 2});
-  
-      queue.add(() => fetchData(1)).catch(() => {});
-      queue.add(() => fetchData(2)).catch(() => {});
-      queue.add(() => fetchData(3)).catch(() => {});
-  
-      // Stop processing on first error
-      try {
-          await Promise.race([
-              queue.onError(),
-              queue.onIdle()
-          ]);
-      } catch (error) {
-          queue.pause(); // Stop processing remaining tasks
-          console.error('Queue failed:', error);
-      }
-      ```
-      */
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  async onError() {
-    return new Promise((_resolve, reject) => {
-      const handleError = /* @__PURE__ */ __name((error) => {
-        this.off("error", handleError);
-        reject(error);
-      }, "handleError");
-      this.on("error", handleError);
-    });
-  }
-  async #onEvent(event, filter2) {
-    return new Promise((resolve) => {
-      const listener = /* @__PURE__ */ __name(() => {
-        if (filter2 && !filter2()) {
-          return;
-        }
-        this.off(event, listener);
-        resolve();
-      }, "listener");
-      this.on(event, listener);
-    });
-  }
-  /**
-  Size of the queue, the number of queued items waiting to run.
-  */
-  get size() {
-    return this.#queue.size;
-  }
-  /**
-      Size of the queue, filtered by the given options.
-  
-      For example, this can be used to find the number of items remaining in the queue with a specific priority level.
-      */
-  sizeBy(options) {
-    return this.#queue.filter(options).length;
-  }
-  /**
-  Number of running items (no longer in the queue).
-  */
-  get pending() {
-    return this.#pending;
-  }
-  /**
-  Whether the queue is currently paused.
-  */
-  get isPaused() {
-    return this.#isPaused;
-  }
-  #setupRateLimitTracking() {
-    if (this.#isIntervalIgnored) {
-      return;
-    }
-    this.on("add", () => {
-      if (this.#queue.size > 0) {
-        this.#scheduleRateLimitUpdate();
-      }
-    });
-    this.on("next", () => {
-      this.#scheduleRateLimitUpdate();
-    });
-  }
-  #scheduleRateLimitUpdate() {
-    if (this.#isIntervalIgnored || this.#rateLimitFlushScheduled) {
-      return;
-    }
-    this.#rateLimitFlushScheduled = true;
-    queueMicrotask(() => {
-      this.#rateLimitFlushScheduled = false;
-      this.#updateRateLimitState();
-    });
-  }
-  #updateRateLimitState() {
-    const previous = this.#rateLimitedInInterval;
-    const shouldBeRateLimited = !this.#isIntervalIgnored && this.#intervalCount >= this.#intervalCap && this.#queue.size > 0;
-    if (shouldBeRateLimited !== previous) {
-      this.#rateLimitedInInterval = shouldBeRateLimited;
-      this.emit(shouldBeRateLimited ? "rateLimit" : "rateLimitCleared");
-    }
-  }
-  /**
-  Whether the queue is currently rate-limited due to intervalCap.
-  */
-  get isRateLimited() {
-    return this.#rateLimitedInInterval;
-  }
-  /**
-      Whether the queue is saturated. Returns `true` when:
-      - All concurrency slots are occupied and tasks are waiting, OR
-      - The queue is rate-limited and tasks are waiting
-  
-      Useful for detecting backpressure and potential hanging tasks.
-  
-      ```js
-      import PQueue from 'p-queue';
-  
-      const queue = new PQueue({concurrency: 2});
-  
-      // Backpressure handling
-      if (queue.isSaturated) {
-          console.log('Queue is saturated, waiting for capacity...');
-          await queue.onSizeLessThan(queue.concurrency);
-      }
-  
-      // Monitoring for stuck tasks
-      setInterval(() => {
-          if (queue.isSaturated) {
-              console.warn(`Queue saturated: ${queue.pending} running, ${queue.size} waiting`);
-          }
-      }, 60000);
-      ```
-      */
-  get isSaturated() {
-    return this.#pending === this.#concurrency && this.#queue.size > 0 || this.isRateLimited && this.#queue.size > 0;
-  }
-  /**
-      The tasks currently being executed. Each task includes its `id`, `priority`, `startTime`, and `timeout` (if set).
-  
-      Returns an array of task info objects.
-  
-      ```js
-      import PQueue from 'p-queue';
-  
-      const queue = new PQueue({concurrency: 2});
-  
-      // Add tasks with IDs for better debugging
-      queue.add(() => fetchUser(123), {id: 'user-123'});
-      queue.add(() => fetchPosts(456), {id: 'posts-456', priority: 1});
-  
-      // Check what's running
-      console.log(queue.runningTasks);
-      // => [{
-      //   id: 'user-123',
-      //   priority: 0,
-      //   startTime: 1759253001716,
-      //   timeout: undefined
-      // }, {
-      //   id: 'posts-456',
-      //   priority: 1,
-      //   startTime: 1759253001916,
-      //   timeout: undefined
-      // }]
-      ```
-      */
-  get runningTasks() {
-    return [...this.#runningTasks.values()].map((task) => ({ ...task }));
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/cache.js
-var SimpleTimeCache = class {
-  static {
-    __name(this, "SimpleTimeCache");
-  }
-  entries;
-  validityMs;
-  lastPruneTime = 0;
-  constructor(options) {
-    this.entries = /* @__PURE__ */ new Map();
-    this.validityMs = options.validityMs;
-  }
-  put(key, value2) {
-    this.entries.set(key, { value: value2, validUntilMs: Date.now() + this.validityMs });
-    this.prune();
-  }
-  prune() {
-    const now = Date.now();
-    if (now - this.lastPruneTime < 200) {
-      return;
-    }
-    this.lastPruneTime = now;
-    for (const [k, v] of this.entries.entries()) {
-      if (v.validUntilMs < now) {
-        this.entries.delete(k);
-      } else {
-        break;
-      }
-    }
-  }
-  has(key) {
-    return this.entries.has(key);
-  }
-  get(key) {
-    const value2 = this.entries.get(key);
-    return value2 != null && value2.validUntilMs >= Date.now() ? value2.value : void 0;
-  }
-  clear() {
-    this.entries = /* @__PURE__ */ new Map();
-    this.lastPruneTime = 0;
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/message/rpc.js
-var RPC;
-(function(RPC2) {
-  let SubOpts;
-  (function(SubOpts2) {
-    let _codec2;
-    SubOpts2.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.subscribe != null) {
-            w.uint32(8);
-            w.bool(obj.subscribe);
-          }
-          if (obj.topic != null) {
-            w.uint32(18);
-            w.string(obj.topic);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.subscribe = reader.bool();
-                break;
-              }
-              case 2: {
-                obj.topic = reader.string();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    SubOpts2.encode = (obj) => {
-      return encodeMessage(obj, SubOpts2.codec());
-    };
-    SubOpts2.decode = (buf, opts) => {
-      return decodeMessage(buf, SubOpts2.codec(), opts);
-    };
-  })(SubOpts = RPC2.SubOpts || (RPC2.SubOpts = {}));
-  let Message3;
-  (function(Message4) {
-    let _codec2;
-    Message4.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.from != null) {
-            w.uint32(10);
-            w.bytes(obj.from);
-          }
-          if (obj.data != null) {
-            w.uint32(18);
-            w.bytes(obj.data);
-          }
-          if (obj.sequenceNumber != null) {
-            w.uint32(26);
-            w.bytes(obj.sequenceNumber);
-          }
-          if (obj.topic != null) {
-            w.uint32(34);
-            w.string(obj.topic);
-          }
-          if (obj.signature != null) {
-            w.uint32(42);
-            w.bytes(obj.signature);
-          }
-          if (obj.key != null) {
-            w.uint32(50);
-            w.bytes(obj.key);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.from = reader.bytes();
-                break;
-              }
-              case 2: {
-                obj.data = reader.bytes();
-                break;
-              }
-              case 3: {
-                obj.sequenceNumber = reader.bytes();
-                break;
-              }
-              case 4: {
-                obj.topic = reader.string();
-                break;
-              }
-              case 5: {
-                obj.signature = reader.bytes();
-                break;
-              }
-              case 6: {
-                obj.key = reader.bytes();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    Message4.encode = (obj) => {
-      return encodeMessage(obj, Message4.codec());
-    };
-    Message4.decode = (buf, opts) => {
-      return decodeMessage(buf, Message4.codec(), opts);
-    };
-  })(Message3 = RPC2.Message || (RPC2.Message = {}));
-  let _codec;
-  RPC2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.subscriptions != null) {
-          for (const value2 of obj.subscriptions) {
-            w.uint32(10);
-            RPC2.SubOpts.codec().encode(value2, w);
-          }
-        }
-        if (obj.messages != null) {
-          for (const value2 of obj.messages) {
-            w.uint32(18);
-            RPC2.Message.codec().encode(value2, w);
-          }
-        }
-        if (obj.control != null) {
-          w.uint32(26);
-          ControlMessage.codec().encode(obj.control, w);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          subscriptions: [],
-          messages: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.subscriptions != null && obj.subscriptions.length === opts.limits.subscriptions) {
-                throw new MaxLengthError('Decode error - map field "subscriptions" had too many elements');
-              }
-              obj.subscriptions.push(RPC2.SubOpts.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.subscriptions$
-              }));
-              break;
-            }
-            case 2: {
-              if (opts.limits?.messages != null && obj.messages.length === opts.limits.messages) {
-                throw new MaxLengthError('Decode error - map field "messages" had too many elements');
-              }
-              obj.messages.push(RPC2.Message.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.messages$
-              }));
-              break;
-            }
-            case 3: {
-              obj.control = ControlMessage.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.control
-              });
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  RPC2.encode = (obj) => {
-    return encodeMessage(obj, RPC2.codec());
-  };
-  RPC2.decode = (buf, opts) => {
-    return decodeMessage(buf, RPC2.codec(), opts);
-  };
-})(RPC || (RPC = {}));
-var ControlMessage;
-(function(ControlMessage2) {
-  let _codec;
-  ControlMessage2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.ihave != null) {
-          for (const value2 of obj.ihave) {
-            w.uint32(10);
-            ControlIHave.codec().encode(value2, w);
-          }
-        }
-        if (obj.iwant != null) {
-          for (const value2 of obj.iwant) {
-            w.uint32(18);
-            ControlIWant.codec().encode(value2, w);
-          }
-        }
-        if (obj.graft != null) {
-          for (const value2 of obj.graft) {
-            w.uint32(26);
-            ControlGraft.codec().encode(value2, w);
-          }
-        }
-        if (obj.prune != null) {
-          for (const value2 of obj.prune) {
-            w.uint32(34);
-            ControlPrune.codec().encode(value2, w);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          ihave: [],
-          iwant: [],
-          graft: [],
-          prune: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.ihave != null && obj.ihave.length === opts.limits.ihave) {
-                throw new MaxLengthError('Decode error - map field "ihave" had too many elements');
-              }
-              obj.ihave.push(ControlIHave.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.ihave$
-              }));
-              break;
-            }
-            case 2: {
-              if (opts.limits?.iwant != null && obj.iwant.length === opts.limits.iwant) {
-                throw new MaxLengthError('Decode error - map field "iwant" had too many elements');
-              }
-              obj.iwant.push(ControlIWant.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.iwant$
-              }));
-              break;
-            }
-            case 3: {
-              if (opts.limits?.graft != null && obj.graft.length === opts.limits.graft) {
-                throw new MaxLengthError('Decode error - map field "graft" had too many elements');
-              }
-              obj.graft.push(ControlGraft.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.graft$
-              }));
-              break;
-            }
-            case 4: {
-              if (opts.limits?.prune != null && obj.prune.length === opts.limits.prune) {
-                throw new MaxLengthError('Decode error - map field "prune" had too many elements');
-              }
-              obj.prune.push(ControlPrune.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.prune$
-              }));
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlMessage2.encode = (obj) => {
-    return encodeMessage(obj, ControlMessage2.codec());
-  };
-  ControlMessage2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlMessage2.codec(), opts);
-  };
-})(ControlMessage || (ControlMessage = {}));
-var ControlIHave;
-(function(ControlIHave2) {
-  let _codec;
-  ControlIHave2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.topic != null) {
-          w.uint32(10);
-          w.string(obj.topic);
-        }
-        if (obj.messageIDs != null) {
-          for (const value2 of obj.messageIDs) {
-            w.uint32(18);
-            w.bytes(value2);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          messageIDs: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.topic = reader.string();
-              break;
-            }
-            case 2: {
-              if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-              }
-              obj.messageIDs.push(reader.bytes());
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlIHave2.encode = (obj) => {
-    return encodeMessage(obj, ControlIHave2.codec());
-  };
-  ControlIHave2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlIHave2.codec(), opts);
-  };
-})(ControlIHave || (ControlIHave = {}));
-var ControlIWant;
-(function(ControlIWant2) {
-  let _codec;
-  ControlIWant2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.messageIDs != null) {
-          for (const value2 of obj.messageIDs) {
-            w.uint32(10);
-            w.bytes(value2);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          messageIDs: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-              }
-              obj.messageIDs.push(reader.bytes());
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlIWant2.encode = (obj) => {
-    return encodeMessage(obj, ControlIWant2.codec());
-  };
-  ControlIWant2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlIWant2.codec(), opts);
-  };
-})(ControlIWant || (ControlIWant = {}));
-var ControlGraft;
-(function(ControlGraft2) {
-  let _codec;
-  ControlGraft2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.topic != null) {
-          w.uint32(10);
-          w.string(obj.topic);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.topic = reader.string();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlGraft2.encode = (obj) => {
-    return encodeMessage(obj, ControlGraft2.codec());
-  };
-  ControlGraft2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlGraft2.codec(), opts);
-  };
-})(ControlGraft || (ControlGraft = {}));
-var ControlPrune;
-(function(ControlPrune2) {
-  let _codec;
-  ControlPrune2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.topic != null) {
-          w.uint32(10);
-          w.string(obj.topic);
-        }
-        if (obj.peers != null) {
-          for (const value2 of obj.peers) {
-            w.uint32(18);
-            PeerInfo.codec().encode(value2, w);
-          }
-        }
-        if (obj.backoff != null) {
-          w.uint32(24);
-          w.uint64(obj.backoff);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          peers: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.topic = reader.string();
-              break;
-            }
-            case 2: {
-              if (opts.limits?.peers != null && obj.peers.length === opts.limits.peers) {
-                throw new MaxLengthError('Decode error - map field "peers" had too many elements');
-              }
-              obj.peers.push(PeerInfo.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.peers$
-              }));
-              break;
-            }
-            case 3: {
-              obj.backoff = reader.uint64();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlPrune2.encode = (obj) => {
-    return encodeMessage(obj, ControlPrune2.codec());
-  };
-  ControlPrune2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlPrune2.codec(), opts);
-  };
-})(ControlPrune || (ControlPrune = {}));
-var PeerInfo;
-(function(PeerInfo2) {
-  let _codec;
-  PeerInfo2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.peerID != null) {
-          w.uint32(10);
-          w.bytes(obj.peerID);
-        }
-        if (obj.signedPeerRecord != null) {
-          w.uint32(18);
-          w.bytes(obj.signedPeerRecord);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.peerID = reader.bytes();
-              break;
-            }
-            case 2: {
-              obj.signedPeerRecord = reader.bytes();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  PeerInfo2.encode = (obj) => {
-    return encodeMessage(obj, PeerInfo2.codec());
-  };
-  PeerInfo2.decode = (buf, opts) => {
-    return decodeMessage(buf, PeerInfo2.codec(), opts);
-  };
-})(PeerInfo || (PeerInfo = {}));
-
-// node_modules/@libp2p/floodsub/dist/src/peer-streams.js
-var PeerStreams = class extends TypedEventEmitter {
-  static {
-    __name(this, "PeerStreams");
-  }
-  peerId;
-  /**
-   * An AbortController for controlled shutdown of the inbound stream
-   */
-  shutDownController;
-  // messages sent by the remote
-  inboundPb;
-  // messages we send
-  outboundPb;
-  constructor(peerId) {
-    super();
-    this.peerId = peerId;
-    this.shutDownController = new AbortController();
-  }
-  attachInboundStream(stream, streamOpts) {
-    this.inboundPb = pbStream(stream, streamOpts).pb(RPC);
-    Promise.resolve().then(async () => {
-      while (true) {
-        if (this.inboundPb == null) {
-          return;
-        }
-        const message2 = await this.inboundPb.read({
-          signal: this.shutDownController.signal
-        });
-        this.safeDispatchEvent("message", {
-          detail: message2
-        });
-      }
-    }).catch((err) => {
-      this.inboundPb?.unwrap().unwrap().abort(err);
-    });
-  }
-  attachOutboundStream(stream, streamOpts) {
-    this.outboundPb = pbStream(stream, streamOpts).pb(RPC);
-  }
-  /**
-   * Send a message to this peer
-   */
-  write(message2) {
-    if (this.outboundPb == null) {
-      return;
-    }
-    this.outboundPb.write(message2, {
-      signal: this.shutDownController.signal
-    }).catch((err) => {
-      this.outboundPb?.unwrap().unwrap().abort(err);
-    });
-  }
-  /**
-   * Closes the open connection to peer
-   */
-  close() {
-    this.shutDownController.abort();
-    Promise.all([
-      this.inboundPb?.unwrap().unwrap().close().catch((err) => {
-        this.inboundPb?.unwrap().unwrap().abort(err);
-      }),
-      this.outboundPb?.unwrap().unwrap().close().catch((err) => {
-        this.inboundPb?.unwrap().unwrap().abort(err);
-      })
-    ]).finally(() => {
-      this.safeDispatchEvent("close");
-    });
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/utils.js
-function randomSeqno() {
-  return BigInt(`0x${toString2(randomBytes2(8), "base16")}`);
-}
-__name(randomSeqno, "randomSeqno");
-var msgId = /* @__PURE__ */ __name((key, seqno) => {
-  const seqnoBytes = fromString2(seqno.toString(16).padStart(16, "0"), "base16");
-  const keyBytes = publicKeyToProtobuf(key);
-  const msgId2 = new Uint8Array(keyBytes.byteLength + seqnoBytes.length);
-  msgId2.set(keyBytes, 0);
-  msgId2.set(seqnoBytes, keyBytes.byteLength);
-  return msgId2;
-}, "msgId");
-var noSignMsgId = /* @__PURE__ */ __name((data) => {
-  return sha256.encode(data);
-}, "noSignMsgId");
-var isSigned = /* @__PURE__ */ __name(async (message2) => {
-  if (message2.sequenceNumber == null || message2.from == null || message2.signature == null) {
-    return false;
-  }
-  const fromID = peerIdFromMultihash(decode4(message2.from));
-  if (fromID.publicKey != null) {
-    return true;
-  }
-  if (message2.key != null) {
-    const signingKey = message2.key;
-    const signingID = peerIdFromPublicKey(publicKeyFromProtobuf(signingKey));
-    return signingID.equals(fromID);
-  }
-  return false;
-}, "isSigned");
-var toMessage = /* @__PURE__ */ __name(async (message2) => {
-  if (message2.from == null) {
-    throw new InvalidMessageError("RPC message was missing from");
-  }
-  if (!await isSigned(message2)) {
-    return {
-      type: "unsigned",
-      topic: message2.topic ?? "",
-      data: message2.data ?? new Uint8Array(0)
-    };
-  }
-  const from3 = peerIdFromMultihash(decode4(message2.from));
-  const key = message2.key ?? from3.publicKey;
-  if (key == null) {
-    throw new InvalidMessageError("RPC message was missing public key");
-  }
-  const msg = {
-    type: "signed",
-    from: from3,
-    topic: message2.topic ?? "",
-    sequenceNumber: bigIntFromBytes(message2.sequenceNumber ?? new Uint8Array(0)),
-    data: message2.data ?? new Uint8Array(0),
-    signature: message2.signature ?? new Uint8Array(0),
-    key: key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
-  };
-  return msg;
-}, "toMessage");
-var toRpcMessage = /* @__PURE__ */ __name((message2) => {
-  if (message2.type === "signed") {
-    return {
-      from: message2.from.toMultihash().bytes,
-      data: message2.data,
-      sequenceNumber: bigIntToBytes(message2.sequenceNumber),
-      topic: message2.topic,
-      signature: message2.signature,
-      key: message2.key ? publicKeyToProtobuf(message2.key) : void 0
-    };
-  }
-  return {
-    data: message2.data,
-    topic: message2.topic
-  };
-}, "toRpcMessage");
-var bigIntToBytes = /* @__PURE__ */ __name((num) => {
-  let str = num.toString(16);
-  if (str.length % 2 !== 0) {
-    str = `0${str}`;
-  }
-  return fromString2(str, "base16");
-}, "bigIntToBytes");
-var bigIntFromBytes = /* @__PURE__ */ __name((num) => {
-  return BigInt(`0x${toString2(num, "base16")}`);
-}, "bigIntFromBytes");
-
-// node_modules/@libp2p/floodsub/dist/src/sign.js
-var SignPrefix = fromString2("libp2p-pubsub:");
-async function signMessage(privateKey, message2, encode8) {
-  const outputMessage = {
-    type: "signed",
-    topic: message2.topic,
-    data: message2.data,
-    sequenceNumber: message2.sequenceNumber,
-    from: peerIdFromPrivateKey(privateKey)
-  };
-  const bytes = concat([
-    SignPrefix,
-    encode8(toRpcMessage(outputMessage)).subarray()
-  ]);
-  outputMessage.signature = await privateKey.sign(bytes);
-  outputMessage.key = privateKey.publicKey;
-  return outputMessage;
-}
-__name(signMessage, "signMessage");
-async function verifySignature(message2, encode8) {
-  if (message2.type !== "signed") {
-    throw new Error('Message type must be "signed" to be verified');
-  }
-  if (message2.signature == null) {
-    throw new Error("Message must contain a signature to be verified");
-  }
-  if (message2.from == null) {
-    throw new Error("Message must contain a from property to be verified");
-  }
-  const bytes = concat([
-    SignPrefix,
-    encode8({
-      ...toRpcMessage(message2),
-      signature: void 0,
-      key: void 0
-    }).subarray()
-  ]);
-  const pubKey = messagePublicKey(message2);
-  return pubKey.verify(bytes, message2.signature);
-}
-__name(verifySignature, "verifySignature");
-function messagePublicKey(message2) {
-  if (message2.type !== "signed") {
-    throw new Error('Message type must be "signed" to have a public key');
-  }
-  if (message2.from == null) {
-    throw new Error("Could not get the public key from the originator id");
-  }
-  if (message2.key != null) {
-    return message2.key;
-  }
-  if (message2.from.publicKey != null) {
-    return message2.from.publicKey;
-  }
-  throw new Error("Could not get the public key from the originator id");
-}
-__name(messagePublicKey, "messagePublicKey");
-
-// node_modules/@libp2p/floodsub/dist/src/floodsub.js
-var FloodSub = class extends TypedEventEmitter {
-  static {
-    __name(this, "FloodSub");
-  }
-  log;
-  started;
-  /**
-   * Map of topics to which peers are subscribed to
-   */
-  topics;
-  /**
-   * List of our subscriptions
-   */
-  subscriptions;
-  /**
-   * Map of peer streams
-   */
-  peers;
-  /**
-   * The signature policy to follow by default
-   */
-  globalSignaturePolicy;
-  /**
-   * If router can relay received messages, even if not subscribed
-   */
-  canRelayMessage;
-  /**
-   * if publish should emit to self, if subscribed
-   */
-  emitSelf;
-  /**
-   * Topic validator map
-   *
-   * Keyed by topic
-   * Topic validators are functions with the following input:
-   */
-  topicValidators;
-  queue;
-  protocol;
-  components;
-  _registrarTopologyId;
-  maxInboundStreams;
-  maxOutboundStreams;
-  seenCache;
-  constructor(components, init) {
-    super();
-    this.log = components.logger.forComponent("libp2p:floodsub");
-    this.components = components;
-    this.protocol = init.protocol ?? protocol;
-    this.started = false;
-    this.topics = /* @__PURE__ */ new Map();
-    this.subscriptions = /* @__PURE__ */ new Set();
-    this.peers = new PeerMap();
-    this.globalSignaturePolicy = init.globalSignaturePolicy === "StrictNoSign" ? "StrictNoSign" : "StrictSign";
-    this.canRelayMessage = init.canRelayMessage ?? true;
-    this.emitSelf = init.emitSelf ?? false;
-    this.topicValidators = /* @__PURE__ */ new Map();
-    this.queue = new PQueue2({
-      concurrency: init.messageProcessingConcurrency ?? 10
-    });
-    this.maxInboundStreams = init.maxInboundStreams ?? 1;
-    this.maxOutboundStreams = init.maxOutboundStreams ?? 1;
-    this.seenCache = new SimpleTimeCache({
-      validityMs: init?.seenTTL ?? 3e4
-    });
-    this._onIncomingStream = this._onIncomingStream.bind(this);
-    this._onPeerConnected = this._onPeerConnected.bind(this);
-    this._onPeerDisconnected = this._onPeerDisconnected.bind(this);
-  }
-  [pubSubSymbol] = true;
-  [Symbol.toStringTag] = "@libp2p/floodsub";
-  [serviceCapabilities] = [
-    "@libp2p/pubsub"
-  ];
-  [serviceDependencies] = [
-    "@libp2p/identify"
-  ];
-  // LIFECYCLE METHODS
-  /**
-   * Register the pubsub protocol onto the libp2p node.
-   */
-  async start() {
-    if (this.started) {
-      return;
-    }
-    this.log("starting");
-    await this.components.registrar.handle(this.protocol, this._onIncomingStream, {
-      maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams
-    });
-    this._registrarTopologyId = await this.components.registrar.register(this.protocol, {
-      onConnect: this._onPeerConnected,
-      onDisconnect: this._onPeerDisconnected
-    });
-    this.log("started");
-    this.started = true;
-  }
-  /**
-   * Unregister the pubsub protocol and the streams with other peers will be closed.
-   */
-  async stop() {
-    if (!this.started) {
-      return;
-    }
-    const registrar = this.components.registrar;
-    if (this._registrarTopologyId != null) {
-      registrar.unregister(this._registrarTopologyId);
-    }
-    await registrar.unhandle(this.protocol);
-    this.log("stopping");
-    for (const peerStreams of this.peers.values()) {
-      peerStreams.close();
-    }
-    this.peers.clear();
-    this.subscriptions = /* @__PURE__ */ new Set();
-    this.started = false;
-    this.log("stopped");
-  }
-  isStarted() {
-    return this.started;
-  }
-  /**
-   * On an inbound stream opened
-   */
-  _onIncomingStream(stream, connection) {
-    const peerStreams = this.addPeer(connection.remotePeer, stream);
-    peerStreams.attachInboundStream(stream);
-  }
-  /**
-   * Registrar notifies an established connection with pubsub protocol
-   */
-  async _onPeerConnected(peerId, conn) {
-    this.log("connected %p", peerId);
-    if (conn.streams.find((stream2) => stream2.direction === "outbound" && stream2.protocol === this.protocol)) {
-      this.log("outbound pubsub stream already present on connection from %p", peerId);
-      return;
-    }
-    const stream = await conn.newStream(this.protocol);
-    const peerStreams = this.addPeer(peerId, stream);
-    peerStreams.attachOutboundStream(stream);
-    this.send(peerId, {
-      subscriptions: Array.from(this.subscriptions).map((sub) => sub.toString()),
-      subscribe: true
-    });
-  }
-  /**
-   * Registrar notifies a closing connection with pubsub protocol
-   */
-  _onPeerDisconnected(peerId, conn) {
-    this.log("connection ended %p", peerId);
-    this._removePeer(peerId);
-  }
-  /**
-   * Notifies the router that a peer has been connected
-   */
-  addPeer(peerId, stream) {
-    const existing = this.peers.get(peerId);
-    if (existing != null) {
-      return existing;
-    }
-    this.log("new peer %p", peerId);
-    const peerStreams = new PeerStreams(peerId);
-    this.peers.set(peerId, peerStreams);
-    peerStreams.addEventListener("message", (evt) => {
-      const rpcMsg = evt.detail;
-      const messages2 = [];
-      for (const msg of rpcMsg.messages ?? []) {
-        if (msg.from == null || msg.data == null || msg.topic == null) {
-          this.log("message from %p was missing from, data or topic fields, dropping", peerId);
-          continue;
-        }
-        messages2.push({
-          from: msg.from,
-          data: msg.data,
-          topic: msg.topic,
-          sequenceNumber: msg.sequenceNumber ?? void 0,
-          signature: msg.signature ?? void 0,
-          key: msg.key ?? void 0
-        });
-      }
-      this.processRpc(peerStreams, {
-        subscriptions: (rpcMsg.subscriptions ?? []).map((sub) => ({
-          subscribe: Boolean(sub.subscribe),
-          topic: sub.topic ?? ""
-        })),
-        messages: messages2
-      }).catch((err) => {
-        this.log(err);
-      });
-    });
-    peerStreams.addEventListener("close", () => this._removePeer(peerId), {
-      once: true
-    });
-    return peerStreams;
-  }
-  /**
-   * Notifies the router that a peer has been disconnected
-   */
-  _removePeer(peerId) {
-    const peerStreams = this.peers.get(peerId);
-    if (peerStreams == null) {
-      return;
-    }
-    peerStreams.close();
-    this.log("delete peer %p", peerId);
-    this.peers.delete(peerId);
-    for (const peers of this.topics.values()) {
-      peers.delete(peerId);
-    }
-  }
-  /**
-   * Handles an rpc request from a peer
-   */
-  async processRpc(peerStream, rpc) {
-    this.log("rpc from %p", peerStream.peerId);
-    const { subscriptions, messages: messages2 } = rpc;
-    if (subscriptions != null && subscriptions.length > 0) {
-      this.log("subscription update from %p", peerStream.peerId);
-      subscriptions.forEach((subOpt) => {
-        this.processRpcSubOpt(peerStream.peerId, subOpt);
-      });
-      super.dispatchEvent(new CustomEvent("subscription-change", {
-        detail: {
-          peerId: peerStream.peerId,
-          subscriptions: subscriptions.map(({ topic, subscribe }) => ({
-            topic: `${topic ?? ""}`,
-            subscribe: Boolean(subscribe)
-          }))
-        }
-      }));
-    }
-    if (messages2 != null && messages2.length > 0) {
-      this.log("messages from %p", peerStream.peerId);
-      this.queue.addAll(messages2.map((message2) => async () => {
-        if (message2.topic == null || !this.subscriptions.has(message2.topic) && !this.canRelayMessage) {
-          this.log("received message we didn't subscribe to. Dropping.");
-          return false;
-        }
-        try {
-          const msg = await toMessage(message2);
-          await this.processMessage(peerStream.peerId, msg);
-        } catch (err) {
-          this.log.error("failed to queue messages from %p - %e", peerStream.peerId, err);
-        }
-      })).catch((err) => {
-        this.log(err);
-      });
-    }
-    return true;
-  }
-  /**
-   * Handles a subscription change from a peer
-   */
-  processRpcSubOpt(id, subOpt) {
-    const t2 = subOpt.topic;
-    if (t2 == null) {
-      return;
-    }
-    let topicSet = this.topics.get(t2);
-    if (topicSet == null) {
-      topicSet = new PeerSet();
-      this.topics.set(t2, topicSet);
-    }
-    if (subOpt.subscribe === true) {
-      topicSet.add(id);
-    } else {
-      topicSet.delete(id);
-    }
-  }
-  /**
-   * Handles a message from a peer
-   */
-  async processMessage(from3, msg) {
-    if (this.components.peerId.equals(from3) && !this.emitSelf) {
-      return;
-    }
-    const seqno = await this.getMsgId(msg);
-    const msgIdStr = toString2(seqno, "base64");
-    if (this.seenCache.has(msgIdStr)) {
-      return;
-    }
-    this.seenCache.put(msgIdStr, true);
-    try {
-      await this.validate(from3, msg);
-    } catch (err) {
-      this.log("Message is invalid, dropping it. %O", err);
-      return;
-    }
-    if (this.subscriptions.has(msg.topic)) {
-      const isFromSelf = this.components.peerId.equals(from3);
-      if (!isFromSelf || this.emitSelf) {
-        super.dispatchEvent(new CustomEvent("message", {
-          detail: msg
-        }));
-      }
-    }
-    await this.publishMessage(from3, msg);
-  }
-  /**
-   * The default msgID implementation
-   * Child class can override this.
-   */
-  getMsgId(msg) {
-    const signaturePolicy = this.globalSignaturePolicy;
-    switch (signaturePolicy) {
-      case "StrictSign":
-        if (msg.type !== "signed") {
-          throw new InvalidMessageError('Message type should be "signed" when signature policy is StrictSign but it was not');
-        }
-        if (msg.sequenceNumber == null) {
-          throw new InvalidMessageError("Need sequence number when signature policy is StrictSign but it was missing");
-        }
-        if (msg.key == null) {
-          throw new InvalidMessageError("Need key when signature policy is StrictSign but it was missing");
-        }
-        return msgId(msg.key, msg.sequenceNumber);
-      case "StrictNoSign":
-        return noSignMsgId(msg.data);
-      default:
-        throw new InvalidMessageError("Cannot get message id: unhandled signature policy");
-    }
-  }
-  /**
-   * Encode RPC object into a Uint8Array.
-   * This can be override to use a custom router protobuf.
-   */
-  encodeMessage(rpc) {
-    return RPC.Message.encode(rpc);
-  }
-  /**
-   * Send an rpc object to a peer
-   */
-  send(peer, data) {
-    const { messages: messages2, subscriptions, subscribe } = data;
-    this.sendRpc(peer, {
-      subscriptions: (subscriptions ?? []).map((str) => ({ topic: str, subscribe: Boolean(subscribe) })),
-      messages: (messages2 ?? []).map(toRpcMessage)
-    });
-  }
-  /**
-   * Send an rpc object to a peer
-   */
-  sendRpc(peer, rpc) {
-    const peerStreams = this.peers.get(peer);
-    if (peerStreams == null) {
-      this.log.error("cannot send RPC to %p as there are no streams to it available", peer);
-      return;
-    }
-    peerStreams.write(rpc);
-  }
-  /**
-   * Validates the given message. The signature will be checked for authenticity.
-   * Throws an error on invalid messages
-   */
-  async validate(from3, message2) {
-    const signaturePolicy = this.globalSignaturePolicy;
-    switch (signaturePolicy) {
-      case "StrictNoSign":
-        if (message2.type !== "unsigned") {
-          throw new InvalidMessageError('Message type should be "unsigned" when signature policy is StrictNoSign but it was not');
-        }
-        if (message2.signature != null) {
-          throw new InvalidMessageError("StrictNoSigning: signature should not be present");
-        }
-        if (message2.key != null) {
-          throw new InvalidMessageError("StrictNoSigning: key should not be present");
-        }
-        if (message2.sequenceNumber != null) {
-          throw new InvalidMessageError("StrictNoSigning: seqno should not be present");
-        }
-        break;
-      case "StrictSign":
-        if (message2.type !== "signed") {
-          throw new InvalidMessageError('Message type should be "signed" when signature policy is StrictSign but it was not');
-        }
-        if (message2.signature == null) {
-          throw new InvalidMessageError("StrictSigning: Signing required and no signature was present");
-        }
-        if (message2.sequenceNumber == null) {
-          throw new InvalidMessageError("StrictSigning: Signing required and no sequenceNumber was present");
-        }
-        if (!await verifySignature(message2, this.encodeMessage.bind(this))) {
-          throw new InvalidMessageError("StrictSigning: Invalid message signature");
-        }
-        break;
-      default:
-        throw new InvalidMessageError("Cannot validate message: unhandled signature policy");
-    }
-    const validatorFn = this.topicValidators.get(message2.topic);
-    if (validatorFn != null) {
-      const result = await validatorFn(from3, message2);
-      if (result === TopicValidatorResult.Reject || result === TopicValidatorResult.Ignore) {
-        throw new InvalidMessageError("Message validation failed");
-      }
-    }
-  }
-  /**
-   * Normalizes the message and signs it, if signing is enabled.
-   * Should be used by the routers to create the message to send.
-   */
-  async buildMessage(message2) {
-    const signaturePolicy = this.globalSignaturePolicy;
-    switch (signaturePolicy) {
-      case "StrictSign":
-        return signMessage(this.components.privateKey, message2, this.encodeMessage.bind(this));
-      case "StrictNoSign":
-        return Promise.resolve({
-          type: "unsigned",
-          ...message2
-        });
-      default:
-        throw new InvalidMessageError("Cannot build message: unhandled signature policy");
-    }
-  }
-  // API METHODS
-  /**
-   * Get a list of the peer-ids that are subscribed to one topic.
-   */
-  getSubscribers(topic) {
-    if (!this.started) {
-      throw new NotStartedError("not started yet");
-    }
-    if (topic == null) {
-      throw new InvalidParametersError("Topic is required");
-    }
-    const peersInTopic = this.topics.get(topic.toString());
-    if (peersInTopic == null) {
-      return [];
-    }
-    return Array.from(peersInTopic.values());
-  }
-  /**
-   * Publishes messages to all subscribed peers
-   */
-  async publish(topic, data) {
-    if (!this.started) {
-      throw new Error("Pubsub has not started");
-    }
-    const message2 = {
-      from: this.components.peerId,
-      topic,
-      data: data ?? new Uint8Array(0),
-      sequenceNumber: randomSeqno()
-    };
-    this.log("publish topic: %s from: %p data: %m", topic, message2.from, message2.data);
-    const rpcMessage = await this.buildMessage(message2);
-    let emittedToSelf = false;
-    if (this.emitSelf) {
-      if (this.subscriptions.has(topic)) {
-        emittedToSelf = true;
-        super.dispatchEvent(new CustomEvent("message", {
-          detail: rpcMessage
-        }));
-      }
-    }
-    const result = await this.publishMessage(this.components.peerId, rpcMessage);
-    if (emittedToSelf) {
-      result.recipients = [...result.recipients, this.components.peerId];
-    }
-    return result;
-  }
-  /**
-   * Overriding the implementation of publish should handle the appropriate algorithms for the publish/subscriber implementation.
-   * For example, a Floodsub implementation might simply publish each message to each topic for every peer.
-   *
-   * `sender` might be this peer, or we might be forwarding a message on behalf of another peer, in which case sender
-   * is the peer we received the message from, which may not be the peer the message was created by.
-   */
-  async publishMessage(from3, message2) {
-    const peers = this.getSubscribers(message2.topic);
-    const recipients = [];
-    if (peers == null || peers.length === 0) {
-      this.log("no peers are subscribed to topic %s", message2.topic);
-      return { recipients };
-    }
-    peers.forEach((id) => {
-      if (this.components.peerId.equals(id)) {
-        this.log("not sending message on topic %s to myself", message2.topic);
-        return;
-      }
-      if (id.equals(from3)) {
-        this.log("not sending message on topic %s to sender %p", message2.topic, id);
-        return;
-      }
-      this.log("publish msgs on topics %s %p", message2.topic, id);
-      recipients.push(id);
-      this.send(id, { messages: [message2] });
-    });
-    return { recipients };
-  }
-  /**
-   * Subscribes to a given topic.
-   */
-  subscribe(topic) {
-    if (!this.started) {
-      throw new Error("Pubsub has not started");
-    }
-    if (this.subscriptions.has(topic)) {
-      return;
-    }
-    this.log("subscribe to topic: %s", topic);
-    this.subscriptions.add(topic);
-    for (const peerId of this.peers.keys()) {
-      this.send(peerId, {
-        subscriptions: [
-          topic
-        ],
-        subscribe: true
-      });
-    }
-  }
-  /**
-   * Unsubscribe from the given topic
-   */
-  unsubscribe(topic) {
-    if (!this.started) {
-      throw new Error("Pubsub is not started");
-    }
-    if (!this.subscriptions.has(topic)) {
-      return;
-    }
-    this.log("unsubscribe from %s", topic);
-    this.subscriptions.delete(topic);
-    for (const peerId of this.peers.keys()) {
-      this.send(peerId, {
-        subscriptions: [
-          topic
-        ],
-        subscribe: false
-      });
-    }
-  }
-  /**
-   * Get the list of topics which the peer is subscribed to.
-   */
-  getTopics() {
-    if (!this.started) {
-      throw new Error("Pubsub is not started");
-    }
-    return Array.from(this.subscriptions);
-  }
-  getPeers() {
-    if (!this.started) {
-      throw new Error("Pubsub is not started");
-    }
-    return Array.from(this.peers.keys());
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/index.js
-var protocol = "/floodsub/1.0.0";
-var TopicValidatorResult;
-(function(TopicValidatorResult2) {
-  TopicValidatorResult2["Accept"] = "accept";
-  TopicValidatorResult2["Ignore"] = "ignore";
-  TopicValidatorResult2["Reject"] = "reject";
-})(TopicValidatorResult || (TopicValidatorResult = {}));
-function floodsub(init = {}) {
-  return (components) => new FloodSub(components, init);
-}
-__name(floodsub, "floodsub");
-
 // docs/index.js
+import { gossipsub } from "https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm";
 var serverPeerId = "12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
 var port = 6835;
 var RENDER_EXTERNAL_HOSTNAME = "relay-tuem.onrender.com";
@@ -48861,7 +46574,10 @@ var libp2p = await createLibp2p({
   },
   services: {
     identify: identify(),
-    pubsub: floodsub(),
+    pubsub: gossipsub({
+      doPX: true,
+      emitSelf: true
+    }),
     identifyPush: identifyPush(),
     dcutr: dcutr(),
     ping: ping()
@@ -48967,7 +46683,6 @@ DOM.sendTopicMessageButton().onclick = async () => {
 setInterval(() => {
   const topic = DOM.subscribeTopicInput().value;
   const peerList = libp2p.services.pubsub.getSubscribers(topic);
-  console.log("---------------", topic, peerList);
   peerList.map((peerId) => {
     const el = document.createElement("li");
     el.textContent = peerId.toString();

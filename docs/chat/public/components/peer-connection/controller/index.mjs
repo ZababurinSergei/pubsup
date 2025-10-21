@@ -13,6 +13,9 @@ export const controller = async (context) => {
          */
         async init() {
             console.log('🔧 PeerConnection controller initializing...');
+            // Обработчик подключения к пиру
+            const connectBtn = context.shadowRoot.querySelector('#connect-peer-btn');
+            const peerAddressInput = context.shadowRoot.querySelector('#peer-address-input');
 
             // Обработчики для переключения режимов
             const listenerBtn = context.shadowRoot.querySelector('#listener-mode-btn');
@@ -93,12 +96,9 @@ export const controller = async (context) => {
                 console.log('✅ Mode switcher delegation handler attached');
             }
 
-            // Обработчик подключения к пиру
-            const connectBtn = context.shadowRoot.querySelector('#connect-peer-btn');
-            const peerAddressInput = context.shadowRoot.querySelector('#peer-address-input');
-
             if (connectBtn && peerAddressInput) {
                 const connectHandler = async () => {
+                    debugger
                     const address = peerAddressInput.value.trim();
                     if (address) {
                         try {
@@ -287,8 +287,9 @@ export const controller = async (context) => {
             if (restartNodeBtn) {
                 const restartHandler = async () => {
                     try {
+                        console.log('=======================================', context.state.mode)
                         console.log('🔧 Restarting node...');
-                        await context.switchMode(context.state.mode); // Перезапуск в текущем режиме
+                        // await context.switchMode(context.state.mode); // Перезапуск в текущем режиме
                         console.log('✅ Узел перезапущен');
                     } catch (error) {
                         console.error('❌ Ошибка перезапуска узла:', error);

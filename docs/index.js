@@ -20,7 +20,7 @@ import { http } from "@libp2p/http";
 import { nodeServer } from "@libp2p/http-server";
 import { WebRTC, WebSockets } from '@multiformats/multiaddr-matcher'
 import { floodsub } from '@libp2p/floodsub'
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { gossipsub } from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm'
 
 // const serverPeerId = '12D3KooWARz15HEm1CYbAUFZjXFVNuoCcVCiFCxCVxjYJYF6PAqK'
 // const port = 4839
@@ -210,7 +210,10 @@ const libp2p = await createLibp2p({
   },
   services: {
     identify: identify(),
-    pubsub: floodsub(),
+    pubsub: gossipsub({
+      doPX: true,
+      emitSelf: true
+    }),
     identifyPush: identifyPush(),
     dcutr: dcutr(),
     ping: ping(),
