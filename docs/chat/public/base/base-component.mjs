@@ -1,5 +1,8 @@
 const exclusion = []
 
+import { logger } from '@libp2p/logger'
+const log = logger('base-component')
+
 /*** Абстрактный базовый класс компонента
  * @abstract
  * @version 5.0.1
@@ -35,7 +38,7 @@ export class BaseComponent extends HTMLElement {
         this.getTemplate = () => '<div>Шаблон не определен</div>';
         this._id = this.constructor.generateId();
         this._isLoading = false; // Флаг загрузки
-        console.log(`[Компонент] Создан экземпляр ${this.constructor.name} с ID: ${this._id}`);
+        log(`Создан экземпляр ${this.constructor.name} с ID: ${this._id}`);
     }
 
     /**
@@ -43,7 +46,7 @@ export class BaseComponent extends HTMLElement {
      * @param {Object} errorData - Данные об ошибке.
      * @param {string} errorData.componentName - Имя компонента, где произошла ошибка.
      * @param {string} errorData.source - Источник ошибки (например, 'controller', 'actions', 'render').
-     * @param {string} errorData.message - Сообщение об ошибке.
+     * @param {string} errorData.message - Сообщение об ошибки.
      * @param {any} [errorData.details] - Дополнительные детали (например, объект ошибки, состояние).
      * @param {number} [errorData.timestamp] - Временная метка ошибки.
      */
@@ -62,7 +65,7 @@ export class BaseComponent extends HTMLElement {
             BaseComponent.errorStore = BaseComponent.errorStore.slice(0, BaseComponent.ERROR_STORE_LIMIT);
         }
 
-        console.error(`[BaseComponent] Ошибка добавлена в хранилище. Всего записей: ${BaseComponent.errorStore.length}`, errorEntry);
+        log.error(`Ошибка добавлена в хранилище. Всего записей: ${BaseComponent.errorStore.length}`, errorEntry);
         // Опционально: можно отправить глобальное событие об ошибке
         // window.dispatchEvent(new CustomEvent('yato-global-error', { detail: errorEntry }));
     }
@@ -81,7 +84,7 @@ export class BaseComponent extends HTMLElement {
      */
     static clearErrors() {
         BaseComponent.errorStore = [];
-        console.log('[BaseComponent] Хранилище ошибок очищено.');
+        log('Хранилище ошибок очищено.');
     }
 
     /**
@@ -91,7 +94,7 @@ export class BaseComponent extends HTMLElement {
      * @param {string} options.content - HTML-содержимое модального окна.
      * @param {Array<Object>} [options.buttons] - Массив объектов кнопок.
      *   Каждый объект: { text: string, type: string (e.g., 'primary', 'secondary'), action: Function }
-     * @param {boolean} [options.closeOnBackdropClick=true] - Закрывать ли окно по клику на подложку.
+     * @param {boolean} [options.closeOnBackdropClick=true] - Закрывать ли окно по клику на подложке.
      * @returns {Promise<void>} - Promise, разрешающийся при закрытии модального окна.
      */
     showModal({title = 'Информация', content = '', buttons = [], closeOnBackdropClick = true} = {}) {
@@ -165,7 +168,7 @@ export class BaseComponent extends HTMLElement {
                             try {
                                 btnConfig.action(); // Выполняем действие
                             } catch (e) {
-                                console.error('[BaseComponent] Ошибка в обработчике кнопки модального окна:', e);
+                                log.error('Ошибка в обработчике кнопки модального окна:', e);
                             }
                         }
                         // Затем закрываем модальное окно
@@ -219,24 +222,24 @@ export class BaseComponent extends HTMLElement {
 
     async connectedCallback() {
         try {
-            console.log(`[Компонент] ${this.constructor.name} подключается к DOM.`);
+            log(`${this.constructor.name} подключается к DOM.`);
             await this._initComponent(this.state);
             this._isReady = true;
-            console.log(`[Компонент] ${this.constructor.name} готов.`);
+            log(`${this.constructor.name} готов.`);
         } catch (error) {
-            console.error(`[Компонент] Ошибка в connectedCallback для ${this.constructor.name}:`, error);
+            log.error(`Ошибка в connectedCallback для ${this.constructor.name}:`, error);
             await this._render({error: error.message});
         }
     }
 
     async disconnectedCallback() {
-        console.log(`[Компонент] ${this.constructor.name} отключен от DOM.`);
+        log(`${this.constructor.name} отключен от DOM.`);
         this._isReady = false;
         await this._componentDisconnected()
     }
 
     async adoptedCallback() {
-        console.log(`[Компонент] ${this.constructor.name} перемещен в новый документ.`);
+        log(`${this.constructor.name} перемещен в новый документ.`);
         await this._componentAdopted()
     }
 
@@ -244,7 +247,7 @@ export class BaseComponent extends HTMLElement {
         if (oldValue === newValue) return;
         if(this._templateImported) {
             await this._componentAttributeChanged(name, oldValue, newValue)
-            console.log(`[Компонент] Атрибут ${name} изменился с '${oldValue}' на '${newValue}'.`);
+            log(`Атрибут ${name} изменился с '${oldValue}' на '${newValue}'.`);
         }
     }
 
@@ -274,9 +277,9 @@ export class BaseComponent extends HTMLElement {
             const style = document.createElement('style');
             style.textContent = `@import url('${cssPath.pathname}');`;
             this.shadowRoot.appendChild(style);
-            console.log(`[Стили] Стили для ${this.constructor.name} загружены из ${cssPath}`);
+            log(`Стили для ${this.constructor.name} загружены из ${cssPath}`);
         } catch (error) {
-            console.warn(`[Стили] Ошибка загрузки стилей для ${this.constructor.name}:`, error)
+            log.warn(`Ошибка загрузки стилей для ${this.constructor.name}:`, error)
         }
     }
 
@@ -450,9 +453,9 @@ export class BaseComponent extends HTMLElement {
                 this.shadowRoot.appendChild(container);
             }
 
-            console.log(`[Компонент] Скелетон-загрузка показана для ${this.constructor.name}`);
+            log(`Скелетон-загрузка показана для ${this.constructor.name}`);
         } catch (error) {
-            console.error(`[Компонент] Ошибка показа скелетона:`, error);
+            log.error(`Ошибка показа скелетона:`, error);
         }
     }
 
@@ -472,9 +475,9 @@ export class BaseComponent extends HTMLElement {
                 element.remove();
             });
 
-            console.log(`[Компонент] Скелетон-загрузка скрыта для ${this.constructor.name}`);
+            log(`Скелетон-загрузка скрыта для ${this.constructor.name}`);
         } catch (error) {
-            console.error(`[Компонент] Ошибка скрытия скелетона:`, error);
+            log.error(`Ошибка скрытия скелетона:`, error);
         }
     }
 
@@ -493,10 +496,10 @@ export class BaseComponent extends HTMLElement {
                 state: state,
                 context: this
             });
-            console.log(`[Компонент] Полный рендеринг выполнен для ${this.constructor.name}`);
+            log(`Полный рендеринг выполнен для ${this.constructor.name}`);
             return true;
         } catch (error) {
-            console.error(`[Компонент] Ошибка полного рендеринга:`, error);
+            log.error(`Ошибка полного рендеринга:`, error);
             return false;
         }
     }
@@ -513,18 +516,18 @@ export class BaseComponent extends HTMLElement {
     async renderPart({ partName = 'defaultTemplate', state = {}, selector, method = 'innerHTML' } = {}) {
         try {
             if (!this._templateMethods || !this._templateMethods[partName]) {
-                console.warn(`[Компонент] Метод шаблона '${partName}' не найден в ${this.constructor.name}`);
+                log.warn(`Метод шаблона '${partName}' не найден в ${this.constructor.name}`);
                 return false;
             }
 
             if (!selector) {
-                console.warn(`[Компонент] Не указан селектор для рендеринга части '${partName}'`);
+                log.warn(`Не указан селектор для рендеринга части '${partName}'`);
                 return false;
             }
 
             const targetElement = this.shadowRoot.querySelector(selector);
             if (!targetElement) {
-                console.warn(`[Компонент] Элемент с селектором '${selector}' не найден`);
+                log.warn(`Элемент с селектором '${selector}' не найден`);
                 return false;
             }
 
@@ -552,11 +555,11 @@ export class BaseComponent extends HTMLElement {
                     targetElement.insertAdjacentHTML('afterend', htmlContent);
                     break;
                 default:
-                    console.warn(`[Компонент] Неизвестный метод вставки: ${method}`);
+                    log.warn(`Неизвестный метод вставки: ${method}`);
                     return false;
             }
 
-            console.log(`[Компонент] Часть '${partName}' успешно отрендерена в '${selector}' методом '${method}'`);
+            log(`Часть '${partName}' успешно отрендерена в '${selector}' методом '${method}'`);
 
             await this._waitForDOMUpdate();
             // Обновляем обработчики событий для новой части
@@ -565,7 +568,7 @@ export class BaseComponent extends HTMLElement {
             return true;
 
         } catch (error) {
-            console.error(`[Компонент] Ошибка рендеринга части '${partName}':`, error);
+            log.error(`Ошибка рендеринга части '${partName}':`, error);
             this.addError({
                 componentName: this.constructor.name,
                 source: 'renderPart',
@@ -611,12 +614,12 @@ export class BaseComponent extends HTMLElement {
                 await this._waitForDOMUpdate();
                 await this._setupEventListeners();
                 await this.hideSkeleton()
-                console.log(`[Компонент] ${this.constructor.name} отрендерен с состоянием:`, mergedState);
+                log(`${this.constructor.name} отрендерен с состоянием:`, mergedState);
             } else {
-                console.error(`[Компонент] ${this.constructor.name} темплейт не определен`);
+                log.error(`${this.constructor.name} темплейт не определен`);
             }
         } catch (error) {
-            console.error(`[Компонент] Ошибка рендеринга для ${this.constructor.name}:`, error);
+            log.error(`Ошибка рендеринга для ${this.constructor.name}:`, error);
             this.shadowRoot.innerHTML = `<p style="color:red;">Ошибка рендеринга: ${error.message}</p>`;
         }
     }
@@ -630,16 +633,16 @@ export class BaseComponent extends HTMLElement {
         try {
             const targetElement = this.shadowRoot.querySelector(selector);
             if (!targetElement) {
-                console.warn(`[Компонент] Элемент с селектором '${selector}' не найден для очистки`);
+                log.warn(`Элемент с селектором '${selector}' не найден для очистки`);
                 return false;
             }
 
             targetElement.innerHTML = '';
-            console.log(`[Компонент] Содержимое '${selector}' очищено`);
+            log(`Содержимое '${selector}' очищено`);
             return true;
 
         } catch (error) {
-            console.error(`[Компонент] Ошибка очистки части '${selector}':`, error);
+            log.error(`Ошибка очистки части '${selector}':`, error);
             return false;
         }
     }
@@ -671,23 +674,23 @@ export class BaseComponent extends HTMLElement {
             this._controller.init()
         }
         // Базовая реализация. Переопределяется в дочерних компонентах.
-        console.log(`[Компонент] ${this.constructor.name} настройка обработчиков событий (базовая реализация).`);
+        log(`${this.constructor.name} настройка обработчиков событий (базовая реализация).`);
     }
 
     async _registerComponent() {
         try {
             if (!this.id) {
-                console.warn('ЯТО-ID1: Компонент желательно имеет ID для регистрации');
+                log.warn('ЯТО-ID1: Компонент желательно имеет ID для регистрации');
                 throw new Error('ЯТО-ID1: Компонент требует ID'); // Строгое требование по спецификации
                 return;
             }
             const key = `${this.tagName.toLowerCase()}:${this.id}`;
             BaseComponent.pendingRequests.set(key, this);
             if(this.tagName.toLowerCase() === 'navigation-manager' || this.tagName.toLowerCase() === 'navigation-sections') {
-                console.log(`[Компонент] ${this.constructor.name} с ID ${this.id} зарегистрирован.`);
+                log(`${this.constructor.name} с ID ${this.id} зарегистрирован.`);
             }
         } catch (e) {
-            console.error(e.toString(), this.tagName.toLowerCase())
+            log.error(e.toString(), this.tagName.toLowerCase())
         }
     }
 
@@ -712,7 +715,7 @@ export class BaseComponent extends HTMLElement {
             const timeoutId = setTimeout(() => {
                 if (!resolved) {
                     resolved = true;
-                    console.error(`[Компонент] Таймаут ожидания компонента '${key}'.`);
+                    log.error(`Таймаут ожидания компонента '${key}'.`);
                     resolve(null);
                 }
             }, timeout);
@@ -723,7 +726,7 @@ export class BaseComponent extends HTMLElement {
                 if (component) {
                     clearTimeout(timeoutId);
                     resolved = true;
-                    console.log(`[Компонент] Асинхронно найден зарегистрированный компонент '${key}'.`);
+                    log(`Асинхронно найден зарегистрированный компонент '${key}'.`);
                     resolve(component);
                 } else {
                     setTimeout(checkComponent, BaseComponent.MAX_POLLING_INTERVAL);
@@ -736,26 +739,26 @@ export class BaseComponent extends HTMLElement {
 
     async postMessage(event) {
         // Базовая реализация. Переопределяется в дочерних компонентах.
-        console.log(`[Компонент] сообщение для компонента ${this.constructor.name} отправленно.`);
+        log(`сообщение для компонента ${this.constructor.name} отправленно.`);
     }
 
     async _componentReady() {
         // Базовая реализация. Переопределяется в дочерних компонентах.
-        console.log(`[Компонент] ${this.constructor.name} компонент готов (базовая реализация).`);
+        log(`${this.constructor.name} компонент готов (базовая реализация).`);
     }
 
     async _componentAttributeChanged() {
         // Базовая реализация. Переопределяется в дочерних компонентах.
-        console.log(`[Компонент] ${this.constructor.name} Атрибуты изменены (базовая реализация).`);
+        log(`${this.constructor.name} Атрибуты изменены (базовая реализация).`);
     }
 
     async _componentAdopted() {
         // Базовая реализация. Переопределяется в дочерних компонентах.
-        console.log(`[Компонент] ${this.constructor.name} компонент перемещен (базовая реализация).`);
+        log(`${this.constructor.name} компонент перемещен (базовая реализация).`);
     }
 
     async _componentDisconnected() {
         // Базовая реализация. Переопределяется в дочерних компонентах.
-        console.log(`[Компонент] ${this.constructor.name} компонент отключен (базовая реализация).`);
+        log(`${this.constructor.name} компонент отключен (базовая реализация).`);
     }
 }
