@@ -69,7 +69,7 @@ export const controller = async (context) => {
                                            color: var(--cosmic-text-primary); font-size: 1rem;"
                                     autofocus
                                 >
-                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-text-secondary);">
+                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
                                     Группа будет создана и станет видимой для других участников сети.
                                 </div>
                             </div>
@@ -153,40 +153,49 @@ export const controller = async (context) => {
             }
 
             // Обработчик обнаружения групп
-            const discoverBtn = context.shadowRoot.querySelector('#discover-groups-btn');
-            const discoverGroupsBtn = context.shadowRoot.querySelector('#discover-groups');
-            if (discoverBtn) {
-                const discoverHandler = async () => {
-                    try {
-                        await context.discoverGroups();
-                    } catch (error) {
-                        console.error('❌ Error discovering groups:', error);
-                        await context.showModal({
-                            title: 'Ошибка',
-                            content: `<p>Не удалось обнаружить группы: ${error.message}</p>`,
-                            buttons: [{ text: 'OK', type: 'primary' }]
-                        });
-                    }
-                };
-                discoverBtn.addEventListener('click', discoverHandler);
-                eventListeners.push({ element: discoverBtn, handler: discoverHandler });
-            }
-            if (discoverGroupsBtn) {
-                const discoverHandler = async () => {
-                    try {
-                        await context.discoverGroups();
-                    } catch (error) {
-                        console.error('❌ Error discovering groups:', error);
-                        await context.showModal({
-                            title: 'Ошибка',
-                            content: `<p>Не удалось обнаружить групп: ${error.message}</p>`,
-                            buttons: [{ text: 'OK', type: 'primary' }]
-                        });
-                    }
-                };
-                discoverGroupsBtn.addEventListener('click', discoverHandler);
-                eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
-            }
+            const discoverGroupsHandler = async () => {
+                try {
+                    console.log('🔍 Запуск поиска групп...');
+
+                    // Показываем индикатор загрузки
+                    await context.showSkeleton({
+                        selector: '#discovered-groups-list',
+                        replace: true
+                    });
+
+                    // Запускаем активный поиск
+                    await context._actions.discoverGroupsActive();
+
+                    // Скрываем индикатор через 2 секунды
+                    setTimeout(async () => {
+                        await context.hideSkeleton();
+                    }, 2000);
+
+                } catch (error) {
+                    console.error('❌ Ошибка поиска групп:', error);
+                    await context.hideSkeleton();
+
+                    await context.showModal({
+                        title: 'Ошибка поиска',
+                        content: `<p>Не удалось выполнить поиск групп: ${error.message}</p>`,
+                        buttons: [{ text: 'OK', type: 'primary' }]
+                    });
+                }
+            };
+
+            // Привязываем обработчик ко всем кнопкам поиска групп
+            const discoverButtons = [
+                context.shadowRoot.querySelector('#discover-groups-btn'),
+                context.shadowRoot.querySelector('#discover-groups'),
+                context.shadowRoot.querySelector('#discover-groups-action')
+            ];
+
+            discoverButtons.forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', discoverGroupsHandler);
+                    eventListeners.push({ element: btn, handler: discoverGroupsHandler });
+                }
+            });
 
             // Обработчики для кнопок присоединения к группам
             const setupJoinButtons = () => {

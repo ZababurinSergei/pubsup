@@ -187,18 +187,16 @@ export class PeerConnection extends BaseComponent {
      * @param {string} text - Текст для копирования
      * @param {string} successMessage - Сообщение об успехе
      */
-    async copyToClipboard(text, successMessage = 'Текст скопирован в буфер обмена') {
+    async copyToClipboard(text, successMessage = 'Текст скопирован в буфер обмена', addressItem) {
         try {
             await navigator.clipboard.writeText(text);
             console.log('✅ Text copied to clipboard:', text);
 
-            // Показываем уведомление об успехе
-            await this.showModal({
-                title: 'Успех',
-                content: `<p>${successMessage}</p>`,
-                buttons: [{ text: 'OK', type: 'primary' }],
-                closeOnBackdropClick: true
-            });
+            addressItem.classList.add('copied')
+
+            setTimeout(() => {
+                addressItem.classList.remove('copied');
+            }, 2000);
 
             return true;
         } catch (error) {
@@ -379,7 +377,8 @@ export class PeerConnection extends BaseComponent {
                 if (addressItem) {
                     const address = addressItem.getAttribute('data-address');
                     if (address) {
-                        await this.copyToClipboard(address, 'Адрес скопирован в буфер обмена');
+                        debugger
+                        await this.copyToClipboard(address, 'Адрес скопирован в буфер обмена', addressItem);
                     }
                 }
             };
@@ -394,7 +393,9 @@ export class PeerConnection extends BaseComponent {
             const handler = async (e) => {
                 const peerId = e.target.getAttribute('data-peer-id');
                 if (peerId) {
-                    await this.copyToClipboard(peerId, 'Peer ID скопирован в буфер обмена');
+                    console.log('', e.currentTarget)
+                    debugger
+                    await this.copyToClipboard(peerId, 'Peer ID скопирован в буфер обмена', e.target);
                 }
             };
             button.replaceWith(button.cloneNode(true));

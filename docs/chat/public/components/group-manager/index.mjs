@@ -28,6 +28,18 @@ export class GroupManager extends BaseComponent {
         await this.fullRender(this.state);
         await this._controller.init();
 
+        // Автоматический поиск групп при старте
+        setTimeout(async () => {
+            if (this.state.nodeReady) {
+                try {
+                    console.log('🔍 Автоматический поиск групп при старте...');
+                    await this.discoverGroups();
+                } catch (error) {
+                    console.log('⚠️ Автоматический поиск не удался:', error);
+                }
+            }
+        }, 3000);
+
         // Затем запускаем инициализацию ноды
         await this.startNodeInitialization();
 

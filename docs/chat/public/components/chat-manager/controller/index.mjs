@@ -12,6 +12,8 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
+            console.log('🔧 ChatManager controller initializing...');
+
             // Обработчики для переключения режимов
             const listenerBtn = context.shadowRoot.querySelector('#listener-mode');
             const dialerBtn = context.shadowRoot.querySelector('#dialer-mode');
@@ -108,11 +110,37 @@ export const controller = async (context) => {
             }
 
             // Обработчик обнаружения групп
-            const discoverGroupsBtn = context.shadowRoot.querySelector('#discover-groups');
+            const discoverGroupsBtn = context.shadowRoot.querySelector('#discover-groups-btn');
             if (discoverGroupsBtn) {
                 const discoverHandler = async () => {
-                    await context._actions.discoverGroups();
+                    try {
+                        console.log('🔍 ChatManager: поиск групп...');
+
+                        // Получаем GroupManager и запускаем поиск
+                        const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                        if (groupManager && groupManager.discoverGroups) {
+                            await groupManager.discoverGroups();
+
+                            // Показываем уведомление
+                            await context.showModal({
+                                title: 'Поиск групп',
+                                content: '<p>Поиск групп запущен. Результаты появятся в списке обнаруженных групп.</p>',
+                                buttons: [{ text: 'OK', type: 'primary' }],
+                                closeOnBackdropClick: true
+                            });
+                        } else {
+                            throw new Error('GroupManager не доступен');
+                        }
+                    } catch (error) {
+                        console.error('❌ Ошибка поиска групп в ChatManager:', error);
+                        await context.showModal({
+                            title: 'Ошибка',
+                            content: `<p>Не удалось запустить поиск групп: ${error.message}</p>`,
+                            buttons: [{ text: 'OK', type: 'primary' }]
+                        });
+                    }
                 };
+
                 discoverGroupsBtn.addEventListener('click', discoverHandler);
                 eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
             }
@@ -155,7 +183,7 @@ export const controller = async (context) => {
                 });
             };
 
-            // Обработчики для кнопок действий в группах
+            // Обработчики для кнопок действий в группам
             const setupGroupActionHandlers = () => {
                 // Обработчики для кнопок присоединения к группам
                 const joinButtons = context.shadowRoot.querySelectorAll('.join-group-btn');
@@ -256,7 +284,6 @@ export const controller = async (context) => {
             // Очистка всех обработчиков событий
             eventListeners.forEach(({ element, handler }) => {
                 element.removeEventListener('click', handler);
-                element.removeEventListener('input', handler);
                 element.removeEventListener('keypress', handler);
             });
             eventListeners = [];

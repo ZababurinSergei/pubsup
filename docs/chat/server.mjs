@@ -25,7 +25,6 @@ app.use(await cors({ credentials: true }));
 app.use(express.static('public'))
 
 app.get('/{*splat}', async (req, res) => {
-    console.log('@@@@@@@@@@@@@@@@@@@')
     res.status(200).sendFile(path.join(`${__dirname}/public`, '/index.html'));
 })
 

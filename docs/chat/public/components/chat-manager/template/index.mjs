@@ -13,7 +13,7 @@ export default function defaultTemplate({state = {}} = {}) {
                 <div class="header-main">
                     <h1 class="manager-title">
                         <span class="title-icon">🌐</span>
-                        P2P Чат Менеджер
+                        Чат Менеджер
                     </h1>
                     <div class="connection-status ${state.connected ? 'connected' : 'disconnected'}">
                         <span class="status-dot"></span>
@@ -347,7 +347,7 @@ export function renderActiveChatHeader({state = {}} = {}) {
                 <span class="avatar-icon">💬</span>
             </div>
             <div class="chat-details">
-                <h2 class="chat-name">P2P Чат</h2>
+                <h2 class="chat-name">Чат</h2>
                 <p class="chat-description">Выберите группу для начала общения</p>
             </div>
         </div>

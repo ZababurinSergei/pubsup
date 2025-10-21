@@ -15,7 +15,7 @@ export default function defaultTemplate({state = {}} = {}) {
                         ${getChatAvatar(state.currentGroup)}
                     </div>
                     <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : 'P2P Чат'}</h3>
+                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : 'Чат'}</h3>
                         <div class="chat-status">
                             <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>
                             <span class="status-text">${getStatusText(state)}</span>

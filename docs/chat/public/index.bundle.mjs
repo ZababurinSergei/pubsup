@@ -1106,7 +1106,7 @@ function defaultTemplate({ state = {} } = {}) {
                 <div class="header-main">
                     <h1 class="manager-title">
                         <span class="title-icon">\u{1F310}</span>
-                        P2P \u0427\u0430\u0442 \u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440
+                        \u0427\u0430\u0442 \u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440
                     </h1>
                     <div class="connection-status ${state.connected ? "connected" : "disconnected"}">
                         <span class="status-dot"></span>
@@ -1422,7 +1422,7 @@ function renderActiveChatHeader({ state = {} } = {}) {
                 <span class="avatar-icon">\u{1F4AC}</span>
             </div>
             <div class="chat-details">
-                <h2 class="chat-name">P2P \u0427\u0430\u0442</h2>
+                <h2 class="chat-name">\u0427\u0430\u0442</h2>
                 <p class="chat-description">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>
             </div>
         </div>
@@ -1610,6 +1610,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
+      console.log("\u{1F527} ChatManager controller initializing...");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode");
       if (listenerBtn) {
@@ -1686,10 +1687,31 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         clearMessagesBtn.addEventListener("click", clearHandler);
         eventListeners.push({ element: clearMessagesBtn, handler: clearHandler });
       }
-      const discoverGroupsBtn = context.shadowRoot.querySelector("#discover-groups");
+      const discoverGroupsBtn = context.shadowRoot.querySelector("#discover-groups-btn");
       if (discoverGroupsBtn) {
         const discoverHandler = /* @__PURE__ */ __name(async () => {
-          await context._actions.discoverGroups();
+          try {
+            console.log("\u{1F50D} ChatManager: \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F...");
+            const groupManager = await context.getComponentAsync("group-manager", "group-manager");
+            if (groupManager && groupManager.discoverGroups) {
+              await groupManager.discoverGroups();
+              await context.showModal({
+                title: "\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F",
+                content: "<p>\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F \u0437\u0430\u043F\u0443\u0449\u0435\u043D. \u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u044F\u0432\u044F\u0442\u0441\u044F \u0432 \u0441\u043F\u0438\u0441\u043A\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F.</p>",
+                buttons: [{ text: "OK", type: "primary" }],
+                closeOnBackdropClick: true
+              });
+            } else {
+              throw new Error("GroupManager \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+            }
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F \u0432 ChatManager:", error);
+            await context.showModal({
+              title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+              content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
+              buttons: [{ text: "OK", type: "primary" }]
+            });
+          }
         }, "discoverHandler");
         discoverGroupsBtn.addEventListener("click", discoverHandler);
         eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
@@ -1806,7 +1828,6 @@ var controller = /* @__PURE__ */ __name(async (context) => {
     async destroy() {
       eventListeners.forEach(({ element, handler }) => {
         element.removeEventListener("click", handler);
-        element.removeEventListener("input", handler);
         element.removeEventListener("keypress", handler);
       });
       eventListeners = [];
@@ -15167,7 +15188,7 @@ function defaultTemplate2({ state = {} } = {}) {
                         ${getChatAvatar(state.currentGroup)}
                     </div>
                     <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "P2P \u0427\u0430\u0442"}</h3>
+                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "\u0427\u0430\u0442"}</h3>
                         <div class="chat-status">
                             <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
                             <span class="status-text">${getStatusText(state)}</span>
@@ -16399,7 +16420,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                                            color: var(--cosmic-text-primary); font-size: 1rem;"
                                     autofocus
                                 >
-                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-text-secondary);">
+                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
                                     \u0413\u0440\u0443\u043F\u043F\u0430 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0438 \u0441\u0442\u0430\u043D\u0435\u0442 \u0432\u0438\u0434\u0438\u043C\u043E\u0439 \u0434\u043B\u044F \u0434\u0440\u0443\u0433\u0438\u0445 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0435\u0442\u0438.
                                 </div>
                             </div>
@@ -16472,40 +16493,38 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
         searchInput.addEventListener("input", searchHandler);
         eventListeners.push({ element: searchInput, handler: searchHandler });
       }
-      const discoverBtn = context.shadowRoot.querySelector("#discover-groups-btn");
-      const discoverGroupsBtn = context.shadowRoot.querySelector("#discover-groups");
-      if (discoverBtn) {
-        const discoverHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            await context.discoverGroups();
-          } catch (error) {
-            console.error("\u274C Error discovering groups:", error);
-            await context.showModal({
-              title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-              content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u044B: ${error.message}</p>`,
-              buttons: [{ text: "OK", type: "primary" }]
-            });
-          }
-        }, "discoverHandler");
-        discoverBtn.addEventListener("click", discoverHandler);
-        eventListeners.push({ element: discoverBtn, handler: discoverHandler });
-      }
-      if (discoverGroupsBtn) {
-        const discoverHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            await context.discoverGroups();
-          } catch (error) {
-            console.error("\u274C Error discovering groups:", error);
-            await context.showModal({
-              title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-              content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
-              buttons: [{ text: "OK", type: "primary" }]
-            });
-          }
-        }, "discoverHandler");
-        discoverGroupsBtn.addEventListener("click", discoverHandler);
-        eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
-      }
+      const discoverGroupsHandler = /* @__PURE__ */ __name(async () => {
+        try {
+          console.log("\u{1F50D} \u0417\u0430\u043F\u0443\u0441\u043A \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F...");
+          await context.showSkeleton({
+            selector: "#discovered-groups-list",
+            replace: true
+          });
+          await context._actions.discoverGroupsActive();
+          setTimeout(async () => {
+            await context.hideSkeleton();
+          }, 2e3);
+        } catch (error) {
+          console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F:", error);
+          await context.hideSkeleton();
+          await context.showModal({
+            title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430",
+            content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0432\u044B\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
+            buttons: [{ text: "OK", type: "primary" }]
+          });
+        }
+      }, "discoverGroupsHandler");
+      const discoverButtons = [
+        context.shadowRoot.querySelector("#discover-groups-btn"),
+        context.shadowRoot.querySelector("#discover-groups"),
+        context.shadowRoot.querySelector("#discover-groups-action")
+      ];
+      discoverButtons.forEach((btn) => {
+        if (btn) {
+          btn.addEventListener("click", discoverGroupsHandler);
+          eventListeners.push({ element: btn, handler: discoverGroupsHandler });
+        }
+      });
       const setupJoinButtons = /* @__PURE__ */ __name(() => {
         const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
         joinButtons.forEach((button) => {
@@ -16635,7 +16654,16 @@ async function createActions3(context) {
         await libp2p.services.pubsub.subscribe(GROUPS_ANNOUNCEMENT_TOPIC);
         libp2p.services.pubsub.addEventListener("message", (event) => {
           if (event.detail.topic === GROUPS_ANNOUNCEMENT_TOPIC) {
-            this.handleGroupAnnouncement(event.detail);
+            try {
+              const message2 = JSON.parse(new TextDecoder().decode(event.detail.data));
+              if (message2.type === "GROUP_CREATED" || message2.type === "GROUP_UPDATED") {
+                this.handleGroupAnnouncement(event.detail);
+              } else if (message2.type === "GROUPS_DISCOVERY_REQUEST" || message2.type === "GROUPS_DISCOVERY_RESPONSE") {
+                this.handleDiscoveryRequest(event.detail);
+              }
+            } catch (error) {
+              console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+            }
           }
         });
         console.log(`[GroupManager] \u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: ${GROUPS_ANNOUNCEMENT_TOPIC}`);
@@ -16722,6 +16750,71 @@ async function createActions3(context) {
       await this.discoverGroups();
     }, "startGroupDiscovery"),
     /**
+     * Активный поиск групп через анонсы
+     * @async
+     */
+    async discoverGroupsActive() {
+      if (!libp2p) {
+        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      }
+      try {
+        console.log("[GroupManager] \u0417\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F...");
+        const discoveryRequest = {
+          type: "GROUPS_DISCOVERY_REQUEST",
+          data: {
+            requester: libp2p.peerId.toString(),
+            timestamp: Date.now(),
+            protocols: ["chat-group-", "universe-chat-"]
+          }
+        };
+        await libp2p.services.pubsub.publish(
+          GROUPS_ANNOUNCEMENT_TOPIC,
+          new TextEncoder().encode(JSON.stringify(discoveryRequest))
+        );
+        console.log("[GroupManager] \u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
+        await this.discoverGroups();
+        return true;
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F:", error);
+        throw error;
+      }
+    },
+    /**
+     * Обработчик запросов на обнаружение групп
+     */
+    async handleDiscoveryRequest(message2) {
+      try {
+        const request = JSON.parse(new TextDecoder().decode(message2.data));
+        if (request.type === "GROUPS_DISCOVERY_REQUEST") {
+          const myGroups = context.state.groups || [];
+          if (myGroups.length > 0) {
+            const response = {
+              type: "GROUPS_DISCOVERY_RESPONSE",
+              data: {
+                groups: myGroups,
+                responder: libp2p.peerId.toString(),
+                timestamp: Date.now()
+              }
+            };
+            await libp2p.services.pubsub.publish(
+              GROUPS_ANNOUNCEMENT_TOPIC,
+              new TextEncoder().encode(JSON.stringify(response))
+            );
+            console.log(`[GroupManager] \u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 ${myGroups.length} \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438`);
+          }
+        }
+        if (request.type === "GROUPS_DISCOVERY_RESPONSE") {
+          const discoveredGroups = request.data.groups || [];
+          for (const group of discoveredGroups) {
+            await this.updateDiscoveredGroups(group);
+          }
+          console.log(`[GroupManager] \u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E ${discoveredGroups.length} \u0433\u0440\u0443\u043F\u043F \u043E\u0442 ${request.data.responder}`);
+        }
+      } catch (error) {
+        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F:", error);
+      }
+    },
+    /**
      * Обнаружение доступных групп через PubSub
      * @async
      */
@@ -16798,6 +16891,8 @@ async function createActions3(context) {
           tags: options.tags || ["general"],
           language: options.language || "ru"
         };
+        console.log("libp2p.services.pubsub: ", libp2p.services.pubsub);
+        debugger;
         await libp2p.services.pubsub.subscribe(topic);
         await this.announceGroupCreation(group);
         if (!context.state.groups) {
@@ -17092,6 +17187,16 @@ var GroupManager = class extends BaseComponent {
     this._actions = await createActions3(this);
     await this.fullRender(this.state);
     await this._controller.init();
+    setTimeout(async () => {
+      if (this.state.nodeReady) {
+        try {
+          console.log("\u{1F50D} \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F \u043F\u0440\u0438 \u0441\u0442\u0430\u0440\u0442\u0435...");
+          await this.discoverGroups();
+        } catch (error) {
+          console.log("\u26A0\uFE0F \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u043E\u0438\u0441\u043A \u043D\u0435 \u0443\u0434\u0430\u043B\u0441\u044F:", error);
+        }
+      }
+    }, 3e3);
     await this.startNodeInitialization();
     this.state._initialized = true;
     return true;
@@ -17368,7 +17473,7 @@ function defaultTemplate4({ state = {} } = {}) {
             <div class="header-main">
                 <h1 class="connection-title">
                     <span class="title-icon">\u{1F310}</span>
-                    P2P \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435
+                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435
                 </h1>
                 <div class="connection-status ${state.connected ? "connected" : "disconnected"}">
                     <span class="status-dot"></span>
@@ -17890,7 +17995,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
             if (addressItem) {
               const address = addressItem.getAttribute("data-address");
               if (address) {
-                await context.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+                await context.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem);
               }
             }
           }, "handler");
@@ -17904,6 +18009,8 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
             const peerId = e2.target.getAttribute("data-peer-id");
             if (peerId) {
+              console.log("ssssss", e2.currentTarget);
+              debugger;
               await context.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           }, "handler");
@@ -18099,6 +18206,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (copyPeerIdBtn) {
         const copyPeerHandler = /* @__PURE__ */ __name(async () => {
           try {
+            debugger;
             if (context2.state.peerId) {
               await context2.copyToClipboard(context2.state.peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
@@ -18113,6 +18221,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (copyAllAddressesBtn) {
         const copyAllAddressesHandler = /* @__PURE__ */ __name(async () => {
           try {
+            debugger;
             const addresses = context2.state.listeningAddresses || [];
             if (addresses.length > 0) {
               const textToCopy = addresses.join("\n");
@@ -34907,16 +35016,14 @@ var PeerConnection = class extends BaseComponent {
    * @param {string} text - Текст для копирования
    * @param {string} successMessage - Сообщение об успехе
    */
-  async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430") {
+  async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem) {
     try {
       await navigator.clipboard.writeText(text);
       console.log("\u2705 Text copied to clipboard:", text);
-      await this.showModal({
-        title: "\u0423\u0441\u043F\u0435\u0445",
-        content: `<p>${successMessage}</p>`,
-        buttons: [{ text: "OK", type: "primary" }],
-        closeOnBackdropClick: true
-      });
+      addressItem.classList.add("copied");
+      setTimeout(() => {
+        addressItem.classList.remove("copied");
+      }, 2e3);
       return true;
     } catch (error) {
       console.error("\u274C Error copying to clipboard:", error);
@@ -35068,7 +35175,8 @@ var PeerConnection = class extends BaseComponent {
         if (addressItem) {
           const address = addressItem.getAttribute("data-address");
           if (address) {
-            await this.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+            debugger;
+            await this.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem);
           }
         }
       }, "handler");
@@ -35080,7 +35188,9 @@ var PeerConnection = class extends BaseComponent {
       const handler = /* @__PURE__ */ __name(async (e2) => {
         const peerId = e2.target.getAttribute("data-peer-id");
         if (peerId) {
-          await this.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+          console.log("", e2.currentTarget);
+          debugger;
+          await this.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", e2.target);
         }
       }, "handler");
       button.replaceWith(button.cloneNode(true));

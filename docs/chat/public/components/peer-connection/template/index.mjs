@@ -12,7 +12,7 @@ export default function defaultTemplate({state = {}} = {}) {
             <div class="header-main">
                 <h1 class="connection-title">
                     <span class="title-icon">🌐</span>
-                    P2P Подключение
+                    Подключение
                 </h1>
                 <div class="connection-status ${state.connected ? 'connected' : 'disconnected'}">
                     <span class="status-dot"></span>

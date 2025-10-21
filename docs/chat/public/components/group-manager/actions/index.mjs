@@ -36,10 +36,21 @@ export async function createActions(context) {
             try {
                 await libp2p.services.pubsub.subscribe(GROUPS_ANNOUNCEMENT_TOPIC);
 
-                // Обработчик входящих анонсов групп
+                // Обработчик входящих сообщений
                 libp2p.services.pubsub.addEventListener('message', (event) => {
                     if (event.detail.topic === GROUPS_ANNOUNCEMENT_TOPIC) {
-                        this.handleGroupAnnouncement(event.detail);
+                        try {
+                            const message = JSON.parse(new TextDecoder().decode(event.detail.data));
+
+                            if (message.type === 'GROUP_CREATED' || message.type === 'GROUP_UPDATED') {
+                                this.handleGroupAnnouncement(event.detail);
+                            } else if (message.type === 'GROUPS_DISCOVERY_REQUEST' ||
+                                message.type === 'GROUPS_DISCOVERY_RESPONSE') {
+                                this.handleDiscoveryRequest(event.detail);
+                            }
+                        } catch (error) {
+                            console.warn('[GroupManager] Ошибка обработки сообщения:', error);
+                        }
                     }
                 });
 
@@ -155,6 +166,93 @@ export async function createActions(context) {
         },
 
         /**
+         * Активный поиск групп через анонсы
+         * @async
+         */
+        async discoverGroupsActive() {
+            if (!libp2p) {
+                throw new Error('Libp2p не инициализирован');
+            }
+
+            try {
+                console.log('[GroupManager] Запуск активного поиска групп...');
+
+                // Отправляем запрос на поиск групп
+                const discoveryRequest = {
+                    type: 'GROUPS_DISCOVERY_REQUEST',
+                    data: {
+                        requester: libp2p.peerId.toString(),
+                        timestamp: Date.now(),
+                        protocols: ['chat-group-', 'universe-chat-']
+                    }
+                };
+
+                // Публикуем запрос на обнаружение
+                await libp2p.services.pubsub.publish(
+                    GROUPS_ANNOUNCEMENT_TOPIC,
+                    new TextEncoder().encode(JSON.stringify(discoveryRequest))
+                );
+
+                console.log('[GroupManager] Запрос на обнаружение групп отправлен');
+
+                // Также выполняем локальный поиск
+                await this.discoverGroups();
+
+                return true;
+
+            } catch (error) {
+                console.error('[GroupManager] Ошибка активного поиска групп:', error);
+                throw error;
+            }
+        },
+
+        /**
+         * Обработчик запросов на обнаружение групп
+         */
+        async handleDiscoveryRequest(message) {
+            try {
+                const request = JSON.parse(new TextDecoder().decode(message.data));
+
+                if (request.type === 'GROUPS_DISCOVERY_REQUEST') {
+                    // Отвечаем своими группами
+                    const myGroups = context.state.groups || [];
+
+                    if (myGroups.length > 0) {
+                        const response = {
+                            type: 'GROUPS_DISCOVERY_RESPONSE',
+                            data: {
+                                groups: myGroups,
+                                responder: libp2p.peerId.toString(),
+                                timestamp: Date.now()
+                            }
+                        };
+
+                        await libp2p.services.pubsub.publish(
+                            GROUPS_ANNOUNCEMENT_TOPIC,
+                            new TextEncoder().encode(JSON.stringify(response))
+                        );
+
+                        console.log(`[GroupManager] Отправлен ответ с ${myGroups.length} группами`);
+                    }
+                }
+
+                if (request.type === 'GROUPS_DISCOVERY_RESPONSE') {
+                    // Обрабатываем полученные группы
+                    const discoveredGroups = request.data.groups || [];
+
+                    for (const group of discoveredGroups) {
+                        await this.updateDiscoveredGroups(group);
+                    }
+
+                    console.log(`[GroupManager] Получено ${discoveredGroups.length} групп от ${request.data.responder}`);
+                }
+
+            } catch (error) {
+                console.warn('[GroupManager] Ошибка обработки запроса обнаружения:', error);
+            }
+        },
+
+        /**
          * Обнаружение доступных групп через PubSub
          * @async
          */
@@ -253,6 +351,8 @@ export async function createActions(context) {
                     language: options.language || 'ru'
                 };
 
+                console.log('libp2p.services.pubsub: ', libp2p.services.pubsub)
+                debugger
                 // Подписываемся на топик группы
                 await libp2p.services.pubsub.subscribe(topic);
 

@@ -443,6 +443,7 @@
     color: white;
     font-size: 1.25rem;
     flex-shrink: 0;
+    align-self: flex-start;
 }
 
 .chat-details {
@@ -479,6 +480,7 @@
 .chat-actions {
     display: flex;
     gap: 0.5rem;
+    align-self: flex-end;
 }
 
 .chat-action-btn {

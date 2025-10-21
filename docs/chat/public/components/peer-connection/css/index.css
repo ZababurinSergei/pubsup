@@ -1088,3 +1088,7 @@ input:focus-visible {
 .connected-peers-section:target {
     display: block !important;
 }
+
+.address-item.copied {
+    background: rgba(237, 199, 0, 0.78);
+}

@@ -23,7 +23,7 @@ export const controller = async (context) => {
                         if (addressItem) {
                             const address = addressItem.getAttribute('data-address');
                             if (address) {
-                                await context.copyToClipboard(address, 'Адрес скопирован в буфер обмена');
+                                await context.copyToClipboard(address, 'Адрес скопирован в буфер обмена', addressItem);
                             }
                         }
                     };
@@ -39,6 +39,8 @@ export const controller = async (context) => {
                     const handler = async (e) => {
                         const peerId = e.target.getAttribute('data-peer-id');
                         if (peerId) {
+                            console.log('ssssss', e.currentTarget)
+                            debugger
                             await context.copyToClipboard(peerId, 'Peer ID скопирован в буфер обмена');
                         }
                     };
@@ -272,6 +274,7 @@ export const controller = async (context) => {
             if (copyPeerIdBtn) {
                 const copyPeerHandler = async () => {
                     try {
+                        debugger
                         if (context.state.peerId) {
                             await context.copyToClipboard(context.state.peerId, 'Peer ID скопирован в буфер обмена');
                         }
@@ -288,6 +291,7 @@ export const controller = async (context) => {
             if (copyAllAddressesBtn) {
                 const copyAllAddressesHandler = async () => {
                     try {
+                        debugger
                         const addresses = context.state.listeningAddresses || [];
                         if (addresses.length > 0) {
                             const textToCopy = addresses.join('\n');

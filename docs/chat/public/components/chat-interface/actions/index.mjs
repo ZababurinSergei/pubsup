@@ -298,14 +298,14 @@ async function searchMessages(query) {
  */
 function showNotification(message) {
     if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('P2P Чат', {
+        new Notification('Чат', {
             body: message,
             icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
         });
     } else if ('Notification' in window && Notification.permission !== 'denied') {
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
-                new Notification('P2P Чат', {
+                new Notification('Чат', {
                     body: message,
                     icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
                 });
