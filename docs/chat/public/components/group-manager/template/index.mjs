@@ -111,7 +111,7 @@ export function renderMainContent({ groups = [], discoveredGroups = [], joinedGr
  */
 export function renderMyGroups({ groups = [], nodeReady = false } = {}) {
     return `
-        <section class="section-card">
+        <section class="section-card" id="my-groups-list">
             <div class="card-header">
                 <h3 class="card-title">
                     <span class="card-icon">🏠</span>
@@ -120,7 +120,7 @@ export function renderMyGroups({ groups = [], nodeReady = false } = {}) {
                 <span class="card-badge">${groups.length}</span>
             </div>
             <div class="card-content">
-                <div id="my-groups-list">
+                <div>
                     ${groups.length > 0 ? renderGroupsList(groups, 'my', nodeReady) : renderEmptyState('my', nodeReady)}
                 </div>
             </div>
