@@ -188,6 +188,14 @@
     margin-left: auto;
 }
 
+/* Стили для времени работы */
+.uptime {
+    font-size: 0.7rem;
+    color: var(--cosmic-text-tertiary);
+    font-family: var(--font-family-mono);
+    margin-left: 0.5rem;
+}
+
 /* Main Content */
 .chat-main {
     display: flex;
@@ -290,6 +298,12 @@
     font-weight: 600;
     font-size: 0.75rem;
     flex-shrink: 0;
+}
+
+/* Стили для текущего пользователя в списке участников */
+.member-avatar.current-user {
+    background: var(--success-gradient);
+    border: 2px solid rgba(0, 176, 155, 0.5);
 }
 
 .member-info {

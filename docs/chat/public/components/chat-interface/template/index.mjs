@@ -138,8 +138,12 @@ export function renderConnectionStatus({state = {}} = {}) {
     return `
     <div class="status-message connected">
         <span class="status-icon">🟢</span>
-        <span class="status-text">Подключено к группу "${state.currentGroup.name}"</span>
-        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + '...' : 'Неизвестен'}</span>
+        <span class="status-text">
+            Подключено ${state.totalPeers ? `к ${state.totalPeers} пирам` : 'к сети'}
+            ${state.connectionMode ? `(${state.connectionMode === 'listener' ? 'слушатель' : 'инициатор'})` : ''}
+        </span>
+        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ''}
+        ${state.uptime ? `<span class="uptime">Время работы: ${state.uptime}</span>` : ''}
     </div>
     `;
 }
@@ -178,28 +182,38 @@ export function renderStatus({state = {}} = {}) {
  * Шаблон для списка участников
  */
 export function renderMembersList({state = {}} = {}) {
-    const members = state.currentGroup?.members || [];
+    // Используем connectedPeers из состояния или создаем пустой массив
+    const members = state.connectedPeers || [];
+    const currentUser = state.peerId ? {
+        id: state.peerId,
+        name: 'Вы',
+        online: true,
+        isCurrentUser: true
+    } : null;
 
-    if (members.length === 0) {
+    // Добавляем текущего пользователя в начало списка
+    const allMembers = currentUser ? [currentUser, ...members] : members;
+
+    if (allMembers.length === 0) {
         return `
         <div class="empty-members">
             <div class="empty-icon">👥</div>
-            <p class="empty-text">Нет участников</p>
+            <p class="empty-text">Нет участников в сети</p>
         </div>
         `;
     }
 
     return `
     <div class="members-container">
-        ${members.map(member => `
+        ${allMembers.map(member => `
         <div class="member-item" data-peer-id="${member.id}">
-            <div class="member-avatar">
-                ${member.id ? member.id.substring(2, 4).toUpperCase() : '??'}
+            <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">
+                ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}
             </div>
             <div class="member-info">
-                <div class="member-name">${member.name || 'Анонимный участник'}</div>
+                <div class="member-name">${member.name || `Пир ${member.id.slice(0, 4)}${member.id.slice(-4)}`}</div>
                 <div class="member-status ${member.online ? 'online' : 'offline'}">
-                    ${member.online ? 'В сети' : 'Не в сети'}
+                    ${member.isCurrentUser ? 'Вы' : (member.online ? 'В сети' : 'Не в сети')}
                 </div>
             </div>
         </div>

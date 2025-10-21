@@ -191,7 +191,7 @@ export function renderSystemStatus({state = {}} = {}) {
             </div>
             <div class="status-info">
                 <span class="status-label">Время работы</span>
-                <span class="status-value">${state.uptime || '0:00'}</span>
+                <span class="status-value uptime-display">${state.uptime || '0:00'}</span>
             </div>
         </div>
     </div>

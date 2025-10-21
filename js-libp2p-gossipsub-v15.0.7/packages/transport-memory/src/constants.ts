@@ -1,1 +1,0 @@
-export const DEFAULT_MAX_MESSAGE_SIZE = 65_536

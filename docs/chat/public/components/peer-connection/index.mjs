@@ -14,9 +14,12 @@ export class PeerConnection extends BaseComponent {
             peerId: null,
             listeningAddresses: [],
             connectedPeers: [],
-            relayEnabled: true
+            relayEnabled: true,
+            startTime: null, // Время старта ноды
+            uptime: '0:00'   // Текущее время работы
         };
         this._lastPeersCount = 0; // Для отслеживания изменений
+        this._uptimeInterval = null; // Интервал для обновления времени
     }
 
     async _componentReady() {
@@ -50,14 +53,19 @@ export class PeerConnection extends BaseComponent {
             this.state.peerId = libp2p.peerId.toString();
             this.state.listeningAddresses = libp2p.getMultiaddrs().map(ma => ma.toString());
             this.state.connected = true;
+            this.state.startTime = Date.now(); // Записываем время старта
 
             console.log('✅ Libp2p initialized successfully');
             console.log('📋 New state:', {
                 mode: this.state.mode,
                 connected: this.state.connected,
                 peerId: this.state.peerId,
-                addresses: this.state.listeningAddresses
+                addresses: this.state.listeningAddresses,
+                startTime: this.state.startTime
             });
+
+            // Запускаем обновление времени работы
+            this.startUptimeCounter();
 
             await this.fullRender(this.state);
 
@@ -69,6 +77,9 @@ export class PeerConnection extends BaseComponent {
                 const peerAddressInput = this.shadowRoot.querySelector('#peer-address-input');
                 peerAddressInput.value = '';
             }
+
+            // Отправляем начальный статус соединения
+            await this.sendConnectionStatusToChatInterface();
 
             return libp2p;
         } catch (error) {
@@ -82,6 +93,82 @@ export class PeerConnection extends BaseComponent {
                 details: error
             });
             throw error;
+        }
+    }
+
+    /**
+     * Запускает счетчик времени работы
+     */
+    startUptimeCounter() {
+        // Останавливаем предыдущий интервал если есть
+        if (this._uptimeInterval) {
+            clearInterval(this._uptimeInterval);
+        }
+
+        // Обновляем время каждую секунду
+        this._uptimeInterval = setInterval(() => {
+            if (this.state.startTime && this.state.connected) {
+                this.updateUptime();
+            }
+        }, 1000);
+    }
+
+    /**
+     * Обновляет время работы
+     */
+    updateUptime() {
+        if (!this.state.startTime) return;
+
+        const now = Date.now();
+        const uptimeMs = now - this.state.startTime;
+
+        // Форматируем время в формат MM:SS или HH:MM:SS
+        const uptimeFormatted = this.formatUptime(uptimeMs);
+
+        // Обновляем только если время изменилось
+        if (this.state.uptime !== uptimeFormatted) {
+            this.state.uptime = uptimeFormatted;
+
+            // Обновляем отображение времени работы
+            this.updateUptimeDisplay();
+
+            // Отправляем обновление статуса в chat-interface
+            this.sendConnectionStatusToChatInterface();
+        }
+    }
+
+    /**
+     * Форматирует время работы в читаемый формат
+     * @param {number} ms - Время в миллисекундах
+     * @returns {string} Отформатированное время
+     */
+    formatUptime(ms) {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+
+        if (hours > 0) {
+            return `${hours}:${String(minutes % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+        } else {
+            return `${minutes}:${String(seconds % 60).padStart(2, '0')}`;
+        }
+    }
+
+    /**
+     * Обновляет отображение времени работы в UI
+     */
+    async updateUptimeDisplay() {
+        const uptimeElement = this.shadowRoot.querySelector('.status-item .status-value');
+        if (uptimeElement) {
+            // Просто обновляем текст элемента
+            uptimeElement.textContent = this.state.uptime;
+        } else {
+            // Если элемент не найден, обновляем всю секцию статуса
+            await this.renderPart({
+                partName: 'renderSystemStatus',
+                state: this.state,
+                selector: '.status-card .card-content'
+            });
         }
     }
 
@@ -180,6 +267,9 @@ export class PeerConnection extends BaseComponent {
             // Обновляем секцию peers-card
             await this.updatePeersCard();
 
+            // Передаем данные в chat-interface
+            await this.sendPeersToChatInterface();
+
             // Также обновляем детализированную секцию если она существует
             const detailedSection = this.shadowRoot.querySelector('.connected-peers-section');
             if (detailedSection && this.renderPart) {
@@ -189,6 +279,69 @@ export class PeerConnection extends BaseComponent {
                     selector: '.connected-peers-section .card-content'
                 });
             }
+        }
+    }
+
+    /**
+     * Передает данные о пирах в chat-interface
+     */
+    async sendPeersToChatInterface() {
+        try {
+            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+            if (chatInterface) {
+                // Формируем данные для передачи
+                const peersData = {
+                    totalPeers: this.state.connectedPeers.length,
+                    peers: this.state.connectedPeers.map(peer => ({
+                        id: peer.id,
+                        connections: peer.connections ? peer.connections.length : 1,
+                        status: 'connected'
+                    })),
+                    connectionStatus: this.state.connected,
+                    timestamp: Date.now()
+                };
+
+                // Отправляем сообщение в chat-interface
+                await chatInterface.postMessage({
+                    type: 'PEERS_UPDATE',
+                    data: peersData
+                });
+
+                console.log('✅ Peers data sent to chat-interface:', peersData);
+            } else {
+                console.log('⏳ Chat interface not found, will retry...');
+                // Повторяем попытку через 1 секунду
+                setTimeout(() => this.sendPeersToChatInterface(), 1000);
+            }
+        } catch (error) {
+            console.error('❌ Error sending peers to chat interface:', error);
+        }
+    }
+
+    /**
+     * Передает информацию о соединении в chat-interface
+     */
+    async sendConnectionStatusToChatInterface() {
+        try {
+            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+            if (chatInterface) {
+                const connectionData = {
+                    connected: this.state.connected,
+                    peerId: this.state.peerId,
+                    mode: this.state.mode,
+                    uptime: this.state.uptime,
+                    timestamp: Date.now()
+                };
+
+                await chatInterface.postMessage({
+                    type: 'CONNECTION_STATUS_UPDATE',
+                    data: connectionData
+                });
+
+                console.log('✅ Connection status sent to chat-interface:', connectionData);
+            }
+        } catch (error) {
+            console.error('❌ Error sending connection status:', error);
         }
     }
 
@@ -289,6 +442,12 @@ export class PeerConnection extends BaseComponent {
     }
 
     async _componentDisconnected() {
+        // Останавливаем счетчик времени
+        if (this._uptimeInterval) {
+            clearInterval(this._uptimeInterval);
+            this._uptimeInterval = null;
+        }
+
         if (this._controller && this._controller.destroy) {
             await this._controller.destroy();
         }

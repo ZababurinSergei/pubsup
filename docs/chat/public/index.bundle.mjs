@@ -13204,19 +13204,19 @@ function stringToComponents(string2) {
   const components = [];
   let collecting = "protocol";
   let value2 = "";
-  let protocol2 = "";
+  let protocol = "";
   for (let i2 = 1; i2 < string2.length; i2++) {
     const char = string2.charAt(i2);
     if (char !== "/") {
       if (collecting === "protocol") {
-        protocol2 += string2.charAt(i2);
+        protocol += string2.charAt(i2);
       } else {
         value2 += string2.charAt(i2);
       }
     }
     const ended = i2 === string2.length - 1;
     if (char === "/" || ended) {
-      const codec = registry.getProtocol(protocol2);
+      const codec = registry.getProtocol(protocol);
       if (collecting === "protocol") {
         if (codec.size == null || codec.size === 0) {
           components.push({
@@ -13224,11 +13224,11 @@ function stringToComponents(string2) {
             name: codec.name
           });
           value2 = "";
-          protocol2 = "";
+          protocol = "";
           collecting = "protocol";
           continue;
         } else if (ended) {
-          throw new InvalidMultiaddrError2(`Component ${protocol2} was missing value`);
+          throw new InvalidMultiaddrError2(`Component ${protocol} was missing value`);
         }
         collecting = "value";
       } else if (collecting === "value") {
@@ -13238,18 +13238,18 @@ function stringToComponents(string2) {
         };
         if (codec.size != null && codec.size !== 0) {
           if (value2 === "") {
-            throw new InvalidMultiaddrError2(`Component ${protocol2} was missing value`);
+            throw new InvalidMultiaddrError2(`Component ${protocol} was missing value`);
           }
           component.value = codec.stringToValue?.(value2) ?? value2;
         }
         components.push(component);
         value2 = "";
-        protocol2 = "";
+        protocol = "";
         collecting = "protocol";
       }
     }
   }
-  if (protocol2 !== "" && value2 !== "") {
+  if (protocol !== "" && value2 !== "") {
     throw new InvalidMultiaddrError2("Incomplete multiaddr");
   }
   return components;
@@ -15142,8 +15142,12 @@ function renderConnectionStatus({ state = {} } = {}) {
   return `
     <div class="status-message connected">
         <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
-        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
+        <span class="status-text">
+            \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}
+            ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}
+        </span>
+        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}
+        ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}
     </div>
     `;
 }
@@ -15174,26 +15178,33 @@ function renderStatus({ state = {} } = {}) {
 }
 __name(renderStatus, "renderStatus");
 function renderMembersList({ state = {} } = {}) {
-  const members = state.currentGroup?.members || [];
-  if (members.length === 0) {
+  const members = state.connectedPeers || [];
+  const currentUser = state.peerId ? {
+    id: state.peerId,
+    name: "\u0412\u044B",
+    online: true,
+    isCurrentUser: true
+  } : null;
+  const allMembers = currentUser ? [currentUser, ...members] : members;
+  if (allMembers.length === 0) {
     return `
         <div class="empty-members">
             <div class="empty-icon">\u{1F465}</div>
-            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</p>
+            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0432 \u0441\u0435\u0442\u0438</p>
         </div>
         `;
   }
   return `
     <div class="members-container">
-        ${members.map((member) => `
+        ${allMembers.map((member) => `
         <div class="member-item" data-peer-id="${member.id}">
-            <div class="member-avatar">
-                ${member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
+            <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
+                ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
             </div>
             <div class="member-info">
-                <div class="member-name">${member.name || "\u0410\u043D\u043E\u043D\u0438\u043C\u043D\u044B\u0439 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A"}</div>
+                <div class="member-name">${member.name || `\u041F\u0438\u0440 ${member.id.slice(0, 4)}${member.id.slice(-4)}`}</div>
                 <div class="member-status ${member.online ? "online" : "offline"}">
-                    ${member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
+                    ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
                 </div>
             </div>
         </div>
@@ -15685,12 +15696,18 @@ var ChatInterface = class extends BaseComponent {
       messages: [],
       currentMessage: "",
       connected: false,
-      currentGroup: null
+      currentGroup: null,
+      connectedPeers: [],
+      totalPeers: 0,
+      peerId: null,
+      connectionMode: null,
+      uptime: null
     };
   }
   async _componentReady() {
     this._controller = await controller2(this);
     this._actions = await createActions2(this);
+    await this.fullRender(this.state);
     await this._controller.init();
     return true;
   }
@@ -15733,6 +15750,99 @@ var ChatInterface = class extends BaseComponent {
       state: this.state,
       selector: "#messages-list"
     });
+  }
+  async postMessage(event) {
+    try {
+      console.log("\u{1F4E8} ChatInterface received message:", event.type, event.data);
+      switch (event.type) {
+        case "PEERS_UPDATE":
+          await this.handlePeersUpdate(event.data);
+          break;
+        case "CONNECTION_STATUS_UPDATE":
+          await this.handleConnectionStatusUpdate(event.data);
+          break;
+        case "INCOMING_MESSAGE":
+          await this.handleIncomingMessage(event.data);
+          break;
+        default:
+          console.warn(`[ChatInterface] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${event.type}`);
+      }
+    } catch (error) {
+      console.error("\u274C Error processing message in ChatInterface:", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "postMessage",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: error
+      });
+    }
+  }
+  /**
+   * Обрабатывает обновление списка пиров
+   * @param {Object} data - Данные о пирах
+   */
+  async handlePeersUpdate(data) {
+    try {
+      console.log("\u{1F465} Handling peers update:", data);
+      this.state.connectedPeers = data.peers || [];
+      this.state.totalPeers = data.totalPeers || 0;
+      await this.updateConnectionStatusDisplay();
+      await this.updateMembersList();
+      console.log("\u2705 Peers data processed in chat interface");
+    } catch (error) {
+      console.error("\u274C Error handling peers update:", error);
+    }
+  }
+  /**
+   * Обрабатывает обновление статуса соединения
+   * @param {Object} data - Данные о соединении
+   */
+  async handleConnectionStatusUpdate(data) {
+    try {
+      console.log("\u{1F517} Handling connection status update:", data);
+      this.state.connected = data.connected;
+      this.state.peerId = data.peerId;
+      this.state.connectionMode = data.mode;
+      this.state.uptime = data.uptime;
+      await this.updateConnectionStatusDisplay();
+      console.log("\u2705 Connection status updated in chat interface");
+    } catch (error) {
+      console.error("\u274C Error handling connection status:", error);
+    }
+  }
+  /**
+   * Обновляет отображение статуса подключения
+   */
+  async updateConnectionStatusDisplay() {
+    try {
+      const statusElement = this.shadowRoot.querySelector("#connection-status");
+      if (statusElement && this.renderPart) {
+        await this.renderPart({
+          partName: "renderConnectionStatus",
+          state: this.state,
+          selector: "#connection-status"
+        });
+      }
+    } catch (error) {
+      console.error("\u274C Error updating connection status display:", error);
+    }
+  }
+  /**
+   * Обновляет список участников в боковой панели
+   */
+  async updateMembersList() {
+    try {
+      const membersPanel = this.shadowRoot.querySelector("#members-panel");
+      if (membersPanel && this.renderPart) {
+        await this.renderPart({
+          partName: "renderMembersList",
+          state: this.state,
+          selector: ".members-list"
+        });
+      }
+    } catch (error) {
+      console.error("\u274C Error updating members list:", error);
+    }
   }
   async _componentDisconnected() {
     if (this._controller && this._controller.destroy) {
@@ -16436,6 +16546,7 @@ var GroupManager = class extends BaseComponent {
   async _componentReady() {
     this._controller = await controller3(this);
     this._actions = await createActions3(this);
+    await this.fullRender(this.state);
     await this._controller.init();
     return true;
   }
@@ -16720,7 +16831,7 @@ function renderSystemStatus({ state = {} } = {}) {
             </div>
             <div class="status-info">
                 <span class="status-label">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B</span>
-                <span class="status-value">${state.uptime || "0:00"}</span>
+                <span class="status-value uptime-display">${state.uptime || "0:00"}</span>
             </div>
         </div>
     </div>
@@ -21307,8 +21418,8 @@ var IPMappings = class {
     }
     return false;
   }
-  add(internalIp, internalPort, externalIp, externalPort = internalPort, protocol2 = "tcp") {
-    const key = `${internalIp}-${internalPort}-${protocol2}`;
+  add(internalIp, internalPort, externalIp, externalPort = internalPort, protocol = "tcp") {
+    const key = `${internalIp}-${internalPort}-${protocol}`;
     const mappings = this.mappings.get(key) ?? [];
     const mapping = {
       internalIp,
@@ -21316,7 +21427,7 @@ var IPMappings = class {
       externalIp,
       externalPort,
       externalFamily: isIPv4(externalIp) ? 4 : 6,
-      protocol: protocol2,
+      protocol,
       verified: false,
       expires: 0
     };
@@ -21380,10 +21491,10 @@ var IPMappings = class {
     }
     return ipMappedAddresses;
   }
-  maybeOverrideIp(ma, externalIp, externalFamily, protocol2, externalPort) {
+  maybeOverrideIp(ma, externalIp, externalFamily, protocol, externalPort) {
     const components = ma.getComponents();
     const ipIndex = components.findIndex((c2) => c2.code === CODE_IP4 || c2.code === CODE_IP6);
-    const portIndex = components.findIndex((c2) => c2.name === protocol2);
+    const portIndex = components.findIndex((c2) => c2.name === protocol);
     if (ipIndex > -1 && portIndex > -1) {
       components[ipIndex].value = externalIp;
       components[ipIndex].code = externalFamily === 4 ? CODE_IP4 : CODE_IP6;
@@ -21865,12 +21976,12 @@ var AddressManager = class {
       this._updatePeerStoreAddresses();
     }
   }
-  addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol2 = "tcp") {
-    this.ipMappings.add(internalIp, internalPort, externalIp, externalPort, protocol2);
-    this.observed.removePrefixed(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol2}/${externalPort}`);
+  addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol = "tcp") {
+    this.ipMappings.add(internalIp, internalPort, externalIp, externalPort, protocol);
+    this.observed.removePrefixed(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`);
   }
-  removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol2 = "tcp") {
-    if (this.ipMappings.remove(multiaddr(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol2}/${externalPort}`))) {
+  removePublicAddressMapping(internalIp, internalPort, externalIp, externalPort = internalPort, protocol = "tcp") {
+    if (this.ipMappings.remove(multiaddr(`/ip${isIPv4(externalIp) ? 4 : 6}/${externalIp}/${protocol}/${externalPort}`))) {
       this._updatePeerStoreAddresses();
     }
   }
@@ -24408,17 +24519,17 @@ var DefaultConnectionManager = class {
               const key = `${stream.direction} ${stream.protocol ?? "unnegotiated"}`;
               streams[key] = (streams[key] ?? 0) + 1;
             }
-            for (const [protocol2, count] of Object.entries(streams)) {
-              allStreams[protocol2] = allStreams[protocol2] ?? [];
-              allStreams[protocol2].push(count);
+            for (const [protocol, count] of Object.entries(streams)) {
+              allStreams[protocol] = allStreams[protocol] ?? [];
+              allStreams[protocol].push(count);
             }
           }
         }
         const metric = {};
-        for (let [protocol2, counts] of Object.entries(allStreams)) {
+        for (let [protocol, counts] of Object.entries(allStreams)) {
           counts = counts.sort((a2, b) => a2 - b);
           const index = Math.floor(counts.length * 0.9);
-          metric[protocol2] = counts[index];
+          metric[protocol] = counts[index];
         }
         return metric;
       }, "calculate")
@@ -24581,9 +24692,9 @@ var DefaultConnectionManager = class {
       this.outboundPendingConnections--;
     }
   }
-  async openStream(peerIdOrMultiaddr, protocol2, options = {}) {
+  async openStream(peerIdOrMultiaddr, protocol, options = {}) {
     const connection = await this.openConnection(peerIdOrMultiaddr, options);
-    return connection.newStream(protocol2, options);
+    return connection.newStream(protocol, options);
   }
   async closeConnections(peerId, options = {}) {
     const connections = this.connections.get(peerId) ?? [];
@@ -25282,15 +25393,15 @@ var Registrar = class {
       ...this.handlers.keys()
     ])).sort();
   }
-  getHandler(protocol2) {
-    const handler = this.handlers.get(protocol2);
+  getHandler(protocol) {
+    const handler = this.handlers.get(protocol);
     if (handler == null) {
-      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol2}`);
+      throw new UnhandledProtocolError(`No handler registered for protocol ${protocol}`);
     }
     return handler;
   }
-  getTopologies(protocol2) {
-    const topologies = this.topologies.get(protocol2);
+  getTopologies(protocol) {
+    const topologies = this.topologies.get(protocol);
     if (topologies == null) {
       return [];
     }
@@ -25301,11 +25412,11 @@ var Registrar = class {
   /**
    * Registers the `handler` for each protocol
    */
-  async handle(protocol2, handler, opts) {
-    if (this.handlers.has(protocol2) && opts?.force !== true) {
-      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol2}`);
+  async handle(protocol, handler, opts) {
+    if (this.handlers.has(protocol) && opts?.force !== true) {
+      throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`);
     }
-    this.handlers.set(protocol2, {
+    this.handlers.set(protocol, {
       handler,
       options: {
         maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
@@ -25314,7 +25425,7 @@ var Registrar = class {
       }
     });
     await this.components.peerStore.merge(this.components.peerId, {
-      protocols: [protocol2]
+      protocols: [protocol]
     }, opts);
   }
   /**
@@ -25323,8 +25434,8 @@ var Registrar = class {
    */
   async unhandle(protocols, options) {
     const protocolList = Array.isArray(protocols) ? protocols : [protocols];
-    protocolList.forEach((protocol2) => {
-      this.handlers.delete(protocol2);
+    protocolList.forEach((protocol) => {
+      this.handlers.delete(protocol);
     });
     await this.components.peerStore.patch(this.components.peerId, {
       protocols: this.getProtocols()
@@ -25333,15 +25444,15 @@ var Registrar = class {
   /**
    * Register handlers for a set of multicodecs given
    */
-  async register(protocol2, topology) {
+  async register(protocol, topology) {
     if (topology == null) {
       throw new InvalidParametersError("invalid topology");
     }
     const id = `${(Math.random() * 1e9).toString(36)}${Date.now()}`;
-    let topologies = this.topologies.get(protocol2);
+    let topologies = this.topologies.get(protocol);
     if (topologies == null) {
       topologies = /* @__PURE__ */ new Map();
-      this.topologies.set(protocol2, topologies);
+      this.topologies.set(protocol, topologies);
     }
     topologies.set(id, topology);
     return id;
@@ -25350,23 +25461,23 @@ var Registrar = class {
    * Unregister topology
    */
   unregister(id) {
-    for (const [protocol2, topologies] of this.topologies.entries()) {
+    for (const [protocol, topologies] of this.topologies.entries()) {
       if (topologies.has(id)) {
         topologies.delete(id);
         if (topologies.size === 0) {
-          this.topologies.delete(protocol2);
+          this.topologies.delete(protocol);
         }
       }
     }
   }
-  use(protocol2, middleware) {
-    this.middleware.set(protocol2, middleware);
+  use(protocol, middleware) {
+    this.middleware.set(protocol, middleware);
   }
-  unuse(protocol2) {
-    this.middleware.delete(protocol2);
+  unuse(protocol) {
+    this.middleware.delete(protocol);
   }
-  getMiddleware(protocol2) {
-    return this.middleware.get(protocol2) ?? [];
+  getMiddleware(protocol) {
+    return this.middleware.get(protocol) ?? [];
   }
   /**
    * Remove a disconnected peer from the record
@@ -25378,8 +25489,8 @@ var Registrar = class {
     };
     try {
       const peer = await this.components.peerStore.get(remotePeer, options);
-      for (const protocol2 of peer.protocols) {
-        const topologies = this.topologies.get(protocol2);
+      for (const protocol of peer.protocols) {
+        const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
@@ -25404,10 +25515,10 @@ var Registrar = class {
    */
   async _onPeerUpdate(evt) {
     const { peer, previous } = evt.detail;
-    const removed = (previous?.protocols ?? []).filter((protocol2) => !peer.protocols.includes(protocol2));
+    const removed = (previous?.protocols ?? []).filter((protocol) => !peer.protocols.includes(protocol));
     try {
-      for (const protocol2 of removed) {
-        const topologies = this.topologies.get(protocol2);
+      for (const protocol of removed) {
+        const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
@@ -25432,8 +25543,8 @@ var Registrar = class {
     const connection = evt.detail.connection;
     const peerId = evt.detail.peerId;
     try {
-      for (const protocol2 of protocols) {
-        const topologies = this.topologies.get(protocol2);
+      for (const protocol of protocols) {
+        const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
@@ -25760,13 +25871,13 @@ async function select(stream, protocols, options = {}) {
     maxDataLength: MAX_PROTOCOL_LENGTH
   });
   for (let i2 = 0; i2 < protocols.length; i2++) {
-    const protocol2 = protocols[i2];
+    const protocol = protocols[i2];
     let response;
     if (i2 === 0) {
-      log2.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol2);
+      log2.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
       const p1 = fromString2(`${PROTOCOL_ID}
 `);
-      const p2 = fromString2(`${protocol2}
+      const p2 = fromString2(`${protocol}
 `);
       await lp.writeV([p1, p2], options);
       log2.trace("reading multistream-select header");
@@ -25777,17 +25888,17 @@ async function select(stream, protocols, options = {}) {
         break;
       }
     } else {
-      log2.trace('write "%s"', protocol2);
-      await lp.write(fromString2(`${protocol2}
+      log2.trace('write "%s"', protocol);
+      await lp.write(fromString2(`${protocol}
 `), options);
     }
     log2.trace("reading protocol response");
     response = await readString(lp, options);
     log2.trace('read "%s"', response);
-    if (response === protocol2) {
+    if (response === protocol) {
       log2.trace('selected "%s" after negotiation', response);
       lp.unwrap();
-      return protocol2;
+      return protocol;
     }
   }
   throw new UnsupportedProtocolError(`Protocol selection failed - could not negotiate ${protocols}`);
@@ -26016,34 +26127,34 @@ async function handle(stream, protocols, options = {}) {
   });
   while (true) {
     log2.trace("reading incoming string");
-    const protocol2 = await readString(lp, options);
-    log2.trace('read "%s"', protocol2);
-    if (protocol2 === PROTOCOL_ID) {
-      log2.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol2);
+    const protocol = await readString(lp, options);
+    log2.trace('read "%s"', protocol);
+    if (protocol === PROTOCOL_ID) {
+      log2.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol);
       await lp.write(fromString2(`${PROTOCOL_ID}
 `), options);
-      log2.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol2);
+      log2.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol);
       continue;
     }
-    if (protocols.includes(protocol2)) {
-      log2.trace('respond with "%s" for "%s"', protocol2, protocol2);
-      await lp.write(fromString2(`${protocol2}
+    if (protocols.includes(protocol)) {
+      log2.trace('respond with "%s" for "%s"', protocol, protocol);
+      await lp.write(fromString2(`${protocol}
 `), options);
-      log2.trace('responded with "%s" for "%s"', protocol2, protocol2);
+      log2.trace('responded with "%s" for "%s"', protocol, protocol);
       lp.unwrap();
-      return protocol2;
+      return protocol;
     }
-    if (protocol2 === "ls") {
+    if (protocol === "ls") {
       const protos = new Uint8ArrayList(...protocols.map((p2) => encode6.single(fromString2(`${p2}
 `))), fromString2("\n"));
-      log2.trace('respond with "%s" for %s', protocols, protocol2);
+      log2.trace('respond with "%s" for %s', protocols, protocol);
       await lp.write(protos, options);
-      log2.trace('responded with "%s" for %s', protocols, protocol2);
+      log2.trace('responded with "%s" for %s', protocols, protocol);
       continue;
     }
-    log2.trace('respond with "na" for "%s"', protocol2);
+    log2.trace('respond with "na" for "%s"', protocol);
     await lp.write(fromString2("na\n"), options);
-    log2('responded with "na" for "%s"', protocol2);
+    log2('responded with "na" for "%s"', protocol);
   }
 }
 __name(handle, "handle");
@@ -26261,9 +26372,9 @@ function createConnection(components, init) {
   return new Connection(components, init);
 }
 __name(createConnection, "createConnection");
-function findIncomingStreamLimit(protocol2, registrar) {
+function findIncomingStreamLimit(protocol, registrar) {
   try {
-    const { options } = registrar.getHandler(protocol2);
+    const { options } = registrar.getHandler(protocol);
     if (options.maxInboundStreams != null) {
       return options.maxInboundStreams;
     }
@@ -26275,9 +26386,9 @@ function findIncomingStreamLimit(protocol2, registrar) {
   return DEFAULT_MAX_INBOUND_STREAMS;
 }
 __name(findIncomingStreamLimit, "findIncomingStreamLimit");
-function findOutgoingStreamLimit(protocol2, registrar, options = {}) {
+function findOutgoingStreamLimit(protocol, registrar, options = {}) {
   try {
-    const { options: options2 } = registrar.getHandler(protocol2);
+    const { options: options2 } = registrar.getHandler(protocol);
     if (options2.maxOutboundStreams != null) {
       return options2.maxOutboundStreams;
     }
@@ -26289,10 +26400,10 @@ function findOutgoingStreamLimit(protocol2, registrar, options = {}) {
   return options.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS;
 }
 __name(findOutgoingStreamLimit, "findOutgoingStreamLimit");
-function countStreams(protocol2, direction, connection) {
+function countStreams(protocol, direction, connection) {
   let streamCount = 0;
   connection.streams.forEach((stream) => {
-    if (stream.direction === direction && stream.protocol === protocol2) {
+    if (stream.direction === direction && stream.protocol === protocol) {
       streamCount++;
     }
   });
@@ -26522,15 +26633,15 @@ var Upgrader = class {
   async _encryptInbound(connection, options) {
     const protocols = Array.from(this.connectionEncrypters.keys());
     try {
-      const protocol2 = await handle(connection, protocols, options);
-      const encrypter = this.connectionEncrypters.get(protocol2);
+      const protocol = await handle(connection, protocols, options);
+      const encrypter = this.connectionEncrypters.get(protocol);
       if (encrypter == null) {
-        throw new EncryptionFailedError(`no crypto module found for ${protocol2}`);
+        throw new EncryptionFailedError(`no crypto module found for ${protocol}`);
       }
-      connection.log("encrypting inbound connection using %s", protocol2);
+      connection.log("encrypting inbound connection using %s", protocol);
       return {
         ...await encrypter.secureInbound(connection, options),
-        protocol: protocol2
+        protocol
       };
     } catch (err) {
       throw new EncryptionFailedError(err.message);
@@ -26544,15 +26655,15 @@ var Upgrader = class {
     const protocols = Array.from(this.connectionEncrypters.keys());
     try {
       connection.log.trace("selecting encrypter from %s", protocols);
-      const protocol2 = await select(connection, protocols, options);
-      const encrypter = this.connectionEncrypters.get(protocol2);
+      const protocol = await select(connection, protocols, options);
+      const encrypter = this.connectionEncrypters.get(protocol);
       if (encrypter == null) {
-        throw new EncryptionFailedError(`no crypto module found for ${protocol2}`);
+        throw new EncryptionFailedError(`no crypto module found for ${protocol}`);
       }
-      connection.log("encrypting outbound connection using %s", protocol2);
+      connection.log("encrypting outbound connection using %s", protocol);
       return {
         ...await encrypter.secureOutbound(connection, options),
-        protocol: protocol2
+        protocol
       };
     } catch (err) {
       throw new EncryptionFailedError(err.message);
@@ -26567,12 +26678,12 @@ var Upgrader = class {
     maConn.log("outbound selecting muxer %s", protocols);
     try {
       maConn.log.trace("selecting stream muxer from %s", protocols);
-      const protocol2 = await select(maConn, protocols, options);
-      const muxerFactory = muxers.get(protocol2);
+      const protocol = await select(maConn, protocols, options);
+      const muxerFactory = muxers.get(protocol);
       if (muxerFactory == null) {
-        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol2}"`);
+        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol}"`);
       }
-      maConn.log("selected %s as muxer protocol", protocol2);
+      maConn.log("selected %s as muxer protocol", protocol);
       return muxerFactory;
     } catch (err) {
       maConn.log.error("error multiplexing outbound connection - %e", err);
@@ -26588,12 +26699,12 @@ var Upgrader = class {
     maConn.log("inbound handling muxers %s", protocols);
     try {
       maConn.log.trace("selecting stream muxer from %s", protocols);
-      const protocol2 = await handle(maConn, protocols, options);
-      const muxerFactory = muxers.get(protocol2);
+      const protocol = await handle(maConn, protocols, options);
+      const muxerFactory = muxers.get(protocol);
       if (muxerFactory == null) {
-        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol2}"`);
+        throw new MuxerUnavailableError(`No muxer configured for protocol "${protocol}"`);
       }
-      maConn.log("selected %s as muxer protocol", protocol2);
+      maConn.log("selected %s as muxer protocol", protocol);
       return muxerFactory;
     } catch (err) {
       maConn.log.error("error multiplexing inbound connection - %e", err);
@@ -26867,29 +26978,29 @@ var Libp2p = class extends TypedEventEmitter {
     if (!Array.isArray(protocols)) {
       protocols = [protocols];
     }
-    await Promise.all(protocols.map(async (protocol2) => {
-      await this.components.registrar.handle(protocol2, handler, options);
+    await Promise.all(protocols.map(async (protocol) => {
+      await this.components.registrar.handle(protocol, handler, options);
     }));
   }
   async unhandle(protocols, options) {
     if (!Array.isArray(protocols)) {
       protocols = [protocols];
     }
-    await Promise.all(protocols.map(async (protocol2) => {
-      await this.components.registrar.unhandle(protocol2, options);
+    await Promise.all(protocols.map(async (protocol) => {
+      await this.components.registrar.unhandle(protocol, options);
     }));
   }
-  async register(protocol2, topology, options) {
-    return this.components.registrar.register(protocol2, topology, options);
+  async register(protocol, topology, options) {
+    return this.components.registrar.register(protocol, topology, options);
   }
   unregister(id) {
     this.components.registrar.unregister(id);
   }
-  use(protocol2, middleware) {
-    this.components.registrar.use(protocol2, Array.isArray(middleware) ? middleware : [middleware]);
+  use(protocol, middleware) {
+    this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware]);
   }
-  unuse(protocol2) {
-    this.components.registrar.unuse(protocol2);
+  unuse(protocol) {
+    this.components.registrar.unuse(protocol);
   }
   async isDialable(multiaddr2, options = {}) {
     return this.components.connectionManager.isDialable(multiaddr2, options);
@@ -28615,8 +28726,8 @@ var Noise = class {
     }
     const streamMuxers = this.components.upgrader.getStreamMuxers();
     if (streamMuxers != null) {
-      for (const protocol2 of protocols) {
-        const streamMuxer = streamMuxers.get(protocol2);
+      for (const protocol of protocols) {
+        const streamMuxer = streamMuxers.get(protocol);
         if (streamMuxer != null) {
           return streamMuxer;
         }
@@ -31231,14 +31342,14 @@ var interpreters = {
     if (maHasTLS && sni != null) {
       return `https://${sni}${port}`;
     }
-    const protocol2 = maHasTLS ? "https://" : "http://";
+    const protocol = maHasTLS ? "https://" : "http://";
     const tail = rest.pop();
     if (tail == null) {
       throw new Error("Unexpected end of multiaddr");
     }
     let baseVal = interpretNext(tail, rest);
     baseVal = baseVal?.replace("tcp://", "");
-    return `${protocol2}${baseVal}`;
+    return `${protocol}${baseVal}`;
   }, "http"),
   "http-path": /* @__PURE__ */ __name((head, rest) => {
     const tail = rest.pop();
@@ -31279,14 +31390,14 @@ var interpreters = {
     if (maHasTLS && sni != null) {
       return `wss://${sni}${port}`;
     }
-    const protocol2 = maHasTLS ? "wss://" : "ws://";
+    const protocol = maHasTLS ? "wss://" : "ws://";
     const tail = rest.pop();
     if (tail == null) {
       throw new Error("Unexpected end of multiaddr");
     }
     let baseVal = interpretNext(tail, rest);
     baseVal = baseVal?.replace("tcp://", "");
-    return `${protocol2}${baseVal}`;
+    return `${protocol}${baseVal}`;
   }, "ws"),
   wss: /* @__PURE__ */ __name((head, rest) => {
     const tail = rest.pop();
@@ -33456,1423 +33567,8 @@ function identify(init = {}) {
 }
 __name(identify, "identify");
 
-// node_modules/@libp2p/floodsub/dist/src/constants.js
-var pubSubSymbol = Symbol.for("@libp2p/pubsub");
-
-// node_modules/@libp2p/floodsub/dist/src/cache.js
-var SimpleTimeCache = class {
-  static {
-    __name(this, "SimpleTimeCache");
-  }
-  entries;
-  validityMs;
-  lastPruneTime = 0;
-  constructor(options) {
-    this.entries = /* @__PURE__ */ new Map();
-    this.validityMs = options.validityMs;
-  }
-  put(key, value2) {
-    this.entries.set(key, { value: value2, validUntilMs: Date.now() + this.validityMs });
-    this.prune();
-  }
-  prune() {
-    const now = Date.now();
-    if (now - this.lastPruneTime < 200) {
-      return;
-    }
-    this.lastPruneTime = now;
-    for (const [k, v] of this.entries.entries()) {
-      if (v.validUntilMs < now) {
-        this.entries.delete(k);
-      } else {
-        break;
-      }
-    }
-  }
-  has(key) {
-    return this.entries.has(key);
-  }
-  get(key) {
-    const value2 = this.entries.get(key);
-    return value2 != null && value2.validUntilMs >= Date.now() ? value2.value : void 0;
-  }
-  clear() {
-    this.entries = /* @__PURE__ */ new Map();
-    this.lastPruneTime = 0;
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/message/rpc.js
-var RPC;
-(function(RPC2) {
-  let SubOpts;
-  (function(SubOpts2) {
-    let _codec2;
-    SubOpts2.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.subscribe != null) {
-            w.uint32(8);
-            w.bool(obj.subscribe);
-          }
-          if (obj.topic != null) {
-            w.uint32(18);
-            w.string(obj.topic);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.subscribe = reader.bool();
-                break;
-              }
-              case 2: {
-                obj.topic = reader.string();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    SubOpts2.encode = (obj) => {
-      return encodeMessage(obj, SubOpts2.codec());
-    };
-    SubOpts2.decode = (buf, opts) => {
-      return decodeMessage(buf, SubOpts2.codec(), opts);
-    };
-  })(SubOpts = RPC2.SubOpts || (RPC2.SubOpts = {}));
-  let Message3;
-  (function(Message4) {
-    let _codec2;
-    Message4.codec = () => {
-      if (_codec2 == null) {
-        _codec2 = message((obj, w, opts = {}) => {
-          if (opts.lengthDelimited !== false) {
-            w.fork();
-          }
-          if (obj.from != null) {
-            w.uint32(10);
-            w.bytes(obj.from);
-          }
-          if (obj.data != null) {
-            w.uint32(18);
-            w.bytes(obj.data);
-          }
-          if (obj.sequenceNumber != null) {
-            w.uint32(26);
-            w.bytes(obj.sequenceNumber);
-          }
-          if (obj.topic != null) {
-            w.uint32(34);
-            w.string(obj.topic);
-          }
-          if (obj.signature != null) {
-            w.uint32(42);
-            w.bytes(obj.signature);
-          }
-          if (obj.key != null) {
-            w.uint32(50);
-            w.bytes(obj.key);
-          }
-          if (opts.lengthDelimited !== false) {
-            w.ldelim();
-          }
-        }, (reader, length3, opts = {}) => {
-          const obj = {};
-          const end = length3 == null ? reader.len : reader.pos + length3;
-          while (reader.pos < end) {
-            const tag = reader.uint32();
-            switch (tag >>> 3) {
-              case 1: {
-                obj.from = reader.bytes();
-                break;
-              }
-              case 2: {
-                obj.data = reader.bytes();
-                break;
-              }
-              case 3: {
-                obj.sequenceNumber = reader.bytes();
-                break;
-              }
-              case 4: {
-                obj.topic = reader.string();
-                break;
-              }
-              case 5: {
-                obj.signature = reader.bytes();
-                break;
-              }
-              case 6: {
-                obj.key = reader.bytes();
-                break;
-              }
-              default: {
-                reader.skipType(tag & 7);
-                break;
-              }
-            }
-          }
-          return obj;
-        });
-      }
-      return _codec2;
-    };
-    Message4.encode = (obj) => {
-      return encodeMessage(obj, Message4.codec());
-    };
-    Message4.decode = (buf, opts) => {
-      return decodeMessage(buf, Message4.codec(), opts);
-    };
-  })(Message3 = RPC2.Message || (RPC2.Message = {}));
-  let _codec;
-  RPC2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.subscriptions != null) {
-          for (const value2 of obj.subscriptions) {
-            w.uint32(10);
-            RPC2.SubOpts.codec().encode(value2, w);
-          }
-        }
-        if (obj.messages != null) {
-          for (const value2 of obj.messages) {
-            w.uint32(18);
-            RPC2.Message.codec().encode(value2, w);
-          }
-        }
-        if (obj.control != null) {
-          w.uint32(26);
-          ControlMessage.codec().encode(obj.control, w);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          subscriptions: [],
-          messages: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.subscriptions != null && obj.subscriptions.length === opts.limits.subscriptions) {
-                throw new MaxLengthError('Decode error - map field "subscriptions" had too many elements');
-              }
-              obj.subscriptions.push(RPC2.SubOpts.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.subscriptions$
-              }));
-              break;
-            }
-            case 2: {
-              if (opts.limits?.messages != null && obj.messages.length === opts.limits.messages) {
-                throw new MaxLengthError('Decode error - map field "messages" had too many elements');
-              }
-              obj.messages.push(RPC2.Message.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.messages$
-              }));
-              break;
-            }
-            case 3: {
-              obj.control = ControlMessage.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.control
-              });
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  RPC2.encode = (obj) => {
-    return encodeMessage(obj, RPC2.codec());
-  };
-  RPC2.decode = (buf, opts) => {
-    return decodeMessage(buf, RPC2.codec(), opts);
-  };
-})(RPC || (RPC = {}));
-var ControlMessage;
-(function(ControlMessage2) {
-  let _codec;
-  ControlMessage2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.ihave != null) {
-          for (const value2 of obj.ihave) {
-            w.uint32(10);
-            ControlIHave.codec().encode(value2, w);
-          }
-        }
-        if (obj.iwant != null) {
-          for (const value2 of obj.iwant) {
-            w.uint32(18);
-            ControlIWant.codec().encode(value2, w);
-          }
-        }
-        if (obj.graft != null) {
-          for (const value2 of obj.graft) {
-            w.uint32(26);
-            ControlGraft.codec().encode(value2, w);
-          }
-        }
-        if (obj.prune != null) {
-          for (const value2 of obj.prune) {
-            w.uint32(34);
-            ControlPrune.codec().encode(value2, w);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          ihave: [],
-          iwant: [],
-          graft: [],
-          prune: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.ihave != null && obj.ihave.length === opts.limits.ihave) {
-                throw new MaxLengthError('Decode error - map field "ihave" had too many elements');
-              }
-              obj.ihave.push(ControlIHave.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.ihave$
-              }));
-              break;
-            }
-            case 2: {
-              if (opts.limits?.iwant != null && obj.iwant.length === opts.limits.iwant) {
-                throw new MaxLengthError('Decode error - map field "iwant" had too many elements');
-              }
-              obj.iwant.push(ControlIWant.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.iwant$
-              }));
-              break;
-            }
-            case 3: {
-              if (opts.limits?.graft != null && obj.graft.length === opts.limits.graft) {
-                throw new MaxLengthError('Decode error - map field "graft" had too many elements');
-              }
-              obj.graft.push(ControlGraft.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.graft$
-              }));
-              break;
-            }
-            case 4: {
-              if (opts.limits?.prune != null && obj.prune.length === opts.limits.prune) {
-                throw new MaxLengthError('Decode error - map field "prune" had too many elements');
-              }
-              obj.prune.push(ControlPrune.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.prune$
-              }));
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlMessage2.encode = (obj) => {
-    return encodeMessage(obj, ControlMessage2.codec());
-  };
-  ControlMessage2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlMessage2.codec(), opts);
-  };
-})(ControlMessage || (ControlMessage = {}));
-var ControlIHave;
-(function(ControlIHave2) {
-  let _codec;
-  ControlIHave2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.topic != null) {
-          w.uint32(10);
-          w.string(obj.topic);
-        }
-        if (obj.messageIDs != null) {
-          for (const value2 of obj.messageIDs) {
-            w.uint32(18);
-            w.bytes(value2);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          messageIDs: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.topic = reader.string();
-              break;
-            }
-            case 2: {
-              if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-              }
-              obj.messageIDs.push(reader.bytes());
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlIHave2.encode = (obj) => {
-    return encodeMessage(obj, ControlIHave2.codec());
-  };
-  ControlIHave2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlIHave2.codec(), opts);
-  };
-})(ControlIHave || (ControlIHave = {}));
-var ControlIWant;
-(function(ControlIWant2) {
-  let _codec;
-  ControlIWant2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.messageIDs != null) {
-          for (const value2 of obj.messageIDs) {
-            w.uint32(10);
-            w.bytes(value2);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          messageIDs: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              if (opts.limits?.messageIDs != null && obj.messageIDs.length === opts.limits.messageIDs) {
-                throw new MaxLengthError('Decode error - map field "messageIDs" had too many elements');
-              }
-              obj.messageIDs.push(reader.bytes());
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlIWant2.encode = (obj) => {
-    return encodeMessage(obj, ControlIWant2.codec());
-  };
-  ControlIWant2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlIWant2.codec(), opts);
-  };
-})(ControlIWant || (ControlIWant = {}));
-var ControlGraft;
-(function(ControlGraft2) {
-  let _codec;
-  ControlGraft2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.topic != null) {
-          w.uint32(10);
-          w.string(obj.topic);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.topic = reader.string();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlGraft2.encode = (obj) => {
-    return encodeMessage(obj, ControlGraft2.codec());
-  };
-  ControlGraft2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlGraft2.codec(), opts);
-  };
-})(ControlGraft || (ControlGraft = {}));
-var ControlPrune;
-(function(ControlPrune2) {
-  let _codec;
-  ControlPrune2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.topic != null) {
-          w.uint32(10);
-          w.string(obj.topic);
-        }
-        if (obj.peers != null) {
-          for (const value2 of obj.peers) {
-            w.uint32(18);
-            PeerInfo.codec().encode(value2, w);
-          }
-        }
-        if (obj.backoff != null) {
-          w.uint32(24);
-          w.uint64(obj.backoff);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          peers: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.topic = reader.string();
-              break;
-            }
-            case 2: {
-              if (opts.limits?.peers != null && obj.peers.length === opts.limits.peers) {
-                throw new MaxLengthError('Decode error - map field "peers" had too many elements');
-              }
-              obj.peers.push(PeerInfo.codec().decode(reader, reader.uint32(), {
-                limits: opts.limits?.peers$
-              }));
-              break;
-            }
-            case 3: {
-              obj.backoff = reader.uint64();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  ControlPrune2.encode = (obj) => {
-    return encodeMessage(obj, ControlPrune2.codec());
-  };
-  ControlPrune2.decode = (buf, opts) => {
-    return decodeMessage(buf, ControlPrune2.codec(), opts);
-  };
-})(ControlPrune || (ControlPrune = {}));
-var PeerInfo;
-(function(PeerInfo2) {
-  let _codec;
-  PeerInfo2.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.peerID != null) {
-          w.uint32(10);
-          w.bytes(obj.peerID);
-        }
-        if (obj.signedPeerRecord != null) {
-          w.uint32(18);
-          w.bytes(obj.signedPeerRecord);
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.peerID = reader.bytes();
-              break;
-            }
-            case 2: {
-              obj.signedPeerRecord = reader.bytes();
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  PeerInfo2.encode = (obj) => {
-    return encodeMessage(obj, PeerInfo2.codec());
-  };
-  PeerInfo2.decode = (buf, opts) => {
-    return decodeMessage(buf, PeerInfo2.codec(), opts);
-  };
-})(PeerInfo || (PeerInfo = {}));
-
-// node_modules/@libp2p/floodsub/dist/src/peer-streams.js
-var PeerStreams = class extends TypedEventEmitter {
-  static {
-    __name(this, "PeerStreams");
-  }
-  peerId;
-  /**
-   * An AbortController for controlled shutdown of the inbound stream
-   */
-  shutDownController;
-  // messages sent by the remote
-  inboundPb;
-  // messages we send
-  outboundPb;
-  constructor(peerId) {
-    super();
-    this.peerId = peerId;
-    this.shutDownController = new AbortController();
-  }
-  attachInboundStream(stream, streamOpts) {
-    this.inboundPb = pbStream(stream, streamOpts).pb(RPC);
-    Promise.resolve().then(async () => {
-      while (true) {
-        if (this.inboundPb == null) {
-          return;
-        }
-        const message2 = await this.inboundPb.read({
-          signal: this.shutDownController.signal
-        });
-        this.safeDispatchEvent("message", {
-          detail: message2
-        });
-      }
-    }).catch((err) => {
-      this.inboundPb?.unwrap().unwrap().abort(err);
-    });
-  }
-  attachOutboundStream(stream, streamOpts) {
-    this.outboundPb = pbStream(stream, streamOpts).pb(RPC);
-  }
-  /**
-   * Send a message to this peer
-   */
-  write(message2) {
-    if (this.outboundPb == null) {
-      return;
-    }
-    this.outboundPb.write(message2, {
-      signal: this.shutDownController.signal
-    }).catch((err) => {
-      this.outboundPb?.unwrap().unwrap().abort(err);
-    });
-  }
-  /**
-   * Closes the open connection to peer
-   */
-  close() {
-    this.shutDownController.abort();
-    Promise.all([
-      this.inboundPb?.unwrap().unwrap().close().catch((err) => {
-        this.inboundPb?.unwrap().unwrap().abort(err);
-      }),
-      this.outboundPb?.unwrap().unwrap().close().catch((err) => {
-        this.inboundPb?.unwrap().unwrap().abort(err);
-      })
-    ]).finally(() => {
-      this.safeDispatchEvent("close");
-    });
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/utils.js
-function randomSeqno() {
-  return BigInt(`0x${toString2(randomBytes2(8), "base16")}`);
-}
-__name(randomSeqno, "randomSeqno");
-var msgId = /* @__PURE__ */ __name((key, seqno) => {
-  const seqnoBytes = fromString2(seqno.toString(16).padStart(16, "0"), "base16");
-  const keyBytes = publicKeyToProtobuf(key);
-  const msgId2 = new Uint8Array(keyBytes.byteLength + seqnoBytes.length);
-  msgId2.set(keyBytes, 0);
-  msgId2.set(seqnoBytes, keyBytes.byteLength);
-  return msgId2;
-}, "msgId");
-var noSignMsgId = /* @__PURE__ */ __name((data) => {
-  return sha256.encode(data);
-}, "noSignMsgId");
-var isSigned = /* @__PURE__ */ __name(async (message2) => {
-  if (message2.sequenceNumber == null || message2.from == null || message2.signature == null) {
-    return false;
-  }
-  const fromID = peerIdFromMultihash(decode4(message2.from));
-  if (fromID.publicKey != null) {
-    return true;
-  }
-  if (message2.key != null) {
-    const signingKey = message2.key;
-    const signingID = peerIdFromPublicKey(publicKeyFromProtobuf(signingKey));
-    return signingID.equals(fromID);
-  }
-  return false;
-}, "isSigned");
-var toMessage = /* @__PURE__ */ __name(async (message2) => {
-  if (message2.from == null) {
-    throw new InvalidMessageError("RPC message was missing from");
-  }
-  if (!await isSigned(message2)) {
-    return {
-      type: "unsigned",
-      topic: message2.topic ?? "",
-      data: message2.data ?? new Uint8Array(0)
-    };
-  }
-  const from3 = peerIdFromMultihash(decode4(message2.from));
-  const key = message2.key ?? from3.publicKey;
-  if (key == null) {
-    throw new InvalidMessageError("RPC message was missing public key");
-  }
-  const msg = {
-    type: "signed",
-    from: from3,
-    topic: message2.topic ?? "",
-    sequenceNumber: bigIntFromBytes(message2.sequenceNumber ?? new Uint8Array(0)),
-    data: message2.data ?? new Uint8Array(0),
-    signature: message2.signature ?? new Uint8Array(0),
-    key: key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
-  };
-  return msg;
-}, "toMessage");
-var toRpcMessage = /* @__PURE__ */ __name((message2) => {
-  if (message2.type === "signed") {
-    return {
-      from: message2.from.toMultihash().bytes,
-      data: message2.data,
-      sequenceNumber: bigIntToBytes(message2.sequenceNumber),
-      topic: message2.topic,
-      signature: message2.signature,
-      key: message2.key ? publicKeyToProtobuf(message2.key) : void 0
-    };
-  }
-  return {
-    data: message2.data,
-    topic: message2.topic
-  };
-}, "toRpcMessage");
-var bigIntToBytes = /* @__PURE__ */ __name((num) => {
-  let str = num.toString(16);
-  if (str.length % 2 !== 0) {
-    str = `0${str}`;
-  }
-  return fromString2(str, "base16");
-}, "bigIntToBytes");
-var bigIntFromBytes = /* @__PURE__ */ __name((num) => {
-  return BigInt(`0x${toString2(num, "base16")}`);
-}, "bigIntFromBytes");
-
-// node_modules/@libp2p/floodsub/dist/src/sign.js
-var SignPrefix = fromString2("libp2p-pubsub:");
-async function signMessage(privateKey, message2, encode8) {
-  const outputMessage = {
-    type: "signed",
-    topic: message2.topic,
-    data: message2.data,
-    sequenceNumber: message2.sequenceNumber,
-    from: peerIdFromPrivateKey(privateKey)
-  };
-  const bytes = concat([
-    SignPrefix,
-    encode8(toRpcMessage(outputMessage)).subarray()
-  ]);
-  outputMessage.signature = await privateKey.sign(bytes);
-  outputMessage.key = privateKey.publicKey;
-  return outputMessage;
-}
-__name(signMessage, "signMessage");
-async function verifySignature(message2, encode8) {
-  if (message2.type !== "signed") {
-    throw new Error('Message type must be "signed" to be verified');
-  }
-  if (message2.signature == null) {
-    throw new Error("Message must contain a signature to be verified");
-  }
-  if (message2.from == null) {
-    throw new Error("Message must contain a from property to be verified");
-  }
-  const bytes = concat([
-    SignPrefix,
-    encode8({
-      ...toRpcMessage(message2),
-      signature: void 0,
-      key: void 0
-    }).subarray()
-  ]);
-  const pubKey = messagePublicKey(message2);
-  return pubKey.verify(bytes, message2.signature);
-}
-__name(verifySignature, "verifySignature");
-function messagePublicKey(message2) {
-  if (message2.type !== "signed") {
-    throw new Error('Message type must be "signed" to have a public key');
-  }
-  if (message2.from == null) {
-    throw new Error("Could not get the public key from the originator id");
-  }
-  if (message2.key != null) {
-    return message2.key;
-  }
-  if (message2.from.publicKey != null) {
-    return message2.from.publicKey;
-  }
-  throw new Error("Could not get the public key from the originator id");
-}
-__name(messagePublicKey, "messagePublicKey");
-
-// node_modules/@libp2p/floodsub/dist/src/floodsub.js
-var FloodSub = class extends TypedEventEmitter {
-  static {
-    __name(this, "FloodSub");
-  }
-  log;
-  started;
-  /**
-   * Map of topics to which peers are subscribed to
-   */
-  topics;
-  /**
-   * List of our subscriptions
-   */
-  subscriptions;
-  /**
-   * Map of peer streams
-   */
-  peers;
-  /**
-   * The signature policy to follow by default
-   */
-  globalSignaturePolicy;
-  /**
-   * If router can relay received messages, even if not subscribed
-   */
-  canRelayMessage;
-  /**
-   * if publish should emit to self, if subscribed
-   */
-  emitSelf;
-  /**
-   * Topic validator map
-   *
-   * Keyed by topic
-   * Topic validators are functions with the following input:
-   */
-  topicValidators;
-  queue;
-  protocol;
-  components;
-  _registrarTopologyId;
-  maxInboundStreams;
-  maxOutboundStreams;
-  seenCache;
-  constructor(components, init) {
-    super();
-    this.log = components.logger.forComponent("libp2p:floodsub");
-    this.components = components;
-    this.protocol = init.protocol ?? protocol;
-    this.started = false;
-    this.topics = /* @__PURE__ */ new Map();
-    this.subscriptions = /* @__PURE__ */ new Set();
-    this.peers = new PeerMap();
-    this.globalSignaturePolicy = init.globalSignaturePolicy === "StrictNoSign" ? "StrictNoSign" : "StrictSign";
-    this.canRelayMessage = init.canRelayMessage ?? true;
-    this.emitSelf = init.emitSelf ?? false;
-    this.topicValidators = /* @__PURE__ */ new Map();
-    this.queue = new PQueue({
-      concurrency: init.messageProcessingConcurrency ?? 10
-    });
-    this.maxInboundStreams = init.maxInboundStreams ?? 1;
-    this.maxOutboundStreams = init.maxOutboundStreams ?? 1;
-    this.seenCache = new SimpleTimeCache({
-      validityMs: init?.seenTTL ?? 3e4
-    });
-    this._onIncomingStream = this._onIncomingStream.bind(this);
-    this._onPeerConnected = this._onPeerConnected.bind(this);
-    this._onPeerDisconnected = this._onPeerDisconnected.bind(this);
-  }
-  [pubSubSymbol] = true;
-  [Symbol.toStringTag] = "@libp2p/floodsub";
-  [serviceCapabilities] = [
-    "@libp2p/pubsub"
-  ];
-  [serviceDependencies] = [
-    "@libp2p/identify"
-  ];
-  // LIFECYCLE METHODS
-  /**
-   * Register the pubsub protocol onto the libp2p node.
-   */
-  async start() {
-    if (this.started) {
-      return;
-    }
-    this.log("starting");
-    await this.components.registrar.handle(this.protocol, this._onIncomingStream, {
-      maxInboundStreams: this.maxInboundStreams,
-      maxOutboundStreams: this.maxOutboundStreams
-    });
-    this._registrarTopologyId = await this.components.registrar.register(this.protocol, {
-      onConnect: this._onPeerConnected,
-      onDisconnect: this._onPeerDisconnected
-    });
-    this.log("started");
-    this.started = true;
-  }
-  /**
-   * Unregister the pubsub protocol and the streams with other peers will be closed.
-   */
-  async stop() {
-    if (!this.started) {
-      return;
-    }
-    const registrar = this.components.registrar;
-    if (this._registrarTopologyId != null) {
-      registrar.unregister(this._registrarTopologyId);
-    }
-    await registrar.unhandle(this.protocol);
-    this.log("stopping");
-    for (const peerStreams of this.peers.values()) {
-      peerStreams.close();
-    }
-    this.peers.clear();
-    this.subscriptions = /* @__PURE__ */ new Set();
-    this.started = false;
-    this.log("stopped");
-  }
-  isStarted() {
-    return this.started;
-  }
-  /**
-   * On an inbound stream opened
-   */
-  _onIncomingStream(stream, connection) {
-    const peerStreams = this.addPeer(connection.remotePeer, stream);
-    peerStreams.attachInboundStream(stream);
-  }
-  /**
-   * Registrar notifies an established connection with pubsub protocol
-   */
-  async _onPeerConnected(peerId, conn) {
-    this.log("connected %p", peerId);
-    if (conn.streams.find((stream2) => stream2.direction === "outbound" && stream2.protocol === this.protocol)) {
-      this.log("outbound pubsub stream already present on connection from %p", peerId);
-      return;
-    }
-    const stream = await conn.newStream(this.protocol);
-    const peerStreams = this.addPeer(peerId, stream);
-    peerStreams.attachOutboundStream(stream);
-    this.send(peerId, {
-      subscriptions: Array.from(this.subscriptions).map((sub) => sub.toString()),
-      subscribe: true
-    });
-  }
-  /**
-   * Registrar notifies a closing connection with pubsub protocol
-   */
-  _onPeerDisconnected(peerId, conn) {
-    this.log("connection ended %p", peerId);
-    this._removePeer(peerId);
-  }
-  /**
-   * Notifies the router that a peer has been connected
-   */
-  addPeer(peerId, stream) {
-    const existing = this.peers.get(peerId);
-    if (existing != null) {
-      return existing;
-    }
-    this.log("new peer %p", peerId);
-    const peerStreams = new PeerStreams(peerId);
-    this.peers.set(peerId, peerStreams);
-    peerStreams.addEventListener("message", (evt) => {
-      const rpcMsg = evt.detail;
-      const messages2 = [];
-      for (const msg of rpcMsg.messages ?? []) {
-        if (msg.from == null || msg.data == null || msg.topic == null) {
-          this.log("message from %p was missing from, data or topic fields, dropping", peerId);
-          continue;
-        }
-        messages2.push({
-          from: msg.from,
-          data: msg.data,
-          topic: msg.topic,
-          sequenceNumber: msg.sequenceNumber ?? void 0,
-          signature: msg.signature ?? void 0,
-          key: msg.key ?? void 0
-        });
-      }
-      this.processRpc(peerStreams, {
-        subscriptions: (rpcMsg.subscriptions ?? []).map((sub) => ({
-          subscribe: Boolean(sub.subscribe),
-          topic: sub.topic ?? ""
-        })),
-        messages: messages2
-      }).catch((err) => {
-        this.log(err);
-      });
-    });
-    peerStreams.addEventListener("close", () => this._removePeer(peerId), {
-      once: true
-    });
-    return peerStreams;
-  }
-  /**
-   * Notifies the router that a peer has been disconnected
-   */
-  _removePeer(peerId) {
-    const peerStreams = this.peers.get(peerId);
-    if (peerStreams == null) {
-      return;
-    }
-    peerStreams.close();
-    this.log("delete peer %p", peerId);
-    this.peers.delete(peerId);
-    for (const peers of this.topics.values()) {
-      peers.delete(peerId);
-    }
-  }
-  /**
-   * Handles an rpc request from a peer
-   */
-  async processRpc(peerStream, rpc) {
-    this.log("rpc from %p", peerStream.peerId);
-    const { subscriptions, messages: messages2 } = rpc;
-    if (subscriptions != null && subscriptions.length > 0) {
-      this.log("subscription update from %p", peerStream.peerId);
-      subscriptions.forEach((subOpt) => {
-        this.processRpcSubOpt(peerStream.peerId, subOpt);
-      });
-      super.dispatchEvent(new CustomEvent("subscription-change", {
-        detail: {
-          peerId: peerStream.peerId,
-          subscriptions: subscriptions.map(({ topic, subscribe }) => ({
-            topic: `${topic ?? ""}`,
-            subscribe: Boolean(subscribe)
-          }))
-        }
-      }));
-    }
-    if (messages2 != null && messages2.length > 0) {
-      this.log("messages from %p", peerStream.peerId);
-      this.queue.addAll(messages2.map((message2) => async () => {
-        if (message2.topic == null || !this.subscriptions.has(message2.topic) && !this.canRelayMessage) {
-          this.log("received message we didn't subscribe to. Dropping.");
-          return false;
-        }
-        try {
-          const msg = await toMessage(message2);
-          await this.processMessage(peerStream.peerId, msg);
-        } catch (err) {
-          this.log.error("failed to queue messages from %p - %e", peerStream.peerId, err);
-        }
-      })).catch((err) => {
-        this.log(err);
-      });
-    }
-    return true;
-  }
-  /**
-   * Handles a subscription change from a peer
-   */
-  processRpcSubOpt(id, subOpt) {
-    const t2 = subOpt.topic;
-    if (t2 == null) {
-      return;
-    }
-    let topicSet = this.topics.get(t2);
-    if (topicSet == null) {
-      topicSet = new PeerSet();
-      this.topics.set(t2, topicSet);
-    }
-    if (subOpt.subscribe === true) {
-      topicSet.add(id);
-    } else {
-      topicSet.delete(id);
-    }
-  }
-  /**
-   * Handles a message from a peer
-   */
-  async processMessage(from3, msg) {
-    if (this.components.peerId.equals(from3) && !this.emitSelf) {
-      return;
-    }
-    const seqno = await this.getMsgId(msg);
-    const msgIdStr = toString2(seqno, "base64");
-    if (this.seenCache.has(msgIdStr)) {
-      return;
-    }
-    this.seenCache.put(msgIdStr, true);
-    try {
-      await this.validate(from3, msg);
-    } catch (err) {
-      this.log("Message is invalid, dropping it. %O", err);
-      return;
-    }
-    if (this.subscriptions.has(msg.topic)) {
-      const isFromSelf = this.components.peerId.equals(from3);
-      if (!isFromSelf || this.emitSelf) {
-        super.dispatchEvent(new CustomEvent("message", {
-          detail: msg
-        }));
-      }
-    }
-    await this.publishMessage(from3, msg);
-  }
-  /**
-   * The default msgID implementation
-   * Child class can override this.
-   */
-  getMsgId(msg) {
-    const signaturePolicy = this.globalSignaturePolicy;
-    switch (signaturePolicy) {
-      case "StrictSign":
-        if (msg.type !== "signed") {
-          throw new InvalidMessageError('Message type should be "signed" when signature policy is StrictSign but it was not');
-        }
-        if (msg.sequenceNumber == null) {
-          throw new InvalidMessageError("Need sequence number when signature policy is StrictSign but it was missing");
-        }
-        if (msg.key == null) {
-          throw new InvalidMessageError("Need key when signature policy is StrictSign but it was missing");
-        }
-        return msgId(msg.key, msg.sequenceNumber);
-      case "StrictNoSign":
-        return noSignMsgId(msg.data);
-      default:
-        throw new InvalidMessageError("Cannot get message id: unhandled signature policy");
-    }
-  }
-  /**
-   * Encode RPC object into a Uint8Array.
-   * This can be override to use a custom router protobuf.
-   */
-  encodeMessage(rpc) {
-    return RPC.Message.encode(rpc);
-  }
-  /**
-   * Send an rpc object to a peer
-   */
-  send(peer, data) {
-    const { messages: messages2, subscriptions, subscribe } = data;
-    this.sendRpc(peer, {
-      subscriptions: (subscriptions ?? []).map((str) => ({ topic: str, subscribe: Boolean(subscribe) })),
-      messages: (messages2 ?? []).map(toRpcMessage)
-    });
-  }
-  /**
-   * Send an rpc object to a peer
-   */
-  sendRpc(peer, rpc) {
-    const peerStreams = this.peers.get(peer);
-    if (peerStreams == null) {
-      this.log.error("cannot send RPC to %p as there are no streams to it available", peer);
-      return;
-    }
-    peerStreams.write(rpc);
-  }
-  /**
-   * Validates the given message. The signature will be checked for authenticity.
-   * Throws an error on invalid messages
-   */
-  async validate(from3, message2) {
-    const signaturePolicy = this.globalSignaturePolicy;
-    switch (signaturePolicy) {
-      case "StrictNoSign":
-        if (message2.type !== "unsigned") {
-          throw new InvalidMessageError('Message type should be "unsigned" when signature policy is StrictNoSign but it was not');
-        }
-        if (message2.signature != null) {
-          throw new InvalidMessageError("StrictNoSigning: signature should not be present");
-        }
-        if (message2.key != null) {
-          throw new InvalidMessageError("StrictNoSigning: key should not be present");
-        }
-        if (message2.sequenceNumber != null) {
-          throw new InvalidMessageError("StrictNoSigning: seqno should not be present");
-        }
-        break;
-      case "StrictSign":
-        if (message2.type !== "signed") {
-          throw new InvalidMessageError('Message type should be "signed" when signature policy is StrictSign but it was not');
-        }
-        if (message2.signature == null) {
-          throw new InvalidMessageError("StrictSigning: Signing required and no signature was present");
-        }
-        if (message2.sequenceNumber == null) {
-          throw new InvalidMessageError("StrictSigning: Signing required and no sequenceNumber was present");
-        }
-        if (!await verifySignature(message2, this.encodeMessage.bind(this))) {
-          throw new InvalidMessageError("StrictSigning: Invalid message signature");
-        }
-        break;
-      default:
-        throw new InvalidMessageError("Cannot validate message: unhandled signature policy");
-    }
-    const validatorFn = this.topicValidators.get(message2.topic);
-    if (validatorFn != null) {
-      const result = await validatorFn(from3, message2);
-      if (result === TopicValidatorResult.Reject || result === TopicValidatorResult.Ignore) {
-        throw new InvalidMessageError("Message validation failed");
-      }
-    }
-  }
-  /**
-   * Normalizes the message and signs it, if signing is enabled.
-   * Should be used by the routers to create the message to send.
-   */
-  async buildMessage(message2) {
-    const signaturePolicy = this.globalSignaturePolicy;
-    switch (signaturePolicy) {
-      case "StrictSign":
-        return signMessage(this.components.privateKey, message2, this.encodeMessage.bind(this));
-      case "StrictNoSign":
-        return Promise.resolve({
-          type: "unsigned",
-          ...message2
-        });
-      default:
-        throw new InvalidMessageError("Cannot build message: unhandled signature policy");
-    }
-  }
-  // API METHODS
-  /**
-   * Get a list of the peer-ids that are subscribed to one topic.
-   */
-  getSubscribers(topic) {
-    if (!this.started) {
-      throw new NotStartedError("not started yet");
-    }
-    if (topic == null) {
-      throw new InvalidParametersError("Topic is required");
-    }
-    const peersInTopic = this.topics.get(topic.toString());
-    if (peersInTopic == null) {
-      return [];
-    }
-    return Array.from(peersInTopic.values());
-  }
-  /**
-   * Publishes messages to all subscribed peers
-   */
-  async publish(topic, data) {
-    if (!this.started) {
-      throw new Error("Pubsub has not started");
-    }
-    const message2 = {
-      from: this.components.peerId,
-      topic,
-      data: data ?? new Uint8Array(0),
-      sequenceNumber: randomSeqno()
-    };
-    this.log("publish topic: %s from: %p data: %m", topic, message2.from, message2.data);
-    const rpcMessage = await this.buildMessage(message2);
-    let emittedToSelf = false;
-    if (this.emitSelf) {
-      if (this.subscriptions.has(topic)) {
-        emittedToSelf = true;
-        super.dispatchEvent(new CustomEvent("message", {
-          detail: rpcMessage
-        }));
-      }
-    }
-    const result = await this.publishMessage(this.components.peerId, rpcMessage);
-    if (emittedToSelf) {
-      result.recipients = [...result.recipients, this.components.peerId];
-    }
-    return result;
-  }
-  /**
-   * Overriding the implementation of publish should handle the appropriate algorithms for the publish/subscriber implementation.
-   * For example, a Floodsub implementation might simply publish each message to each topic for every peer.
-   *
-   * `sender` might be this peer, or we might be forwarding a message on behalf of another peer, in which case sender
-   * is the peer we received the message from, which may not be the peer the message was created by.
-   */
-  async publishMessage(from3, message2) {
-    const peers = this.getSubscribers(message2.topic);
-    const recipients = [];
-    if (peers == null || peers.length === 0) {
-      this.log("no peers are subscribed to topic %s", message2.topic);
-      return { recipients };
-    }
-    peers.forEach((id) => {
-      if (this.components.peerId.equals(id)) {
-        this.log("not sending message on topic %s to myself", message2.topic);
-        return;
-      }
-      if (id.equals(from3)) {
-        this.log("not sending message on topic %s to sender %p", message2.topic, id);
-        return;
-      }
-      this.log("publish msgs on topics %s %p", message2.topic, id);
-      recipients.push(id);
-      this.send(id, { messages: [message2] });
-    });
-    return { recipients };
-  }
-  /**
-   * Subscribes to a given topic.
-   */
-  subscribe(topic) {
-    if (!this.started) {
-      throw new Error("Pubsub has not started");
-    }
-    if (this.subscriptions.has(topic)) {
-      return;
-    }
-    this.log("subscribe to topic: %s", topic);
-    this.subscriptions.add(topic);
-    for (const peerId of this.peers.keys()) {
-      this.send(peerId, {
-        subscriptions: [
-          topic
-        ],
-        subscribe: true
-      });
-    }
-  }
-  /**
-   * Unsubscribe from the given topic
-   */
-  unsubscribe(topic) {
-    if (!this.started) {
-      throw new Error("Pubsub is not started");
-    }
-    if (!this.subscriptions.has(topic)) {
-      return;
-    }
-    this.log("unsubscribe from %s", topic);
-    this.subscriptions.delete(topic);
-    for (const peerId of this.peers.keys()) {
-      this.send(peerId, {
-        subscriptions: [
-          topic
-        ],
-        subscribe: false
-      });
-    }
-  }
-  /**
-   * Get the list of topics which the peer is subscribed to.
-   */
-  getTopics() {
-    if (!this.started) {
-      throw new Error("Pubsub is not started");
-    }
-    return Array.from(this.subscriptions);
-  }
-  getPeers() {
-    if (!this.started) {
-      throw new Error("Pubsub is not started");
-    }
-    return Array.from(this.peers.keys());
-  }
-};
-
-// node_modules/@libp2p/floodsub/dist/src/index.js
-var protocol = "/floodsub/1.0.0";
-var TopicValidatorResult;
-(function(TopicValidatorResult2) {
-  TopicValidatorResult2["Accept"] = "accept";
-  TopicValidatorResult2["Ignore"] = "ignore";
-  TopicValidatorResult2["Reject"] = "reject";
-})(TopicValidatorResult || (TopicValidatorResult = {}));
-function floodsub(init = {}) {
-  return (components) => new FloodSub(components, init);
-}
-__name(floodsub, "floodsub");
-
 // public/components/peer-connection/actions/index.mjs
+import { gossipsub } from "https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm";
 async function createActions4(context) {
   let libp2p = null;
   let connectionInterval = null;
@@ -34905,7 +33601,10 @@ async function createActions4(context) {
           streamMuxers: [yamux()],
           services: {
             identify: identify(),
-            pubsub: floodsub()
+            pubsub: gossipsub({
+              doPX: true,
+              emitSelf: true
+            })
           },
           connectionGater: {
             denyDialMultiaddr: /* @__PURE__ */ __name(() => false, "denyDialMultiaddr"),
@@ -34947,21 +33646,102 @@ async function createActions4(context) {
     async setupEventHandlers() {
       if (!libp2p) return;
       libp2p.addEventListener("peer:connect", (event) => {
-        console.log("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
-        self.updatePeerList();
+        console.log("\u2705 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
+        setTimeout(async () => {
+          await self.updatePeerList();
+          await self.sendPeersToChatInterface();
+        }, 500);
       });
       libp2p.addEventListener("peer:disconnect", (event) => {
-        console.log("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
-        self.updatePeerList();
+        console.log("\u274C \u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
+        setTimeout(async () => {
+          await self.updatePeerList();
+          await self.sendPeersToChatInterface();
+        }, 500);
       });
       libp2p.addEventListener("self:peer:update", (event) => {
-        console.log("\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
+        console.log("\u{1F504} \u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
         self.updateAddressList();
+        self.sendConnectionStatusToChatInterface();
       });
       libp2p.addEventListener("peer:discovery", (event) => {
-        console.log("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440:", event.detail.id.toString());
-        setTimeout(() => self.updatePeerList(), 1e3);
+        console.log("\u{1F50D} \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440:", event.detail.id.toString());
+        setTimeout(async () => {
+          await self.updatePeerList();
+          await self.sendPeersToChatInterface();
+        }, 1e3);
       });
+    },
+    /**
+     * Передает данные о пирах в chat-interface
+     */
+    async sendPeersToChatInterface() {
+      try {
+        const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface) {
+          const peersData = {
+            totalPeers: context.state.connectedPeers ? context.state.connectedPeers.length : 0,
+            peers: context.state.connectedPeers ? context.state.connectedPeers.map((peer) => ({
+              id: peer.id,
+              connections: peer.connections ? peer.connections.length : 1,
+              status: "connected"
+            })) : [],
+            connectionStatus: context.state.connected,
+            timestamp: Date.now()
+          };
+          await chatInterface.postMessage({
+            type: "PEERS_UPDATE",
+            data: peersData
+          });
+          console.log("\u2705 Peers data sent to chat-interface:", peersData);
+        } else {
+          console.log("\u23F3 Chat interface not found, will retry...");
+          setTimeout(() => self.sendPeersToChatInterface(), 1e3);
+        }
+      } catch (error) {
+        console.error("\u274C Error sending peers to chat interface:", error);
+      }
+    },
+    /**
+     * Передает информацию о соединении в chat-interface
+     */
+    async sendConnectionStatusToChatInterface() {
+      try {
+        const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface) {
+          const connectionData = {
+            connected: context.state.connected,
+            peerId: context.state.peerId,
+            mode: context.state.mode,
+            uptime: context.state.uptime,
+            timestamp: Date.now()
+          };
+          await chatInterface.postMessage({
+            type: "CONNECTION_STATUS_UPDATE",
+            data: connectionData
+          });
+          console.log("\u2705 Connection status sent to chat-interface:", connectionData);
+        }
+      } catch (error) {
+        console.error("\u274C Error sending connection status:", error);
+      }
+    },
+    /**
+     * Обновляет секцию со статистикой
+     */
+    async updateStatsCard() {
+      const statsCard = context.shadowRoot.querySelector(".stats-card");
+      if (statsCard && context.renderPart) {
+        console.log("\u{1F504} Updating stats card section");
+        await context.renderPart({
+          partName: "renderStatistics",
+          state: context.state,
+          selector: ".stats-card .card-content"
+        });
+      } else {
+        console.log("\u26A0\uFE0F Stats card not found, using full render");
+        await context.fullRender(context.state);
+      }
     },
     /**
      * Запускает периодическое обновление списка пиров
@@ -34971,7 +33751,14 @@ async function createActions4(context) {
       if (connectionInterval) {
         clearInterval(connectionInterval);
       }
-      console.log("\u{1F6AB} \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u0434\u043B\u044F \u043E\u0442\u043B\u0430\u0434\u043A\u0438");
+      connectionInterval = setInterval(() => {
+        console.log("\u{1F504} \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435...");
+        self.updatePeerList();
+        self.updateAddressList();
+        self.updateStatsCard();
+        self.sendPeersToChatInterface();
+        self.sendConnectionStatusToChatInterface();
+      }, 5e3);
       setTimeout(() => {
         console.log("\u{1F504} \u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
         self.manualUpdate();
@@ -35000,6 +33787,8 @@ async function createActions4(context) {
       }
       await self.updatePeerList();
       await self.updateAddressList();
+      await self.sendPeersToChatInterface();
+      await self.sendConnectionStatusToChatInterface();
     },
     /**
      * Принудительное обновление всех списков (для отладки)
@@ -35032,7 +33821,6 @@ async function createActions4(context) {
       console.log("\u{1F50D} updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D:", !!peersElement);
       if (peersElement && context.renderPart) {
         console.log("\u{1F3AF} updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
-        debugger;
         await context.renderPart({
           partName: "renderPeersList",
           state: context.state,
@@ -35250,7 +34038,9 @@ async function createActions4(context) {
     cleanup: self.cleanup.bind(self),
     restart: self.restart.bind(self),
     isConnected: self.isConnected.bind(self),
-    getConnectionStats: self.getConnectionStats.bind(self)
+    getConnectionStats: self.getConnectionStats.bind(self),
+    sendPeersToChatInterface: self.sendPeersToChatInterface.bind(self),
+    sendConnectionStatusToChatInterface: self.sendConnectionStatusToChatInterface.bind(self)
   };
 }
 __name(createActions4, "createActions");
@@ -35270,9 +34060,14 @@ var PeerConnection = class extends BaseComponent {
       peerId: null,
       listeningAddresses: [],
       connectedPeers: [],
-      relayEnabled: true
+      relayEnabled: true,
+      startTime: null,
+      // Время старта ноды
+      uptime: "0:00"
+      // Текущее время работы
     };
     this._lastPeersCount = 0;
+    this._uptimeInterval = null;
   }
   async _componentReady() {
     console.log("\u{1F527} PeerConnection component ready");
@@ -35296,13 +34091,16 @@ var PeerConnection = class extends BaseComponent {
       this.state.peerId = libp2p.peerId.toString();
       this.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
       this.state.connected = true;
+      this.state.startTime = Date.now();
       console.log("\u2705 Libp2p initialized successfully");
       console.log("\u{1F4CB} New state:", {
         mode: this.state.mode,
         connected: this.state.connected,
         peerId: this.state.peerId,
-        addresses: this.state.listeningAddresses
+        addresses: this.state.listeningAddresses,
+        startTime: this.state.startTime
       });
+      this.startUptimeCounter();
       await this.fullRender(this.state);
       if (this.state.mode === "listener") {
         const relayAddress = await this.getRelayAddresses();
@@ -35312,6 +34110,7 @@ var PeerConnection = class extends BaseComponent {
         const peerAddressInput = this.shadowRoot.querySelector("#peer-address-input");
         peerAddressInput.value = "";
       }
+      await this.sendConnectionStatusToChatInterface();
       return libp2p;
     } catch (error) {
       console.error("\u274C Libp2p initialization failed:", error);
@@ -35323,6 +34122,63 @@ var PeerConnection = class extends BaseComponent {
         details: error
       });
       throw error;
+    }
+  }
+  /**
+   * Запускает счетчик времени работы
+   */
+  startUptimeCounter() {
+    if (this._uptimeInterval) {
+      clearInterval(this._uptimeInterval);
+    }
+    this._uptimeInterval = setInterval(() => {
+      if (this.state.startTime && this.state.connected) {
+        this.updateUptime();
+      }
+    }, 1e3);
+  }
+  /**
+   * Обновляет время работы
+   */
+  updateUptime() {
+    if (!this.state.startTime) return;
+    const now = Date.now();
+    const uptimeMs = now - this.state.startTime;
+    const uptimeFormatted = this.formatUptime(uptimeMs);
+    if (this.state.uptime !== uptimeFormatted) {
+      this.state.uptime = uptimeFormatted;
+      this.updateUptimeDisplay();
+      this.sendConnectionStatusToChatInterface();
+    }
+  }
+  /**
+   * Форматирует время работы в читаемый формат
+   * @param {number} ms - Время в миллисекундах
+   * @returns {string} Отформатированное время
+   */
+  formatUptime(ms) {
+    const seconds = Math.floor(ms / 1e3);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    if (hours > 0) {
+      return `${hours}:${String(minutes % 60).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+    } else {
+      return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
+    }
+  }
+  /**
+   * Обновляет отображение времени работы в UI
+   */
+  async updateUptimeDisplay() {
+    const uptimeElement = this.shadowRoot.querySelector(".status-item .status-value");
+    if (uptimeElement) {
+      uptimeElement.textContent = this.state.uptime;
+    } else {
+      await this.renderPart({
+        partName: "renderSystemStatus",
+        state: this.state,
+        selector: ".status-card .card-content"
+      });
     }
   }
   // Новый метод для получения ноды
@@ -35403,6 +34259,7 @@ var PeerConnection = class extends BaseComponent {
         peers: this.state.connectedPeers.map((p2) => p2.id)
       });
       await this.updatePeersCard();
+      await this.sendPeersToChatInterface();
       const detailedSection = this.shadowRoot.querySelector(".connected-peers-section");
       if (detailedSection && this.renderPart) {
         await this.renderPart({
@@ -35411,6 +34268,60 @@ var PeerConnection = class extends BaseComponent {
           selector: ".connected-peers-section .card-content"
         });
       }
+    }
+  }
+  /**
+   * Передает данные о пирах в chat-interface
+   */
+  async sendPeersToChatInterface() {
+    try {
+      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+      if (chatInterface) {
+        const peersData = {
+          totalPeers: this.state.connectedPeers.length,
+          peers: this.state.connectedPeers.map((peer) => ({
+            id: peer.id,
+            connections: peer.connections ? peer.connections.length : 1,
+            status: "connected"
+          })),
+          connectionStatus: this.state.connected,
+          timestamp: Date.now()
+        };
+        await chatInterface.postMessage({
+          type: "PEERS_UPDATE",
+          data: peersData
+        });
+        console.log("\u2705 Peers data sent to chat-interface:", peersData);
+      } else {
+        console.log("\u23F3 Chat interface not found, will retry...");
+        setTimeout(() => this.sendPeersToChatInterface(), 1e3);
+      }
+    } catch (error) {
+      console.error("\u274C Error sending peers to chat interface:", error);
+    }
+  }
+  /**
+   * Передает информацию о соединении в chat-interface
+   */
+  async sendConnectionStatusToChatInterface() {
+    try {
+      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+      if (chatInterface) {
+        const connectionData = {
+          connected: this.state.connected,
+          peerId: this.state.peerId,
+          mode: this.state.mode,
+          uptime: this.state.uptime,
+          timestamp: Date.now()
+        };
+        await chatInterface.postMessage({
+          type: "CONNECTION_STATUS_UPDATE",
+          data: connectionData
+        });
+        console.log("\u2705 Connection status sent to chat-interface:", connectionData);
+      }
+    } catch (error) {
+      console.error("\u274C Error sending connection status:", error);
     }
   }
   /**
@@ -35495,6 +34406,10 @@ var PeerConnection = class extends BaseComponent {
     }
   }
   async _componentDisconnected() {
+    if (this._uptimeInterval) {
+      clearInterval(this._uptimeInterval);
+      this._uptimeInterval = null;
+    }
     if (this._controller && this._controller.destroy) {
       await this._controller.destroy();
     }

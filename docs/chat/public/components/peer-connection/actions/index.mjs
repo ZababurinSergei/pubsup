@@ -6,7 +6,7 @@ import { circuitRelayTransport } from '@libp2p/circuit-relay-v2';
 import { webSockets } from '@libp2p/websockets';
 import { webRTC } from '@libp2p/webrtc';
 import { identify } from '@libp2p/identify';
-import { floodsub } from '@libp2p/floodsub';
+import { gossipsub } from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm'
 import { multiaddr } from '@multiformats/multiaddr';
 import { fromString } from 'uint8arrays';
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher";
@@ -51,7 +51,10 @@ export async function createActions(context) {
                     streamMuxers: [yamux()],
                     services: {
                         identify: identify(),
-                        pubsub: floodsub()
+                        pubsub: gossipsub({
+                            doPX: true,
+                            emitSelf: true
+                        })
                     },
                     connectionGater: {
                         denyDialMultiaddr: () => false,
@@ -76,10 +79,10 @@ export async function createActions(context) {
                 });
 
                 // Настройка обработчиков событий
-               await self.setupEventHandlers();
+                await self.setupEventHandlers();
 
                 // Запускаем обновление списка подключенных пиров
-               await self.startPeerListUpdates();
+                await self.startPeerListUpdates();
 
                 return libp2p;
 
@@ -102,30 +105,125 @@ export async function createActions(context) {
         async setupEventHandlers() {
             if (!libp2p) return;
 
-            // Обновление списка пиров при подключении
+            // Обработчик подключения пира
             libp2p.addEventListener('peer:connect', (event) => {
-                console.log('Подключен пир:', event.detail.toString());
-                self.updatePeerList();
+                console.log('✅ Подключен пир:', event.detail.toString());
+
+                // Обновляем список пиров
+                setTimeout(async () => {
+                    await self.updatePeerList();
+                    await self.sendPeersToChatInterface();
+                }, 500);
             });
 
-            // Обновление списка пиров при отключении
+            // Обработчик отключения пира
             libp2p.addEventListener('peer:disconnect', (event) => {
-                console.log('Отключен пир:', event.detail.toString());
-                self.updatePeerList();
+                console.log('❌ Отключен пир:', event.detail.toString());
+
+                // Обновляем список пиров
+                setTimeout(async () => {
+                    await self.updatePeerList();
+                    await self.sendPeersToChatInterface();
+                }, 500);
             });
 
             // Обновление собственных адреса
             libp2p.addEventListener('self:peer:update', (event) => {
-                console.log('Обновлены адреса узла');
+                console.log('🔄 Обновлены адреса узла');
                 self.updateAddressList();
+                self.sendConnectionStatusToChatInterface();
             });
 
             // Обнаружение пиров
             libp2p.addEventListener('peer:discovery', (event) => {
-                console.log('Обнаружен пир:', event.detail.id.toString());
+                console.log('🔍 Обнаружен пир:', event.detail.id.toString());
                 // Также обновляем список при обнаружении новых пиров
-                setTimeout(() => self.updatePeerList(), 1000);
+                setTimeout(async () => {
+                    await self.updatePeerList();
+                    await self.sendPeersToChatInterface();
+                }, 1000);
             });
+        },
+
+        /**
+         * Передает данные о пирах в chat-interface
+         */
+        async sendPeersToChatInterface() {
+            try {
+                const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                if (chatInterface) {
+                    // Формируем данные для передачи
+                    const peersData = {
+                        totalPeers: context.state.connectedPeers ? context.state.connectedPeers.length : 0,
+                        peers: context.state.connectedPeers ? context.state.connectedPeers.map(peer => ({
+                            id: peer.id,
+                            connections: peer.connections ? peer.connections.length : 1,
+                            status: 'connected'
+                        })) : [],
+                        connectionStatus: context.state.connected,
+                        timestamp: Date.now()
+                    };
+
+                    // Отправляем сообщение в chat-interface
+                    await chatInterface.postMessage({
+                        type: 'PEERS_UPDATE',
+                        data: peersData
+                    });
+
+                    console.log('✅ Peers data sent to chat-interface:', peersData);
+                } else {
+                    console.log('⏳ Chat interface not found, will retry...');
+                    // Повторяем попытку через 1 секунду
+                    setTimeout(() => self.sendPeersToChatInterface(), 1000);
+                }
+            } catch (error) {
+                console.error('❌ Error sending peers to chat interface:', error);
+            }
+        },
+
+        /**
+         * Передает информацию о соединении в chat-interface
+         */
+        async sendConnectionStatusToChatInterface() {
+            try {
+                const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                if (chatInterface) {
+                    const connectionData = {
+                        connected: context.state.connected,
+                        peerId: context.state.peerId,
+                        mode: context.state.mode,
+                        uptime: context.state.uptime,
+                        timestamp: Date.now()
+                    };
+
+                    await chatInterface.postMessage({
+                        type: 'CONNECTION_STATUS_UPDATE',
+                        data: connectionData
+                    });
+
+                    console.log('✅ Connection status sent to chat-interface:', connectionData);
+                }
+            } catch (error) {
+                console.error('❌ Error sending connection status:', error);
+            }
+        },
+
+        /**
+         * Обновляет секцию со статистикой
+         */
+        async updateStatsCard() {
+            const statsCard = context.shadowRoot.querySelector('.stats-card');
+            if (statsCard && context.renderPart) {
+                console.log('🔄 Updating stats card section');
+                await context.renderPart({
+                    partName: 'renderStatistics',
+                    state: context.state,
+                    selector: '.stats-card .card-content'
+                });
+            } else {
+                console.log('⚠️ Stats card not found, using full render');
+                await context.fullRender(context.state);
+            }
         },
 
         /**
@@ -137,16 +235,14 @@ export async function createActions(context) {
                 clearInterval(connectionInterval);
             }
 
-            console.log('🚫 Автоматическое обновление отключено для отладки');
-
-            // Закомментируем интервал на время отладки
-            /*
             connectionInterval = setInterval(() => {
                 console.log('🔄 Автоматическое обновление...');
                 self.updatePeerList();
                 self.updateAddressList();
+                self.updateStatsCard();
+                self.sendPeersToChatInterface();
+                self.sendConnectionStatusToChatInterface();
             }, 5000);
-            */
 
             // Однократное обновление после полной загрузки
             setTimeout(() => {
@@ -182,6 +278,8 @@ export async function createActions(context) {
 
             await self.updatePeerList();
             await self.updateAddressList();
+            await self.sendPeersToChatInterface();
+            await self.sendConnectionStatusToChatInterface();
         },
 
         /**
@@ -222,7 +320,6 @@ export async function createActions(context) {
 
             if (peersElement && context.renderPart) {
                 console.log('🎯 updatePeerList: выполняем renderPart');
-                debugger
                 await context.renderPart({
                     partName: 'renderPeersList',
                     state: context.state,
@@ -475,6 +572,8 @@ export async function createActions(context) {
         cleanup: self.cleanup.bind(self),
         restart: self.restart.bind(self),
         isConnected: self.isConnected.bind(self),
-        getConnectionStats: self.getConnectionStats.bind(self)
+        getConnectionStats: self.getConnectionStats.bind(self),
+        sendPeersToChatInterface: self.sendPeersToChatInterface.bind(self),
+        sendConnectionStatusToChatInterface: self.sendConnectionStatusToChatInterface.bind(self)
     };
 }
