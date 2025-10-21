@@ -133,7 +133,7 @@ export function renderMyGroups({ groups = [], nodeReady = false } = {}) {
  */
 export function renderDiscoveredGroups({ discoveredGroups = [], nodeReady = false } = {}) {
     return `
-        <section class="section-card">
+        <section class="section-card" id="discovered-groups-list">
             <div class="card-header">
                 <h3 class="card-title">
                     <span class="card-icon">🌐</span>
@@ -142,9 +142,7 @@ export function renderDiscoveredGroups({ discoveredGroups = [], nodeReady = fals
                 <span class="card-badge">${discoveredGroups.length}</span>
             </div>
             <div class="card-content">
-                <div id="discovered-groups-list">
-                    ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, 'discovered', nodeReady) : renderEmptyState('discovered', nodeReady)}
-                </div>
+                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, 'discovered', nodeReady) : renderEmptyState('discovered', nodeReady)}
             </div>
         </section>
     `;
@@ -205,7 +203,7 @@ export function renderSearchResults({ groups = [], discoveredGroups = [], joined
  */
 export function renderQuickActions({state = {}} = {}) {
     return `
-    <section class="section-card">
+    <section class="section-card quick-actions">
         <div class="card-header">
             <h3 class="card-title">
                 <span class="card-icon">🚀</span>
@@ -213,7 +211,6 @@ export function renderQuickActions({state = {}} = {}) {
             </h3>
         </div>
         <div class="card-content">
-            <div class="quick-actions">
                 <button class="action-btn primary" id="create-group" ${!state.nodeReady ? 'disabled' : ''}>
                     <span class="btn-icon">➕</span>
                     <span class="btn-text">${state.nodeReady ? 'Создать группу' : 'Ожидание сети...'}</span>
@@ -228,7 +225,6 @@ export function renderQuickActions({state = {}} = {}) {
                     <span class="btn-icon">🔄</span>
                     <span class="btn-text">Проверить статус</span>
                 </button>
-            </div>
         </div>
     </section>
     `;

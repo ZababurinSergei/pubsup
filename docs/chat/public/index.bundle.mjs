@@ -16125,7 +16125,7 @@ function renderMyGroups2({ groups = [], nodeReady = false } = {}) {
 __name(renderMyGroups2, "renderMyGroups");
 function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false } = {}) {
   return `
-        <section class="section-card">
+        <section class="section-card" id="discovered-groups-list">
             <div class="card-header">
                 <h3 class="card-title">
                     <span class="card-icon">\u{1F310}</span>
@@ -16134,9 +16134,7 @@ function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false } = 
                 <span class="card-badge">${discoveredGroups.length}</span>
             </div>
             <div class="card-content">
-                <div id="discovered-groups-list">
-                    ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered", nodeReady) : renderEmptyState("discovered", nodeReady)}
-                </div>
+                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered", nodeReady) : renderEmptyState("discovered", nodeReady)}
             </div>
         </section>
     `;
@@ -16186,7 +16184,7 @@ function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups
 __name(renderSearchResults2, "renderSearchResults");
 function renderQuickActions2({ state = {} } = {}) {
   return `
-    <section class="section-card">
+    <section class="section-card quick-actions">
         <div class="card-header">
             <h3 class="card-title">
                 <span class="card-icon">\u{1F680}</span>
@@ -16194,7 +16192,6 @@ function renderQuickActions2({ state = {} } = {}) {
             </h3>
         </div>
         <div class="card-content">
-            <div class="quick-actions">
                 <button class="action-btn primary" id="create-group" ${!state.nodeReady ? "disabled" : ""}>
                     <span class="btn-icon">\u2795</span>
                     <span class="btn-text">${state.nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0441\u0435\u0442\u0438..."}</span>
@@ -16209,7 +16206,6 @@ function renderQuickActions2({ state = {} } = {}) {
                     <span class="btn-icon">\u{1F504}</span>
                     <span class="btn-text">\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441</span>
                 </button>
-            </div>
         </div>
     </section>
     `;
