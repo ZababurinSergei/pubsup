@@ -10,6 +10,8 @@ import { gossipsub } from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7
 import { multiaddr } from '@multiformats/multiaddr';
 import { fromString } from 'uint8arrays';
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher";
+// Импортируем логгер
+import { logger } from '@libp2p/logger';
 
 /**
  * Фабричная функция для создания действий компонента PeerConnection
@@ -17,6 +19,9 @@ import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher";
  * @returns {Promise<Object>} Объект с методами действий
  */
 export async function createActions(context) {
+    // Создаем именованный логгер для компонента
+    const log = logger('peer-connection:actions');
+
     let libp2p = null;
     let connectionInterval = null;
 
@@ -72,7 +77,7 @@ export async function createActions(context) {
                 libp2p = await createLibp2p(config);
                 await libp2p.start();
 
-                console.log('Libp2p узел инициализирован:', {
+                log('Libp2p узел инициализирован: %o', {
                     peerId: libp2p.peerId.toString(),
                     mode: mode,
                     addresses: libp2p.getMultiaddrs().map(ma => ma.toString())
@@ -87,7 +92,7 @@ export async function createActions(context) {
                 return libp2p;
 
             } catch (error) {
-                console.error('Ошибка инициализации Libp2p:', error);
+                log.error('Ошибка инициализации Libp2p: %o', error);
                 context.addError({
                     componentName: context.constructor.name,
                     source: 'initializeLibp2p',
@@ -107,7 +112,7 @@ export async function createActions(context) {
 
             // Обработчик подключения пира
             libp2p.addEventListener('peer:connect', (event) => {
-                console.log('✅ Подключен пир:', event.detail.toString());
+                log('Подключен пир: %s', event.detail.toString());
 
                 // Обновляем список пиров
                 setTimeout(async () => {
@@ -118,7 +123,7 @@ export async function createActions(context) {
 
             // Обработчик отключения пира
             libp2p.addEventListener('peer:disconnect', (event) => {
-                console.log('❌ Отключен пир:', event.detail.toString());
+                log('Отключен пир: %s', event.detail.toString());
 
                 // Обновляем список пиров
                 setTimeout(async () => {
@@ -129,14 +134,14 @@ export async function createActions(context) {
 
             // Обновление собственных адреса
             libp2p.addEventListener('self:peer:update', (event) => {
-                console.log('🔄 Обновлены адреса узла');
+                log('Обновлены адреса узла');
                 self.updateAddressList();
                 self.sendConnectionStatusToChatInterface();
             });
 
             // Обнаружение пиров
             libp2p.addEventListener('peer:discovery', (event) => {
-                console.log('🔍 Обнаружен пир:', event.detail.id.toString());
+                log('Обнаружен пир: %s', event.detail.id.toString());
                 // Также обновляем список при обнаружении новых пиров
                 setTimeout(async () => {
                     await self.updatePeerList();
@@ -170,14 +175,14 @@ export async function createActions(context) {
                         data: peersData
                     });
 
-                    console.log('✅ Peers data sent to chat-interface:', peersData);
+                    log.trace('Peers data sent to chat-interface: %o', peersData);
                 } else {
-                    console.log('⏳ Chat interface not found, will retry...');
+                    log('Chat interface not found, will retry...');
                     // Повторяем попытку через 1 секунду
                     setTimeout(() => self.sendPeersToChatInterface(), 1000);
                 }
             } catch (error) {
-                console.error('❌ Error sending peers to chat interface:', error);
+                log.error('Error sending peers to chat interface: %o', error);
             }
         },
 
@@ -201,10 +206,10 @@ export async function createActions(context) {
                         data: connectionData
                     });
 
-                    console.log('✅ Connection status sent to chat-interface:', connectionData);
+                    log.trace('Connection status sent to chat-interface: %o', connectionData);
                 }
             } catch (error) {
-                console.error('❌ Error sending connection status:', error);
+                log.error('Error sending connection status: %o', error);
             }
         },
 
@@ -214,14 +219,14 @@ export async function createActions(context) {
         async updateStatsCard() {
             const statsCard = context.shadowRoot.querySelector('.stats-card');
             if (statsCard && context.renderPart) {
-                console.log('🔄 Updating stats card section');
+                log.trace('Updating stats card section');
                 await context.renderPart({
                     partName: 'renderStatistics',
                     state: context.state,
                     selector: '.stats-card .card-content'
                 });
             } else {
-                console.log('⚠️ Stats card not found, using full render');
+                log('Stats card not found, using full render');
                 await context.fullRender(context.state);
             }
         },
@@ -236,7 +241,7 @@ export async function createActions(context) {
             }
 
             connectionInterval = setInterval(() => {
-                console.log('🔄 Автоматическое обновление...');
+                log.trace('Автоматическое обновление...');
                 self.updatePeerList();
                 self.updateAddressList();
                 self.updateStatsCard();
@@ -246,7 +251,7 @@ export async function createActions(context) {
 
             // Однократное обновление после полной загрузки
             setTimeout(() => {
-                console.log('🔄 Однократное обновление после загрузки');
+                log.trace('Однократное обновление после загрузки');
                 self.manualUpdate();
             }, 4000);
         },
@@ -256,22 +261,22 @@ export async function createActions(context) {
          * @async
          */
         async manualUpdate() {
-            console.log('🔄 Ручное обновление списков...');
+            log.trace('Ручное обновление списков...');
 
             const addressesElement = context.shadowRoot.querySelector('#listening-addresses');
             const peersElement = context.shadowRoot.querySelector('#connected-peers-list');
 
-            console.log('🔍 Состояние DOM:', {
+            log.trace('Состояние DOM: %o', {
                 addressesElement: !!addressesElement,
                 peersElement: !!peersElement,
                 shadowRoot: !!context.shadowRoot
             });
 
             if (context.shadowRoot) {
-                console.log('🔍 Все элементы в shadowRoot:');
+                log.trace('Все элементы в shadowRoot:');
                 context.shadowRoot.querySelectorAll('*').forEach(el => {
                     if (el.id) {
-                        console.log('  -', el.tagName, `#${el.id}`);
+                        log.trace('  - %s #%s', el.tagName, el.id);
                     }
                 });
             }
@@ -287,10 +292,10 @@ export async function createActions(context) {
          * @async
          */
         async forceUpdate() {
-            console.log('💥 Принудительное обновление всех списков');
+            log('Принудительное обновление всех списков');
 
             if (libp2p) {
-                console.log('📊 Текущее состояние libp2p:', {
+                log('Текущее состояние libp2p: %o', {
                     peerId: libp2p.peerId?.toString(),
                     addresses: libp2p.getMultiaddrs().map(ma => ma.toString()),
                     peers: libp2p.getPeers().map(p => p.toString())
@@ -306,28 +311,28 @@ export async function createActions(context) {
          */
         async updatePeerList() {
             if (!libp2p || !context.state) {
-                console.log('❌ updatePeerList: libp2p или context.state не доступны');
+                log('libp2p или context.state не доступны');
                 return;
             }
 
             const peers = await self.getConnectedPeers();
             context.state.connectedPeers = peers;
 
-            console.log('👥 updatePeerList: пиров найдено:', peers.length);
+            log('updatePeerList: пиров найдено: %d', peers.length);
 
             const peersElement = context.shadowRoot.querySelector('#connected-peers-list');
-            console.log('🔍 updatePeerList: элемент #connected-peers-list найден:', !!peersElement);
+            log.trace('updatePeerList: элемент #connected-peers-list найден: %s', !!peersElement);
 
             if (peersElement && context.renderPart) {
-                console.log('🎯 updatePeerList: выполняем renderPart');
+                log.trace('updatePeerList: выполняем renderPart');
                 await context.renderPart({
                     partName: 'renderPeersList',
                     state: context.state,
                     selector: '#connected-peers-list'
                 });
-                console.log('✅ updatePeerList: renderPart завершен');
+                log.trace('updatePeerList: renderPart завершен');
             } else {
-                console.log('⚠️ updatePeerList: renderPart не выполнен - элемент не найден');
+                log('updatePeerList: renderPart не выполнен - элемент не найден');
             }
         },
 
@@ -337,28 +342,28 @@ export async function createActions(context) {
          */
         async updateAddressList() {
             if (!libp2p || !context.state) {
-                console.log('❌ updateAddressList: libp2p или context.state не доступны');
+                log('updateAddressList: libp2p или context.state не доступны');
                 return;
             }
 
             const addresses = libp2p.getMultiaddrs().filter(ma => WebRTC.matches(ma)).map(ma => ma.toString());
             context.state.listeningAddresses = addresses;
 
-            console.log('📋 updateAddressList: адресов найдено:', addresses.length);
+            log.trace('updateAddressList: адресов найдено: %d', addresses.length);
 
             const addressesElement = context.shadowRoot.querySelector('#listening-addresses');
-            console.log('🔍 updateAddressList: элемент #listening-addresses найден:', !!addressesElement);
+            log.trace('updateAddressList: элемент #listening-addresses найден: %s', !!addressesElement);
 
             if (addressesElement && context.renderPart) {
-                console.log('🎯 updateAddressList: выполняем renderPart');
+                log.trace('updateAddressList: выполняем renderPart');
                 await context.renderPart({
                     partName: 'renderAddressesList',
                     state: context.state,
                     selector: '#listening-addresses'
                 });
-                console.log('✅ updateAddressList: renderPart завершен');
+                log.trace('updateAddressList: renderPart завершен');
             } else {
-                console.log('⚠️ updateAddressList: renderPart не выполнен - элемент не найден');
+                log('updateAddressList: renderPart не выполнен - элемент не найден');
             }
         },
 
@@ -375,13 +380,13 @@ export async function createActions(context) {
 
                 const ma = multiaddr(multiaddrStr.trim());
 
-                console.log('Подключаемся к:', ma.toString());
+                log('Подключаемся к: %s', ma.toString());
                 await libp2p.dial(ma);
 
-                console.log('Успешно подключены к:', ma.toString());
+                log('Успешно подключены к: %s', ma.toString());
 
             } catch (error) {
-                console.error('Ошибка подключения к пиру:', error);
+                log.error('Ошибка подключения к пиру: %o', error);
                 context.addError({
                     componentName: context.constructor.name,
                     source: 'connectToPeer',
@@ -438,10 +443,10 @@ export async function createActions(context) {
                 }
 
                 await libp2p.services.pubsub.subscribe(topic);
-                console.log(`Подписались на топик: ${topic}`);
+                log('Подписались на топик: %s', topic);
 
             } catch (error) {
-                console.error('Ошибка подписки на топик:', error);
+                log.error('Ошибка подписки на топик: %o', error);
                 throw error;
             }
         },
@@ -460,10 +465,10 @@ export async function createActions(context) {
 
 
                 await libp2p.services.pubsub.publish(topic, fromString(message));
-                console.log(`Отправлено сообщение в топик ${topic}: ${message}`);
+                log('Отправлено сообщение в топик %s: %s', topic, message);
 
             } catch (error) {
-                console.error('Ошибка отправки сообщения:', error);
+                log.error('Ошибка отправки сообщения: %o', error);
                 throw error;
             }
         },
@@ -481,7 +486,7 @@ export async function createActions(context) {
                 return libp2p.services.pubsub.getSubscribers(topic)
                     .map(peerId => peerId.toString());
             } catch (error) {
-                console.error('Ошибка получения списка пиров топика:', error);
+                log.error('Ошибка получения списка пиров топика: %o', error);
                 return [];
             }
         },
@@ -500,15 +505,15 @@ export async function createActions(context) {
                 if (libp2p) {
                     await libp2p.stop();
                     libp2p = null;
-                    console.log('Libp2p узел остановлен');
+                    log('Libp2p узел остановлен');
                 }
             } catch (error) {
-                console.error('Ошибка очистки ресурсов:', error);
+                log.error('Ошибка очистки ресурсов: %o', error);
             }
         },
 
         /**
-         * Перезапускает узел с новыми настройками
+         * Перезапускает узел с новыми настройки
          * @async
          * @param {string} mode - Новый режим работы
          */

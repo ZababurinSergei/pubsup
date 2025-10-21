@@ -2,6 +2,10 @@ import { BaseComponent } from '../../base/base-component.mjs';
 import * as template from './template/index.mjs';
 import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
+import { logger } from '@libp2p/logger';
+
+// Создаем логгер для компонента
+const log = logger('peer-connection');
 
 export class PeerConnection extends BaseComponent {
     constructor() {
@@ -23,12 +27,12 @@ export class PeerConnection extends BaseComponent {
     }
 
     async _componentReady() {
-        console.log('🔧 PeerConnection component ready');
+        log('PeerConnection component ready');
 
         this._controller = await controller(this);
         this._actions = await createActions(this);
 
-        console.log('🔧 Controller and actions created:', {
+        log('Controller and actions created: %o', {
             hasController: !!this._controller,
             hasActions: !!this._actions
         });
@@ -42,7 +46,7 @@ export class PeerConnection extends BaseComponent {
     }
 
     async initializeLibp2p(mode = 'listener') {
-        console.log('🚀 initializeLibp2p called with mode:', mode);
+        log('initializeLibp2p called with mode: %s', mode);
 
         this.state.mode = mode;
         this.state.connected = false;
@@ -55,8 +59,8 @@ export class PeerConnection extends BaseComponent {
             this.state.connected = true;
             this.state.startTime = Date.now(); // Записываем время старта
 
-            console.log('✅ Libp2p initialized successfully');
-            console.log('📋 New state:', {
+            log('Libp2p initialized successfully');
+            log('New state: %o', {
                 mode: this.state.mode,
                 connected: this.state.connected,
                 peerId: this.state.peerId,
@@ -83,7 +87,7 @@ export class PeerConnection extends BaseComponent {
 
             return libp2p;
         } catch (error) {
-            console.error('❌ Libp2p initialization failed:', error);
+            log.error('Libp2p initialization failed: %o', error);
             await this.hideSkeleton();
 
             this.addError({
@@ -190,7 +194,7 @@ export class PeerConnection extends BaseComponent {
     async copyToClipboard(text, successMessage = 'Текст скопирован в буфер обмена', addressItem) {
         try {
             await navigator.clipboard.writeText(text);
-            console.log('✅ Text copied to clipboard:', text);
+            log('Text copied to clipboard: %s', text);
 
             addressItem.classList.add('copied')
 
@@ -200,7 +204,7 @@ export class PeerConnection extends BaseComponent {
 
             return true;
         } catch (error) {
-            console.error('❌ Error copying to clipboard:', error);
+            log.error('Error copying to clipboard: %o', error);
 
             // Fallback для старых браузеров
             try {
@@ -226,7 +230,7 @@ export class PeerConnection extends BaseComponent {
                     return true;
                 }
             } catch (fallbackError) {
-                console.error('❌ Fallback copy also failed:', fallbackError);
+                log.error('Fallback copy also failed: %o', fallbackError);
             }
 
             await this.showModal({
@@ -245,7 +249,7 @@ export class PeerConnection extends BaseComponent {
             await this._actions.connectToPeer(multiaddr);
             await this.updatePeerList();
         } catch (error) {
-            console.error('Ошибка подключения к пиру:', error);
+            log.error('Ошибка подключения к пиру: %o', error);
             throw error;
         }
     }
@@ -256,7 +260,7 @@ export class PeerConnection extends BaseComponent {
             this.state.connectedPeers = await this._actions.getConnectedPeers();
             this._lastPeersCount = this.state.connectedPeers.length;
 
-            console.log('👥 Peer list updated:', {
+            log('Peer list updated: %o', {
                 previous: previousCount,
                 current: this._lastPeersCount,
                 peers: this.state.connectedPeers.map(p => p.id)
@@ -305,14 +309,14 @@ export class PeerConnection extends BaseComponent {
                     data: peersData
                 });
 
-                console.log('✅ Peers data sent to chat-interface:', peersData);
+                log('Peers data sent to chat-interface: %o', peersData);
             } else {
-                console.log('⏳ Chat interface not found, will retry...');
+                log('Chat interface not found, will retry...');
                 // Повторяем попытку через 1 секунду
                 setTimeout(() => this.sendPeersToChatInterface(), 1000);
             }
         } catch (error) {
-            console.error('❌ Error sending peers to chat interface:', error);
+            log.error('Error sending peers to chat interface: %o', error);
         }
     }
 
@@ -336,10 +340,10 @@ export class PeerConnection extends BaseComponent {
                     data: connectionData
                 });
 
-                console.log('✅ Connection status sent to chat-interface:', connectionData);
+                log('Connection status sent to chat-interface: %o', connectionData);
             }
         } catch (error) {
-            console.error('❌ Error sending connection status:', error);
+            log.error('Error sending connection status: %o', error);
         }
     }
 
@@ -349,7 +353,7 @@ export class PeerConnection extends BaseComponent {
     async updatePeersCard() {
         const peersCard = this.shadowRoot.querySelector('.peers-card');
         if (peersCard && this.renderPart) {
-            console.log('🔄 Updating peers card section');
+            log('Updating peers card section');
             await this.renderPart({
                 partName: 'renderPeersList',
                 state: this.state,
@@ -361,7 +365,7 @@ export class PeerConnection extends BaseComponent {
                 this._setupCopyHandlers();
             }, 100);
         } else {
-            console.log('⚠️ Peers card not found, using full render');
+            log('Peers card not found, using full render');
             await this.fullRender(this.state);
         }
     }
@@ -377,7 +381,6 @@ export class PeerConnection extends BaseComponent {
                 if (addressItem) {
                     const address = addressItem.getAttribute('data-address');
                     if (address) {
-                        debugger
                         await this.copyToClipboard(address, 'Адрес скопирован в буфер обмена', addressItem);
                     }
                 }
@@ -393,8 +396,6 @@ export class PeerConnection extends BaseComponent {
             const handler = async (e) => {
                 const peerId = e.target.getAttribute('data-peer-id');
                 if (peerId) {
-                    console.log('', e.currentTarget)
-                    debugger
                     await this.copyToClipboard(peerId, 'Peer ID скопирован в буфер обмена', e.target);
                 }
             };
@@ -404,23 +405,23 @@ export class PeerConnection extends BaseComponent {
     }
 
     async switchMode(mode) {
-        console.log('🔧 switchMode called with:', mode);
-        console.log('🔧 Current mode:', this.state.mode);
+        log('switchMode called with: %s', mode);
+        log('Current mode: %s', this.state.mode);
 
         if (this.state.mode !== mode) {
-            console.log('🔧 Mode change detected, proceeding...');
+            log('Mode change detected, proceeding...');
 
             if (this._actions && this._actions.cleanup) {
-                console.log('🔧 Cleaning up previous connections...');
+                log('Cleaning up previous connections...');
                 await this._actions.cleanup();
             }
 
-            console.log('🔧 Initializing Libp2p with new mode...');
+            log('Initializing Libp2p with new mode...');
             await this.initializeLibp2p(mode);
 
-            console.log('🔧 Mode switch completed');
+            log('Mode switch completed');
         } else {
-            console.log('🔧 Mode is already', mode);
+            log('Mode is already %s', mode);
         }
     }
 
@@ -429,14 +430,14 @@ export class PeerConnection extends BaseComponent {
     }
 
     async manualUpdate() {
-        console.log('🔄 Ручное обновление PeerConnection');
+        log('Ручное обновление PeerConnection');
         if (this._actions && this._actions.manualUpdate) {
             await this._actions.manualUpdate();
         }
     }
 
     async forceUpdate() {
-        console.log('💥 Принудительное обновление PeerConnection');
+        log('Принудительное обновление PeerConnection');
         if (this._actions && this._actions.forceUpdate) {
             await this._actions.forceUpdate();
         }

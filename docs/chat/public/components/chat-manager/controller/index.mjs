@@ -3,6 +3,10 @@
  * @param {HTMLElement} context - Ссылка на экземпляр компонента
  * @returns {Object} Объект с методами init и destroy
  */
+import { logger } from '@libp2p/logger';
+
+const log = logger('chat-manager:controller');
+
 export const controller = async (context) => {
     let eventListeners = [];
 
@@ -12,7 +16,7 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
-            console.log('🔧 ChatManager controller initializing...');
+            log('ChatManager controller initializing...');
 
             // Обработчики для переключения режимов
             const listenerBtn = context.shadowRoot.querySelector('#listener-mode');
@@ -114,7 +118,7 @@ export const controller = async (context) => {
             if (discoverGroupsBtn) {
                 const discoverHandler = async () => {
                     try {
-                        console.log('🔍 ChatManager: поиск групп...');
+                        log('ChatManager: поиск групп...');
 
                         // Получаем GroupManager и запускаем поиск
                         const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
@@ -132,7 +136,7 @@ export const controller = async (context) => {
                             throw new Error('GroupManager не доступен');
                         }
                     } catch (error) {
-                        console.error('❌ Ошибка поиска групп в ChatManager:', error);
+                        log.error('Ошибка поиска групп в ChatManager: %o', error);
                         await context.showModal({
                             title: 'Ошибка',
                             content: `<p>Не удалось запустить поиск групп: ${error.message}</p>`,
@@ -164,9 +168,9 @@ export const controller = async (context) => {
                             if (group) {
                                 try {
                                     await context.joinGroup(group);
-                                    console.log('✅ Switched to group:', group.name);
+                                    log('Switched to group: %s', group.name);
                                 } catch (error) {
-                                    console.error('❌ Error switching group:', error);
+                                    log.error('Error switching group: %o', error);
                                     context.addError({
                                         componentName: context.constructor.name,
                                         source: 'group-switch',
@@ -200,9 +204,9 @@ export const controller = async (context) => {
                             if (group) {
                                 try {
                                     await context.joinGroup(group);
-                                    console.log('✅ Successfully joined group:', group.name);
+                                    log('Successfully joined group: %s', group.name);
                                 } catch (error) {
-                                    console.error('❌ Error joining group:', error);
+                                    log.error('Error joining group: %o', error);
                                     await context.showModal({
                                         title: 'Ошибка',
                                         content: `<p>Не удалось присоединиться к группе: ${error.message}</p>`,
@@ -225,9 +229,9 @@ export const controller = async (context) => {
                         if (groupId) {
                             try {
                                 await context.leaveGroup(groupId);
-                                console.log('✅ Successfully left group:', groupId);
+                                log('Successfully left group: %s', groupId);
                             } catch (error) {
-                                console.error('❌ Error leaving group:', error);
+                                log.error('Error leaving group: %o', error);
                                 await context.showModal({
                                     title: 'Ошибка',
                                     content: `<p>Не удалось покинуть группу: ${error.message}</p>`,
@@ -273,7 +277,7 @@ export const controller = async (context) => {
                 }, 100);
             }
 
-            console.log('[ChatManager] Контроллер инициализирован');
+            log('ChatManager controller initialized');
         },
 
         /**
@@ -281,6 +285,8 @@ export const controller = async (context) => {
          * @async
          */
         async destroy() {
+            log('ChatManager controller destroying...');
+
             // Очистка всех обработчиков событий
             eventListeners.forEach(({ element, handler }) => {
                 element.removeEventListener('click', handler);
@@ -294,7 +300,9 @@ export const controller = async (context) => {
                 context._groupObserver = null;
             }
 
-            console.log('[ChatManager] Контроллер уничтожен');
+            log('Removed %d event listeners', eventListeners.length);
+
+            log('ChatManager controller destroyed');
         }
     };
 };

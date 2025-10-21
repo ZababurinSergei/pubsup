@@ -2,11 +2,13 @@ import { BaseComponent } from '../../base/base-component.mjs';
 import * as template from './template/index.mjs';
 import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
+import { logger } from '@libp2p/logger';
 
 export class ChatInterface extends BaseComponent {
     constructor() {
         super();
         this._templateMethods = template;
+        this._log = logger('chat-interface');
         this.state = {
             messages: [],
             currentMessage: '',
@@ -25,6 +27,7 @@ export class ChatInterface extends BaseComponent {
         this._actions = await createActions(this);
         await this.fullRender(this.state)
         await this._controller.init();
+        this._log('компонент готов');
         return true;
     }
 
@@ -51,11 +54,14 @@ export class ChatInterface extends BaseComponent {
         if (messagesContainer) {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+
+        this._log('сообщение добавлено: %s', message.text?.substring(0, 50));
     }
 
     async setCurrentGroup(group) {
         this.state.currentGroup = group;
         this.state.messages = [];
+        this._log('установлена текущая группа: %s', group?.name);
         await this.fullRender(this.state);
     }
 
@@ -66,6 +72,7 @@ export class ChatInterface extends BaseComponent {
             state: this.state,
             selector: '#connection-status'
         });
+        this._log('статус подключения обновлен: %s', connected ? 'подключено' : 'не подключено');
     }
 
     async clearMessages() {
@@ -75,11 +82,12 @@ export class ChatInterface extends BaseComponent {
             state: this.state,
             selector: '#messages-list'
         });
+        this._log('история сообщений очищена');
     }
 
     async postMessage(event) {
         try {
-            console.log('📨 ChatInterface received message:', event.type, event.data);
+            this._log('📨 получено сообщение: %s %o', event.type, event.data);
 
             switch (event.type) {
                 case 'PEERS_UPDATE':
@@ -95,10 +103,10 @@ export class ChatInterface extends BaseComponent {
                     break;
 
                 default:
-                    console.warn(`[ChatInterface] Неизвестный тип сообщения: ${event.type}`);
+                    this._log.warn('неизвестный тип сообщения: %s', event.type);
             }
         } catch (error) {
-            console.error('❌ Error processing message in ChatInterface:', error);
+            this._log.error('❌ ошибка обработки сообщения: %o', error);
             this.addError({
                 componentName: this.constructor.name,
                 source: 'postMessage',
@@ -114,7 +122,7 @@ export class ChatInterface extends BaseComponent {
      */
     async handlePeersUpdate(data) {
         try {
-            console.log('👥 Handling peers update:', data);
+            this._log('👥 обработка обновления пиров: %o', data);
 
             // Обновляем состояние с информацией о пирах
             this.state.connectedPeers = data.peers || [];
@@ -126,10 +134,10 @@ export class ChatInterface extends BaseComponent {
             // Обновляем список участников если открыта панель
             await this.updateMembersList();
 
-            console.log('✅ Peers data processed in chat interface');
+            this._log('✅ данные пиров обработаны');
 
         } catch (error) {
-            console.error('❌ Error handling peers update:', error);
+            this._log.error('❌ ошибка обработки обновления пиров: %o', error);
         }
     }
 
@@ -139,7 +147,7 @@ export class ChatInterface extends BaseComponent {
      */
     async handleConnectionStatusUpdate(data) {
         try {
-            console.log('🔗 Handling connection status update:', data);
+            this._log('🔗 обработка обновления статуса соединения: %o', data);
 
             // Обновляем состояние соединения
             this.state.connected = data.connected;
@@ -150,10 +158,10 @@ export class ChatInterface extends BaseComponent {
             // Обновляем отображение статуса
             await this.updateConnectionStatusDisplay();
 
-            console.log('✅ Connection status updated in chat interface');
+            this._log('✅ статус соединения обновлен');
 
         } catch (error) {
-            console.error('❌ Error handling connection status:', error);
+            this._log.error('❌ ошибка обработки статуса соединения: %o', error);
         }
     }
 
@@ -169,9 +177,10 @@ export class ChatInterface extends BaseComponent {
                     state: this.state,
                     selector: '#connection-status'
                 });
+                this._log.trace('отображение статуса подключения обновлено');
             }
         } catch (error) {
-            console.error('❌ Error updating connection status display:', error);
+            this._log.error('❌ ошибка обновления отображения статуса: %o', error);
         }
     }
 
@@ -187,9 +196,10 @@ export class ChatInterface extends BaseComponent {
                     state: this.state,
                     selector: '.members-list'
                 });
+                this._log.trace('список участников обновлен');
             }
         } catch (error) {
-            console.error('❌ Error updating members list:', error);
+            this._log.error('❌ ошибка обновления списка участников: %o', error);
         }
     }
 
@@ -198,6 +208,7 @@ export class ChatInterface extends BaseComponent {
             await this._controller.destroy();
         }
         this._templateMethods = null;
+        this._log('компонент отключен');
     }
 }
 

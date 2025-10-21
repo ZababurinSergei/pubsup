@@ -1,9 +1,13 @@
+import { logger } from '@libp2p/logger';
+
 /**
  * Фабричная функция для создания действий компонента ChatInterface
  * @param {Object} context - Контекст компонента
  * @returns {Promise<Object>} Объект с методами действий
  */
 export async function createActions(context) {
+    const log = logger('chat-interface:actions');
+
     return {
         /**
          * Отправка сообщения в чат
@@ -50,8 +54,11 @@ export async function createActions(context) {
  * @this {HTMLElement} Контекст компонента
  */
 async function sendMessage(message, topic) {
+    const log = logger('chat-interface:actions:sendMessage');
+
     try {
         if (!message.trim()) {
+            log.warn('попытка отправки пустого сообщения');
             await this.showModal({
                 title: 'Ошибка',
                 content: '<p>Сообщение не может быть пустым</p>',
@@ -61,6 +68,7 @@ async function sendMessage(message, topic) {
         }
 
         if (!topic) {
+            log.warn('не выбрана группа для отправки');
             await this.showModal({
                 title: 'Ошибка',
                 content: '<p>Не выбрана группа для отправки</p>',
@@ -72,6 +80,7 @@ async function sendMessage(message, topic) {
         // Получаем менеджер чата для отправки сообщения
         const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
         if (chatManager && chatManager._actions) {
+            log('отправка сообщения в группу: %s', topic);
             await chatManager._actions.sendMessage(topic, message);
 
             // Очищаем поле ввода после отправки
@@ -79,11 +88,14 @@ async function sendMessage(message, topic) {
             if (messageInput) {
                 messageInput.value = '';
             }
+
+            log('сообщение отправлено успешно');
         } else {
+            log.error('чат менеджер не доступен');
             throw new Error('Чат менеджер не доступен');
         }
     } catch (error) {
-        console.error('Ошибка отправки сообщения:', error);
+        log.error('ошибка отправки сообщения: %o', error);
         this.addError({
             componentName: this.constructor.name,
             source: 'sendMessage',
@@ -111,9 +123,12 @@ async function sendMessage(message, topic) {
  * @this {HTMLElement} Контекст компонента
  */
 async function handleIncomingMessage(messageData) {
+    const log = logger('chat-interface:actions:handleIncomingMessage');
+
     try {
         // Проверяем, относится ли сообщение к текущей группе
         if (this.state.currentGroup && messageData.topic === this.state.currentGroup.topic) {
+            log('обработка входящего сообщения для текущей группы: %s', messageData.topic);
             await this.addMessage({
                 text: messageData.text,
                 from: messageData.from,
@@ -128,10 +143,10 @@ async function handleIncomingMessage(messageData) {
             }
         } else if (!this.state.currentGroup && messageData.type === 'received') {
             // Сообщение из группы, к которой не подключены в данный момент
-            console.log(`Сообщение из группы ${messageData.topic}: ${messageData.text}`);
+            log('сообщение из неактивной группы %s: %s', messageData.topic, messageData.text);
         }
     } catch (error) {
-        console.error('Ошибка обработки входящего сообщения:', error);
+        log.error('ошибка обработки входящего сообщения: %o', error);
         this.addError({
             componentName: this.constructor.name,
             source: 'handleIncomingMessage',
@@ -147,7 +162,10 @@ async function handleIncomingMessage(messageData) {
  * @this {HTMLElement} Контекст компонента
  */
 async function clearChatHistory() {
+    const log = logger('chat-interface:actions:clearChatHistory');
+
     try {
+        log('запрос на очистку истории сообщений');
         await this.showModal({
             title: 'Подтверждение',
             content: '<p>Вы уверены, что хотите очистить историю сообщений?</p>',
@@ -155,20 +173,20 @@ async function clearChatHistory() {
                 {
                     text: 'Отмена',
                     type: 'secondary',
-                    action: () => console.log('Очистка отменена')
+                    action: () => log('очистка отменена пользователем')
                 },
                 {
                     text: 'Очистить',
                     type: 'primary',
                     action: async () => {
                         await this.clearMessages();
-                        console.log('История сообщений очищена');
+                        log('история сообщений очищена');
                     }
                 }
             ]
         });
     } catch (error) {
-        console.error('Ошибка очистки истории:', error);
+        log.error('ошибка очистки истории: %o', error);
         this.addError({
             componentName: this.constructor.name,
             source: 'clearChatHistory',
@@ -189,10 +207,15 @@ async function clearChatHistory() {
  * @this {HTMLElement} Контекст компонента
  */
 async function setActiveGroup(group) {
+    const log = logger('chat-interface:actions:setActiveGroup');
+
     try {
         if (!group || !group.topic) {
+            log.error('неверные данные группы: %o', group);
             throw new Error('Неверные данные группы');
         }
+
+        log('установка активной группы: %s (%s)', group.name, group.topic);
 
         // Показываем индикатор загрузки
         await this.showSkeleton({
@@ -209,11 +232,10 @@ async function setActiveGroup(group) {
         // Скрываем индикатор загрузки
         await this.hideSkeleton();
 
-        // Логируем переключение группы
-        console.log(`Переключились на группу: ${group.name} (${group.topic})`);
+        log('переключение на группу завершено: %s (%s)', group.name, group.topic);
 
     } catch (error) {
-        console.error('Ошибка установки активной группы:', error);
+        log.error('ошибка установки активной группы: %o', error);
         await this.hideSkeleton();
 
         this.addError({
@@ -238,9 +260,14 @@ async function setActiveGroup(group) {
  * @this {HTMLElement} Контекст компонента
  */
 async function searchMessages(query) {
+    const log = logger('chat-interface:actions:searchMessages');
+
     try {
+        log('поиск сообщений: %s', query);
+
         if (!query.trim()) {
             // Если запрос пустой, показываем все сообщения
+            log('пустой запрос - показ всех сообщений');
             await this.renderPart({
                 partName: 'renderMessages',
                 state: this.state,
@@ -273,6 +300,8 @@ async function searchMessages(query) {
 
         // Показываем количество найденных результатов
         const resultsCount = filteredMessages.length;
+        log('найдено сообщений: %d', resultsCount);
+
         await this.showModal({
             title: 'Результаты поиска',
             content: `<p>Найдено сообщений: ${resultsCount}</p>`,
@@ -281,7 +310,7 @@ async function searchMessages(query) {
         });
 
     } catch (error) {
-        console.error('Ошибка поиска сообщений:', error);
+        log.error('ошибка поиска сообщений: %o', error);
         this.addError({
             componentName: this.constructor.name,
             source: 'searchMessages',
@@ -297,12 +326,16 @@ async function searchMessages(query) {
  * @this {HTMLElement} Контекст компонента
  */
 function showNotification(message) {
+    const log = logger('chat-interface:actions:showNotification');
+
     if ('Notification' in window && Notification.permission === 'granted') {
+        log('показ уведомления: %s', message);
         new Notification('Чат', {
             body: message,
             icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
         });
     } else if ('Notification' in window && Notification.permission !== 'denied') {
+        log('запрос разрешения на уведомления');
         Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
                 new Notification('Чат', {

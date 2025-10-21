@@ -5,6 +5,10 @@ import { createActions } from './actions/index.mjs';
 import { lpStream } from '@libp2p/utils';
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string';
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string';
+import { logger } from '@libp2p/logger';
+
+// Создаем логгер для компонента
+const log = logger('chat-manager');
 
 export class ChatManager extends BaseComponent {
     constructor() {
@@ -26,6 +30,8 @@ export class ChatManager extends BaseComponent {
     }
 
     async _componentReady() {
+        log('ChatManager component ready');
+
         this._controller = await controller(this);
         this._actions = await createActions(this);
         await this._controller.init();
@@ -42,7 +48,7 @@ export class ChatManager extends BaseComponent {
             const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
 
             if (!peerConnection) {
-                console.warn('❌ PeerConnection component not found');
+                log.warn('PeerConnection component not found');
                 return;
             }
 
@@ -57,7 +63,7 @@ export class ChatManager extends BaseComponent {
                     this.state.peerId = this.node.peerId.toString();
                     this.state.mode = peerConnection.state.mode;
 
-                    console.log('✅ Node obtained from PeerConnection:', {
+                    log('Node obtained from PeerConnection: %o', {
                         peerId: this.state.peerId,
                         mode: this.state.mode,
                         connected: this.state.connected
@@ -67,7 +73,7 @@ export class ChatManager extends BaseComponent {
                     return;
                 }
 
-                console.log(`⏳ Waiting for PeerConnection node... (attempt ${attempts + 1}/${maxAttempts})`);
+                log('Waiting for PeerConnection node... (attempt %d/%d)', attempts + 1, maxAttempts);
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 attempts++;
             }
@@ -75,7 +81,7 @@ export class ChatManager extends BaseComponent {
             throw new Error('PeerConnection node not ready after maximum attempts');
 
         } catch (error) {
-            console.error('❌ Failed to initialize from PeerConnection:', error);
+            log.error('Failed to initialize from PeerConnection: %o', error);
             this.addError({
                 componentName: this.constructor.name,
                 source: 'initializeFromPeerConnection',
@@ -144,6 +150,8 @@ export class ChatManager extends BaseComponent {
             await groupManager.createGroup(groupName);
         }
 
+        log('Group created: %s (%s)', groupName, group.topic);
+
         return group;
     }
 
@@ -176,6 +184,8 @@ export class ChatManager extends BaseComponent {
         if (chatInterface) {
             await chatInterface.setCurrentGroup(this.state.currentGroup);
         }
+
+        log('Joined group: %s (%s)', groupName || topic, topic);
     }
 
     /**
@@ -183,7 +193,7 @@ export class ChatManager extends BaseComponent {
      */
     async setupGroupStream(topic) {
         if (!this.node) {
-            console.warn('❌ Node not available for stream setup');
+            log.warn('Node not available for stream setup');
             return;
         }
 
@@ -208,11 +218,11 @@ export class ChatManager extends BaseComponent {
                 // Запускаем чтение из стрима
                 this.streamToChat(lp, peer.toString(), topic);
 
-                console.log(`✅ Stream setup for peer ${peer.toString()} in topic ${topic}`);
+                log('Stream setup for peer %s in topic %s', peer.toString(), topic);
             }
 
         } catch (error) {
-            console.error('❌ Error setting up group stream:', error);
+            log.error('Error setting up group stream: %o', error);
         }
     }
 
@@ -225,7 +235,7 @@ export class ChatManager extends BaseComponent {
                 const message = await lp.read();
                 const text = uint8ArrayToString(message.subarray());
 
-                console.log(`📨 Message from ${peerId} in ${topic}: ${text}`);
+                log('Message from %s in %s: %s', peerId, topic, text);
 
                 // Добавляем сообщение в чат
                 await this.addMessage({
@@ -238,7 +248,7 @@ export class ChatManager extends BaseComponent {
 
             }
         } catch (error) {
-            console.error(`❌ Error reading from stream for peer ${peerId}:`, error);
+            log.error('Error reading from stream for peer %s: %o', peerId, error);
             // Удаляем стрим из активных
             this.activeStreams.delete(`${topic}-${peerId}`);
         }
@@ -249,7 +259,7 @@ export class ChatManager extends BaseComponent {
      */
     async sendMessageViaStream(topic, messageText) {
         if (!this.node || !this.state.currentGroup) {
-            console.warn('❌ Node or current group not available');
+            log.warn('Node or current group not available');
             return false;
         }
 
@@ -280,7 +290,7 @@ export class ChatManager extends BaseComponent {
                 await streamData.lp.write(uint8ArrayFromString(messageText));
                 sent = true;
 
-                console.log(`✅ Message sent via stream to ${peer.toString()}`);
+                log('Message sent via stream to %s', peer.toString());
             }
 
             // Также отправляем через PubSub для широковещания
@@ -291,7 +301,7 @@ export class ChatManager extends BaseComponent {
             return sent;
 
         } catch (error) {
-            console.error('❌ Error sending message via stream:', error);
+            log.error('Error sending message via stream: %o', error);
             return false;
         }
     }
@@ -368,7 +378,7 @@ export class ChatManager extends BaseComponent {
 
     async postMessage(event) {
         try {
-            console.log('📨 ChatManager received message:', event.type, event.data);
+            log('ChatManager received message: %s %o', event.type, event.data);
 
             switch (event.type) {
                 case 'SWITCH_MODE':
@@ -401,14 +411,14 @@ export class ChatManager extends BaseComponent {
                     break;
                 case 'GROUP_CREATED':
                     // Обработка создания группы из group-manager
-                    console.log('✅ GROUP_CREATED received in ChatManager:', event.data);
+                    log('GROUP_CREATED received in ChatManager: %o', event.data);
                     await this.handleGroupCreated(event.data);
                     break;
                 default:
-                    console.warn(`[ChatManager] Неизвестный тип сообщения: ${event.type}`);
+                    log.warn('Неизвестный тип сообщения: %s', event.type);
             }
         } catch (error) {
-            console.error('❌ Error processing message in ChatManager:', error);
+            log.error('Error processing message in ChatManager: %o', error);
             this.addError({
                 componentName: this.constructor.name,
                 source: 'postMessage',
@@ -424,7 +434,7 @@ export class ChatManager extends BaseComponent {
      */
     async handleGroupCreated(groupData) {
         try {
-            console.log('🔧 Handling GROUP_CREATED in ChatManager:', groupData);
+            log('Handling GROUP_CREATED in ChatManager: %o', groupData);
 
             // Добавляем группу в список групп
             if (!this.state.groups.find(g => g.id === groupData.id)) {
@@ -444,10 +454,10 @@ export class ChatManager extends BaseComponent {
                 selector: '#groups-container'
             });
 
-            console.log('✅ Successfully handled GROUP_CREATED and joined the group');
+            log('Successfully handled GROUP_CREATED and joined the group');
 
         } catch (error) {
-            console.error('❌ Error handling GROUP_CREATED:', error);
+            log.error('Error handling GROUP_CREATED: %o', error);
             this.addError({
                 componentName: this.constructor.name,
                 source: 'handleGroupCreated',
@@ -469,7 +479,7 @@ export class ChatManager extends BaseComponent {
             try {
                 await streamData.stream.close();
             } catch (error) {
-                console.warn(`Error closing stream ${key}:`, error);
+                log.warn('Error closing stream %s: %o', key, error);
             }
         }
         this.activeStreams.clear();

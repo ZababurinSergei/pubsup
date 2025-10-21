@@ -29,202 +29,6 @@ var __toESM = (mod2, isNodeMode, target) => (target = mod2 != null ? __create(__
   mod2
 ));
 
-// node_modules/netmask/lib/netmask.js
-var require_netmask = __commonJS({
-  "node_modules/netmask/lib/netmask.js"(exports) {
-    (function() {
-      var Netmask2, atob, chr, chr0, chrA, chra, ip2long, long2ip;
-      long2ip = /* @__PURE__ */ __name(function(long) {
-        var a2, b, c2, d2;
-        a2 = (long & 255 << 24) >>> 24;
-        b = (long & 255 << 16) >>> 16;
-        c2 = (long & 255 << 8) >>> 8;
-        d2 = long & 255;
-        return [a2, b, c2, d2].join(".");
-      }, "long2ip");
-      ip2long = /* @__PURE__ */ __name(function(ip) {
-        var b, c2, i2, j, n2, ref;
-        b = [];
-        for (i2 = j = 0; j <= 3; i2 = ++j) {
-          if (ip.length === 0) {
-            break;
-          }
-          if (i2 > 0) {
-            if (ip[0] !== ".") {
-              throw new Error("Invalid IP");
-            }
-            ip = ip.substring(1);
-          }
-          ref = atob(ip), n2 = ref[0], c2 = ref[1];
-          ip = ip.substring(c2);
-          b.push(n2);
-        }
-        if (ip.length !== 0) {
-          throw new Error("Invalid IP");
-        }
-        switch (b.length) {
-          case 1:
-            if (b[0] > 4294967295) {
-              throw new Error("Invalid IP");
-            }
-            return b[0] >>> 0;
-          case 2:
-            if (b[0] > 255 || b[1] > 16777215) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1]) >>> 0;
-          case 3:
-            if (b[0] > 255 || b[1] > 255 || b[2] > 65535) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1] << 16 | b[2]) >>> 0;
-          case 4:
-            if (b[0] > 255 || b[1] > 255 || b[2] > 255 || b[3] > 255) {
-              throw new Error("Invalid IP");
-            }
-            return (b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]) >>> 0;
-          default:
-            throw new Error("Invalid IP");
-        }
-      }, "ip2long");
-      chr = /* @__PURE__ */ __name(function(b) {
-        return b.charCodeAt(0);
-      }, "chr");
-      chr0 = chr("0");
-      chra = chr("a");
-      chrA = chr("A");
-      atob = /* @__PURE__ */ __name(function(s2) {
-        var base4, dmax, i2, n2, start2;
-        n2 = 0;
-        base4 = 10;
-        dmax = "9";
-        i2 = 0;
-        if (s2.length > 1 && s2[i2] === "0") {
-          if (s2[i2 + 1] === "x" || s2[i2 + 1] === "X") {
-            i2 += 2;
-            base4 = 16;
-          } else if ("0" <= s2[i2 + 1] && s2[i2 + 1] <= "9") {
-            i2++;
-            base4 = 8;
-            dmax = "7";
-          }
-        }
-        start2 = i2;
-        while (i2 < s2.length) {
-          if ("0" <= s2[i2] && s2[i2] <= dmax) {
-            n2 = n2 * base4 + (chr(s2[i2]) - chr0) >>> 0;
-          } else if (base4 === 16) {
-            if ("a" <= s2[i2] && s2[i2] <= "f") {
-              n2 = n2 * base4 + (10 + chr(s2[i2]) - chra) >>> 0;
-            } else if ("A" <= s2[i2] && s2[i2] <= "F") {
-              n2 = n2 * base4 + (10 + chr(s2[i2]) - chrA) >>> 0;
-            } else {
-              break;
-            }
-          } else {
-            break;
-          }
-          if (n2 > 4294967295) {
-            throw new Error("too large");
-          }
-          i2++;
-        }
-        if (i2 === start2) {
-          throw new Error("empty octet");
-        }
-        return [n2, i2];
-      }, "atob");
-      Netmask2 = (function() {
-        function Netmask3(net, mask) {
-          var error, i2, j, ref;
-          if (typeof net !== "string") {
-            throw new Error("Missing `net' parameter");
-          }
-          if (!mask) {
-            ref = net.split("/", 2), net = ref[0], mask = ref[1];
-          }
-          if (!mask) {
-            mask = 32;
-          }
-          if (typeof mask === "string" && mask.indexOf(".") > -1) {
-            try {
-              this.maskLong = ip2long(mask);
-            } catch (error1) {
-              error = error1;
-              throw new Error("Invalid mask: " + mask);
-            }
-            for (i2 = j = 32; j >= 0; i2 = --j) {
-              if (this.maskLong === 4294967295 << 32 - i2 >>> 0) {
-                this.bitmask = i2;
-                break;
-              }
-            }
-          } else if (mask || mask === 0) {
-            this.bitmask = parseInt(mask, 10);
-            this.maskLong = 0;
-            if (this.bitmask > 0) {
-              this.maskLong = 4294967295 << 32 - this.bitmask >>> 0;
-            }
-          } else {
-            throw new Error("Invalid mask: empty");
-          }
-          try {
-            this.netLong = (ip2long(net) & this.maskLong) >>> 0;
-          } catch (error1) {
-            error = error1;
-            throw new Error("Invalid net address: " + net);
-          }
-          if (!(this.bitmask <= 32)) {
-            throw new Error("Invalid mask for ip4: " + mask);
-          }
-          this.size = Math.pow(2, 32 - this.bitmask);
-          this.base = long2ip(this.netLong);
-          this.mask = long2ip(this.maskLong);
-          this.hostmask = long2ip(~this.maskLong);
-          this.first = this.bitmask <= 30 ? long2ip(this.netLong + 1) : this.base;
-          this.last = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 2) : long2ip(this.netLong + this.size - 1);
-          this.broadcast = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 1) : void 0;
-        }
-        __name(Netmask3, "Netmask");
-        Netmask3.prototype.contains = function(ip) {
-          if (typeof ip === "string" && (ip.indexOf("/") > 0 || ip.split(".").length !== 4)) {
-            ip = new Netmask3(ip);
-          }
-          if (ip instanceof Netmask3) {
-            return this.contains(ip.base) && this.contains(ip.broadcast || ip.last);
-          } else {
-            return (ip2long(ip) & this.maskLong) >>> 0 === (this.netLong & this.maskLong) >>> 0;
-          }
-        };
-        Netmask3.prototype.next = function(count) {
-          if (count == null) {
-            count = 1;
-          }
-          return new Netmask3(long2ip(this.netLong + this.size * count), this.mask);
-        };
-        Netmask3.prototype.forEach = function(fn) {
-          var index, lastLong, long;
-          long = ip2long(this.first);
-          lastLong = ip2long(this.last);
-          index = 0;
-          while (long <= lastLong) {
-            fn(long2ip(long), long, index);
-            index++;
-            long++;
-          }
-        };
-        Netmask3.prototype.toString = function() {
-          return this.base + "/" + this.bitmask;
-        };
-        return Netmask3;
-      })();
-      exports.ip2long = ip2long;
-      exports.long2ip = long2ip;
-      exports.Netmask = Netmask2;
-    }).call(exports);
-  }
-});
-
 // node_modules/ms/index.js
 var require_ms = __commonJS({
   "node_modules/ms/index.js"(exports, module) {
@@ -705,6 +509,202 @@ var require_browser = __commonJS({
         return "[UnexpectedJSONParseError]: " + error.message;
       }
     };
+  }
+});
+
+// node_modules/netmask/lib/netmask.js
+var require_netmask = __commonJS({
+  "node_modules/netmask/lib/netmask.js"(exports) {
+    (function() {
+      var Netmask2, atob, chr, chr0, chrA, chra, ip2long, long2ip;
+      long2ip = /* @__PURE__ */ __name(function(long) {
+        var a2, b, c2, d2;
+        a2 = (long & 255 << 24) >>> 24;
+        b = (long & 255 << 16) >>> 16;
+        c2 = (long & 255 << 8) >>> 8;
+        d2 = long & 255;
+        return [a2, b, c2, d2].join(".");
+      }, "long2ip");
+      ip2long = /* @__PURE__ */ __name(function(ip) {
+        var b, c2, i2, j, n2, ref;
+        b = [];
+        for (i2 = j = 0; j <= 3; i2 = ++j) {
+          if (ip.length === 0) {
+            break;
+          }
+          if (i2 > 0) {
+            if (ip[0] !== ".") {
+              throw new Error("Invalid IP");
+            }
+            ip = ip.substring(1);
+          }
+          ref = atob(ip), n2 = ref[0], c2 = ref[1];
+          ip = ip.substring(c2);
+          b.push(n2);
+        }
+        if (ip.length !== 0) {
+          throw new Error("Invalid IP");
+        }
+        switch (b.length) {
+          case 1:
+            if (b[0] > 4294967295) {
+              throw new Error("Invalid IP");
+            }
+            return b[0] >>> 0;
+          case 2:
+            if (b[0] > 255 || b[1] > 16777215) {
+              throw new Error("Invalid IP");
+            }
+            return (b[0] << 24 | b[1]) >>> 0;
+          case 3:
+            if (b[0] > 255 || b[1] > 255 || b[2] > 65535) {
+              throw new Error("Invalid IP");
+            }
+            return (b[0] << 24 | b[1] << 16 | b[2]) >>> 0;
+          case 4:
+            if (b[0] > 255 || b[1] > 255 || b[2] > 255 || b[3] > 255) {
+              throw new Error("Invalid IP");
+            }
+            return (b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]) >>> 0;
+          default:
+            throw new Error("Invalid IP");
+        }
+      }, "ip2long");
+      chr = /* @__PURE__ */ __name(function(b) {
+        return b.charCodeAt(0);
+      }, "chr");
+      chr0 = chr("0");
+      chra = chr("a");
+      chrA = chr("A");
+      atob = /* @__PURE__ */ __name(function(s2) {
+        var base3, dmax, i2, n2, start2;
+        n2 = 0;
+        base3 = 10;
+        dmax = "9";
+        i2 = 0;
+        if (s2.length > 1 && s2[i2] === "0") {
+          if (s2[i2 + 1] === "x" || s2[i2 + 1] === "X") {
+            i2 += 2;
+            base3 = 16;
+          } else if ("0" <= s2[i2 + 1] && s2[i2 + 1] <= "9") {
+            i2++;
+            base3 = 8;
+            dmax = "7";
+          }
+        }
+        start2 = i2;
+        while (i2 < s2.length) {
+          if ("0" <= s2[i2] && s2[i2] <= dmax) {
+            n2 = n2 * base3 + (chr(s2[i2]) - chr0) >>> 0;
+          } else if (base3 === 16) {
+            if ("a" <= s2[i2] && s2[i2] <= "f") {
+              n2 = n2 * base3 + (10 + chr(s2[i2]) - chra) >>> 0;
+            } else if ("A" <= s2[i2] && s2[i2] <= "F") {
+              n2 = n2 * base3 + (10 + chr(s2[i2]) - chrA) >>> 0;
+            } else {
+              break;
+            }
+          } else {
+            break;
+          }
+          if (n2 > 4294967295) {
+            throw new Error("too large");
+          }
+          i2++;
+        }
+        if (i2 === start2) {
+          throw new Error("empty octet");
+        }
+        return [n2, i2];
+      }, "atob");
+      Netmask2 = (function() {
+        function Netmask3(net, mask) {
+          var error, i2, j, ref;
+          if (typeof net !== "string") {
+            throw new Error("Missing `net' parameter");
+          }
+          if (!mask) {
+            ref = net.split("/", 2), net = ref[0], mask = ref[1];
+          }
+          if (!mask) {
+            mask = 32;
+          }
+          if (typeof mask === "string" && mask.indexOf(".") > -1) {
+            try {
+              this.maskLong = ip2long(mask);
+            } catch (error1) {
+              error = error1;
+              throw new Error("Invalid mask: " + mask);
+            }
+            for (i2 = j = 32; j >= 0; i2 = --j) {
+              if (this.maskLong === 4294967295 << 32 - i2 >>> 0) {
+                this.bitmask = i2;
+                break;
+              }
+            }
+          } else if (mask || mask === 0) {
+            this.bitmask = parseInt(mask, 10);
+            this.maskLong = 0;
+            if (this.bitmask > 0) {
+              this.maskLong = 4294967295 << 32 - this.bitmask >>> 0;
+            }
+          } else {
+            throw new Error("Invalid mask: empty");
+          }
+          try {
+            this.netLong = (ip2long(net) & this.maskLong) >>> 0;
+          } catch (error1) {
+            error = error1;
+            throw new Error("Invalid net address: " + net);
+          }
+          if (!(this.bitmask <= 32)) {
+            throw new Error("Invalid mask for ip4: " + mask);
+          }
+          this.size = Math.pow(2, 32 - this.bitmask);
+          this.base = long2ip(this.netLong);
+          this.mask = long2ip(this.maskLong);
+          this.hostmask = long2ip(~this.maskLong);
+          this.first = this.bitmask <= 30 ? long2ip(this.netLong + 1) : this.base;
+          this.last = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 2) : long2ip(this.netLong + this.size - 1);
+          this.broadcast = this.bitmask <= 30 ? long2ip(this.netLong + this.size - 1) : void 0;
+        }
+        __name(Netmask3, "Netmask");
+        Netmask3.prototype.contains = function(ip) {
+          if (typeof ip === "string" && (ip.indexOf("/") > 0 || ip.split(".").length !== 4)) {
+            ip = new Netmask3(ip);
+          }
+          if (ip instanceof Netmask3) {
+            return this.contains(ip.base) && this.contains(ip.broadcast || ip.last);
+          } else {
+            return (ip2long(ip) & this.maskLong) >>> 0 === (this.netLong & this.maskLong) >>> 0;
+          }
+        };
+        Netmask3.prototype.next = function(count) {
+          if (count == null) {
+            count = 1;
+          }
+          return new Netmask3(long2ip(this.netLong + this.size * count), this.mask);
+        };
+        Netmask3.prototype.forEach = function(fn) {
+          var index, lastLong, long;
+          long = ip2long(this.first);
+          lastLong = ip2long(this.last);
+          index = 0;
+          while (long <= lastLong) {
+            fn(long2ip(long), long, index);
+            index++;
+            long++;
+          }
+        };
+        Netmask3.prototype.toString = function() {
+          return this.base + "/" + this.bitmask;
+        };
+        return Netmask3;
+      })();
+      exports.ip2long = ip2long;
+      exports.long2ip = long2ip;
+      exports.Netmask = Netmask2;
+    }).call(exports);
   }
 });
 
@@ -2084,7 +2084,530 @@ function escapeHtml(text) {
 }
 __name(escapeHtml, "escapeHtml");
 
+// node_modules/@libp2p/logger/dist/src/index.js
+var import_debug = __toESM(require_browser(), 1);
+
+// node_modules/@libp2p/logger/node_modules/multiformats/vendor/base-x.js
+function base(ALPHABET, name3) {
+  if (ALPHABET.length >= 255) {
+    throw new TypeError("Alphabet too long");
+  }
+  var BASE_MAP = new Uint8Array(256);
+  for (var j = 0; j < BASE_MAP.length; j++) {
+    BASE_MAP[j] = 255;
+  }
+  for (var i2 = 0; i2 < ALPHABET.length; i2++) {
+    var x = ALPHABET.charAt(i2);
+    var xc = x.charCodeAt(0);
+    if (BASE_MAP[xc] !== 255) {
+      throw new TypeError(x + " is ambiguous");
+    }
+    BASE_MAP[xc] = i2;
+  }
+  var BASE = ALPHABET.length;
+  var LEADER = ALPHABET.charAt(0);
+  var FACTOR = Math.log(BASE) / Math.log(256);
+  var iFACTOR = Math.log(256) / Math.log(BASE);
+  function encode9(source) {
+    if (source instanceof Uint8Array) ;
+    else if (ArrayBuffer.isView(source)) {
+      source = new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
+    } else if (Array.isArray(source)) {
+      source = Uint8Array.from(source);
+    }
+    if (!(source instanceof Uint8Array)) {
+      throw new TypeError("Expected Uint8Array");
+    }
+    if (source.length === 0) {
+      return "";
+    }
+    var zeroes = 0;
+    var length3 = 0;
+    var pbegin = 0;
+    var pend = source.length;
+    while (pbegin !== pend && source[pbegin] === 0) {
+      pbegin++;
+      zeroes++;
+    }
+    var size = (pend - pbegin) * iFACTOR + 1 >>> 0;
+    var b58 = new Uint8Array(size);
+    while (pbegin !== pend) {
+      var carry = source[pbegin];
+      var i3 = 0;
+      for (var it1 = size - 1; (carry !== 0 || i3 < length3) && it1 !== -1; it1--, i3++) {
+        carry += 256 * b58[it1] >>> 0;
+        b58[it1] = carry % BASE >>> 0;
+        carry = carry / BASE >>> 0;
+      }
+      if (carry !== 0) {
+        throw new Error("Non-zero carry");
+      }
+      length3 = i3;
+      pbegin++;
+    }
+    var it2 = size - length3;
+    while (it2 !== size && b58[it2] === 0) {
+      it2++;
+    }
+    var str = LEADER.repeat(zeroes);
+    for (; it2 < size; ++it2) {
+      str += ALPHABET.charAt(b58[it2]);
+    }
+    return str;
+  }
+  __name(encode9, "encode");
+  function decodeUnsafe(source) {
+    if (typeof source !== "string") {
+      throw new TypeError("Expected String");
+    }
+    if (source.length === 0) {
+      return new Uint8Array();
+    }
+    var psz = 0;
+    if (source[psz] === " ") {
+      return;
+    }
+    var zeroes = 0;
+    var length3 = 0;
+    while (source[psz] === LEADER) {
+      zeroes++;
+      psz++;
+    }
+    var size = (source.length - psz) * FACTOR + 1 >>> 0;
+    var b256 = new Uint8Array(size);
+    while (source[psz]) {
+      var carry = BASE_MAP[source.charCodeAt(psz)];
+      if (carry === 255) {
+        return;
+      }
+      var i3 = 0;
+      for (var it3 = size - 1; (carry !== 0 || i3 < length3) && it3 !== -1; it3--, i3++) {
+        carry += BASE * b256[it3] >>> 0;
+        b256[it3] = carry % 256 >>> 0;
+        carry = carry / 256 >>> 0;
+      }
+      if (carry !== 0) {
+        throw new Error("Non-zero carry");
+      }
+      length3 = i3;
+      psz++;
+    }
+    if (source[psz] === " ") {
+      return;
+    }
+    var it4 = size - length3;
+    while (it4 !== size && b256[it4] === 0) {
+      it4++;
+    }
+    var vch = new Uint8Array(zeroes + (size - it4));
+    var j2 = zeroes;
+    while (it4 !== size) {
+      vch[j2++] = b256[it4++];
+    }
+    return vch;
+  }
+  __name(decodeUnsafe, "decodeUnsafe");
+  function decode10(string2) {
+    var buffer = decodeUnsafe(string2);
+    if (buffer) {
+      return buffer;
+    }
+    throw new Error(`Non-${name3} character`);
+  }
+  __name(decode10, "decode");
+  return {
+    encode: encode9,
+    decodeUnsafe,
+    decode: decode10
+  };
+}
+__name(base, "base");
+var src = base;
+var _brrp__multiformats_scope_baseX = src;
+var base_x_default = _brrp__multiformats_scope_baseX;
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bytes.js
+var empty = new Uint8Array(0);
+var coerce = /* @__PURE__ */ __name((o2) => {
+  if (o2 instanceof Uint8Array && o2.constructor.name === "Uint8Array") return o2;
+  if (o2 instanceof ArrayBuffer) return new Uint8Array(o2);
+  if (ArrayBuffer.isView(o2)) {
+    return new Uint8Array(o2.buffer, o2.byteOffset, o2.byteLength);
+  }
+  throw new Error("Unknown type, must be binary type");
+}, "coerce");
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base.js
+var Encoder = class {
+  static {
+    __name(this, "Encoder");
+  }
+  /**
+   * @param {Base} name
+   * @param {Prefix} prefix
+   * @param {(bytes:Uint8Array) => string} baseEncode
+   */
+  constructor(name3, prefix, baseEncode) {
+    this.name = name3;
+    this.prefix = prefix;
+    this.baseEncode = baseEncode;
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {API.Multibase<Prefix>}
+   */
+  encode(bytes) {
+    if (bytes instanceof Uint8Array) {
+      return `${this.prefix}${this.baseEncode(bytes)}`;
+    } else {
+      throw Error("Unknown type, must be binary type");
+    }
+  }
+};
+var Decoder = class {
+  static {
+    __name(this, "Decoder");
+  }
+  /**
+   * @param {Base} name
+   * @param {Prefix} prefix
+   * @param {(text:string) => Uint8Array} baseDecode
+   */
+  constructor(name3, prefix, baseDecode) {
+    this.name = name3;
+    this.prefix = prefix;
+    if (prefix.codePointAt(0) === void 0) {
+      throw new Error("Invalid prefix character");
+    }
+    this.prefixCodePoint = /** @type {number} */
+    prefix.codePointAt(0);
+    this.baseDecode = baseDecode;
+  }
+  /**
+   * @param {string} text
+   */
+  decode(text) {
+    if (typeof text === "string") {
+      if (text.codePointAt(0) !== this.prefixCodePoint) {
+        throw Error(`Unable to decode multibase string ${JSON.stringify(text)}, ${this.name} decoder only supports inputs prefixed with ${this.prefix}`);
+      }
+      return this.baseDecode(text.slice(this.prefix.length));
+    } else {
+      throw Error("Can only multibase decode strings");
+    }
+  }
+  /**
+   * @template {string} OtherPrefix
+   * @param {API.UnibaseDecoder<OtherPrefix>|ComposedDecoder<OtherPrefix>} decoder
+   * @returns {ComposedDecoder<Prefix|OtherPrefix>}
+   */
+  or(decoder) {
+    return or(this, decoder);
+  }
+};
+var ComposedDecoder = class {
+  static {
+    __name(this, "ComposedDecoder");
+  }
+  /**
+   * @param {Decoders<Prefix>} decoders
+   */
+  constructor(decoders3) {
+    this.decoders = decoders3;
+  }
+  /**
+   * @template {string} OtherPrefix
+   * @param {API.UnibaseDecoder<OtherPrefix>|ComposedDecoder<OtherPrefix>} decoder
+   * @returns {ComposedDecoder<Prefix|OtherPrefix>}
+   */
+  or(decoder) {
+    return or(this, decoder);
+  }
+  /**
+   * @param {string} input
+   * @returns {Uint8Array}
+   */
+  decode(input) {
+    const prefix = (
+      /** @type {Prefix} */
+      input[0]
+    );
+    const decoder = this.decoders[prefix];
+    if (decoder) {
+      return decoder.decode(input);
+    } else {
+      throw RangeError(`Unable to decode multibase string ${JSON.stringify(input)}, only inputs prefixed with ${Object.keys(this.decoders)} are supported`);
+    }
+  }
+};
+var or = /* @__PURE__ */ __name((left, right) => new ComposedDecoder(
+  /** @type {Decoders<L|R>} */
+  {
+    ...left.decoders || { [
+      /** @type API.UnibaseDecoder<L> */
+      left.prefix
+    ]: left },
+    ...right.decoders || { [
+      /** @type API.UnibaseDecoder<R> */
+      right.prefix
+    ]: right }
+  }
+), "or");
+var Codec = class {
+  static {
+    __name(this, "Codec");
+  }
+  /**
+   * @param {Base} name
+   * @param {Prefix} prefix
+   * @param {(bytes:Uint8Array) => string} baseEncode
+   * @param {(text:string) => Uint8Array} baseDecode
+   */
+  constructor(name3, prefix, baseEncode, baseDecode) {
+    this.name = name3;
+    this.prefix = prefix;
+    this.baseEncode = baseEncode;
+    this.baseDecode = baseDecode;
+    this.encoder = new Encoder(name3, prefix, baseEncode);
+    this.decoder = new Decoder(name3, prefix, baseDecode);
+  }
+  /**
+   * @param {Uint8Array} input
+   */
+  encode(input) {
+    return this.encoder.encode(input);
+  }
+  /**
+   * @param {string} input
+   */
+  decode(input) {
+    return this.decoder.decode(input);
+  }
+};
+var from = /* @__PURE__ */ __name(({ name: name3, prefix, encode: encode9, decode: decode10 }) => new Codec(name3, prefix, encode9, decode10), "from");
+var baseX = /* @__PURE__ */ __name(({ prefix, name: name3, alphabet: alphabet2 }) => {
+  const { encode: encode9, decode: decode10 } = base_x_default(alphabet2, name3);
+  return from({
+    prefix,
+    name: name3,
+    encode: encode9,
+    /**
+     * @param {string} text
+     */
+    decode: /* @__PURE__ */ __name((text) => coerce(decode10(text)), "decode")
+  });
+}, "baseX");
+var decode = /* @__PURE__ */ __name((string2, alphabet2, bitsPerChar, name3) => {
+  const codes = {};
+  for (let i2 = 0; i2 < alphabet2.length; ++i2) {
+    codes[alphabet2[i2]] = i2;
+  }
+  let end = string2.length;
+  while (string2[end - 1] === "=") {
+    --end;
+  }
+  const out = new Uint8Array(end * bitsPerChar / 8 | 0);
+  let bits = 0;
+  let buffer = 0;
+  let written = 0;
+  for (let i2 = 0; i2 < end; ++i2) {
+    const value2 = codes[string2[i2]];
+    if (value2 === void 0) {
+      throw new SyntaxError(`Non-${name3} character`);
+    }
+    buffer = buffer << bitsPerChar | value2;
+    bits += bitsPerChar;
+    if (bits >= 8) {
+      bits -= 8;
+      out[written++] = 255 & buffer >> bits;
+    }
+  }
+  if (bits >= bitsPerChar || 255 & buffer << 8 - bits) {
+    throw new SyntaxError("Unexpected end of data");
+  }
+  return out;
+}, "decode");
+var encode = /* @__PURE__ */ __name((data, alphabet2, bitsPerChar) => {
+  const pad = alphabet2[alphabet2.length - 1] === "=";
+  const mask = (1 << bitsPerChar) - 1;
+  let out = "";
+  let bits = 0;
+  let buffer = 0;
+  for (let i2 = 0; i2 < data.length; ++i2) {
+    buffer = buffer << 8 | data[i2];
+    bits += 8;
+    while (bits > bitsPerChar) {
+      bits -= bitsPerChar;
+      out += alphabet2[mask & buffer >> bits];
+    }
+  }
+  if (bits) {
+    out += alphabet2[mask & buffer << bitsPerChar - bits];
+  }
+  if (pad) {
+    while (out.length * bitsPerChar & 7) {
+      out += "=";
+    }
+  }
+  return out;
+}, "encode");
+var rfc4648 = /* @__PURE__ */ __name(({ name: name3, prefix, bitsPerChar, alphabet: alphabet2 }) => {
+  return from({
+    prefix,
+    name: name3,
+    encode(input) {
+      return encode(input, alphabet2, bitsPerChar);
+    },
+    decode(input) {
+      return decode(input, alphabet2, bitsPerChar, name3);
+    }
+  });
+}, "rfc4648");
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base58.js
+var base58btc = baseX({
+  name: "base58btc",
+  prefix: "z",
+  alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+});
+var base58flickr = baseX({
+  name: "base58flickr",
+  prefix: "Z",
+  alphabet: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+});
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base32.js
+var base32 = rfc4648({
+  prefix: "b",
+  name: "base32",
+  alphabet: "abcdefghijklmnopqrstuvwxyz234567",
+  bitsPerChar: 5
+});
+var base32upper = rfc4648({
+  prefix: "B",
+  name: "base32upper",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+  bitsPerChar: 5
+});
+var base32pad = rfc4648({
+  prefix: "c",
+  name: "base32pad",
+  alphabet: "abcdefghijklmnopqrstuvwxyz234567=",
+  bitsPerChar: 5
+});
+var base32padupper = rfc4648({
+  prefix: "C",
+  name: "base32padupper",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=",
+  bitsPerChar: 5
+});
+var base32hex = rfc4648({
+  prefix: "v",
+  name: "base32hex",
+  alphabet: "0123456789abcdefghijklmnopqrstuv",
+  bitsPerChar: 5
+});
+var base32hexupper = rfc4648({
+  prefix: "V",
+  name: "base32hexupper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+  bitsPerChar: 5
+});
+var base32hexpad = rfc4648({
+  prefix: "t",
+  name: "base32hexpad",
+  alphabet: "0123456789abcdefghijklmnopqrstuv=",
+  bitsPerChar: 5
+});
+var base32hexpadupper = rfc4648({
+  prefix: "T",
+  name: "base32hexpadupper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV=",
+  bitsPerChar: 5
+});
+var base32z = rfc4648({
+  prefix: "h",
+  name: "base32z",
+  alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
+  bitsPerChar: 5
+});
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base64.js
+var base64 = rfc4648({
+  prefix: "m",
+  name: "base64",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+  bitsPerChar: 6
+});
+var base64pad = rfc4648({
+  prefix: "M",
+  name: "base64pad",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+  bitsPerChar: 6
+});
+var base64url = rfc4648({
+  prefix: "u",
+  name: "base64url",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
+  bitsPerChar: 6
+});
+var base64urlpad = rfc4648({
+  prefix: "U",
+  name: "base64urlpad",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=",
+  bitsPerChar: 6
+});
+
+// node_modules/@libp2p/logger/dist/src/index.js
+import_debug.default.formatters.b = (v) => {
+  return v == null ? "undefined" : base58btc.baseEncode(v);
+};
+import_debug.default.formatters.t = (v) => {
+  return v == null ? "undefined" : base32.baseEncode(v);
+};
+import_debug.default.formatters.m = (v) => {
+  return v == null ? "undefined" : base64.baseEncode(v);
+};
+import_debug.default.formatters.p = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+import_debug.default.formatters.c = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+import_debug.default.formatters.k = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+import_debug.default.formatters.a = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+function createDisabledLogger(namespace) {
+  const logger3 = /* @__PURE__ */ __name(() => {
+  }, "logger");
+  logger3.enabled = false;
+  logger3.color = "";
+  logger3.diff = 0;
+  logger3.log = () => {
+  };
+  logger3.namespace = namespace;
+  logger3.destroy = () => true;
+  logger3.extend = () => logger3;
+  return logger3;
+}
+__name(createDisabledLogger, "createDisabledLogger");
+function logger(name3) {
+  let trace = createDisabledLogger(`${name3}:trace`);
+  if (import_debug.default.enabled(`${name3}:trace`) && import_debug.default.names.map((r2) => r2.toString()).find((n2) => n2.includes(":trace")) != null) {
+    trace = (0, import_debug.default)(`${name3}:trace`);
+  }
+  return Object.assign((0, import_debug.default)(name3), {
+    error: (0, import_debug.default)(`${name3}:error`),
+    trace
+  });
+}
+__name(logger, "logger");
+
 // public/components/chat-manager/controller/index.mjs
+var log = logger("chat-manager:controller");
 var controller = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
   return {
@@ -2093,7 +2616,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
-      console.log("\u{1F527} ChatManager controller initializing...");
+      log("ChatManager controller initializing...");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode");
       if (listenerBtn) {
@@ -2174,7 +2697,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
       if (discoverGroupsBtn) {
         const discoverHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F50D} ChatManager: \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F...");
+            log("ChatManager: \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F...");
             const groupManager = await context.getComponentAsync("group-manager", "group-manager");
             if (groupManager && groupManager.discoverGroups) {
               await groupManager.discoverGroups();
@@ -2188,7 +2711,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               throw new Error("GroupManager \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
             }
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F \u0432 ChatManager:", error);
+            log.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F \u0432 ChatManager: %o", error);
             await context.showModal({
               title: "\u041E\u0448\u0438\u0431\u043A\u0430",
               content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
@@ -2214,9 +2737,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               if (group) {
                 try {
                   await context.joinGroup(group);
-                  console.log("\u2705 Switched to group:", group.name);
+                  log("Switched to group: %s", group.name);
                 } catch (error) {
-                  console.error("\u274C Error switching group:", error);
+                  log.error("Error switching group: %o", error);
                   context.addError({
                     componentName: context.constructor.name,
                     source: "group-switch",
@@ -2243,9 +2766,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               if (group) {
                 try {
                   await context.joinGroup(group);
-                  console.log("\u2705 Successfully joined group:", group.name);
+                  log("Successfully joined group: %s", group.name);
                 } catch (error) {
-                  console.error("\u274C Error joining group:", error);
+                  log.error("Error joining group: %o", error);
                   await context.showModal({
                     title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                     content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
@@ -2265,9 +2788,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             if (groupId) {
               try {
                 await context.leaveGroup(groupId);
-                console.log("\u2705 Successfully left group:", groupId);
+                log("Successfully left group: %s", groupId);
               } catch (error) {
-                console.error("\u274C Error leaving group:", error);
+                log.error("Error leaving group: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -2302,13 +2825,14 @@ var controller = /* @__PURE__ */ __name(async (context) => {
           messageInput.focus();
         }, 100);
       }
-      console.log("[ChatManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log("ChatManager controller initialized");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
+      log("ChatManager controller destroying...");
       eventListeners.forEach(({ element, handler }) => {
         element.removeEventListener("click", handler);
         element.removeEventListener("keypress", handler);
@@ -2318,53 +2842,75 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         context._groupObserver.disconnect();
         context._groupObserver = null;
       }
-      console.log("[ChatManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      log("Removed %d event listeners", eventListeners.length);
+      log("ChatManager controller destroyed");
     }
   };
 }, "controller");
 
 // public/components/chat-manager/actions/index.mjs
+var log2 = logger("chat-manager:actions");
 async function createActions(context) {
   return {
+    /**
+     * Подписывается на группу
+     * @async
+     * @param {string} topic - Топик группы
+     */
     async subscribeToGroup(topic) {
       if (context.node) {
         try {
           await context.node.services.pubsub.subscribe(topic);
-          console.log(`\u2705 Subscribed to group: ${topic}`);
+          log2("Subscribed to group: %s", topic);
           return true;
         } catch (error) {
-          console.error(`\u274C Error subscribing to group ${topic}:`, error);
+          log2.error("Error subscribing to group %s: %o", topic, error);
           return false;
         }
       }
       return false;
     },
+    /**
+     * Отписывается от группы
+     * @async
+     * @param {string} topic - Топик группы
+     */
     async unsubscribeFromGroup(topic) {
       if (context.node) {
         try {
           await context.node.services.pubsub.unsubscribe(topic);
-          console.log(`\u2705 Unsubscribed from group: ${topic}`);
+          log2("Unsubscribed from group: %s", topic);
           return true;
         } catch (error) {
-          console.error(`\u274C Error unsubscribing from group ${topic}:`, error);
+          log2.error("Error unsubscribing from group %s: %o", topic, error);
           return false;
         }
       }
       return false;
     },
+    /**
+     * Отправляет сообщение
+     * @async
+     * @param {string} topic - Топик группы
+     * @param {string} messageText - Текст сообщения
+     */
     async sendMessage(topic, messageText) {
       if (context.node) {
         try {
           await context.node.services.pubsub.publish(topic, new TextEncoder().encode(messageText));
-          console.log(`\u2705 Message sent to topic ${topic}: ${messageText}`);
+          log2("Message sent to topic %s: %s", topic, messageText);
           return true;
         } catch (error) {
-          console.error(`\u274C Error sending message to topic ${topic}:`, error);
+          log2.error("Error sending message to topic %s: %o", topic, error);
           return false;
         }
       }
       return false;
     },
+    /**
+     * Обнаруживает группы
+     * @async
+     */
     async discoverGroups() {
       if (!context.node) return [];
       try {
@@ -2383,7 +2929,7 @@ async function createActions(context) {
         }
         return groups;
       } catch (error) {
-        console.error("\u274C Error discovering groups:", error);
+        log2.error("Error discovering groups: %o", error);
         return [];
       }
     }
@@ -2810,12 +3356,12 @@ var serviceDependencies = Symbol.for("@libp2p/service-dependencies");
 // node_modules/multiformats/dist/src/bases/base58.js
 var base58_exports = {};
 __export(base58_exports, {
-  base58btc: () => base58btc,
-  base58flickr: () => base58flickr
+  base58btc: () => base58btc2,
+  base58flickr: () => base58flickr2
 });
 
 // node_modules/multiformats/dist/src/bytes.js
-var empty = new Uint8Array(0);
+var empty2 = new Uint8Array(0);
 function equals(aa, bb) {
   if (aa === bb) {
     return true;
@@ -2831,7 +3377,7 @@ function equals(aa, bb) {
   return true;
 }
 __name(equals, "equals");
-function coerce(o2) {
+function coerce2(o2) {
   if (o2 instanceof Uint8Array && o2.constructor.name === "Uint8Array") {
     return o2;
   }
@@ -2843,7 +3389,7 @@ function coerce(o2) {
   }
   throw new Error("Unknown type, must be binary type");
 }
-__name(coerce, "coerce");
+__name(coerce2, "coerce");
 function fromString(str) {
   return new TextEncoder().encode(str);
 }
@@ -2854,7 +3400,7 @@ function toString(b) {
 __name(toString, "toString");
 
 // node_modules/multiformats/dist/src/vendor/base-x.js
-function base(ALPHABET, name3) {
+function base2(ALPHABET, name3) {
   if (ALPHABET.length >= 255) {
     throw new TypeError("Alphabet too long");
   }
@@ -2988,13 +3534,13 @@ function base(ALPHABET, name3) {
     decode: decode10
   };
 }
-__name(base, "base");
-var src = base;
-var _brrp__multiformats_scope_baseX = src;
-var base_x_default = _brrp__multiformats_scope_baseX;
+__name(base2, "base");
+var src2 = base2;
+var _brrp__multiformats_scope_baseX2 = src2;
+var base_x_default2 = _brrp__multiformats_scope_baseX2;
 
 // node_modules/multiformats/dist/src/bases/base.js
-var Encoder = class {
+var Encoder2 = class {
   static {
     __name(this, "Encoder");
   }
@@ -3014,7 +3560,7 @@ var Encoder = class {
     }
   }
 };
-var Decoder = class {
+var Decoder2 = class {
   static {
     __name(this, "Decoder");
   }
@@ -3043,10 +3589,10 @@ var Decoder = class {
     }
   }
   or(decoder) {
-    return or(this, decoder);
+    return or2(this, decoder);
   }
 };
-var ComposedDecoder = class {
+var ComposedDecoder2 = class {
   static {
     __name(this, "ComposedDecoder");
   }
@@ -3055,7 +3601,7 @@ var ComposedDecoder = class {
     this.decoders = decoders3;
   }
   or(decoder) {
-    return or(this, decoder);
+    return or2(this, decoder);
   }
   decode(input) {
     const prefix = input[0];
@@ -3067,14 +3613,14 @@ var ComposedDecoder = class {
     }
   }
 };
-function or(left, right) {
-  return new ComposedDecoder({
+function or2(left, right) {
+  return new ComposedDecoder2({
     ...left.decoders ?? { [left.prefix]: left },
     ...right.decoders ?? { [right.prefix]: right }
   });
 }
-__name(or, "or");
-var Codec = class {
+__name(or2, "or");
+var Codec2 = class {
   static {
     __name(this, "Codec");
   }
@@ -3089,8 +3635,8 @@ var Codec = class {
     this.prefix = prefix;
     this.baseEncode = baseEncode;
     this.baseDecode = baseDecode;
-    this.encoder = new Encoder(name3, prefix, baseEncode);
-    this.decoder = new Decoder(name3, prefix, baseDecode);
+    this.encoder = new Encoder2(name3, prefix, baseEncode);
+    this.decoder = new Decoder2(name3, prefix, baseDecode);
   }
   encode(input) {
     return this.encoder.encode(input);
@@ -3099,21 +3645,21 @@ var Codec = class {
     return this.decoder.decode(input);
   }
 };
-function from({ name: name3, prefix, encode: encode9, decode: decode10 }) {
-  return new Codec(name3, prefix, encode9, decode10);
+function from2({ name: name3, prefix, encode: encode9, decode: decode10 }) {
+  return new Codec2(name3, prefix, encode9, decode10);
 }
-__name(from, "from");
-function baseX({ name: name3, prefix, alphabet: alphabet2 }) {
-  const { encode: encode9, decode: decode10 } = base_x_default(alphabet2, name3);
-  return from({
+__name(from2, "from");
+function baseX2({ name: name3, prefix, alphabet: alphabet2 }) {
+  const { encode: encode9, decode: decode10 } = base_x_default2(alphabet2, name3);
+  return from2({
     prefix,
     name: name3,
     encode: encode9,
-    decode: /* @__PURE__ */ __name((text) => coerce(decode10(text)), "decode")
+    decode: /* @__PURE__ */ __name((text) => coerce2(decode10(text)), "decode")
   });
 }
-__name(baseX, "baseX");
-function decode(string2, alphabetIdx, bitsPerChar, name3) {
+__name(baseX2, "baseX");
+function decode2(string2, alphabetIdx, bitsPerChar, name3) {
   let end = string2.length;
   while (string2[end - 1] === "=") {
     --end;
@@ -3139,8 +3685,8 @@ function decode(string2, alphabetIdx, bitsPerChar, name3) {
   }
   return out;
 }
-__name(decode, "decode");
-function encode(data, alphabet2, bitsPerChar) {
+__name(decode2, "decode");
+function encode2(data, alphabet2, bitsPerChar) {
   const pad = alphabet2[alphabet2.length - 1] === "=";
   const mask = (1 << bitsPerChar) - 1;
   let out = "";
@@ -3164,7 +3710,7 @@ function encode(data, alphabet2, bitsPerChar) {
   }
   return out;
 }
-__name(encode, "encode");
+__name(encode2, "encode");
 function createAlphabetIdx(alphabet2) {
   const alphabetIdx = {};
   for (let i2 = 0; i2 < alphabet2.length; ++i2) {
@@ -3173,28 +3719,28 @@ function createAlphabetIdx(alphabet2) {
   return alphabetIdx;
 }
 __name(createAlphabetIdx, "createAlphabetIdx");
-function rfc4648({ name: name3, prefix, bitsPerChar, alphabet: alphabet2 }) {
+function rfc46482({ name: name3, prefix, bitsPerChar, alphabet: alphabet2 }) {
   const alphabetIdx = createAlphabetIdx(alphabet2);
-  return from({
+  return from2({
     prefix,
     name: name3,
     encode(input) {
-      return encode(input, alphabet2, bitsPerChar);
+      return encode2(input, alphabet2, bitsPerChar);
     },
     decode(input) {
-      return decode(input, alphabetIdx, bitsPerChar, name3);
+      return decode2(input, alphabetIdx, bitsPerChar, name3);
     }
   });
 }
-__name(rfc4648, "rfc4648");
+__name(rfc46482, "rfc4648");
 
 // node_modules/multiformats/dist/src/bases/base58.js
-var base58btc = baseX({
+var base58btc2 = baseX2({
   name: "base58btc",
   prefix: "z",
   alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 });
-var base58flickr = baseX({
+var base58flickr2 = baseX2({
   name: "base58flickr",
   prefix: "Z",
   alphabet: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
@@ -3203,65 +3749,65 @@ var base58flickr = baseX({
 // node_modules/multiformats/dist/src/bases/base32.js
 var base32_exports = {};
 __export(base32_exports, {
-  base32: () => base32,
-  base32hex: () => base32hex,
-  base32hexpad: () => base32hexpad,
-  base32hexpadupper: () => base32hexpadupper,
-  base32hexupper: () => base32hexupper,
-  base32pad: () => base32pad,
-  base32padupper: () => base32padupper,
-  base32upper: () => base32upper,
-  base32z: () => base32z
+  base32: () => base322,
+  base32hex: () => base32hex2,
+  base32hexpad: () => base32hexpad2,
+  base32hexpadupper: () => base32hexpadupper2,
+  base32hexupper: () => base32hexupper2,
+  base32pad: () => base32pad2,
+  base32padupper: () => base32padupper2,
+  base32upper: () => base32upper2,
+  base32z: () => base32z2
 });
-var base32 = rfc4648({
+var base322 = rfc46482({
   prefix: "b",
   name: "base32",
   alphabet: "abcdefghijklmnopqrstuvwxyz234567",
   bitsPerChar: 5
 });
-var base32upper = rfc4648({
+var base32upper2 = rfc46482({
   prefix: "B",
   name: "base32upper",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
   bitsPerChar: 5
 });
-var base32pad = rfc4648({
+var base32pad2 = rfc46482({
   prefix: "c",
   name: "base32pad",
   alphabet: "abcdefghijklmnopqrstuvwxyz234567=",
   bitsPerChar: 5
 });
-var base32padupper = rfc4648({
+var base32padupper2 = rfc46482({
   prefix: "C",
   name: "base32padupper",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=",
   bitsPerChar: 5
 });
-var base32hex = rfc4648({
+var base32hex2 = rfc46482({
   prefix: "v",
   name: "base32hex",
   alphabet: "0123456789abcdefghijklmnopqrstuv",
   bitsPerChar: 5
 });
-var base32hexupper = rfc4648({
+var base32hexupper2 = rfc46482({
   prefix: "V",
   name: "base32hexupper",
   alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
   bitsPerChar: 5
 });
-var base32hexpad = rfc4648({
+var base32hexpad2 = rfc46482({
   prefix: "t",
   name: "base32hexpad",
   alphabet: "0123456789abcdefghijklmnopqrstuv=",
   bitsPerChar: 5
 });
-var base32hexpadupper = rfc4648({
+var base32hexpadupper2 = rfc46482({
   prefix: "T",
   name: "base32hexpadupper",
   alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV=",
   bitsPerChar: 5
 });
-var base32z = rfc4648({
+var base32z2 = rfc46482({
   prefix: "h",
   name: "base32z",
   alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
@@ -3274,24 +3820,24 @@ __export(base36_exports, {
   base36: () => base36,
   base36upper: () => base36upper
 });
-var base36 = baseX({
+var base36 = baseX2({
   prefix: "k",
   name: "base36",
   alphabet: "0123456789abcdefghijklmnopqrstuvwxyz"
 });
-var base36upper = baseX({
+var base36upper = baseX2({
   prefix: "K",
   name: "base36upper",
   alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 });
 
 // node_modules/multiformats/dist/src/vendor/varint.js
-var encode_1 = encode2;
+var encode_1 = encode3;
 var MSB = 128;
 var REST = 127;
 var MSBALL = ~REST;
 var INT = Math.pow(2, 31);
-function encode2(num, out, offset) {
+function encode3(num, out, offset) {
   out = out || [];
   offset = offset || 0;
   var oldOffset = offset;
@@ -3304,11 +3850,11 @@ function encode2(num, out, offset) {
     num >>>= 7;
   }
   out[offset] = num | 0;
-  encode2.bytes = offset - oldOffset + 1;
+  encode3.bytes = offset - oldOffset + 1;
   return out;
 }
-__name(encode2, "encode");
-var decode2 = read;
+__name(encode3, "encode");
+var decode3 = read;
 var MSB$1 = 128;
 var REST$1 = 127;
 function read(buf, offset) {
@@ -3340,18 +3886,18 @@ var length = /* @__PURE__ */ __name(function(value2) {
 }, "length");
 var varint = {
   encode: encode_1,
-  decode: decode2,
+  decode: decode3,
   encodingLength: length
 };
 var _brrp_varint = varint;
 var varint_default = _brrp_varint;
 
 // node_modules/multiformats/dist/src/varint.js
-function decode3(data, offset = 0) {
+function decode4(data, offset = 0) {
   const code3 = varint_default.decode(data, offset);
   return [code3, varint_default.decode.bytes];
 }
-__name(decode3, "decode");
+__name(decode4, "decode");
 function encodeTo(int, target, offset = 0) {
   varint_default.encode(int, target, offset);
   return target;
@@ -3374,17 +3920,17 @@ function create(code3, digest2) {
   return new Digest(code3, size, digest2, bytes);
 }
 __name(create, "create");
-function decode4(multihash) {
-  const bytes = coerce(multihash);
-  const [code3, sizeOffset] = decode3(bytes);
-  const [size, digestOffset] = decode3(bytes.subarray(sizeOffset));
+function decode5(multihash) {
+  const bytes = coerce2(multihash);
+  const [code3, sizeOffset] = decode4(bytes);
+  const [size, digestOffset] = decode4(bytes.subarray(sizeOffset));
   const digest2 = bytes.subarray(sizeOffset + digestOffset);
   if (digest2.byteLength !== size) {
     throw new Error("Incorrect length");
   }
   return new Digest(code3, size, digest2, bytes);
 }
-__name(decode4, "decode");
+__name(decode5, "decode");
 function equals2(a2, b) {
   if (a2 === b) {
     return true;
@@ -3414,13 +3960,13 @@ var Digest = class {
 };
 
 // node_modules/multiformats/dist/src/cid.js
-function format(link, base4) {
+function format(link, base3) {
   const { bytes, version: version2 } = link;
   switch (version2) {
     case 0:
-      return toStringV0(bytes, baseCache(link), base4 ?? base58btc.encoder);
+      return toStringV0(bytes, baseCache(link), base3 ?? base58btc2.encoder);
     default:
-      return toStringV1(bytes, baseCache(link), base4 ?? base32.encoder);
+      return toStringV1(bytes, baseCache(link), base3 ?? base322.encoder);
   }
 }
 __name(format, "format");
@@ -3515,8 +4061,8 @@ var CID = class _CID {
     const unknown = other;
     return unknown != null && self.code === unknown.code && self.version === unknown.version && equals2(self.multihash, unknown.multihash);
   }
-  toString(base4) {
-    return format(this, base4);
+  toString(base3) {
+    return format(this, base3);
   }
   toJSON() {
     return { "/": format(this) };
@@ -3551,7 +4097,7 @@ var CID = class _CID {
       return new _CID(version2, code3, multihash, bytes ?? encodeCID(version2, code3, multihash.bytes));
     } else if (value2[cidSymbol] === true) {
       const { version: version2, multihash, code: code3 } = value2;
-      const digest2 = decode4(multihash);
+      const digest2 = decode5(multihash);
       return _CID.create(version2, code3, digest2);
     } else {
       return null;
@@ -3627,7 +4173,7 @@ var CID = class _CID {
   static decodeFirst(bytes) {
     const specs = _CID.inspectBytes(bytes);
     const prefixSize = specs.size - specs.multihashSize;
-    const multihashBytes = coerce(bytes.subarray(prefixSize, prefixSize + specs.multihashSize));
+    const multihashBytes = coerce2(bytes.subarray(prefixSize, prefixSize + specs.multihashSize));
     if (multihashBytes.byteLength !== specs.multihashSize) {
       throw new Error("Incorrect length");
     }
@@ -3648,7 +4194,7 @@ var CID = class _CID {
   static inspectBytes(initialBytes) {
     let offset = 0;
     const next = /* @__PURE__ */ __name(() => {
-      const [i2, length3] = decode3(initialBytes.subarray(offset));
+      const [i2, length3] = decode4(initialBytes.subarray(offset));
       offset += length3;
       return i2;
     }, "next");
@@ -3676,8 +4222,8 @@ var CID = class _CID {
    * throw an error if encoding of the CID is not compatible with supplied (or
    * a default decoder).
    */
-  static parse(source, base4) {
-    const [prefix, bytes] = parseCIDtoBytes(source, base4);
+  static parse(source, base3) {
+    const [prefix, bytes] = parseCIDtoBytes(source, base3);
     const cid = _CID.decode(bytes);
     if (cid.version === 0 && source[0] !== "Q") {
       throw Error("Version 0 CID string must not include multibase prefix");
@@ -3686,45 +4232,45 @@ var CID = class _CID {
     return cid;
   }
 };
-function parseCIDtoBytes(source, base4) {
+function parseCIDtoBytes(source, base3) {
   switch (source[0]) {
     // CIDv0 is parsed differently
     case "Q": {
-      const decoder = base4 ?? base58btc;
+      const decoder = base3 ?? base58btc2;
       return [
-        base58btc.prefix,
-        decoder.decode(`${base58btc.prefix}${source}`)
+        base58btc2.prefix,
+        decoder.decode(`${base58btc2.prefix}${source}`)
       ];
     }
-    case base58btc.prefix: {
-      const decoder = base4 ?? base58btc;
-      return [base58btc.prefix, decoder.decode(source)];
+    case base58btc2.prefix: {
+      const decoder = base3 ?? base58btc2;
+      return [base58btc2.prefix, decoder.decode(source)];
     }
-    case base32.prefix: {
-      const decoder = base4 ?? base32;
-      return [base32.prefix, decoder.decode(source)];
+    case base322.prefix: {
+      const decoder = base3 ?? base322;
+      return [base322.prefix, decoder.decode(source)];
     }
     case base36.prefix: {
-      const decoder = base4 ?? base36;
+      const decoder = base3 ?? base36;
       return [base36.prefix, decoder.decode(source)];
     }
     default: {
-      if (base4 == null) {
+      if (base3 == null) {
         throw Error("To parse non base32, base36 or base58btc encoded CID multibase decoder must be provided");
       }
-      return [source[0], base4.decode(source)];
+      return [source[0], base3.decode(source)];
     }
   }
 }
 __name(parseCIDtoBytes, "parseCIDtoBytes");
-function toStringV0(bytes, cache3, base4) {
-  const { prefix } = base4;
-  if (prefix !== base58btc.prefix) {
-    throw Error(`Cannot string encode V0 in ${base4.name} encoding`);
+function toStringV0(bytes, cache3, base3) {
+  const { prefix } = base3;
+  if (prefix !== base58btc2.prefix) {
+    throw Error(`Cannot string encode V0 in ${base3.name} encoding`);
   }
   const cid = cache3.get(prefix);
   if (cid == null) {
-    const cid2 = base4.encode(bytes).slice(1);
+    const cid2 = base3.encode(bytes).slice(1);
     cache3.set(prefix, cid2);
     return cid2;
   } else {
@@ -3732,11 +4278,11 @@ function toStringV0(bytes, cache3, base4) {
   }
 }
 __name(toStringV0, "toStringV0");
-function toStringV1(bytes, cache3, base4) {
-  const { prefix } = base4;
+function toStringV1(bytes, cache3, base3) {
+  const { prefix } = base3;
   const cid = cache3.get(prefix);
   if (cid == null) {
-    const cid2 = base4.encode(bytes);
+    const cid2 = base3.encode(bytes);
     cache3.set(prefix, cid2);
     return cid2;
   } else {
@@ -3765,7 +4311,7 @@ __export(identity_exports, {
 });
 var code = 0;
 var name = "identity";
-var encode3 = coerce;
+var encode4 = coerce2;
 function digest(input, options) {
   if (options?.truncate != null && options.truncate !== input.byteLength) {
     if (options.truncate < 0 || options.truncate > input.byteLength) {
@@ -3773,10 +4319,10 @@ function digest(input, options) {
     }
     input = input.subarray(0, options.truncate);
   }
-  return create(code, encode3(input));
+  return create(code, encode4(input));
 }
 __name(digest, "digest");
-var identity = { code, name, encode: encode3, digest };
+var identity = { code, name, encode: encode4, digest };
 
 // node_modules/uint8arrays/dist/src/equals.js
 function equals3(a2, b) {
@@ -4263,7 +4809,7 @@ var base10_exports = {};
 __export(base10_exports, {
   base10: () => base10
 });
-var base10 = baseX({
+var base10 = baseX2({
   prefix: "9",
   name: "base10",
   alphabet: "0123456789"
@@ -4275,13 +4821,13 @@ __export(base16_exports, {
   base16: () => base16,
   base16upper: () => base16upper
 });
-var base16 = rfc4648({
+var base16 = rfc46482({
   prefix: "f",
   name: "base16",
   alphabet: "0123456789abcdef",
   bitsPerChar: 4
 });
-var base16upper = rfc4648({
+var base16upper = rfc46482({
   prefix: "F",
   name: "base16upper",
   alphabet: "0123456789ABCDEF",
@@ -4291,9 +4837,9 @@ var base16upper = rfc4648({
 // node_modules/multiformats/dist/src/bases/base2.js
 var base2_exports = {};
 __export(base2_exports, {
-  base2: () => base2
+  base2: () => base22
 });
-var base2 = rfc4648({
+var base22 = rfc46482({
   prefix: "0",
   name: "base2",
   alphabet: "01",
@@ -4318,14 +4864,14 @@ var alphabetCharsToBytes = alphabet.reduce((p2, c2, i2) => {
   p2[codePoint] = i2;
   return p2;
 }, []);
-function encode4(data) {
+function encode5(data) {
   return data.reduce((p2, c2) => {
     p2 += alphabetBytesToChars[c2];
     return p2;
   }, "");
 }
-__name(encode4, "encode");
-function decode5(str) {
+__name(encode5, "encode");
+function decode6(str) {
   const byts = [];
   for (const char of str) {
     const codePoint = char.codePointAt(0);
@@ -4340,41 +4886,41 @@ function decode5(str) {
   }
   return new Uint8Array(byts);
 }
-__name(decode5, "decode");
-var base256emoji = from({
+__name(decode6, "decode");
+var base256emoji = from2({
   prefix: "\u{1F680}",
   name: "base256emoji",
-  encode: encode4,
-  decode: decode5
+  encode: encode5,
+  decode: decode6
 });
 
 // node_modules/multiformats/dist/src/bases/base64.js
 var base64_exports = {};
 __export(base64_exports, {
-  base64: () => base64,
-  base64pad: () => base64pad,
-  base64url: () => base64url,
-  base64urlpad: () => base64urlpad
+  base64: () => base642,
+  base64pad: () => base64pad2,
+  base64url: () => base64url2,
+  base64urlpad: () => base64urlpad2
 });
-var base64 = rfc4648({
+var base642 = rfc46482({
   prefix: "m",
   name: "base64",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
   bitsPerChar: 6
 });
-var base64pad = rfc4648({
+var base64pad2 = rfc46482({
   prefix: "M",
   name: "base64pad",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
   bitsPerChar: 6
 });
-var base64url = rfc4648({
+var base64url2 = rfc46482({
   prefix: "u",
   name: "base64url",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
   bitsPerChar: 6
 });
-var base64urlpad = rfc4648({
+var base64urlpad2 = rfc46482({
   prefix: "U",
   name: "base64urlpad",
   alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=",
@@ -4386,7 +4932,7 @@ var base8_exports = {};
 __export(base8_exports, {
   base8: () => base8
 });
-var base8 = rfc4648({
+var base8 = rfc46482({
   prefix: "7",
   name: "base8",
   alphabet: "01234567",
@@ -4398,7 +4944,7 @@ var identity_exports2 = {};
 __export(identity_exports2, {
   identity: () => identity2
 });
-var identity2 = from({
+var identity2 = from2({
   prefix: "\0",
   name: "identity",
   encode: /* @__PURE__ */ __name((buf) => toString(buf), "encode"),
@@ -4418,10 +4964,10 @@ __export(sha2_browser_exports, {
 
 // node_modules/multiformats/dist/src/hashes/hasher.js
 var DEFAULT_MIN_DIGEST_LENGTH = 20;
-function from2({ name: name3, code: code3, encode: encode9, minDigestLength, maxDigestLength }) {
+function from3({ name: name3, code: code3, encode: encode9, minDigestLength, maxDigestLength }) {
   return new Hasher(name3, code3, encode9, minDigestLength, maxDigestLength);
 }
-__name(from2, "from");
+__name(from3, "from");
 var Hasher = class {
   static {
     __name(this, "Hasher");
@@ -4474,12 +5020,12 @@ function sha(name3) {
   return async (data) => new Uint8Array(await crypto.subtle.digest(name3, data));
 }
 __name(sha, "sha");
-var sha256 = from2({
+var sha256 = from3({
   name: "sha2-256",
   code: 18,
   encode: sha("SHA-256")
 });
-var sha512 = from2({
+var sha512 = from3({
   name: "sha2-512",
   code: 19,
   encode: sha("SHA-512")
@@ -4539,21 +5085,21 @@ var bases_default = BASES;
 
 // node_modules/uint8arrays/dist/src/from-string.js
 function fromString2(string2, encoding = "utf8") {
-  const base4 = bases_default[encoding];
-  if (base4 == null) {
+  const base3 = bases_default[encoding];
+  if (base3 == null) {
     throw new Error(`Unsupported encoding "${encoding}"`);
   }
-  return base4.decoder.decode(`${base4.prefix}${string2}`);
+  return base3.decoder.decode(`${base3.prefix}${string2}`);
 }
 __name(fromString2, "fromString");
 
 // node_modules/uint8arrays/dist/src/to-string.js
 function toString2(array, encoding = "utf8") {
-  const base4 = bases_default[encoding];
-  if (base4 == null) {
+  const base3 = bases_default[encoding];
+  if (base3 == null) {
     throw new Error(`Unsupported encoding "${encoding}"`);
   }
-  return base4.encoder.encode(array).substring(1);
+  return base3.encoder.encode(array).substring(1);
 }
 __name(toString2, "toString");
 
@@ -4923,7 +5469,7 @@ var ECDSAPublicKey = class {
     return CID.createV1(114, this.toMultihash());
   }
   toString() {
-    return base58btc.encode(this.toMultihash().bytes).substring(1);
+    return base58btc2.encode(this.toMultihash().bytes).substring(1);
   }
   equals(key) {
     if (key == null || !(key.raw instanceof Uint8Array)) {
@@ -6322,15 +6868,15 @@ var wNAF = class {
     const { windows, windowSize } = calcWOpts(W, this.bits);
     const points = [];
     let p2 = point;
-    let base4 = p2;
+    let base3 = p2;
     for (let window2 = 0; window2 < windows; window2++) {
-      base4 = p2;
-      points.push(base4);
+      base3 = p2;
+      points.push(base3);
       for (let i2 = 1; i2 < windowSize; i2++) {
-        base4 = base4.add(p2);
-        points.push(base4);
+        base3 = base3.add(p2);
+        points.push(base3);
       }
-      p2 = base4.double();
+      p2 = base3.double();
     }
     return points;
   }
@@ -7232,7 +7778,7 @@ var Ed25519PublicKey = class {
     return CID.createV1(114, this.toMultihash());
   }
   toString() {
-    return base58btc.encode(this.toMultihash().bytes).substring(1);
+    return base58btc2.encode(this.toMultihash().bytes).substring(1);
   }
   equals(key) {
     if (key == null || !(key.raw instanceof Uint8Array)) {
@@ -7515,7 +8061,7 @@ function decodeUint8ArrayList(buf, offset) {
   throw new RangeError("Could not decode varint");
 }
 __name(decodeUint8ArrayList, "decodeUint8ArrayList");
-function encode5(value2, buf, offset = 0) {
+function encode6(value2, buf, offset = 0) {
   if (buf == null) {
     buf = allocUnsafe(encodingLength2(value2));
   }
@@ -7525,15 +8071,15 @@ function encode5(value2, buf, offset = 0) {
     return encodeUint8ArrayList(value2, buf, offset);
   }
 }
-__name(encode5, "encode");
-function decode6(buf, offset = 0) {
+__name(encode6, "encode");
+function decode7(buf, offset = 0) {
   if (buf instanceof Uint8Array) {
     return decodeUint8Array(buf, offset);
   } else {
     return decodeUint8ArrayList(buf, offset);
   }
 }
-__name(decode6, "decode");
+__name(decode7, "decode");
 
 // node_modules/protons-runtime/dist/src/utils/float.js
 var f32 = new Float32Array([-0]);
@@ -8858,7 +9404,7 @@ var RSAPublicKey = class {
     return CID.createV1(114, this._multihash);
   }
   toString() {
-    return base58btc.encode(this.toMultihash().bytes).substring(1);
+    return base58btc2.encode(this.toMultihash().bytes).substring(1);
   }
   equals(key) {
     if (key == null || !(key.raw instanceof Uint8Array)) {
@@ -10233,7 +10779,7 @@ var Secp256k1PublicKey = class {
     return CID.createV1(114, this.toMultihash());
   }
   toString() {
-    return base58btc.encode(this.toMultihash().bytes).substring(1);
+    return base58btc2.encode(this.toMultihash().bytes).substring(1);
   }
   equals(key) {
     if (key == null || !(key.raw instanceof Uint8Array)) {
@@ -13296,15 +13842,15 @@ var CODE_P2P_CIRCUIT = 290;
 var CODE_MEMORY = 777;
 
 // node_modules/@multiformats/multiaddr/dist/src/utils.js
-function bytesToString(base4) {
+function bytesToString(base3) {
   return (buf) => {
-    return toString2(buf, base4);
+    return toString2(buf, base3);
   };
 }
 __name(bytesToString, "bytesToString");
-function stringToBytes(base4) {
+function stringToBytes(base3) {
   return (buf) => {
-    return fromString2(buf, base4);
+    return fromString2(buf, base3);
   };
 }
 __name(stringToBytes, "stringToBytes");
@@ -13345,7 +13891,7 @@ function onion32bytes(str) {
   if (addr[0].length !== 56) {
     throw new Error(`failed to parse onion addr: ${addr[0]} not a Tor onion3 address.`);
   }
-  const buf = base32.decode(`b${addr[0]}`);
+  const buf = base322.decode(`b${addr[0]}`);
   const port = parseInt(addr[1], 10);
   if (port < 1 || port > 65536) {
     throw new Error("Port number is not in range(1, 65536)");
@@ -13469,9 +14015,9 @@ function mb2bytes(mbstr) {
   return anybaseDecoder.decode(mbstr);
 }
 __name(mb2bytes, "mb2bytes");
-function bytes2mb(base4) {
+function bytes2mb(base3) {
   return (buf) => {
-    return base4.encoder.encode(buf);
+    return base3.encoder.encode(buf);
   };
 }
 __name(bytes2mb, "bytes2mb");
@@ -13692,7 +14238,7 @@ var codecs = [{
   code: CODE_CERTHASH,
   name: "certhash",
   size: V,
-  bytesToValue: bytes2mb(base64url),
+  bytesToValue: bytes2mb(base64url2),
   valueToBytes: mb2bytes
 }, {
   code: CODE_HTTP,
@@ -13747,7 +14293,7 @@ function bytesToComponents(bytes) {
   const components = [];
   let i2 = 0;
   while (i2 < bytes.length) {
-    const code3 = decode6(bytes, i2);
+    const code3 = decode7(bytes, i2);
     const codec = registry.getProtocol(code3);
     const codeLength = encodingLength2(code3);
     const size = sizeForAddr(codec, bytes, i2 + codeLength);
@@ -13889,7 +14435,7 @@ function sizeForAddr(codec, bytes, offset) {
   if (codec.size > 0) {
     return codec.size / 8;
   }
-  return decode6(bytes, offset);
+  return decode7(bytes, offset);
 }
 __name(sizeForAddr, "sizeForAddr");
 
@@ -14374,8 +14920,8 @@ function lpStream(stream, opts = {}) {
   if (opts.maxDataLength != null && opts.maxLengthLength == null) {
     opts.maxLengthLength = encodingLength2(opts.maxDataLength);
   }
-  const decodeLength = opts?.lengthDecoder ?? decode6;
-  const encodeLength2 = opts?.lengthEncoder ?? encode5;
+  const decodeLength = opts?.lengthDecoder ?? decode7;
+  const encodeLength2 = opts?.lengthEncoder ?? encode6;
   const lpStream2 = {
     async read(options) {
       let dataLength = -1;
@@ -14483,7 +15029,7 @@ var LengthPrefixedDecoder = class {
     this.buffer = new Uint8ArrayList();
     this.maxBufferSize = init.maxBufferSize ?? DEFAULT_MAX_BUFFER_SIZE2;
     this.maxDataLength = init.maxDataLength ?? DEFAULT_MAX_DATA_LENGTH;
-    this.lengthDecoder = init.lengthDecoder ?? decode6;
+    this.lengthDecoder = init.lengthDecoder ?? decode7;
     this.encodingLength = init.encodingLength ?? encodingLength2;
   }
   /**
@@ -14897,7 +15443,7 @@ function formatArgs(args) {
   args.splice(lastC, 0, c2);
 }
 __name(formatArgs, "formatArgs");
-var log = console.debug ?? console.log ?? (() => {
+var log3 = console.debug ?? console.log ?? (() => {
 });
 function save(namespaces) {
   try {
@@ -14939,7 +15485,7 @@ function setupFormatters(formatters) {
   };
 }
 __name(setupFormatters, "setupFormatters");
-var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log });
+var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log: log3 });
 
 // node_modules/weald/dist/src/index.js
 var src_default2 = browser_default;
@@ -15268,6 +15814,7 @@ function trackedMap(config) {
 __name(trackedMap, "trackedMap");
 
 // public/components/chat-manager/index.mjs
+var log4 = logger("chat-manager");
 var ChatManager = class extends BaseComponent {
   static {
     __name(this, "ChatManager");
@@ -15290,6 +15837,7 @@ var ChatManager = class extends BaseComponent {
     this.activeStreams = /* @__PURE__ */ new Map();
   }
   async _componentReady() {
+    log4("ChatManager component ready");
     this._controller = await controller(this);
     this._actions = await createActions(this);
     await this._controller.init();
@@ -15300,7 +15848,7 @@ var ChatManager = class extends BaseComponent {
     try {
       const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
       if (!peerConnection) {
-        console.warn("\u274C PeerConnection component not found");
+        log4.warn("PeerConnection component not found");
         return;
       }
       let attempts = 0;
@@ -15311,7 +15859,7 @@ var ChatManager = class extends BaseComponent {
           this.state.connected = true;
           this.state.peerId = this.node.peerId.toString();
           this.state.mode = peerConnection.state.mode;
-          console.log("\u2705 Node obtained from PeerConnection:", {
+          log4("Node obtained from PeerConnection: %o", {
             peerId: this.state.peerId,
             mode: this.state.mode,
             connected: this.state.connected
@@ -15319,13 +15867,13 @@ var ChatManager = class extends BaseComponent {
           await this.fullRender(this.state);
           return;
         }
-        console.log(`\u23F3 Waiting for PeerConnection node... (attempt ${attempts + 1}/${maxAttempts})`);
+        log4("Waiting for PeerConnection node... (attempt %d/%d)", attempts + 1, maxAttempts);
         await new Promise((resolve) => setTimeout(resolve, 1e3));
         attempts++;
       }
       throw new Error("PeerConnection node not ready after maximum attempts");
     } catch (error) {
-      console.error("\u274C Failed to initialize from PeerConnection:", error);
+      log4.error("Failed to initialize from PeerConnection: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "initializeFromPeerConnection",
@@ -15381,6 +15929,7 @@ var ChatManager = class extends BaseComponent {
     if (groupManager) {
       await groupManager.createGroup(groupName);
     }
+    log4("Group created: %s (%s)", groupName, group.topic);
     return group;
   }
   async joinGroup(topic, groupName = null) {
@@ -15405,13 +15954,14 @@ var ChatManager = class extends BaseComponent {
     if (chatInterface) {
       await chatInterface.setCurrentGroup(this.state.currentGroup);
     }
+    log4("Joined group: %s (%s)", groupName || topic, topic);
   }
   /**
    * Настройка стрима для группы с использованием lpStream
    */
   async setupGroupStream(topic) {
     if (!this.node) {
-      console.warn("\u274C Node not available for stream setup");
+      log4.warn("Node not available for stream setup");
       return;
     }
     try {
@@ -15424,10 +15974,10 @@ var ChatManager = class extends BaseComponent {
         const lp = lpStream(stream);
         this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
         this.streamToChat(lp, peer.toString(), topic);
-        console.log(`\u2705 Stream setup for peer ${peer.toString()} in topic ${topic}`);
+        log4("Stream setup for peer %s in topic %s", peer.toString(), topic);
       }
     } catch (error) {
-      console.error("\u274C Error setting up group stream:", error);
+      log4.error("Error setting up group stream: %o", error);
     }
   }
   /**
@@ -15438,7 +15988,7 @@ var ChatManager = class extends BaseComponent {
       while (true) {
         const message2 = await lp.read();
         const text = toString2(message2.subarray());
-        console.log(`\u{1F4E8} Message from ${peerId} in ${topic}: ${text}`);
+        log4("Message from %s in %s: %s", peerId, topic, text);
         await this.addMessage({
           text,
           topic,
@@ -15448,7 +15998,7 @@ var ChatManager = class extends BaseComponent {
         });
       }
     } catch (error) {
-      console.error(`\u274C Error reading from stream for peer ${peerId}:`, error);
+      log4.error("Error reading from stream for peer %s: %o", peerId, error);
       this.activeStreams.delete(`${topic}-${peerId}`);
     }
   }
@@ -15457,7 +16007,7 @@ var ChatManager = class extends BaseComponent {
    */
   async sendMessageViaStream(topic, messageText) {
     if (!this.node || !this.state.currentGroup) {
-      console.warn("\u274C Node or current group not available");
+      log4.warn("Node or current group not available");
       return false;
     }
     try {
@@ -15478,14 +16028,14 @@ var ChatManager = class extends BaseComponent {
         }
         await streamData.lp.write(fromString2(messageText));
         sent = true;
-        console.log(`\u2705 Message sent via stream to ${peer.toString()}`);
+        log4("Message sent via stream to %s", peer.toString());
       }
       if (this._actions && this._actions.sendMessage) {
         await this._actions.sendMessage(topic, messageText);
       }
       return sent;
     } catch (error) {
-      console.error("\u274C Error sending message via stream:", error);
+      log4.error("Error sending message via stream: %o", error);
       return false;
     }
   }
@@ -15546,7 +16096,7 @@ var ChatManager = class extends BaseComponent {
   }
   async postMessage(event) {
     try {
-      console.log("\u{1F4E8} ChatManager received message:", event.type, event.data);
+      log4("ChatManager received message: %s %o", event.type, event.data);
       switch (event.type) {
         case "SWITCH_MODE":
           await this.switchMode(event.data.mode);
@@ -15577,14 +16127,14 @@ var ChatManager = class extends BaseComponent {
           await this.updatePeerList(event.data.peers);
           break;
         case "GROUP_CREATED":
-          console.log("\u2705 GROUP_CREATED received in ChatManager:", event.data);
+          log4("GROUP_CREATED received in ChatManager: %o", event.data);
           await this.handleGroupCreated(event.data);
           break;
         default:
-          console.warn(`[ChatManager] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${event.type}`);
+          log4.warn("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
       }
     } catch (error) {
-      console.error("\u274C Error processing message in ChatManager:", error);
+      log4.error("Error processing message in ChatManager: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "postMessage",
@@ -15599,7 +16149,7 @@ var ChatManager = class extends BaseComponent {
    */
   async handleGroupCreated(groupData) {
     try {
-      console.log("\u{1F527} Handling GROUP_CREATED in ChatManager:", groupData);
+      log4("Handling GROUP_CREATED in ChatManager: %o", groupData);
       if (!this.state.groups.find((g) => g.id === groupData.id)) {
         this.state.groups.push({
           ...groupData,
@@ -15612,9 +16162,9 @@ var ChatManager = class extends BaseComponent {
         state: this.state,
         selector: "#groups-container"
       });
-      console.log("\u2705 Successfully handled GROUP_CREATED and joined the group");
+      log4("Successfully handled GROUP_CREATED and joined the group");
     } catch (error) {
-      console.error("\u274C Error handling GROUP_CREATED:", error);
+      log4.error("Error handling GROUP_CREATED: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "handleGroupCreated",
@@ -15633,7 +16183,7 @@ var ChatManager = class extends BaseComponent {
       try {
         await streamData.stream.close();
       } catch (error) {
-        console.warn(`Error closing stream ${key}:`, error);
+        log4.warn("Error closing stream %s: %o", key, error);
       }
     }
     this.activeStreams.clear();
@@ -16024,6 +16574,7 @@ __name(escapeRegex, "escapeRegex");
 
 // public/components/chat-interface/controller/index.mjs
 var controller2 = /* @__PURE__ */ __name(async (context) => {
+  const log6 = logger("chat-interface:controller");
   let eventListeners = [];
   return {
     /**
@@ -16031,6 +16582,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
+      log6("\u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440\u0430");
       const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
       const messageInput = context.shadowRoot.querySelector("#message-input");
       if (sendMessageBtn && messageInput) {
@@ -16038,6 +16590,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           if (messageInput.value.trim() && context.state.currentGroup) {
             const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
             if (chatManager) {
+              log6("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
               await chatManager.postMessage({
                 type: "SEND_MESSAGE",
                 data: {
@@ -16063,6 +16616,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
       const clearChatBtn = context.shadowRoot.querySelector("#clear-chat");
       if (clearChatBtn) {
         const clearChatHandler = /* @__PURE__ */ __name(async () => {
+          log6("\u043E\u0447\u0438\u0441\u0442\u043A\u0430 \u0447\u0430\u0442\u0430 \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
           await context.clearMessages();
         }, "clearChatHandler");
         clearChatBtn.addEventListener("click", clearChatHandler);
@@ -16079,8 +16633,9 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
               setTimeout(() => {
                 copyChatIdBtn.textContent = originalText;
               }, 2e3);
+              log6("ID \u0447\u0430\u0442\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D: %s", context.state.currentGroup.topic);
             } catch (err) {
-              console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F:", err);
+              log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F ID \u0447\u0430\u0442\u0430: %o", err);
             }
           }
         }, "copyChatIdHandler");
@@ -16095,6 +16650,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const isVisible = membersPanel.style.display !== "none";
             membersPanel.style.display = isVisible ? "none" : "block";
             toggleMembersBtn.textContent = isVisible ? "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432" : "\u0421\u043A\u0440\u044B\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432";
+            log6("\u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u0438 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0430: %s", isVisible ? "\u0441\u043A\u0440\u044B\u0442\u0430" : "\u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430");
           }
         }, "toggleMembersHandler");
         toggleMembersBtn.addEventListener("click", toggleMembersHandler);
@@ -16105,7 +16661,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           messageInput.focus();
         }, 100);
       }
-      console.log("[ChatInterface] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log6("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
@@ -16116,14 +16672,15 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         element.removeEventListener("click", handler);
         element.removeEventListener("keypress", handler);
       });
+      log6("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D, \u0443\u0434\u0430\u043B\u0435\u043D\u043E \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
       eventListeners = [];
-      console.log("[ChatInterface] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
 
 // public/components/chat-interface/actions/index.mjs
 async function createActions2(context) {
+  const log6 = logger("chat-interface:actions");
   return {
     /**
      * Отправка сообщения в чат
@@ -16159,8 +16716,10 @@ async function createActions2(context) {
 }
 __name(createActions2, "createActions");
 async function sendMessage(message2, topic) {
+  const log6 = logger("chat-interface:actions:sendMessage");
   try {
     if (!message2.trim()) {
+      log6.warn("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
@@ -16169,6 +16728,7 @@ async function sendMessage(message2, topic) {
       return;
     }
     if (!topic) {
+      log6.warn("\u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438</p>",
@@ -16178,16 +16738,19 @@ async function sendMessage(message2, topic) {
     }
     const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
     if (chatManager && chatManager._actions) {
+      log6("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0432 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
       await chatManager._actions.sendMessage(topic, message2);
       const messageInput = this.shadowRoot.querySelector("#message-input");
       if (messageInput) {
         messageInput.value = "";
       }
+      log6("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0443\u0441\u043F\u0435\u0448\u043D\u043E");
     } else {
+      log6.error("\u0447\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
       throw new Error("\u0427\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
     }
   } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+    log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "sendMessage",
@@ -16203,8 +16766,10 @@ async function sendMessage(message2, topic) {
 }
 __name(sendMessage, "sendMessage");
 async function handleIncomingMessage(messageData) {
+  const log6 = logger("chat-interface:actions:handleIncomingMessage");
   try {
     if (this.state.currentGroup && messageData.topic === this.state.currentGroup.topic) {
+      log6("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0434\u043B\u044F \u0442\u0435\u043A\u0443\u0449\u0435\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s", messageData.topic);
       await this.addMessage({
         text: messageData.text,
         from: messageData.from,
@@ -16216,10 +16781,10 @@ async function handleIncomingMessage(messageData) {
         this.showNotification(`\u041D\u043E\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 ${this.state.currentGroup.name}`);
       }
     } else if (!this.state.currentGroup && messageData.type === "received") {
-      console.log(`\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B ${messageData.topic}: ${messageData.text}`);
+      log6("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u043D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B %s: %s", messageData.topic, messageData.text);
     }
   } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+    log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "handleIncomingMessage",
@@ -16230,7 +16795,9 @@ async function handleIncomingMessage(messageData) {
 }
 __name(handleIncomingMessage, "handleIncomingMessage");
 async function clearChatHistory() {
+  const log6 = logger("chat-interface:actions:clearChatHistory");
   try {
+    log6("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0443 \u0438\u0441\u0442\u043E\u0440\u0438\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
     await this.showModal({
       title: "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435",
       content: "<p>\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u043E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0438\u0441\u0442\u043E\u0440\u0438\u044E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439?</p>",
@@ -16238,20 +16805,20 @@ async function clearChatHistory() {
         {
           text: "\u041E\u0442\u043C\u0435\u043D\u0430",
           type: "secondary",
-          action: /* @__PURE__ */ __name(() => console.log("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
+          action: /* @__PURE__ */ __name(() => log6("\u043E\u0447\u0438\u0441\u0442\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C"), "action")
         },
         {
           text: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
           type: "primary",
           action: /* @__PURE__ */ __name(async () => {
             await this.clearMessages();
-            console.log("\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
+            log6("\u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
           }, "action")
         }
       ]
     });
   } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438:", error);
+    log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "clearChatHistory",
@@ -16262,10 +16829,13 @@ async function clearChatHistory() {
 }
 __name(clearChatHistory, "clearChatHistory");
 async function setActiveGroup(group) {
+  const log6 = logger("chat-interface:actions:setActiveGroup");
   try {
     if (!group || !group.topic) {
+      log6.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B: %o", group);
       throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B");
     }
+    log6("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s (%s)", group.name, group.topic);
     await this.showSkeleton({
       selector: "#messages-list",
       replace: true
@@ -16273,9 +16843,9 @@ async function setActiveGroup(group) {
     await this.setCurrentGroup(group);
     await this.updateConnectionStatus(true);
     await this.hideSkeleton();
-    console.log(`\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0438\u043B\u0438\u0441\u044C \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${group.name} (${group.topic})`);
+    log6("\u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E: %s (%s)", group.name, group.topic);
   } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+    log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
     await this.hideSkeleton();
     this.addError({
       componentName: this.constructor.name,
@@ -16292,8 +16862,11 @@ async function setActiveGroup(group) {
 }
 __name(setActiveGroup, "setActiveGroup");
 async function searchMessages(query) {
+  const log6 = logger("chat-interface:actions:searchMessages");
   try {
+    log6("\u043F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %s", query);
     if (!query.trim()) {
+      log6("\u043F\u0443\u0441\u0442\u043E\u0439 \u0437\u0430\u043F\u0440\u043E\u0441 - \u043F\u043E\u043A\u0430\u0437 \u0432\u0441\u0435\u0445 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
       await this.renderPart({
         partName: "renderMessages",
         state: this.state,
@@ -16313,6 +16886,7 @@ async function searchMessages(query) {
     });
     this.state.messages = originalMessages;
     const resultsCount = filteredMessages.length;
+    log6("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %d", resultsCount);
     await this.showModal({
       title: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430",
       content: `<p>\u041D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: ${resultsCount}</p>`,
@@ -16320,7 +16894,7 @@ async function searchMessages(query) {
       closeOnBackdropClick: true
     });
   } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439:", error);
+    log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "searchMessages",
@@ -16339,6 +16913,7 @@ var ChatInterface = class extends BaseComponent {
   constructor() {
     super();
     this._templateMethods = template_exports2;
+    this._log = logger("chat-interface");
     this.state = {
       messages: [],
       currentMessage: "",
@@ -16356,6 +16931,7 @@ var ChatInterface = class extends BaseComponent {
     this._actions = await createActions2(this);
     await this.fullRender(this.state);
     await this._controller.init();
+    this._log("\u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0433\u043E\u0442\u043E\u0432");
     return true;
   }
   async addMessage(message2) {
@@ -16376,10 +16952,12 @@ var ChatInterface = class extends BaseComponent {
     if (messagesContainer) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
+    this._log("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u043E: %s", message2.text?.substring(0, 50));
   }
   async setCurrentGroup(group) {
     this.state.currentGroup = group;
     this.state.messages = [];
+    this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group?.name);
     await this.fullRender(this.state);
   }
   async updateConnectionStatus(connected) {
@@ -16389,6 +16967,7 @@ var ChatInterface = class extends BaseComponent {
       state: this.state,
       selector: "#connection-status"
     });
+    this._log("\u0441\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D: %s", connected ? "\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u043D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E");
   }
   async clearMessages() {
     this.state.messages = [];
@@ -16397,10 +16976,11 @@ var ChatInterface = class extends BaseComponent {
       state: this.state,
       selector: "#messages-list"
     });
+    this._log("\u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
   }
   async postMessage(event) {
     try {
-      console.log("\u{1F4E8} ChatInterface received message:", event.type, event.data);
+      this._log("\u{1F4E8} \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s %o", event.type, event.data);
       switch (event.type) {
         case "PEERS_UPDATE":
           await this.handlePeersUpdate(event.data);
@@ -16412,10 +16992,10 @@ var ChatInterface = class extends BaseComponent {
           await this.handleIncomingMessage(event.data);
           break;
         default:
-          console.warn(`[ChatInterface] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${event.type}`);
+          this._log.warn("\u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
       }
     } catch (error) {
-      console.error("\u274C Error processing message in ChatInterface:", error);
+      this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "postMessage",
@@ -16430,14 +17010,14 @@ var ChatInterface = class extends BaseComponent {
    */
   async handlePeersUpdate(data) {
     try {
-      console.log("\u{1F465} Handling peers update:", data);
+      this._log("\u{1F465} \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432: %o", data);
       this.state.connectedPeers = data.peers || [];
       this.state.totalPeers = data.totalPeers || 0;
       await this.updateConnectionStatusDisplay();
       await this.updateMembersList();
-      console.log("\u2705 Peers data processed in chat interface");
+      this._log("\u2705 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u044B");
     } catch (error) {
-      console.error("\u274C Error handling peers update:", error);
+      this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432: %o", error);
     }
   }
   /**
@@ -16446,15 +17026,15 @@ var ChatInterface = class extends BaseComponent {
    */
   async handleConnectionStatusUpdate(data) {
     try {
-      console.log("\u{1F517} Handling connection status update:", data);
+      this._log("\u{1F517} \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F: %o", data);
       this.state.connected = data.connected;
       this.state.peerId = data.peerId;
       this.state.connectionMode = data.mode;
       this.state.uptime = data.uptime;
       await this.updateConnectionStatusDisplay();
-      console.log("\u2705 Connection status updated in chat interface");
+      this._log("\u2705 \u0441\u0442\u0430\u0442\u0443\u0441 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
     } catch (error) {
-      console.error("\u274C Error handling connection status:", error);
+      this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F: %o", error);
     }
   }
   /**
@@ -16469,9 +17049,10 @@ var ChatInterface = class extends BaseComponent {
           state: this.state,
           selector: "#connection-status"
         });
+        this._log.trace("\u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u043E");
       }
     } catch (error) {
-      console.error("\u274C Error updating connection status display:", error);
+      this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u0441\u0442\u0430\u0442\u0443\u0441\u0430: %o", error);
     }
   }
   /**
@@ -16486,9 +17067,10 @@ var ChatInterface = class extends BaseComponent {
           state: this.state,
           selector: ".members-list"
         });
+        this._log.trace("\u0441\u043F\u0438\u0441\u043E\u043A \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
       }
     } catch (error) {
-      console.error("\u274C Error updating members list:", error);
+      this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432: %o", error);
     }
   }
   async _componentDisconnected() {
@@ -16496,6 +17078,7 @@ var ChatInterface = class extends BaseComponent {
       await this._controller.destroy();
     }
     this._templateMethods = null;
+    this._log("\u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D");
   }
 };
 if (!customElements.get("chat-interface")) {
@@ -16846,539 +17429,17 @@ function escapeHtml3(text) {
 }
 __name(escapeHtml3, "escapeHtml");
 
-// node_modules/@libp2p/logger/dist/src/index.js
-var import_debug = __toESM(require_browser(), 1);
-
-// node_modules/@libp2p/logger/node_modules/multiformats/vendor/base-x.js
-function base3(ALPHABET, name3) {
-  if (ALPHABET.length >= 255) {
-    throw new TypeError("Alphabet too long");
-  }
-  var BASE_MAP = new Uint8Array(256);
-  for (var j = 0; j < BASE_MAP.length; j++) {
-    BASE_MAP[j] = 255;
-  }
-  for (var i2 = 0; i2 < ALPHABET.length; i2++) {
-    var x = ALPHABET.charAt(i2);
-    var xc = x.charCodeAt(0);
-    if (BASE_MAP[xc] !== 255) {
-      throw new TypeError(x + " is ambiguous");
-    }
-    BASE_MAP[xc] = i2;
-  }
-  var BASE = ALPHABET.length;
-  var LEADER = ALPHABET.charAt(0);
-  var FACTOR = Math.log(BASE) / Math.log(256);
-  var iFACTOR = Math.log(256) / Math.log(BASE);
-  function encode9(source) {
-    if (source instanceof Uint8Array) ;
-    else if (ArrayBuffer.isView(source)) {
-      source = new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
-    } else if (Array.isArray(source)) {
-      source = Uint8Array.from(source);
-    }
-    if (!(source instanceof Uint8Array)) {
-      throw new TypeError("Expected Uint8Array");
-    }
-    if (source.length === 0) {
-      return "";
-    }
-    var zeroes = 0;
-    var length3 = 0;
-    var pbegin = 0;
-    var pend = source.length;
-    while (pbegin !== pend && source[pbegin] === 0) {
-      pbegin++;
-      zeroes++;
-    }
-    var size = (pend - pbegin) * iFACTOR + 1 >>> 0;
-    var b58 = new Uint8Array(size);
-    while (pbegin !== pend) {
-      var carry = source[pbegin];
-      var i3 = 0;
-      for (var it1 = size - 1; (carry !== 0 || i3 < length3) && it1 !== -1; it1--, i3++) {
-        carry += 256 * b58[it1] >>> 0;
-        b58[it1] = carry % BASE >>> 0;
-        carry = carry / BASE >>> 0;
-      }
-      if (carry !== 0) {
-        throw new Error("Non-zero carry");
-      }
-      length3 = i3;
-      pbegin++;
-    }
-    var it2 = size - length3;
-    while (it2 !== size && b58[it2] === 0) {
-      it2++;
-    }
-    var str = LEADER.repeat(zeroes);
-    for (; it2 < size; ++it2) {
-      str += ALPHABET.charAt(b58[it2]);
-    }
-    return str;
-  }
-  __name(encode9, "encode");
-  function decodeUnsafe(source) {
-    if (typeof source !== "string") {
-      throw new TypeError("Expected String");
-    }
-    if (source.length === 0) {
-      return new Uint8Array();
-    }
-    var psz = 0;
-    if (source[psz] === " ") {
-      return;
-    }
-    var zeroes = 0;
-    var length3 = 0;
-    while (source[psz] === LEADER) {
-      zeroes++;
-      psz++;
-    }
-    var size = (source.length - psz) * FACTOR + 1 >>> 0;
-    var b256 = new Uint8Array(size);
-    while (source[psz]) {
-      var carry = BASE_MAP[source.charCodeAt(psz)];
-      if (carry === 255) {
-        return;
-      }
-      var i3 = 0;
-      for (var it3 = size - 1; (carry !== 0 || i3 < length3) && it3 !== -1; it3--, i3++) {
-        carry += BASE * b256[it3] >>> 0;
-        b256[it3] = carry % 256 >>> 0;
-        carry = carry / 256 >>> 0;
-      }
-      if (carry !== 0) {
-        throw new Error("Non-zero carry");
-      }
-      length3 = i3;
-      psz++;
-    }
-    if (source[psz] === " ") {
-      return;
-    }
-    var it4 = size - length3;
-    while (it4 !== size && b256[it4] === 0) {
-      it4++;
-    }
-    var vch = new Uint8Array(zeroes + (size - it4));
-    var j2 = zeroes;
-    while (it4 !== size) {
-      vch[j2++] = b256[it4++];
-    }
-    return vch;
-  }
-  __name(decodeUnsafe, "decodeUnsafe");
-  function decode10(string2) {
-    var buffer = decodeUnsafe(string2);
-    if (buffer) {
-      return buffer;
-    }
-    throw new Error(`Non-${name3} character`);
-  }
-  __name(decode10, "decode");
-  return {
-    encode: encode9,
-    decodeUnsafe,
-    decode: decode10
-  };
-}
-__name(base3, "base");
-var src2 = base3;
-var _brrp__multiformats_scope_baseX2 = src2;
-var base_x_default2 = _brrp__multiformats_scope_baseX2;
-
-// node_modules/@libp2p/logger/node_modules/multiformats/src/bytes.js
-var empty2 = new Uint8Array(0);
-var coerce2 = /* @__PURE__ */ __name((o2) => {
-  if (o2 instanceof Uint8Array && o2.constructor.name === "Uint8Array") return o2;
-  if (o2 instanceof ArrayBuffer) return new Uint8Array(o2);
-  if (ArrayBuffer.isView(o2)) {
-    return new Uint8Array(o2.buffer, o2.byteOffset, o2.byteLength);
-  }
-  throw new Error("Unknown type, must be binary type");
-}, "coerce");
-
-// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base.js
-var Encoder2 = class {
-  static {
-    __name(this, "Encoder");
-  }
-  /**
-   * @param {Base} name
-   * @param {Prefix} prefix
-   * @param {(bytes:Uint8Array) => string} baseEncode
-   */
-  constructor(name3, prefix, baseEncode) {
-    this.name = name3;
-    this.prefix = prefix;
-    this.baseEncode = baseEncode;
-  }
-  /**
-   * @param {Uint8Array} bytes
-   * @returns {API.Multibase<Prefix>}
-   */
-  encode(bytes) {
-    if (bytes instanceof Uint8Array) {
-      return `${this.prefix}${this.baseEncode(bytes)}`;
-    } else {
-      throw Error("Unknown type, must be binary type");
-    }
-  }
-};
-var Decoder2 = class {
-  static {
-    __name(this, "Decoder");
-  }
-  /**
-   * @param {Base} name
-   * @param {Prefix} prefix
-   * @param {(text:string) => Uint8Array} baseDecode
-   */
-  constructor(name3, prefix, baseDecode) {
-    this.name = name3;
-    this.prefix = prefix;
-    if (prefix.codePointAt(0) === void 0) {
-      throw new Error("Invalid prefix character");
-    }
-    this.prefixCodePoint = /** @type {number} */
-    prefix.codePointAt(0);
-    this.baseDecode = baseDecode;
-  }
-  /**
-   * @param {string} text
-   */
-  decode(text) {
-    if (typeof text === "string") {
-      if (text.codePointAt(0) !== this.prefixCodePoint) {
-        throw Error(`Unable to decode multibase string ${JSON.stringify(text)}, ${this.name} decoder only supports inputs prefixed with ${this.prefix}`);
-      }
-      return this.baseDecode(text.slice(this.prefix.length));
-    } else {
-      throw Error("Can only multibase decode strings");
-    }
-  }
-  /**
-   * @template {string} OtherPrefix
-   * @param {API.UnibaseDecoder<OtherPrefix>|ComposedDecoder<OtherPrefix>} decoder
-   * @returns {ComposedDecoder<Prefix|OtherPrefix>}
-   */
-  or(decoder) {
-    return or2(this, decoder);
-  }
-};
-var ComposedDecoder2 = class {
-  static {
-    __name(this, "ComposedDecoder");
-  }
-  /**
-   * @param {Decoders<Prefix>} decoders
-   */
-  constructor(decoders3) {
-    this.decoders = decoders3;
-  }
-  /**
-   * @template {string} OtherPrefix
-   * @param {API.UnibaseDecoder<OtherPrefix>|ComposedDecoder<OtherPrefix>} decoder
-   * @returns {ComposedDecoder<Prefix|OtherPrefix>}
-   */
-  or(decoder) {
-    return or2(this, decoder);
-  }
-  /**
-   * @param {string} input
-   * @returns {Uint8Array}
-   */
-  decode(input) {
-    const prefix = (
-      /** @type {Prefix} */
-      input[0]
-    );
-    const decoder = this.decoders[prefix];
-    if (decoder) {
-      return decoder.decode(input);
-    } else {
-      throw RangeError(`Unable to decode multibase string ${JSON.stringify(input)}, only inputs prefixed with ${Object.keys(this.decoders)} are supported`);
-    }
-  }
-};
-var or2 = /* @__PURE__ */ __name((left, right) => new ComposedDecoder2(
-  /** @type {Decoders<L|R>} */
-  {
-    ...left.decoders || { [
-      /** @type API.UnibaseDecoder<L> */
-      left.prefix
-    ]: left },
-    ...right.decoders || { [
-      /** @type API.UnibaseDecoder<R> */
-      right.prefix
-    ]: right }
-  }
-), "or");
-var Codec2 = class {
-  static {
-    __name(this, "Codec");
-  }
-  /**
-   * @param {Base} name
-   * @param {Prefix} prefix
-   * @param {(bytes:Uint8Array) => string} baseEncode
-   * @param {(text:string) => Uint8Array} baseDecode
-   */
-  constructor(name3, prefix, baseEncode, baseDecode) {
-    this.name = name3;
-    this.prefix = prefix;
-    this.baseEncode = baseEncode;
-    this.baseDecode = baseDecode;
-    this.encoder = new Encoder2(name3, prefix, baseEncode);
-    this.decoder = new Decoder2(name3, prefix, baseDecode);
-  }
-  /**
-   * @param {Uint8Array} input
-   */
-  encode(input) {
-    return this.encoder.encode(input);
-  }
-  /**
-   * @param {string} input
-   */
-  decode(input) {
-    return this.decoder.decode(input);
-  }
-};
-var from3 = /* @__PURE__ */ __name(({ name: name3, prefix, encode: encode9, decode: decode10 }) => new Codec2(name3, prefix, encode9, decode10), "from");
-var baseX2 = /* @__PURE__ */ __name(({ prefix, name: name3, alphabet: alphabet2 }) => {
-  const { encode: encode9, decode: decode10 } = base_x_default2(alphabet2, name3);
-  return from3({
-    prefix,
-    name: name3,
-    encode: encode9,
-    /**
-     * @param {string} text
-     */
-    decode: /* @__PURE__ */ __name((text) => coerce2(decode10(text)), "decode")
-  });
-}, "baseX");
-var decode7 = /* @__PURE__ */ __name((string2, alphabet2, bitsPerChar, name3) => {
-  const codes = {};
-  for (let i2 = 0; i2 < alphabet2.length; ++i2) {
-    codes[alphabet2[i2]] = i2;
-  }
-  let end = string2.length;
-  while (string2[end - 1] === "=") {
-    --end;
-  }
-  const out = new Uint8Array(end * bitsPerChar / 8 | 0);
-  let bits = 0;
-  let buffer = 0;
-  let written = 0;
-  for (let i2 = 0; i2 < end; ++i2) {
-    const value2 = codes[string2[i2]];
-    if (value2 === void 0) {
-      throw new SyntaxError(`Non-${name3} character`);
-    }
-    buffer = buffer << bitsPerChar | value2;
-    bits += bitsPerChar;
-    if (bits >= 8) {
-      bits -= 8;
-      out[written++] = 255 & buffer >> bits;
-    }
-  }
-  if (bits >= bitsPerChar || 255 & buffer << 8 - bits) {
-    throw new SyntaxError("Unexpected end of data");
-  }
-  return out;
-}, "decode");
-var encode6 = /* @__PURE__ */ __name((data, alphabet2, bitsPerChar) => {
-  const pad = alphabet2[alphabet2.length - 1] === "=";
-  const mask = (1 << bitsPerChar) - 1;
-  let out = "";
-  let bits = 0;
-  let buffer = 0;
-  for (let i2 = 0; i2 < data.length; ++i2) {
-    buffer = buffer << 8 | data[i2];
-    bits += 8;
-    while (bits > bitsPerChar) {
-      bits -= bitsPerChar;
-      out += alphabet2[mask & buffer >> bits];
-    }
-  }
-  if (bits) {
-    out += alphabet2[mask & buffer << bitsPerChar - bits];
-  }
-  if (pad) {
-    while (out.length * bitsPerChar & 7) {
-      out += "=";
-    }
-  }
-  return out;
-}, "encode");
-var rfc46482 = /* @__PURE__ */ __name(({ name: name3, prefix, bitsPerChar, alphabet: alphabet2 }) => {
-  return from3({
-    prefix,
-    name: name3,
-    encode(input) {
-      return encode6(input, alphabet2, bitsPerChar);
-    },
-    decode(input) {
-      return decode7(input, alphabet2, bitsPerChar, name3);
-    }
-  });
-}, "rfc4648");
-
-// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base58.js
-var base58btc2 = baseX2({
-  name: "base58btc",
-  prefix: "z",
-  alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-});
-var base58flickr2 = baseX2({
-  name: "base58flickr",
-  prefix: "Z",
-  alphabet: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
-});
-
-// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base32.js
-var base322 = rfc46482({
-  prefix: "b",
-  name: "base32",
-  alphabet: "abcdefghijklmnopqrstuvwxyz234567",
-  bitsPerChar: 5
-});
-var base32upper2 = rfc46482({
-  prefix: "B",
-  name: "base32upper",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
-  bitsPerChar: 5
-});
-var base32pad2 = rfc46482({
-  prefix: "c",
-  name: "base32pad",
-  alphabet: "abcdefghijklmnopqrstuvwxyz234567=",
-  bitsPerChar: 5
-});
-var base32padupper2 = rfc46482({
-  prefix: "C",
-  name: "base32padupper",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=",
-  bitsPerChar: 5
-});
-var base32hex2 = rfc46482({
-  prefix: "v",
-  name: "base32hex",
-  alphabet: "0123456789abcdefghijklmnopqrstuv",
-  bitsPerChar: 5
-});
-var base32hexupper2 = rfc46482({
-  prefix: "V",
-  name: "base32hexupper",
-  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
-  bitsPerChar: 5
-});
-var base32hexpad2 = rfc46482({
-  prefix: "t",
-  name: "base32hexpad",
-  alphabet: "0123456789abcdefghijklmnopqrstuv=",
-  bitsPerChar: 5
-});
-var base32hexpadupper2 = rfc46482({
-  prefix: "T",
-  name: "base32hexpadupper",
-  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV=",
-  bitsPerChar: 5
-});
-var base32z2 = rfc46482({
-  prefix: "h",
-  name: "base32z",
-  alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
-  bitsPerChar: 5
-});
-
-// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base64.js
-var base642 = rfc46482({
-  prefix: "m",
-  name: "base64",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
-  bitsPerChar: 6
-});
-var base64pad2 = rfc46482({
-  prefix: "M",
-  name: "base64pad",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-  bitsPerChar: 6
-});
-var base64url2 = rfc46482({
-  prefix: "u",
-  name: "base64url",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
-  bitsPerChar: 6
-});
-var base64urlpad2 = rfc46482({
-  prefix: "U",
-  name: "base64urlpad",
-  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=",
-  bitsPerChar: 6
-});
-
-// node_modules/@libp2p/logger/dist/src/index.js
-import_debug.default.formatters.b = (v) => {
-  return v == null ? "undefined" : base58btc2.baseEncode(v);
-};
-import_debug.default.formatters.t = (v) => {
-  return v == null ? "undefined" : base322.baseEncode(v);
-};
-import_debug.default.formatters.m = (v) => {
-  return v == null ? "undefined" : base642.baseEncode(v);
-};
-import_debug.default.formatters.p = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-import_debug.default.formatters.c = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-import_debug.default.formatters.k = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-import_debug.default.formatters.a = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-function createDisabledLogger(namespace) {
-  const logger3 = /* @__PURE__ */ __name(() => {
-  }, "logger");
-  logger3.enabled = false;
-  logger3.color = "";
-  logger3.diff = 0;
-  logger3.log = () => {
-  };
-  logger3.namespace = namespace;
-  logger3.destroy = () => true;
-  logger3.extend = () => logger3;
-  return logger3;
-}
-__name(createDisabledLogger, "createDisabledLogger");
-function logger(name3) {
-  let trace = createDisabledLogger(`${name3}:trace`);
-  if (import_debug.default.enabled(`${name3}:trace`) && import_debug.default.names.map((r2) => r2.toString()).find((n2) => n2.includes(":trace")) != null) {
-    trace = (0, import_debug.default)(`${name3}:trace`);
-  }
-  return Object.assign((0, import_debug.default)(name3), {
-    error: (0, import_debug.default)(`${name3}:error`),
-    trace
-  });
-}
-__name(logger, "logger");
-
 // public/components/group-manager/controller/index.mjs
 var controller3 = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
-  const log2 = logger("group-manager:controller");
+  const log6 = logger("group-manager:controller");
   return {
     /**
      * Инициализирует контроллер компонента GroupManager
      * @async
      */
     async init() {
-      log2("controller initializing");
+      log6("controller initializing");
       const createGroupBtn = context.shadowRoot.querySelector("#create-group-btn");
       const createFirstGroupBtn = context.shadowRoot.querySelector("#create-first-group");
       const createGroupActionBtn = context.shadowRoot.querySelector("#create-group");
@@ -17438,7 +17499,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
               {
                 text: "\u041E\u0442\u043C\u0435\u043D\u0430",
                 type: "secondary",
-                action: /* @__PURE__ */ __name(() => log2("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E"), "action")
+                action: /* @__PURE__ */ __name(() => log6("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E"), "action")
               },
               {
                 text: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C",
@@ -17447,10 +17508,10 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                   const groupNameInput = document.querySelector("#group-name-input");
                   if (groupNameInput && groupNameInput.value.trim()) {
                     const groupName = groupNameInput.value.trim();
-                    log2("creating group: %s", groupName);
+                    log6("creating group: %s", groupName);
                     try {
                       const group = await context.createGroup(groupName);
-                      log2("group created successfully: %o", group);
+                      log6("group created successfully: %o", group);
                       const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
                       if (chatManager) {
                         await chatManager.postMessage({
@@ -17459,7 +17520,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                         });
                       }
                     } catch (error) {
-                      log2.error("error creating group: %o", error);
+                      log6.error("error creating group: %o", error);
                       await context.showModal({
                         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                         content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -17473,7 +17534,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
             closeOnBackdropClick: true
           });
         } catch (error) {
-          log2.error("error in create group handler: %o", error);
+          log6.error("error in create group handler: %o", error);
         }
       }, "createGroupHandler");
       [createGroupBtn, createFirstGroupBtn, createGroupActionBtn].forEach((btn) => {
@@ -17488,7 +17549,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
           try {
             await context.checkNodeStatus();
           } catch (error) {
-            log2.error("error checking node status: %o", error);
+            log6.error("error checking node status: %o", error);
           }
         }, "checkStatusHandler");
         checkStatusBtn.addEventListener("click", checkStatusHandler);
@@ -17504,7 +17565,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
       }
       const discoverGroupsHandler = /* @__PURE__ */ __name(async () => {
         try {
-          log2("\u0437\u0430\u043F\u0443\u0441\u043A \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
+          log6("\u0437\u0430\u043F\u0443\u0441\u043A \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
           await context.showSkeleton({
             selector: "#discovered-groups-list",
             replace: true
@@ -17514,7 +17575,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
             await context.hideSkeleton();
           }, 2e3);
         } catch (error) {
-          log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
+          log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
           await context.hideSkeleton();
           await context.showModal({
             title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430",
@@ -17546,7 +17607,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
               if (group) {
                 try {
                   await context.joinGroup(group);
-                  log2("successfully joined group: %s", group.name);
+                  log6("successfully joined group: %s", group.name);
                   const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
                   if (chatManager) {
                     await chatManager.postMessage({
@@ -17555,7 +17616,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                     });
                   }
                 } catch (error) {
-                  log2.error("error joining group: %o", error);
+                  log6.error("error joining group: %o", error);
                   await context.showModal({
                     title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                     content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
@@ -17577,9 +17638,9 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
             if (groupId) {
               try {
                 await context.leaveGroup(groupId);
-                log2("successfully left group: %s", groupId);
+                log6("successfully left group: %s", groupId);
               } catch (error) {
-                log2.error("error leaving group: %o", error);
+                log6.error("error leaving group: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -17609,29 +17670,29 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
         setupJoinButtons();
         setupLeaveButtons();
       }, 100);
-      log2("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log6("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
-      log2("controller destroying");
+      log6("controller destroying");
       eventListeners.forEach(({ element, handler }) => {
         try {
           element.removeEventListener("click", handler);
           element.removeEventListener("input", handler);
         } catch (error) {
-          log2.warn("error removing event listener: %o", error);
+          log6.warn("error removing event listener: %o", error);
         }
       });
       if (context._groupObserver) {
         context._groupObserver.disconnect();
         context._groupObserver = null;
       }
-      log2("removed %d event listeners", eventListeners.length);
+      log6("removed %d event listeners", eventListeners.length);
       eventListeners = [];
-      log2("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      log6("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
@@ -17641,7 +17702,7 @@ async function createActions3(context) {
   let libp2p = null;
   let discoveredGroupsInterval = null;
   const GROUPS_ANNOUNCEMENT_TOPIC = "chat-groups-announcements";
-  const log2 = logger("group-manager:actions");
+  const log6 = logger("group-manager:actions");
   return {
     /**
      * Инициализация Libp2p для работы с группами
@@ -17652,7 +17713,7 @@ async function createActions3(context) {
       libp2p = libp2pInstance;
       await this.subscribeToGroupsAnnouncements();
       this.startGroupDiscovery();
-      log2("libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
+      log6("libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
     }, "initializeLibp2p"),
     /**
      * Подписывается на топик анонсов групп
@@ -17672,13 +17733,13 @@ async function createActions3(context) {
                 this.handleDiscoveryRequest(event.detail);
               }
             } catch (error) {
-              log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+              log6.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
             }
           }
         });
-        log2("\u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %s", GROUPS_ANNOUNCEMENT_TOPIC);
+        log6("\u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %s", GROUPS_ANNOUNCEMENT_TOPIC);
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432: %o", error);
       }
     },
     /**
@@ -17691,10 +17752,10 @@ async function createActions3(context) {
         if (announcement.type === "GROUP_CREATED" || announcement.type === "GROUP_UPDATED") {
           const groupInfo = announcement.data;
           await this.updateDiscoveredGroups(groupInfo);
-          log2("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
+          log6("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
         }
       } catch (error) {
-        log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log6.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
       }
     },
     /**
@@ -17729,12 +17790,12 @@ async function createActions3(context) {
     async safeUpdateDiscoveredGroupsUI() {
       try {
         if (!context.renderPart) {
-          log2.warn("renderPart method not available in actions");
+          log6.warn("renderPart method not available in actions");
           return;
         }
         const discoveredGroupsElement = context.shadowRoot?.querySelector("#discovered-groups-list");
         if (!discoveredGroupsElement) {
-          log2.warn("discovered groups list element not found");
+          log6.warn("discovered groups list element not found");
           return;
         }
         await context.renderPart({
@@ -17743,7 +17804,7 @@ async function createActions3(context) {
           selector: "#discovered-groups-list"
         });
       } catch (error) {
-        log2.warn("error updating discovered groups UI: %o", error);
+        log6.warn("error updating discovered groups UI: %o", error);
       }
     },
     /**
@@ -17768,7 +17829,7 @@ async function createActions3(context) {
         throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
       }
       try {
-        log2("\u0437\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
+        log6("\u0437\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
         const discoveryRequest = {
           type: "GROUPS_DISCOVERY_REQUEST",
           data: {
@@ -17781,11 +17842,11 @@ async function createActions3(context) {
           GROUPS_ANNOUNCEMENT_TOPIC,
           new TextEncoder().encode(JSON.stringify(discoveryRequest))
         );
-        log2("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
+        log6("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
         await this.discoverGroups();
         return true;
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
         throw error;
       }
     },
@@ -17810,7 +17871,7 @@ async function createActions3(context) {
               GROUPS_ANNOUNCEMENT_TOPIC,
               new TextEncoder().encode(JSON.stringify(response))
             );
-            log2("\u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 %d \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438", myGroups.length);
+            log6("\u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 %d \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438", myGroups.length);
           }
         }
         if (request.type === "GROUPS_DISCOVERY_RESPONSE") {
@@ -17818,10 +17879,10 @@ async function createActions3(context) {
           for (const group of discoveredGroups) {
             await this.updateDiscoveredGroups(group);
           }
-          log2("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
+          log6("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
         }
       } catch (error) {
-        log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
+        log6.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
       }
     },
     /**
@@ -17830,7 +17891,7 @@ async function createActions3(context) {
      */
     discoverGroups: /* @__PURE__ */ __name(async function() {
       if (!libp2p) {
-        log2.warn("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        log6.warn("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         return;
       }
       try {
@@ -17838,7 +17899,7 @@ async function createActions3(context) {
         const groupTopics = topics.filter(
           (topic) => topic.startsWith("chat-group-") || topic.startsWith("universe-chat-") || topic.startsWith("chat-groups-")
         );
-        log2("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0442\u043E\u043F\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %d", groupTopics.length);
+        log6("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0442\u043E\u043F\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %d", groupTopics.length);
         const discoveredGroups = [];
         for (const topic of groupTopics) {
           try {
@@ -17863,14 +17924,14 @@ async function createActions3(context) {
             };
             discoveredGroups.push(groupInfo);
           } catch (error) {
-            log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
+            log6.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
           }
         }
         context.state.discoveredGroups = discoveredGroups;
         await this.safeUpdateDiscoveredGroupsUI();
-        log2("\u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: %d", discoveredGroups.length);
+        log6("\u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: %d", discoveredGroups.length);
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "discoverGroups",
@@ -17904,18 +17965,18 @@ async function createActions3(context) {
           tags: options.tags || ["general"],
           language: options.language || "ru"
         };
-        log2("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0441 \u0442\u043E\u043F\u0438\u043A\u043E\u043C: %s", topic);
+        log6("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0441 \u0442\u043E\u043F\u0438\u043A\u043E\u043C: %s", topic);
         await libp2p.services.pubsub.subscribe(topic);
         await this.announceGroupCreation(group);
         if (!context.state.groups) {
           context.state.groups = [];
         }
         context.state.groups.push(group);
-        log2("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", groupName, topic);
+        log6("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", groupName, topic);
         await this.safeUpdateMyGroupsUI();
         return group;
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "createGroup",
@@ -17931,12 +17992,12 @@ async function createActions3(context) {
     async safeUpdateMyGroupsUI() {
       try {
         if (!context.renderPart) {
-          log2.warn("renderPart method not available for my groups");
+          log6.warn("renderPart method not available for my groups");
           return;
         }
         const myGroupsElement = context.shadowRoot?.querySelector("#my-groups-list");
         if (!myGroupsElement) {
-          log2.warn("my groups list element not found");
+          log6.warn("my groups list element not found");
           return;
         }
         await context.renderPart({
@@ -17945,7 +18006,7 @@ async function createActions3(context) {
           selector: "#my-groups-list"
         });
       } catch (error) {
-        log2.warn("error updating my groups UI: %o", error);
+        log6.warn("error updating my groups UI: %o", error);
       }
     },
     /**
@@ -17977,9 +18038,9 @@ async function createActions3(context) {
           GROUPS_ANNOUNCEMENT_TOPIC,
           new TextEncoder().encode(JSON.stringify(announcement))
         );
-        log2("\u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group.name);
+        log6("\u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group.name);
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "announceGroupCreation",
@@ -18017,11 +18078,11 @@ async function createActions3(context) {
         if (!context.state.joinedGroups.find((g) => g.id === topic)) {
           context.state.joinedGroups.push(group);
         }
-        log2("\u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %s (%s)", group.name, topic);
+        log6("\u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %s (%s)", group.name, topic);
         await this.safeUpdateJoinedGroupsUI();
         return group;
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "joinGroup",
@@ -18037,12 +18098,12 @@ async function createActions3(context) {
     async safeUpdateJoinedGroupsUI() {
       try {
         if (!context.renderPart) {
-          log2.warn("renderPart method not available for joined groups");
+          log6.warn("renderPart method not available for joined groups");
           return;
         }
         const joinedGroupsElement = context.shadowRoot?.querySelector("#joined-groups-list");
         if (!joinedGroupsElement) {
-          log2.warn("joined groups list element not found");
+          log6.warn("joined groups list element not found");
           return;
         }
         await context.renderPart({
@@ -18051,7 +18112,7 @@ async function createActions3(context) {
           selector: "#joined-groups-list"
         });
       } catch (error) {
-        log2.warn("error updating joined groups UI: %o", error);
+        log6.warn("error updating joined groups UI: %o", error);
       }
     },
     /**
@@ -18068,10 +18129,10 @@ async function createActions3(context) {
         if (context.state.joinedGroups) {
           context.state.joinedGroups = context.state.joinedGroups.filter((g) => g.id !== topic);
         }
-        log2("\u043F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
+        log6("\u043F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
         await this.safeUpdateJoinedGroupsUI();
       } catch (error) {
-        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log6.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "leaveGroup",
@@ -18095,7 +18156,7 @@ async function createActions3(context) {
       const filteredGroups = (context.state.discoveredGroups || []).filter(
         (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm) || group.tags && group.tags.some((tag) => tag.toLowerCase().includes(searchTerm))
       );
-      log2('\u043F\u043E\u0438\u0441\u043A "%s": \u043D\u0430\u0439\u0434\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F', query, filteredGroups.length);
+      log6('\u043F\u043E\u0438\u0441\u043A "%s": \u043D\u0430\u0439\u0434\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F', query, filteredGroups.length);
       return filteredGroups;
     }, "searchGroups"),
     /**
@@ -18112,7 +18173,7 @@ async function createActions3(context) {
         const subscribers = libp2p.services.pubsub.getSubscribers(topic);
         return subscribers.map((peerId) => peerId.toString());
       } catch (error) {
-        log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
+        log6.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
         return [];
       }
     }, "getGroupMembers"),
@@ -18168,7 +18229,7 @@ async function createActions3(context) {
         discoveredGroupsInterval = null;
       }
       libp2p = null;
-      log2("\u0440\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
+      log6("\u0440\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
     }, "cleanup")
   };
 }
@@ -18997,6 +19058,7 @@ __name(getConnectionProtocol, "getConnectionProtocol");
 
 // public/components/peer-connection/controller/index.mjs
 var controller4 = /* @__PURE__ */ __name(async (context) => {
+  const log6 = logger("peer-connection:controller");
   let eventListeners = [];
   return {
     /**
@@ -19004,7 +19066,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
-      console.log("\u{1F527} PeerConnection controller initializing...");
+      log6("controller initializing...");
       const setupCopyHandlers = /* @__PURE__ */ __name(() => {
         const copyButtons = context.shadowRoot.querySelectorAll(".address-action.copy");
         copyButtons.forEach((button) => {
@@ -19027,8 +19089,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
             const peerId = e2.target.getAttribute("data-peer-id");
             if (peerId) {
-              console.log("ssssss", e2.currentTarget);
-              debugger;
+              log6.trace("Copying peer ID: %s", peerId);
               await context.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           }, "handler");
@@ -19057,7 +19118,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode-btn");
-      console.log("\u{1F50D} Debug: button elements found", {
+      log6.trace("Debug: button elements found: %o", {
         listenerBtn: !!listenerBtn,
         dialerBtn: !!dialerBtn,
         listenerBtnId: listenerBtn?.id,
@@ -19066,11 +19127,11 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (listenerBtn) {
         const listenerHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Listener mode button clicked");
+            log6("Listener mode button clicked");
             await context.switchMode("listener");
-            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
+            log6("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "controller-listener",
@@ -19081,16 +19142,16 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "listenerHandler");
         listenerBtn.addEventListener("click", listenerHandler);
         eventListeners.push({ element: listenerBtn, handler: listenerHandler });
-        console.log("\u2705 Listener button handler attached");
+        log6.trace("Listener button handler attached");
       }
       if (dialerBtn) {
         const dialerHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Dialer mode button clicked");
+            log6("Dialer mode button clicked");
             await context.switchMode("dialer");
-            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
+            log6("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "controller-dialer",
@@ -19101,7 +19162,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "dialerHandler");
         dialerBtn.addEventListener("click", dialerHandler);
         eventListeners.push({ element: dialerBtn, handler: dialerHandler });
-        console.log("\u2705 Dialer button handler attached");
+        log6.trace("Dialer button handler attached");
       }
       const modeSwitcher = context.shadowRoot.querySelector(".mode-switcher");
       if (modeSwitcher) {
@@ -19111,30 +19172,30 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
             event.preventDefault();
             event.stopPropagation();
             const mode = button.id === "listener-mode-btn" ? "listener" : "dialer";
-            console.log("\u{1F527} Mode delegation handler triggered:", mode);
+            log6.trace("Mode delegation handler triggered: %s", mode);
             try {
               await context.switchMode(mode);
-              console.log("\u2705 Mode switched via delegation:", mode);
+              log6.trace("Mode switched via delegation: %s", mode);
             } catch (error) {
-              console.error("\u274C Error in mode delegation:", error);
+              log6.error("Error in mode delegation: %o", error);
             }
           }
         }, "modeDelegationHandler");
         modeSwitcher.addEventListener("click", modeDelegationHandler);
         eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
-        console.log("\u2705 Mode switcher delegation handler attached");
+        log6.trace("Mode switcher delegation handler attached");
       }
       if (connectBtn && peerAddressInput) {
         const connectHandler = /* @__PURE__ */ __name(async () => {
           const address = peerAddressInput.value.trim();
           if (address) {
             try {
-              console.log("\u{1F527} Connecting to peer:", address);
+              log6("Connecting to peer: %s", address);
               await context.connectToPeer(address);
               peerAddressInput.value = "";
-              console.log(`\u2705 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: ${address}`);
+              log6("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: %s", address);
             } catch (error) {
-              console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
+              log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
               context.addError({
                 componentName: context.constructor.name,
                 source: "controller-connect",
@@ -19143,7 +19204,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
               });
             }
           } else {
-            console.warn("\u26A0\uFE0F \u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
+            log6.warn("\u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
           }
         }, "connectHandler");
         connectBtn.addEventListener("click", connectHandler);
@@ -19156,33 +19217,33 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "enterHandler");
         peerAddressInput.addEventListener("keypress", enterHandler);
         eventListeners.push({ element: peerAddressInput, handler: enterHandler });
-        console.log("\u2705 Peer connection handlers attached");
+        log6.trace("Peer connection handlers attached");
       }
       const refreshBtn = context.shadowRoot.querySelector("#refresh-peers-btn");
       if (refreshBtn) {
         const refreshHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Refreshing peer list...");
+            log6("Refreshing peer list...");
             await context.updatePeerList();
-            console.log("\u2705 \u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
+            log6("\u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432: %o", error);
           }
         }, "refreshHandler");
         refreshBtn.addEventListener("click", refreshHandler);
         eventListeners.push({ element: refreshBtn, handler: refreshHandler });
-        console.log("\u2705 Refresh peers handler attached");
+        log6.trace("Refresh peers handler attached");
       }
       const copyAddressesBtn = context.shadowRoot.querySelector("#copy-addresses-btn");
       if (copyAddressesBtn) {
         const copyHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Copying addresses...");
+            log6("Copying addresses...");
             const addresses = await context.getRelayAddresses();
             const textToCopy = addresses.join("\n");
             await context.copyToClipboard(textToCopy, "\u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "controller-copy-addresses",
@@ -19193,26 +19254,26 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "copyHandler");
         copyAddressesBtn.addEventListener("click", copyHandler);
         eventListeners.push({ element: copyAddressesBtn, handler: copyHandler });
-        console.log("\u2705 Copy addresses handler attached");
+        log6.trace("Copy addresses handler attached");
       }
       const relayToggle = context.shadowRoot.querySelector("#relay-toggle");
       if (relayToggle) {
         const relayHandler = /* @__PURE__ */ __name((event) => {
           context.state.relayEnabled = event.target.checked;
-          console.log(`\u{1F527} Relay ${context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}`);
+          log6("Relay %s", context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D");
           context.renderPart({
             partName: "renderSystemStatus",
             state: context.state,
             selector: ".status-card .card-content"
-          }).catch(console.error);
+          }).catch((error) => log6.error("Error updating relay status: %o", error));
         }, "relayHandler");
         relayToggle.addEventListener("change", relayHandler);
         eventListeners.push({ element: relayToggle, handler: relayHandler });
-        console.log("\u2705 Relay toggle handler attached");
+        log6.trace("Relay toggle handler attached");
       }
       this.setupQuickActions(context, eventListeners);
-      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      console.log("\u{1F4CA} Total event listeners:", eventListeners.length);
+      log6("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log6("Total event listeners: %d", eventListeners.length);
     },
     /**
      * Настраивает обработчики для быстрых действий
@@ -19224,12 +19285,11 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (copyPeerIdBtn) {
         const copyPeerHandler = /* @__PURE__ */ __name(async () => {
           try {
-            debugger;
             if (context2.state.peerId) {
               await context2.copyToClipboard(context2.state.peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID: %o", error);
           }
         }, "copyPeerHandler");
         copyPeerIdBtn.addEventListener("click", copyPeerHandler);
@@ -19239,14 +19299,13 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (copyAllAddressesBtn) {
         const copyAllAddressesHandler = /* @__PURE__ */ __name(async () => {
           try {
-            debugger;
             const addresses = context2.state.listeningAddresses || [];
             if (addresses.length > 0) {
               const textToCopy = addresses.join("\n");
               await context2.copyToClipboard(textToCopy, "\u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432: %o", error);
           }
         }, "copyAllAddressesHandler");
         copyAllAddressesBtn.addEventListener("click", copyAllAddressesHandler);
@@ -19256,10 +19315,10 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (disconnectAllBtn) {
         const disconnectAllHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Disconnecting all peers...");
-            console.log("\u2705 \u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
+            log6("Disconnecting all peers...");
+            log6("\u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432: %o", error);
           }
         }, "disconnectAllHandler");
         disconnectAllBtn.addEventListener("click", disconnectAllHandler);
@@ -19269,11 +19328,11 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (restartNodeBtn) {
         const restartHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Restarting node...");
+            log6("Restarting node...");
             await context2.switchMode(context2.state.mode);
-            console.log("\u2705 \u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+            log6("\u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430: %o", error);
           }
         }, "restartHandler");
         restartNodeBtn.addEventListener("click", restartHandler);
@@ -19283,24 +19342,24 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (refreshAllBtn) {
         const refreshAllHandler = /* @__PURE__ */ __name(async () => {
           try {
-            console.log("\u{1F527} Refreshing all data...");
+            log6("Refreshing all data...");
             await context2.updatePeerList();
-            console.log("\u2705 \u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+            log6("\u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
           } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445:", error);
+            log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445: %o", error);
           }
         }, "refreshAllHandler");
         refreshAllBtn.addEventListener("click", refreshAllHandler);
         eventListeners2.push({ element: refreshAllBtn, handler: refreshAllHandler });
       }
-      console.log("\u2705 Quick actions handlers attached");
+      log6.trace("Quick actions handlers attached");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
-      console.log("\u{1F527} PeerConnection controller destroying...");
+      log6("controller destroying...");
       eventListeners.forEach(({ element, handler }) => {
         try {
           element.removeEventListener("click", handler);
@@ -19308,16 +19367,16 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           element.removeEventListener("keypress", handler);
           element.removeEventListener("change", handler);
         } catch (error) {
-          console.warn("\u26A0\uFE0F Error removing event listener:", error);
+          log6.warn("Error removing event listener: %o", error);
         }
       });
       if (context._copyObserver) {
         context._copyObserver.disconnect();
         context._copyObserver = null;
       }
-      console.log(`\u2705 Removed ${eventListeners.length} event listeners`);
+      log6("Removed %d event listeners", eventListeners.length);
       eventListeners = [];
-      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      log6("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
@@ -19347,7 +19406,7 @@ var PeerIdImpl = class {
   [peerIdSymbol] = true;
   toString() {
     if (this.string == null) {
-      this.string = base58btc.encode(this.multihash.bytes).slice(1);
+      this.string = base58btc2.encode(this.multihash.bytes).slice(1);
     }
     return this.string;
   }
@@ -19474,14 +19533,14 @@ var TRANSPORT_IPFS_GATEWAY_HTTP_CODE2 = 2336;
 function peerIdFromString(str, decoder) {
   let multihash;
   if (str.charAt(0) === "1" || str.charAt(0) === "Q") {
-    multihash = decode4(base58btc.decode(`z${str}`));
+    multihash = decode5(base58btc2.decode(`z${str}`));
   } else if (str.startsWith("k51qzi5uqu5") || str.startsWith("kzwfwjn5ji4") || str.startsWith("k2k4r8") || str.startsWith("bafz")) {
     return peerIdFromCID(CID.parse(str));
   } else {
     if (decoder == null) {
       throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
     }
-    multihash = decode4(decoder.decode(str));
+    multihash = decode5(decoder.decode(str));
   }
   return peerIdFromMultihash(multihash);
 }
@@ -19560,13 +19619,13 @@ __name(validateConfig, "validateConfig");
 
 // node_modules/libp2p/node_modules/@libp2p/logger/dist/src/index.js
 src_default2.formatters.b = (v) => {
-  return v == null ? "undefined" : base58btc.baseEncode(v);
+  return v == null ? "undefined" : base58btc2.baseEncode(v);
 };
 src_default2.formatters.t = (v) => {
-  return v == null ? "undefined" : base32.baseEncode(v);
+  return v == null ? "undefined" : base322.baseEncode(v);
 };
 src_default2.formatters.m = (v) => {
-  return v == null ? "undefined" : base64.baseEncode(v);
+  return v == null ? "undefined" : base642.baseEncode(v);
 };
 src_default2.formatters.p = (v) => {
   return v == null ? "undefined" : v.toString();
@@ -19673,7 +19732,7 @@ function mapIterable(iter, map) {
 }
 __name(mapIterable, "mapIterable");
 function peerIdFromString2(str) {
-  const multihash = decode4(base58btc.decode(`z${str}`));
+  const multihash = decode5(base58btc2.decode(`z${str}`));
   return peerIdFromMultihash(multihash);
 }
 __name(peerIdFromString2, "peerIdFromString");
@@ -20063,9 +20122,9 @@ var RecordEnvelope = class _RecordEnvelope {
 };
 var formatSignaturePayload = /* @__PURE__ */ __name((domain, payloadType, payload) => {
   const domainUint8Array = fromString2(domain);
-  const domainLength = encode5(domainUint8Array.byteLength);
-  const payloadTypeLength = encode5(payloadType.length);
-  const payloadLength = encode5(payload.length);
+  const domainLength = encode6(domainUint8Array.byteLength);
+  const payloadTypeLength = encode6(payloadType.length);
+  const payloadLength = encode6(payload.length);
   return new Uint8ArrayList(domainLength, domainUint8Array, payloadTypeLength, payloadType, payloadLength, payload);
 }, "formatSignaturePayload");
 
@@ -20213,7 +20272,7 @@ var PeerRecord2 = class _PeerRecord {
    */
   static createFromProtobuf = /* @__PURE__ */ __name((buf) => {
     const peerRecord = PeerRecord.decode(buf);
-    const peerId = peerIdFromMultihash(decode4(peerRecord.peerId));
+    const peerId = peerIdFromMultihash(decode5(peerRecord.peerId));
     const multiaddrs = (peerRecord.addresses ?? []).map((a2) => multiaddr(a2.multiaddr));
     const seqNumber = peerRecord.seq;
     return new _PeerRecord({ peerId, multiaddrs, seqNumber });
@@ -22249,7 +22308,7 @@ __name(mapTag, "mapTag");
 // node_modules/@libp2p/peer-store/dist/src/store.js
 function keyToPeerId(key) {
   const base32Str = key.toString().split("/")[2];
-  const buf = CID.parse(base32Str, base32);
+  const buf = CID.parse(base32Str, base322);
   return peerIdFromCID(buf);
 }
 __name(keyToPeerId, "keyToPeerId");
@@ -27705,7 +27764,7 @@ async function select(stream, protocols, options = {}) {
   if (protocols.length === 0) {
     throw new Error("At least one protocol must be specified");
   }
-  const log2 = stream.log.newScope("mss:select");
+  const log6 = stream.log.newScope("mss:select");
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH
@@ -27714,29 +27773,29 @@ async function select(stream, protocols, options = {}) {
     const protocol = protocols[i2];
     let response;
     if (i2 === 0) {
-      log2.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
+      log6.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
       const p1 = fromString2(`${PROTOCOL_ID}
 `);
       const p2 = fromString2(`${protocol}
 `);
       await lp.writeV([p1, p2], options);
-      log2.trace("reading multistream-select header");
+      log6.trace("reading multistream-select header");
       response = await readString(lp, options);
-      log2.trace('read "%s"', response);
+      log6.trace('read "%s"', response);
       if (response !== PROTOCOL_ID) {
-        log2.error("did not read multistream-select header from response");
+        log6.error("did not read multistream-select header from response");
         break;
       }
     } else {
-      log2.trace('write "%s"', protocol);
+      log6.trace('write "%s"', protocol);
       await lp.write(fromString2(`${protocol}
 `), options);
     }
-    log2.trace("reading protocol response");
+    log6.trace("reading protocol response");
     response = await readString(lp, options);
-    log2.trace('read "%s"', response);
+    log6.trace('read "%s"', response);
     if (response === protocol) {
-      log2.trace('selected "%s" after negotiation', response);
+      log6.trace('selected "%s" after negotiation', response);
       lp.unwrap();
       return protocol;
     }
@@ -27795,7 +27854,7 @@ __name(validateMaxDataLength, "validateMaxDataLength");
 var defaultEncoder = /* @__PURE__ */ __name((length3) => {
   const lengthLength = encodingLength2(length3);
   const lengthBuf = allocUnsafe(lengthLength);
-  encode5(length3, lengthBuf);
+  encode6(length3, lengthBuf);
   defaultEncoder.bytes = lengthLength;
   return lengthBuf;
 }, "defaultEncoder");
@@ -27848,7 +27907,7 @@ var ReadMode;
   ReadMode3[ReadMode3["DATA"] = 1] = "DATA";
 })(ReadMode || (ReadMode = {}));
 var defaultDecoder = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode6(buf);
+  const length3 = decode7(buf);
   defaultDecoder.bytes = encodingLength2(length3);
   return length3;
 }, "defaultDecoder");
@@ -27958,7 +28017,7 @@ decode8.fromReader = (reader, options) => {
 // node_modules/@libp2p/multistream-select/dist/src/handle.js
 async function handle(stream, protocols, options = {}) {
   protocols = Array.isArray(protocols) ? protocols : [protocols];
-  const log2 = stream.log.newScope("mss:handle");
+  const log6 = stream.log.newScope("mss:handle");
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
@@ -27966,35 +28025,35 @@ async function handle(stream, protocols, options = {}) {
     // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
   });
   while (true) {
-    log2.trace("reading incoming string");
+    log6.trace("reading incoming string");
     const protocol = await readString(lp, options);
-    log2.trace('read "%s"', protocol);
+    log6.trace('read "%s"', protocol);
     if (protocol === PROTOCOL_ID) {
-      log2.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol);
+      log6.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol);
       await lp.write(fromString2(`${PROTOCOL_ID}
 `), options);
-      log2.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol);
+      log6.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol);
       continue;
     }
     if (protocols.includes(protocol)) {
-      log2.trace('respond with "%s" for "%s"', protocol, protocol);
+      log6.trace('respond with "%s" for "%s"', protocol, protocol);
       await lp.write(fromString2(`${protocol}
 `), options);
-      log2.trace('responded with "%s" for "%s"', protocol, protocol);
+      log6.trace('responded with "%s" for "%s"', protocol, protocol);
       lp.unwrap();
       return protocol;
     }
     if (protocol === "ls") {
       const protos = new Uint8ArrayList(...protocols.map((p2) => encode7.single(fromString2(`${p2}
 `))), fromString2("\n"));
-      log2.trace('respond with "%s" for %s', protocols, protocol);
+      log6.trace('respond with "%s" for %s', protocols, protocol);
       await lp.write(protos, options);
-      log2.trace('responded with "%s" for %s', protocols, protocol);
+      log6.trace('responded with "%s" for %s', protocols, protocol);
       continue;
     }
-    log2.trace('respond with "na" for "%s"', protocol);
+    log6.trace('respond with "na" for "%s"', protocol);
     await lp.write(fromString2("na\n"), options);
-    log2('responded with "na" for "%s"', protocol);
+    log6('responded with "na" for "%s"', protocol);
   }
 }
 __name(handle, "handle");
@@ -30432,7 +30491,7 @@ __name(toMessageStream, "toMessageStream");
 
 // node_modules/@chainsafe/libp2p-noise/dist/src/performHandshake.js
 async function performHandshakeInitiator(init, options) {
-  const { log: log2, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log6, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto2,
@@ -30441,24 +30500,24 @@ async function performHandshakeInitiator(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log2);
-  log2.trace("Stage 0 - Initiator starting to send first message.");
+  logLocalStaticKeys(xx.s, log6);
+  log6.trace("Stage 0 - Initiator starting to send first message.");
   await connection.write(xx.writeMessageA(ZEROLEN), options);
-  log2.trace("Stage 0 - Initiator finished sending first message.");
-  logLocalEphemeralKeys(xx.e, log2);
-  log2.trace("Stage 1 - Initiator waiting to receive first message from responder...");
+  log6.trace("Stage 0 - Initiator finished sending first message.");
+  logLocalEphemeralKeys(xx.e, log6);
+  log6.trace("Stage 1 - Initiator waiting to receive first message from responder...");
   const plaintext = xx.readMessageB(await connection.read(options));
-  log2.trace("Stage 1 - Initiator received the message.");
-  logRemoteEphemeralKey(xx.re, log2);
-  logRemoteStaticKey(xx.rs, log2);
-  log2.trace("Initiator going to check remote's signature...");
+  log6.trace("Stage 1 - Initiator received the message.");
+  logRemoteEphemeralKey(xx.re, log6);
+  logRemoteStaticKey(xx.rs, log6);
+  log6.trace("Initiator going to check remote's signature...");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
-  log2.trace("All good with the signature!");
-  log2.trace("Stage 2 - Initiator sending third handshake message.");
+  log6.trace("All good with the signature!");
+  log6.trace("Stage 2 - Initiator sending third handshake message.");
   await connection.write(xx.writeMessageC(payload), options);
-  log2.trace("Stage 2 - Initiator sent message with signed payload.");
+  log6.trace("Stage 2 - Initiator sent message with signed payload.");
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log2);
+  logCipherState(cs1, cs2, log6);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs1.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -30467,7 +30526,7 @@ async function performHandshakeInitiator(init, options) {
 }
 __name(performHandshakeInitiator, "performHandshakeInitiator");
 async function performHandshakeResponder(init, options) {
-  const { log: log2, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log6, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto2,
@@ -30476,21 +30535,21 @@ async function performHandshakeResponder(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log2);
-  log2.trace("Stage 0 - Responder waiting to receive first message.");
+  logLocalStaticKeys(xx.s, log6);
+  log6.trace("Stage 0 - Responder waiting to receive first message.");
   xx.readMessageA(await connection.read(options));
-  log2.trace("Stage 0 - Responder received first message.");
-  logRemoteEphemeralKey(xx.re, log2);
-  log2.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
+  log6.trace("Stage 0 - Responder received first message.");
+  logRemoteEphemeralKey(xx.re, log6);
+  log6.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
   await connection.write(xx.writeMessageB(payload), options);
-  log2.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
-  logLocalEphemeralKeys(xx.e, log2);
-  log2.trace("Stage 2 - Responder waiting for third handshake message...");
+  log6.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
+  logLocalEphemeralKeys(xx.e, log6);
+  log6.trace("Stage 2 - Responder waiting for third handshake message...");
   const plaintext = xx.readMessageC(await connection.read(options));
-  log2.trace("Stage 2 - Responder received the message, finished handshake.");
+  log6.trace("Stage 2 - Responder received the message, finished handshake.");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log2);
+  logCipherState(cs1, cs2, log6);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs2.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -30545,13 +30604,13 @@ var Noise = class {
    * @param options.signal - Used to abort the operation
    */
   async secureOutbound(connection, options) {
-    const log2 = connection.log?.newScope("noise") ?? this.log;
+    const log6 = connection.log?.newScope("noise") ?? this.log;
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
       lengthDecoder: uint16BEDecode,
       maxDataLength: NOISE_MSG_MAX_LENGTH_BYTES
     });
-    const handshake = await this.performHandshakeInitiator(wrappedConnection, this.components.privateKey, log2, options?.remotePeer?.publicKey, options);
+    const handshake = await this.performHandshakeInitiator(wrappedConnection, this.components.privateKey, log6, options?.remotePeer?.publicKey, options);
     const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey);
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
@@ -30586,13 +30645,13 @@ var Noise = class {
    * @param options.signal - Used to abort the operation
    */
   async secureInbound(connection, options) {
-    const log2 = connection.log?.newScope("noise") ?? this.log;
+    const log6 = connection.log?.newScope("noise") ?? this.log;
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
       lengthDecoder: uint16BEDecode,
       maxDataLength: NOISE_MSG_MAX_LENGTH_BYTES
     });
-    const handshake = await this.performHandshakeResponder(wrappedConnection, this.components.privateKey, log2, options?.remotePeer?.publicKey, options);
+    const handshake = await this.performHandshakeResponder(wrappedConnection, this.components.privateKey, log6, options?.remotePeer?.publicKey, options);
     const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey);
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
@@ -30604,7 +30663,7 @@ var Noise = class {
   /**
    * Perform XX handshake as initiator.
    */
-  async performHandshakeInitiator(connection, privateKey, log2, remoteIdentityKey, options) {
+  async performHandshakeInitiator(connection, privateKey, log6, remoteIdentityKey, options) {
     let result;
     const streamMuxers = options?.skipStreamMuxerNegotiation === true ? [] : [...this.components.upgrader.getStreamMuxers().keys()];
     try {
@@ -30612,7 +30671,7 @@ var Noise = class {
         connection,
         privateKey,
         remoteIdentityKey,
-        log: log2.newScope("xxhandshake"),
+        log: log6.newScope("xxhandshake"),
         crypto: this.crypto,
         prologue: this.prologue,
         s: this.staticKey,
@@ -30632,7 +30691,7 @@ var Noise = class {
   /**
    * Perform XX handshake as responder.
    */
-  async performHandshakeResponder(connection, privateKey, log2, remoteIdentityKey, options) {
+  async performHandshakeResponder(connection, privateKey, log6, remoteIdentityKey, options) {
     let result;
     const streamMuxers = options?.skipStreamMuxerNegotiation === true ? [] : [...this.components.upgrader.getStreamMuxers().keys()];
     try {
@@ -30640,7 +30699,7 @@ var Noise = class {
         connection,
         privateKey,
         remoteIdentityKey,
-        log: log2.newScope("xxhandshake"),
+        log: log6.newScope("xxhandshake"),
         crypto: this.crypto,
         prologue: this.prologue,
         s: this.staticKey,
@@ -33050,7 +33109,7 @@ var CircuitRelayTransport = class {
         });
         return;
       }
-      const remotePeerId = peerIdFromMultihash(decode4(request.peer.id));
+      const remotePeerId = peerIdFromMultihash(decode5(request.peer.id));
       if (await this.components.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId) === true) {
         this.log.error("connection gater denied inbound relayed connection from %p", connection.remotePeer);
         await stopStream.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
@@ -33611,7 +33670,7 @@ __name(validateMaxDataLength2, "validateMaxDataLength");
 var defaultEncoder2 = /* @__PURE__ */ __name((length3) => {
   const lengthLength = encodingLength2(length3);
   const lengthBuf = allocUnsafe(lengthLength);
-  encode5(length3, lengthBuf);
+  encode6(length3, lengthBuf);
   defaultEncoder2.bytes = lengthLength;
   return lengthBuf;
 }, "defaultEncoder");
@@ -33664,7 +33723,7 @@ var ReadMode2;
   ReadMode3[ReadMode3["DATA"] = 1] = "DATA";
 })(ReadMode2 || (ReadMode2 = {}));
 var defaultDecoder2 = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode6(buf);
+  const length3 = decode7(buf);
   defaultDecoder2.bytes = encodingLength2(length3);
   return length3;
 }, "defaultDecoder");
@@ -34525,10 +34584,10 @@ function getRemotePeer(ma) {
 __name(getRemotePeer, "getRemotePeer");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/initiate-connection.js
-async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log2, logger: logger3, onProgress }) {
+async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log6, logger: logger3, onProgress }) {
   const { circuitAddress, targetPeer } = splitAddr(ma);
   metrics?.dialerEvents.increment({ open: true });
-  log2.trace("dialing circuit address: %a", circuitAddress);
+  log6.trace("dialing circuit address: %a", circuitAddress);
   const connections = connectionManager.getConnections(targetPeer);
   let connection;
   if (connections.length === 0) {
@@ -34566,81 +34625,81 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
     const channel = peerConnection.createDataChannel("init");
     peerConnection.onicecandidate = ({ candidate }) => {
       if (peerConnection.connectionState === "connected") {
-        log2.trace("ignore new ice candidate as peer connection is already connected");
+        log6.trace("ignore new ice candidate as peer connection is already connected");
         return;
       }
       if (candidate == null || candidate?.candidate === "") {
-        log2.trace("initiator detected end of ICE candidates");
+        log6.trace("initiator detected end of ICE candidates");
         return;
       }
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log2.trace("initiator sending ICE candidate %o", candidate);
+      log6.trace("initiator sending ICE candidate %o", candidate);
       void messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log2.error("error sending ICE candidate - %e", err);
+        log6.error("error sending ICE candidate - %e", err);
       });
     };
     peerConnection.onicecandidateerror = (event) => {
-      log2.error("initiator ICE candidate error", event);
+      log6.error("initiator ICE candidate error", event);
     };
     const offerSdp = await peerConnection.createOffer().catch((err) => {
-      log2.error("could not execute createOffer - %e", err);
+      log6.error("could not execute createOffer - %e", err);
       throw new SDPHandshakeFailedError("Failed to set createOffer");
     });
-    log2.trace("initiator send SDP offer %s", offerSdp.sdp);
+    log6.trace("initiator send SDP offer %s", offerSdp.sdp);
     onProgress?.(new CustomProgressEvent("webrtc:send-sdp-offer"));
     await messageStream.write({ type: Message2.Type.SDP_OFFER, data: offerSdp.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(offerSdp).catch((err) => {
-      log2.error("could not execute setLocalDescription - %e", err);
+      log6.error("could not execute setLocalDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set localDescription");
     });
     onProgress?.(new CustomProgressEvent("webrtc:read-sdp-answer"));
-    log2.trace("initiator read SDP answer");
+    log6.trace("initiator read SDP answer");
     const answerMessage = await messageStream.read({
       signal
     });
     if (answerMessage.type !== Message2.Type.SDP_ANSWER) {
       throw new SDPHandshakeFailedError("Remote should send an SDP answer");
     }
-    log2.trace("initiator received SDP answer %s", answerMessage.data);
+    log6.trace("initiator received SDP answer %s", answerMessage.data);
     const answerSdp = new RTCSessionDescription({ type: "answer", sdp: answerMessage.data });
     await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
-      log2.error("could not execute setRemoteDescription - %e", err);
+      log6.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
     });
-    log2.trace("initiator read candidates until connected");
+    log6.trace("initiator read candidates until connected");
     onProgress?.(new CustomProgressEvent("webrtc:read-ice-candidates"));
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "initiator",
       signal,
-      log: log2,
+      log: log6,
       onProgress
     });
-    log2.trace("initiator connected");
+    log6.trace("initiator connected");
     if (channel.readyState !== "open") {
-      log2.trace("wait for init channel to open");
+      log6.trace("wait for init channel to open");
       await pEvent(channel, "open", {
         signal
       });
     }
-    log2.trace("closing init channel");
+    log6.trace("closing init channel");
     channel.close();
-    log2.trace("waiting for init channel to close");
+    log6.trace("waiting for init channel to close");
     await pEvent(channel, "close", {
       signal
     });
     onProgress?.(new CustomProgressEvent("webrtc:close-signaling-stream"));
-    log2.trace("closing signaling channel");
+    log6.trace("closing signaling channel");
     await stream.close({
       signal
     });
-    log2.trace("initiator connected to remote address %s", ma);
+    log6.trace("initiator connected to remote address %s", ma);
     return {
       remoteAddress: ma,
       // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
@@ -34648,7 +34707,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
       muxerFactory
     };
   } catch (err) {
-    log2.error("outgoing signaling error - %e", err);
+    log6.error("outgoing signaling error - %e", err);
     peerConnection.close();
     stream.abort(err);
     throw err;
@@ -34703,76 +34762,76 @@ var WebRTCPeerListener = class _WebRTCPeerListener extends TypedEventEmitter {
 };
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler.js
-async function handleIncomingStream(stream, connection, { peerConnection, signal, log: log2 }) {
-  log2.trace("new inbound signaling stream");
+async function handleIncomingStream(stream, connection, { peerConnection, signal, log: log6 }) {
+  log6.trace("new inbound signaling stream");
   const messageStream = pbStream(stream).pb(Message2);
   try {
     peerConnection.onicecandidate = ({ candidate }) => {
       if (peerConnection.connectionState === "connected") {
-        log2.trace("ignore new ice candidate as peer connection is already connected");
+        log6.trace("ignore new ice candidate as peer connection is already connected");
         return;
       }
       if (candidate == null || candidate?.candidate === "") {
-        log2.trace("recipient detected end of ICE candidates");
+        log6.trace("recipient detected end of ICE candidates");
         return;
       }
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log2.trace("recipient sending ICE candidate %s", data);
+      log6.trace("recipient sending ICE candidate %s", data);
       messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log2.error("error sending ICE candidate - %e", err);
+        log6.error("error sending ICE candidate - %e", err);
       });
     };
-    log2.trace("recipient read SDP offer");
+    log6.trace("recipient read SDP offer");
     const pbOffer = await messageStream.read({
       signal
     });
     if (pbOffer.type !== Message2.Type.SDP_OFFER) {
       throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? "undefined"} `);
     }
-    log2.trace("recipient received SDP offer %s", pbOffer.data);
+    log6.trace("recipient received SDP offer %s", pbOffer.data);
     const offer = new RTCSessionDescription({
       type: "offer",
       sdp: pbOffer.data
     });
     await peerConnection.setRemoteDescription(offer).catch((err) => {
-      log2.error("could not execute setRemoteDescription - %e", err);
+      log6.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
     });
     const answer = await peerConnection.createAnswer().catch((err) => {
-      log2.error("could not execute createAnswer - %e", err);
+      log6.error("could not execute createAnswer - %e", err);
       throw new SDPHandshakeFailedError("Failed to create answer");
     });
-    log2.trace("recipient send SDP answer %s", answer.sdp);
+    log6.trace("recipient send SDP answer %s", answer.sdp);
     await messageStream.write({ type: Message2.Type.SDP_ANSWER, data: answer.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(answer).catch((err) => {
-      log2.error("could not execute setLocalDescription - %e", err);
+      log6.error("could not execute setLocalDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set localDescription");
     });
-    log2.trace("recipient read candidates until connected");
+    log6.trace("recipient read candidates until connected");
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "recipient",
       signal,
-      log: log2
+      log: log6
     });
   } catch (err) {
     if (peerConnection.connectionState !== "connected") {
-      log2.error("error while handling signaling stream from peer %a - %e", connection.remoteAddr, err);
+      log6.error("error while handling signaling stream from peer %a - %e", connection.remoteAddr, err);
       peerConnection.close();
       throw err;
     } else {
-      log2("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
+      log6("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
     }
   }
   const remotePeer = getRemotePeer(connection.remoteAddr);
   const remoteAddress = multiaddr(`/webrtc/p2p/${remotePeer}`);
-  log2.trace("recipient connected to remote address %s", remoteAddress);
+  log6.trace("recipient connected to remote address %s", remoteAddress);
   return {
     remoteAddress,
     remotePeer
@@ -35107,8 +35166,8 @@ function getCleanMultiaddr(addr) {
   }
 }
 __name(getCleanMultiaddr, "getCleanMultiaddr");
-async function consumeIdentifyMessage(peerStore, events, log2, connection, message2) {
-  log2("received identify from %p", connection.remotePeer);
+async function consumeIdentifyMessage(peerStore, events, log6, connection, message2) {
+  log6("received identify from %p", connection.remotePeer);
   if (message2 == null) {
     throw new InvalidMessageError("message was null or undefined");
   }
@@ -35132,7 +35191,7 @@ async function consumeIdentifyMessage(peerStore, events, log2, connection, messa
   }
   let output;
   if (message2.signedPeerRecord != null) {
-    log2.trace("received signedPeerRecord from %p", connection.remotePeer);
+    log6.trace("received signedPeerRecord from %p", connection.remotePeer);
     let peerRecordEnvelope2 = message2.signedPeerRecord;
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope2, PeerRecord2.DOMAIN);
     let peerRecord = PeerRecord2.createFromProtobuf(envelope.payload);
@@ -35157,7 +35216,7 @@ async function consumeIdentifyMessage(peerStore, events, log2, connection, messa
         const storedEnvelope = RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope);
         const storedRecord = PeerRecord2.createFromProtobuf(storedEnvelope.payload);
         if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-          log2("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
+          log6("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
           peerRecord = storedRecord;
           peerRecordEnvelope2 = existingPeer.peerRecordEnvelope;
         }
@@ -35173,9 +35232,9 @@ async function consumeIdentifyMessage(peerStore, events, log2, connection, messa
       addresses: peerRecord.multiaddrs
     };
   } else {
-    log2("%p did not send a signed peer record", connection.remotePeer);
+    log6("%p did not send a signed peer record", connection.remotePeer);
   }
-  log2.trace("patching %p with", connection.remotePeer, peer);
+  log6.trace("patching %p with", connection.remotePeer, peer);
   await peerStore.patch(connection.remotePeer, peer);
   if (message2.agentVersion != null || message2.protocolVersion != null) {
     const metadata = {};
@@ -35185,7 +35244,7 @@ async function consumeIdentifyMessage(peerStore, events, log2, connection, messa
     if (message2.protocolVersion != null) {
       metadata.ProtocolVersion = fromString2(message2.protocolVersion);
     }
-    log2.trace("merging %p metadata", connection.remotePeer, metadata);
+    log6.trace("merging %p metadata", connection.remotePeer, metadata);
     await peerStore.merge(connection.remotePeer, {
       metadata
     });
@@ -35287,7 +35346,7 @@ var Identify2 = class extends AbstractIdentify {
   ];
   async _identify(connection, options = {}) {
     let stream;
-    let log2;
+    let log6;
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout);
       setMaxListeners(Infinity, signal);
@@ -35302,7 +35361,7 @@ var Identify2 = class extends AbstractIdentify {
         ...options,
         runOnLimitedConnection: this.runOnLimitedConnection
       });
-      log2 = stream.log.newScope("identify");
+      log6 = stream.log.newScope("identify");
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
       }).pb(Identify);
@@ -35310,7 +35369,7 @@ var Identify2 = class extends AbstractIdentify {
       await pb.unwrap().unwrap().close(options);
       return message2;
     } catch (err) {
-      log2?.error("identify failed - %e", err);
+      log6?.error("identify failed - %e", err);
       stream?.abort(err);
       throw err;
     }
@@ -35358,8 +35417,8 @@ var Identify2 = class extends AbstractIdentify {
    * to the requesting peer over the given `connection`
    */
   async handleProtocol(stream, connection) {
-    const log2 = stream.log.newScope("identify");
-    log2("responding to identify");
+    const log6 = stream.log.newScope("identify");
+    log6("responding to identify");
     const signal = AbortSignal.timeout(this.timeout);
     setMaxListeners(Infinity, signal);
     const peerData = await this.components.peerStore.get(this.components.peerId, {
@@ -35382,7 +35441,7 @@ var Identify2 = class extends AbstractIdentify {
       observedAddr = void 0;
     }
     const pb = pbStream(stream).pb(Identify);
-    log2("send response");
+    log6("send response");
     await pb.write({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
@@ -35394,7 +35453,7 @@ var Identify2 = class extends AbstractIdentify {
     }, {
       signal
     });
-    log2("close write");
+    log6("close write");
     await pb.unwrap().unwrap().close({
       signal
     });
@@ -35410,6 +35469,7 @@ __name(identify, "identify");
 // public/components/peer-connection/actions/index.mjs
 import { gossipsub } from "https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm";
 async function createActions4(context) {
+  const log6 = logger("peer-connection:actions");
   let libp2p = null;
   let connectionInterval = null;
   const self = {
@@ -35460,7 +35520,7 @@ async function createActions4(context) {
         };
         libp2p = await createLibp2p(config);
         await libp2p.start();
-        console.log("Libp2p \u0443\u0437\u0435\u043B \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D:", {
+        log6("Libp2p \u0443\u0437\u0435\u043B \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D: %o", {
           peerId: libp2p.peerId.toString(),
           mode,
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString())
@@ -35469,7 +35529,7 @@ async function createActions4(context) {
         await self.startPeerListUpdates();
         return libp2p;
       } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p:", error);
+        log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p: %o", error);
         context.addError({
           componentName: context.constructor.name,
           source: "initializeLibp2p",
@@ -35486,26 +35546,26 @@ async function createActions4(context) {
     async setupEventHandlers() {
       if (!libp2p) return;
       libp2p.addEventListener("peer:connect", (event) => {
-        console.log("\u2705 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
+        log6("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
         setTimeout(async () => {
           await self.updatePeerList();
           await self.sendPeersToChatInterface();
         }, 500);
       });
       libp2p.addEventListener("peer:disconnect", (event) => {
-        console.log("\u274C \u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440:", event.detail.toString());
+        log6("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
         setTimeout(async () => {
           await self.updatePeerList();
           await self.sendPeersToChatInterface();
         }, 500);
       });
       libp2p.addEventListener("self:peer:update", (event) => {
-        console.log("\u{1F504} \u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
+        log6("\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
         self.updateAddressList();
         self.sendConnectionStatusToChatInterface();
       });
       libp2p.addEventListener("peer:discovery", (event) => {
-        console.log("\u{1F50D} \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440:", event.detail.id.toString());
+        log6("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440: %s", event.detail.id.toString());
         setTimeout(async () => {
           await self.updatePeerList();
           await self.sendPeersToChatInterface();
@@ -35533,13 +35593,13 @@ async function createActions4(context) {
             type: "PEERS_UPDATE",
             data: peersData
           });
-          console.log("\u2705 Peers data sent to chat-interface:", peersData);
+          log6.trace("Peers data sent to chat-interface: %o", peersData);
         } else {
-          console.log("\u23F3 Chat interface not found, will retry...");
+          log6("Chat interface not found, will retry...");
           setTimeout(() => self.sendPeersToChatInterface(), 1e3);
         }
       } catch (error) {
-        console.error("\u274C Error sending peers to chat interface:", error);
+        log6.error("Error sending peers to chat interface: %o", error);
       }
     },
     /**
@@ -35560,10 +35620,10 @@ async function createActions4(context) {
             type: "CONNECTION_STATUS_UPDATE",
             data: connectionData
           });
-          console.log("\u2705 Connection status sent to chat-interface:", connectionData);
+          log6.trace("Connection status sent to chat-interface: %o", connectionData);
         }
       } catch (error) {
-        console.error("\u274C Error sending connection status:", error);
+        log6.error("Error sending connection status: %o", error);
       }
     },
     /**
@@ -35572,14 +35632,14 @@ async function createActions4(context) {
     async updateStatsCard() {
       const statsCard = context.shadowRoot.querySelector(".stats-card");
       if (statsCard && context.renderPart) {
-        console.log("\u{1F504} Updating stats card section");
+        log6.trace("Updating stats card section");
         await context.renderPart({
           partName: "renderStatistics",
           state: context.state,
           selector: ".stats-card .card-content"
         });
       } else {
-        console.log("\u26A0\uFE0F Stats card not found, using full render");
+        log6("Stats card not found, using full render");
         await context.fullRender(context.state);
       }
     },
@@ -35592,7 +35652,7 @@ async function createActions4(context) {
         clearInterval(connectionInterval);
       }
       connectionInterval = setInterval(() => {
-        console.log("\u{1F504} \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435...");
+        log6.trace("\u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435...");
         self.updatePeerList();
         self.updateAddressList();
         self.updateStatsCard();
@@ -35600,7 +35660,7 @@ async function createActions4(context) {
         self.sendConnectionStatusToChatInterface();
       }, 5e3);
       setTimeout(() => {
-        console.log("\u{1F504} \u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
+        log6.trace("\u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
         self.manualUpdate();
       }, 4e3);
     },
@@ -35609,19 +35669,19 @@ async function createActions4(context) {
      * @async
      */
     async manualUpdate() {
-      console.log("\u{1F504} \u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0441\u043F\u0438\u0441\u043A\u043E\u0432...");
+      log6.trace("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0441\u043F\u0438\u0441\u043A\u043E\u0432...");
       const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
       const peersElement = context.shadowRoot.querySelector("#connected-peers-list");
-      console.log("\u{1F50D} \u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 DOM:", {
+      log6.trace("\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 DOM: %o", {
         addressesElement: !!addressesElement,
         peersElement: !!peersElement,
         shadowRoot: !!context.shadowRoot
       });
       if (context.shadowRoot) {
-        console.log("\u{1F50D} \u0412\u0441\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0432 shadowRoot:");
+        log6.trace("\u0412\u0441\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0432 shadowRoot:");
         context.shadowRoot.querySelectorAll("*").forEach((el) => {
           if (el.id) {
-            console.log("  -", el.tagName, `#${el.id}`);
+            log6.trace("  - %s #%s", el.tagName, el.id);
           }
         });
       }
@@ -35635,9 +35695,9 @@ async function createActions4(context) {
      * @async
      */
     async forceUpdate() {
-      console.log("\u{1F4A5} \u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0432\u0441\u0435\u0445 \u0441\u043F\u0438\u0441\u043A\u043E\u0432");
+      log6("\u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0432\u0441\u0435\u0445 \u0441\u043F\u0438\u0441\u043A\u043E\u0432");
       if (libp2p) {
-        console.log("\u{1F4CA} \u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 libp2p:", {
+        log6("\u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 libp2p: %o", {
           peerId: libp2p.peerId?.toString(),
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString()),
           peers: libp2p.getPeers().map((p2) => p2.toString())
@@ -35651,24 +35711,24 @@ async function createActions4(context) {
      */
     async updatePeerList() {
       if (!libp2p || !context.state) {
-        console.log("\u274C updatePeerList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        log6("libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
       }
       const peers = await self.getConnectedPeers();
       context.state.connectedPeers = peers;
-      console.log("\u{1F465} updatePeerList: \u043F\u0438\u0440\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E:", peers.length);
+      log6("updatePeerList: \u043F\u0438\u0440\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %d", peers.length);
       const peersElement = context.shadowRoot.querySelector("#connected-peers-list");
-      console.log("\u{1F50D} updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D:", !!peersElement);
+      log6.trace("updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D: %s", !!peersElement);
       if (peersElement && context.renderPart) {
-        console.log("\u{1F3AF} updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
+        log6.trace("updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
         await context.renderPart({
           partName: "renderPeersList",
           state: context.state,
           selector: "#connected-peers-list"
         });
-        console.log("\u2705 updatePeerList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
+        log6.trace("updatePeerList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
       } else {
-        console.log("\u26A0\uFE0F updatePeerList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
+        log6("updatePeerList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
       }
     },
     /**
@@ -35677,24 +35737,24 @@ async function createActions4(context) {
      */
     async updateAddressList() {
       if (!libp2p || !context.state) {
-        console.log("\u274C updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        log6("updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
       }
       const addresses = libp2p.getMultiaddrs().filter((ma) => WebRTC.matches(ma)).map((ma) => ma.toString());
       context.state.listeningAddresses = addresses;
-      console.log("\u{1F4CB} updateAddressList: \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E:", addresses.length);
+      log6.trace("updateAddressList: \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %d", addresses.length);
       const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
-      console.log("\u{1F50D} updateAddressList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #listening-addresses \u043D\u0430\u0439\u0434\u0435\u043D:", !!addressesElement);
+      log6.trace("updateAddressList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #listening-addresses \u043D\u0430\u0439\u0434\u0435\u043D: %s", !!addressesElement);
       if (addressesElement && context.renderPart) {
-        console.log("\u{1F3AF} updateAddressList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
+        log6.trace("updateAddressList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
         await context.renderPart({
           partName: "renderAddressesList",
           state: context.state,
           selector: "#listening-addresses"
         });
-        console.log("\u2705 updateAddressList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
+        log6.trace("updateAddressList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
       } else {
-        console.log("\u26A0\uFE0F updateAddressList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
+        log6("updateAddressList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
       }
     },
     /**
@@ -35708,11 +35768,11 @@ async function createActions4(context) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
         const ma = multiaddr(multiaddrStr.trim());
-        console.log("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u043C\u0441\u044F \u043A:", ma.toString());
+        log6("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u043C\u0441\u044F \u043A: %s", ma.toString());
         await libp2p.dial(ma);
-        console.log("\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u044B \u043A:", ma.toString());
+        log6("\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u044B \u043A: %s", ma.toString());
       } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
+        log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
         context.addError({
           componentName: context.constructor.name,
           source: "connectToPeer",
@@ -35761,9 +35821,9 @@ async function createActions4(context) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
         await libp2p.services.pubsub.subscribe(topic);
-        console.log(`\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: ${topic}`);
+        log6("\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: %s", topic);
       } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A:", error);
+        log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: %o", error);
         throw error;
       }
     },
@@ -35779,9 +35839,9 @@ async function createActions4(context) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
         await libp2p.services.pubsub.publish(topic, fromString2(message2));
-        console.log(`\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u0442\u043E\u043F\u0438\u043A ${topic}: ${message2}`);
+        log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u0442\u043E\u043F\u0438\u043A %s: %s", topic, message2);
       } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+        log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
         throw error;
       }
     },
@@ -35796,7 +35856,7 @@ async function createActions4(context) {
       try {
         return libp2p.services.pubsub.getSubscribers(topic).map((peerId) => peerId.toString());
       } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432 \u0442\u043E\u043F\u0438\u043A\u0430:", error);
+        log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432 \u0442\u043E\u043F\u0438\u043A\u0430: %o", error);
         return [];
       }
     },
@@ -35813,14 +35873,14 @@ async function createActions4(context) {
         if (libp2p) {
           await libp2p.stop();
           libp2p = null;
-          console.log("Libp2p \u0443\u0437\u0435\u043B \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D");
+          log6("Libp2p \u0443\u0437\u0435\u043B \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D");
         }
       } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u043E\u0432:", error);
+        log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u043E\u0432: %o", error);
       }
     },
     /**
-     * Перезапускает узел с новыми настройками
+     * Перезапускает узел с новыми настройки
      * @async
      * @param {string} mode - Новый режим работы
      */
@@ -35886,6 +35946,7 @@ async function createActions4(context) {
 __name(createActions4, "createActions");
 
 // public/components/peer-connection/index.mjs
+var log5 = logger("peer-connection");
 var PeerConnection = class extends BaseComponent {
   static {
     __name(this, "PeerConnection");
@@ -35910,10 +35971,10 @@ var PeerConnection = class extends BaseComponent {
     this._uptimeInterval = null;
   }
   async _componentReady() {
-    console.log("\u{1F527} PeerConnection component ready");
+    log5("PeerConnection component ready");
     this._controller = await controller4(this);
     this._actions = await createActions4(this);
-    console.log("\u{1F527} Controller and actions created:", {
+    log5("Controller and actions created: %o", {
       hasController: !!this._controller,
       hasActions: !!this._actions
     });
@@ -35922,7 +35983,7 @@ var PeerConnection = class extends BaseComponent {
     return true;
   }
   async initializeLibp2p(mode = "listener") {
-    console.log("\u{1F680} initializeLibp2p called with mode:", mode);
+    log5("initializeLibp2p called with mode: %s", mode);
     this.state.mode = mode;
     this.state.connected = false;
     try {
@@ -35932,8 +35993,8 @@ var PeerConnection = class extends BaseComponent {
       this.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
       this.state.connected = true;
       this.state.startTime = Date.now();
-      console.log("\u2705 Libp2p initialized successfully");
-      console.log("\u{1F4CB} New state:", {
+      log5("Libp2p initialized successfully");
+      log5("New state: %o", {
         mode: this.state.mode,
         connected: this.state.connected,
         peerId: this.state.peerId,
@@ -35953,7 +36014,7 @@ var PeerConnection = class extends BaseComponent {
       await this.sendConnectionStatusToChatInterface();
       return libp2p;
     } catch (error) {
-      console.error("\u274C Libp2p initialization failed:", error);
+      log5.error("Libp2p initialization failed: %o", error);
       await this.hideSkeleton();
       this.addError({
         componentName: this.constructor.name,
@@ -36036,14 +36097,14 @@ var PeerConnection = class extends BaseComponent {
   async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem) {
     try {
       await navigator.clipboard.writeText(text);
-      console.log("\u2705 Text copied to clipboard:", text);
+      log5("Text copied to clipboard: %s", text);
       addressItem.classList.add("copied");
       setTimeout(() => {
         addressItem.classList.remove("copied");
       }, 2e3);
       return true;
     } catch (error) {
-      console.error("\u274C Error copying to clipboard:", error);
+      log5.error("Error copying to clipboard: %o", error);
       try {
         const textArea = document.createElement("textarea");
         textArea.value = text;
@@ -36065,7 +36126,7 @@ var PeerConnection = class extends BaseComponent {
           return true;
         }
       } catch (fallbackError) {
-        console.error("\u274C Fallback copy also failed:", fallbackError);
+        log5.error("Fallback copy also failed: %o", fallbackError);
       }
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
@@ -36081,7 +36142,7 @@ var PeerConnection = class extends BaseComponent {
       await this._actions.connectToPeer(multiaddr2);
       await this.updatePeerList();
     } catch (error) {
-      console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
+      log5.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
       throw error;
     }
   }
@@ -36090,7 +36151,7 @@ var PeerConnection = class extends BaseComponent {
       const previousCount = this._lastPeersCount;
       this.state.connectedPeers = await this._actions.getConnectedPeers();
       this._lastPeersCount = this.state.connectedPeers.length;
-      console.log("\u{1F465} Peer list updated:", {
+      log5("Peer list updated: %o", {
         previous: previousCount,
         current: this._lastPeersCount,
         peers: this.state.connectedPeers.map((p2) => p2.id)
@@ -36128,13 +36189,13 @@ var PeerConnection = class extends BaseComponent {
           type: "PEERS_UPDATE",
           data: peersData
         });
-        console.log("\u2705 Peers data sent to chat-interface:", peersData);
+        log5("Peers data sent to chat-interface: %o", peersData);
       } else {
-        console.log("\u23F3 Chat interface not found, will retry...");
+        log5("Chat interface not found, will retry...");
         setTimeout(() => this.sendPeersToChatInterface(), 1e3);
       }
     } catch (error) {
-      console.error("\u274C Error sending peers to chat interface:", error);
+      log5.error("Error sending peers to chat interface: %o", error);
     }
   }
   /**
@@ -36155,10 +36216,10 @@ var PeerConnection = class extends BaseComponent {
           type: "CONNECTION_STATUS_UPDATE",
           data: connectionData
         });
-        console.log("\u2705 Connection status sent to chat-interface:", connectionData);
+        log5("Connection status sent to chat-interface: %o", connectionData);
       }
     } catch (error) {
-      console.error("\u274C Error sending connection status:", error);
+      log5.error("Error sending connection status: %o", error);
     }
   }
   /**
@@ -36167,7 +36228,7 @@ var PeerConnection = class extends BaseComponent {
   async updatePeersCard() {
     const peersCard = this.shadowRoot.querySelector(".peers-card");
     if (peersCard && this.renderPart) {
-      console.log("\u{1F504} Updating peers card section");
+      log5("Updating peers card section");
       await this.renderPart({
         partName: "renderPeersList",
         state: this.state,
@@ -36177,7 +36238,7 @@ var PeerConnection = class extends BaseComponent {
         this._setupCopyHandlers();
       }, 100);
     } else {
-      console.log("\u26A0\uFE0F Peers card not found, using full render");
+      log5("Peers card not found, using full render");
       await this.fullRender(this.state);
     }
   }
@@ -36192,7 +36253,6 @@ var PeerConnection = class extends BaseComponent {
         if (addressItem) {
           const address = addressItem.getAttribute("data-address");
           if (address) {
-            debugger;
             await this.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem);
           }
         }
@@ -36205,8 +36265,6 @@ var PeerConnection = class extends BaseComponent {
       const handler = /* @__PURE__ */ __name(async (e2) => {
         const peerId = e2.target.getAttribute("data-peer-id");
         if (peerId) {
-          console.log("", e2.currentTarget);
-          debugger;
           await this.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", e2.target);
         }
       }, "handler");
@@ -36215,32 +36273,32 @@ var PeerConnection = class extends BaseComponent {
     });
   }
   async switchMode(mode) {
-    console.log("\u{1F527} switchMode called with:", mode);
-    console.log("\u{1F527} Current mode:", this.state.mode);
+    log5("switchMode called with: %s", mode);
+    log5("Current mode: %s", this.state.mode);
     if (this.state.mode !== mode) {
-      console.log("\u{1F527} Mode change detected, proceeding...");
+      log5("Mode change detected, proceeding...");
       if (this._actions && this._actions.cleanup) {
-        console.log("\u{1F527} Cleaning up previous connections...");
+        log5("Cleaning up previous connections...");
         await this._actions.cleanup();
       }
-      console.log("\u{1F527} Initializing Libp2p with new mode...");
+      log5("Initializing Libp2p with new mode...");
       await this.initializeLibp2p(mode);
-      console.log("\u{1F527} Mode switch completed");
+      log5("Mode switch completed");
     } else {
-      console.log("\u{1F527} Mode is already", mode);
+      log5("Mode is already %s", mode);
     }
   }
   async getRelayAddresses() {
     return "/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
   }
   async manualUpdate() {
-    console.log("\u{1F504} \u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
+    log5("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
     if (this._actions && this._actions.manualUpdate) {
       await this._actions.manualUpdate();
     }
   }
   async forceUpdate() {
-    console.log("\u{1F4A5} \u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
+    log5("\u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
     if (this._actions && this._actions.forceUpdate) {
       await this._actions.forceUpdate();
     }

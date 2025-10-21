@@ -1,47 +1,76 @@
+import { logger } from '@libp2p/logger';
+
+const log = logger('chat-manager:actions');
+
+/**
+ * Фабричная функция для создания действий компонента ChatManager
+ * @param {Object} context - Контекст компонента
+ * @returns {Promise<Object>} Объект с методами действий
+ */
 export async function createActions(context) {
     return {
+        /**
+         * Подписывается на группу
+         * @async
+         * @param {string} topic - Топик группы
+         */
         async subscribeToGroup(topic) {
             if (context.node) {
                 try {
                     await context.node.services.pubsub.subscribe(topic);
-                    console.log(`✅ Subscribed to group: ${topic}`);
+                    log('Subscribed to group: %s', topic);
                     return true;
                 } catch (error) {
-                    console.error(`❌ Error subscribing to group ${topic}:`, error);
+                    log.error('Error subscribing to group %s: %o', topic, error);
                     return false;
                 }
             }
             return false;
         },
 
+        /**
+         * Отписывается от группы
+         * @async
+         * @param {string} topic - Топик группы
+         */
         async unsubscribeFromGroup(topic) {
             if (context.node) {
                 try {
                     await context.node.services.pubsub.unsubscribe(topic);
-                    console.log(`✅ Unsubscribed from group: ${topic}`);
+                    log('Unsubscribed from group: %s', topic);
                     return true;
                 } catch (error) {
-                    console.error(`❌ Error unsubscribing from group ${topic}:`, error);
+                    log.error('Error unsubscribing from group %s: %o', topic, error);
                     return false;
                 }
             }
             return false;
         },
 
+        /**
+         * Отправляет сообщение
+         * @async
+         * @param {string} topic - Топик группы
+         * @param {string} messageText - Текст сообщения
+         */
         async sendMessage(topic, messageText) {
             if (context.node) {
                 try {
                     await context.node.services.pubsub.publish(topic, new TextEncoder().encode(messageText));
-                    console.log(`✅ Message sent to topic ${topic}: ${messageText}`);
+                    log('Message sent to topic %s: %s', topic, messageText);
                     return true;
                 } catch (error) {
-                    console.error(`❌ Error sending message to topic ${topic}:`, error);
+                    log.error('Error sending message to topic %s: %o', topic, error);
                     return false;
                 }
             }
             return false;
         },
 
+        /**
+         * Обнаруживает группы
+         * @async
+         */
         async discoverGroups() {
             if (!context.node) return [];
 
@@ -63,7 +92,7 @@ export async function createActions(context) {
 
                 return groups;
             } catch (error) {
-                console.error('❌ Error discovering groups:', error);
+                log.error('Error discovering groups: %o', error);
                 return [];
             }
         }

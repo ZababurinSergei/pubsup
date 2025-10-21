@@ -1,9 +1,15 @@
+// Импортируем логгер
+import { logger } from '@libp2p/logger';
+
 /**
  * Контроллер для компонента PeerConnection
  * @param {HTMLElement} context - Ссылка на экземпляр компонента
  * @returns {Object} Объект с методами init и destroy
  */
 export const controller = async (context) => {
+    // Создаем именованный логгер для контроллера
+    const log = logger('peer-connection:controller');
+
     let eventListeners = [];
 
     return {
@@ -12,7 +18,7 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
-            console.log('🔧 PeerConnection controller initializing...');
+            log('controller initializing...');
 
             // Обработчики для копирования адресов
             const setupCopyHandlers = () => {
@@ -39,8 +45,7 @@ export const controller = async (context) => {
                     const handler = async (e) => {
                         const peerId = e.target.getAttribute('data-peer-id');
                         if (peerId) {
-                            console.log('ssssss', e.currentTarget)
-                            debugger
+                            log.trace('Copying peer ID: %s', peerId);
                             await context.copyToClipboard(peerId, 'Peer ID скопирован в буфер обмена');
                         }
                     };
@@ -82,7 +87,7 @@ export const controller = async (context) => {
             const listenerBtn = context.shadowRoot.querySelector('#listener-mode-btn');
             const dialerBtn = context.shadowRoot.querySelector('#dialer-mode-btn');
 
-            console.log('🔍 Debug: button elements found', {
+            log.trace('Debug: button elements found: %o', {
                 listenerBtn: !!listenerBtn,
                 dialerBtn: !!dialerBtn,
                 listenerBtnId: listenerBtn?.id,
@@ -92,11 +97,11 @@ export const controller = async (context) => {
             if (listenerBtn) {
                 const listenerHandler = async () => {
                     try {
-                        console.log('🔧 Listener mode button clicked');
+                        log('Listener mode button clicked');
                         await context.switchMode('listener');
-                        console.log('✅ Переключен в режим listener');
+                        log('Переключен в режим listener');
                     } catch (error) {
-                        console.error('❌ Ошибка переключения в режим listener:', error);
+                        log.error('Ошибка переключения в режим listener: %o', error);
                         context.addError({
                             componentName: context.constructor.name,
                             source: 'controller-listener',
@@ -107,17 +112,17 @@ export const controller = async (context) => {
                 };
                 listenerBtn.addEventListener('click', listenerHandler);
                 eventListeners.push({ element: listenerBtn, handler: listenerHandler });
-                console.log('✅ Listener button handler attached');
+                log.trace('Listener button handler attached');
             }
 
             if (dialerBtn) {
                 const dialerHandler = async () => {
                     try {
-                        console.log('🔧 Dialer mode button clicked');
+                        log('Dialer mode button clicked');
                         await context.switchMode('dialer');
-                        console.log('✅ Переключен в режим dialer');
+                        log('Переключен в режим dialer');
                     } catch (error) {
-                        console.error('❌ Ошибка переключения в режим dialer:', error);
+                        log.error('Ошибка переключения в режим dialer: %o', error);
                         context.addError({
                             componentName: context.constructor.name,
                             source: 'controller-dialer',
@@ -128,7 +133,7 @@ export const controller = async (context) => {
                 };
                 dialerBtn.addEventListener('click', dialerHandler);
                 eventListeners.push({ element: dialerBtn, handler: dialerHandler });
-                console.log('✅ Dialer button handler attached');
+                log.trace('Dialer button handler attached');
             }
 
             // Дополнительная привязка через делегирование событий на случай проблем с элементами
@@ -141,20 +146,20 @@ export const controller = async (context) => {
                         event.stopPropagation();
 
                         const mode = button.id === 'listener-mode-btn' ? 'listener' : 'dialer';
-                        console.log('🔧 Mode delegation handler triggered:', mode);
+                        log.trace('Mode delegation handler triggered: %s', mode);
 
                         try {
                             await context.switchMode(mode);
-                            console.log('✅ Mode switched via delegation:', mode);
+                            log.trace('Mode switched via delegation: %s', mode);
                         } catch (error) {
-                            console.error('❌ Error in mode delegation:', error);
+                            log.error('Error in mode delegation: %o', error);
                         }
                     }
                 };
 
                 modeSwitcher.addEventListener('click', modeDelegationHandler);
                 eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
-                console.log('✅ Mode switcher delegation handler attached');
+                log.trace('Mode switcher delegation handler attached');
             }
 
             if (connectBtn && peerAddressInput) {
@@ -162,12 +167,12 @@ export const controller = async (context) => {
                     const address = peerAddressInput.value.trim();
                     if (address) {
                         try {
-                            console.log('🔧 Connecting to peer:', address);
+                            log('Connecting to peer: %s', address);
                             await context.connectToPeer(address);
                             peerAddressInput.value = '';
-                            console.log(`✅ Подключение к пиру инициировано: ${address}`);
+                            log('Подключение к пиру инициировано: %s', address);
                         } catch (error) {
-                            console.error('❌ Ошибка подключения к пиру:', error);
+                            log.error('Ошибка подключения к пиру: %o', error);
                             context.addError({
                                 componentName: context.constructor.name,
                                 source: 'controller-connect',
@@ -176,7 +181,7 @@ export const controller = async (context) => {
                             });
                         }
                     } else {
-                        console.warn('⚠️ Пустой адрес для подключения');
+                        log.warn('Пустой адрес для подключения');
                     }
                 };
 
@@ -193,7 +198,7 @@ export const controller = async (context) => {
                 peerAddressInput.addEventListener('keypress', enterHandler);
                 eventListeners.push({ element: peerAddressInput, handler: enterHandler });
 
-                console.log('✅ Peer connection handlers attached');
+                log.trace('Peer connection handlers attached');
             }
 
             // Обработчик обновления списка пиров
@@ -201,16 +206,16 @@ export const controller = async (context) => {
             if (refreshBtn) {
                 const refreshHandler = async () => {
                     try {
-                        console.log('🔧 Refreshing peer list...');
+                        log('Refreshing peer list...');
                         await context.updatePeerList();
-                        console.log('✅ Список пиров обновлен');
+                        log('Список пиров обновлен');
                     } catch (error) {
-                        console.error('❌ Ошибка обновления списка пиров:', error);
+                        log.error('Ошибка обновления списка пиров: %o', error);
                     }
                 };
                 refreshBtn.addEventListener('click', refreshHandler);
                 eventListeners.push({ element: refreshBtn, handler: refreshHandler });
-                console.log('✅ Refresh peers handler attached');
+                log.trace('Refresh peers handler attached');
             }
 
             // Обработчик копирования адресов
@@ -218,12 +223,12 @@ export const controller = async (context) => {
             if (copyAddressesBtn) {
                 const copyHandler = async () => {
                     try {
-                        console.log('🔧 Copying addresses...');
+                        log('Copying addresses...');
                         const addresses = await context.getRelayAddresses();
                         const textToCopy = addresses.join('\n');
                         await context.copyToClipboard(textToCopy, 'Все адреса скопированы в буфер обмена');
                     } catch (error) {
-                        console.error('❌ Ошибка копирования адресов:', error);
+                        log.error('Ошибка копирования адресов: %o', error);
                         context.addError({
                             componentName: context.constructor.name,
                             source: 'controller-copy-addresses',
@@ -234,7 +239,7 @@ export const controller = async (context) => {
                 };
                 copyAddressesBtn.addEventListener('click', copyHandler);
                 eventListeners.push({ element: copyAddressesBtn, handler: copyHandler });
-                console.log('✅ Copy addresses handler attached');
+                log.trace('Copy addresses handler attached');
             }
 
             // Обработчик переключения relay
@@ -242,25 +247,25 @@ export const controller = async (context) => {
             if (relayToggle) {
                 const relayHandler = (event) => {
                     context.state.relayEnabled = event.target.checked;
-                    console.log(`🔧 Relay ${context.state.relayEnabled ? 'включен' : 'выключен'}`);
+                    log('Relay %s', context.state.relayEnabled ? 'включен' : 'выключен');
 
                     // Обновляем UI для отражения изменения
                     context.renderPart({
                         partName: 'renderSystemStatus',
                         state: context.state,
                         selector: '.status-card .card-content'
-                    }).catch(console.error);
+                    }).catch(error => log.error('Error updating relay status: %o', error));
                 };
                 relayToggle.addEventListener('change', relayHandler);
                 eventListeners.push({ element: relayToggle, handler: relayHandler });
-                console.log('✅ Relay toggle handler attached');
+                log.trace('Relay toggle handler attached');
             }
 
             // Обработчики быстрых действий
             this.setupQuickActions(context, eventListeners);
 
-            console.log('✅ [PeerConnection] Контроллер инициализирован');
-            console.log('📊 Total event listeners:', eventListeners.length);
+            log('Контроллер инициализирован');
+            log('Total event listeners: %d', eventListeners.length);
         },
 
         /**
@@ -274,12 +279,11 @@ export const controller = async (context) => {
             if (copyPeerIdBtn) {
                 const copyPeerHandler = async () => {
                     try {
-                        debugger
                         if (context.state.peerId) {
                             await context.copyToClipboard(context.state.peerId, 'Peer ID скопирован в буфер обмена');
                         }
                     } catch (error) {
-                        console.error('❌ Ошибка копирования Peer ID:', error);
+                        log.error('Ошибка копирования Peer ID: %o', error);
                     }
                 };
                 copyPeerIdBtn.addEventListener('click', copyPeerHandler);
@@ -291,14 +295,13 @@ export const controller = async (context) => {
             if (copyAllAddressesBtn) {
                 const copyAllAddressesHandler = async () => {
                     try {
-                        debugger
                         const addresses = context.state.listeningAddresses || [];
                         if (addresses.length > 0) {
                             const textToCopy = addresses.join('\n');
                             await context.copyToClipboard(textToCopy, 'Все адреса скопированы в буфер обмена');
                         }
                     } catch (error) {
-                        console.error('❌ Ошибка копирования всех адресов:', error);
+                        log.error('Ошибка копирования всех адресов: %o', error);
                     }
                 };
                 copyAllAddressesBtn.addEventListener('click', copyAllAddressesHandler);
@@ -310,11 +313,11 @@ export const controller = async (context) => {
             if (disconnectAllBtn) {
                 const disconnectAllHandler = async () => {
                     try {
-                        console.log('🔧 Disconnecting all peers...');
+                        log('Disconnecting all peers...');
                         // Здесь должна быть логика отключения всех пиров
-                        console.log('✅ Все пиры отключены');
+                        log('Все пиры отключены');
                     } catch (error) {
-                        console.error('❌ Ошибка отключения всех пиров:', error);
+                        log.error('Ошибка отключения всех пиров: %o', error);
                     }
                 };
                 disconnectAllBtn.addEventListener('click', disconnectAllHandler);
@@ -326,11 +329,11 @@ export const controller = async (context) => {
             if (restartNodeBtn) {
                 const restartHandler = async () => {
                     try {
-                        console.log('🔧 Restarting node...');
+                        log('Restarting node...');
                         await context.switchMode(context.state.mode); // Перезапуск в текущем режиме
-                        console.log('✅ Узел перезапущен');
+                        log('Узел перезапущен');
                     } catch (error) {
-                        console.error('❌ Ошибка перезапуска узла:', error);
+                        log.error('Ошибка перезапуска узла: %o', error);
                     }
                 };
                 restartNodeBtn.addEventListener('click', restartHandler);
@@ -342,19 +345,19 @@ export const controller = async (context) => {
             if (refreshAllBtn) {
                 const refreshAllHandler = async () => {
                     try {
-                        console.log('🔧 Refreshing all data...');
+                        log('Refreshing all data...');
                         await context.updatePeerList();
                         // Можно добавить обновление других данных
-                        console.log('✅ Все данные обновлены');
+                        log('Все данные обновлены');
                     } catch (error) {
-                        console.error('❌ Ошибка обновления данных:', error);
+                        log.error('Ошибка обновления данных: %o', error);
                     }
                 };
                 refreshAllBtn.addEventListener('click', refreshAllHandler);
                 eventListeners.push({ element: refreshAllBtn, handler: refreshAllHandler });
             }
 
-            console.log('✅ Quick actions handlers attached');
+            log.trace('Quick actions handlers attached');
         },
 
         /**
@@ -362,7 +365,7 @@ export const controller = async (context) => {
          * @async
          */
         async destroy() {
-            console.log('🔧 PeerConnection controller destroying...');
+            log('controller destroying...');
 
             // Очистка всех обработчиков событий
             eventListeners.forEach(({ element, handler }) => {
@@ -372,7 +375,7 @@ export const controller = async (context) => {
                     element.removeEventListener('keypress', handler);
                     element.removeEventListener('change', handler);
                 } catch (error) {
-                    console.warn('⚠️ Error removing event listener:', error);
+                    log.warn('Error removing event listener: %o', error);
                 }
             });
 
@@ -382,10 +385,10 @@ export const controller = async (context) => {
                 context._copyObserver = null;
             }
 
-            console.log(`✅ Removed ${eventListeners.length} event listeners`);
+            log('Removed %d event listeners', eventListeners.length);
             eventListeners = [];
 
-            console.log('✅ [PeerConnection] Контроллер уничтожен');
+            log('Контроллер уничтожен');
         }
     };
 };

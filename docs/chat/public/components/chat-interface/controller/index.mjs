@@ -1,9 +1,12 @@
+import { logger } from '@libp2p/logger';
+
 /**
  * Контроллер для компонента ChatInterface
  * @param {HTMLElement} context - Ссылка на экземпляр компонента
  * @returns {Object} Объект с методами init и destroy
  */
 export const controller = async (context) => {
+    const log = logger('chat-interface:controller');
     let eventListeners = [];
 
     return {
@@ -12,6 +15,8 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
+            log('инициализация контроллера');
+
             // Обработчик отправки сообщения
             const sendMessageBtn = context.shadowRoot.querySelector('#send-message');
             const messageInput = context.shadowRoot.querySelector('#message-input');
@@ -21,6 +26,7 @@ export const controller = async (context) => {
                     if (messageInput.value.trim() && context.state.currentGroup) {
                         const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
                         if (chatManager) {
+                            log('отправка сообщения через контроллер');
                             await chatManager.postMessage({
                                 type: 'SEND_MESSAGE',
                                 data: {
@@ -52,6 +58,7 @@ export const controller = async (context) => {
             const clearChatBtn = context.shadowRoot.querySelector('#clear-chat');
             if (clearChatBtn) {
                 const clearChatHandler = async () => {
+                    log('очистка чата через контроллер');
                     await context.clearMessages();
                 };
 
@@ -71,8 +78,9 @@ export const controller = async (context) => {
                             setTimeout(() => {
                                 copyChatIdBtn.textContent = originalText;
                             }, 2000);
+                            log('ID чата скопирован: %s', context.state.currentGroup.topic);
                         } catch (err) {
-                            console.error('Ошибка копирования:', err);
+                            log.error('ошибка копирования ID чата: %o', err);
                         }
                     }
                 };
@@ -90,6 +98,7 @@ export const controller = async (context) => {
                         const isVisible = membersPanel.style.display !== 'none';
                         membersPanel.style.display = isVisible ? 'none' : 'block';
                         toggleMembersBtn.textContent = isVisible ? 'Показать участников' : 'Скрыть участников';
+                        log('видимость панели участников изменена: %s', isVisible ? 'скрыта' : 'показана');
                     }
                 };
 
@@ -104,7 +113,7 @@ export const controller = async (context) => {
                 }, 100);
             }
 
-            console.log('[ChatInterface] Контроллер инициализирован');
+            log('контроллер инициализирован, обработчиков: %d', eventListeners.length);
         },
 
         /**
@@ -117,9 +126,9 @@ export const controller = async (context) => {
                 element.removeEventListener('click', handler);
                 element.removeEventListener('keypress', handler);
             });
-            eventListeners = [];
 
-            console.log('[ChatInterface] Контроллер уничтожен');
+            log('контроллер уничтожен, удалено обработчиков: %d', eventListeners.length);
+            eventListeners = [];
         }
     };
 };
