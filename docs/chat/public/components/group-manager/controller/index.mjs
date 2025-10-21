@@ -1,3 +1,5 @@
+import { logger } from '@libp2p/logger';
+
 /**
  * Контроллер для компонента GroupManager
  * @param {HTMLElement} context - Ссылка на экземпляр компонента
@@ -5,6 +7,7 @@
  */
 export const controller = async (context) => {
     let eventListeners = [];
+    const log = logger('group-manager:controller');
 
     return {
         /**
@@ -12,7 +15,7 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
-            console.log('🔧 GroupManager controller initializing...');
+            log('controller initializing');
 
             // Обработчик создания новой группы
             const createGroupBtn = context.shadowRoot.querySelector('#create-group-btn');
@@ -66,7 +69,7 @@ export const controller = async (context) => {
                                     placeholder="Введите название группы..."
                                     style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
                                            border-radius: 8px; background: rgba(255,255,255,0.05); 
-                                           color: var(--cosmic-text-primary); font-size: 1rem;"
+                                           color: var(--cosmic-primary); font-size: 1rem;"
                                     autofocus
                                 >
                                 <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
@@ -78,7 +81,7 @@ export const controller = async (context) => {
                             {
                                 text: 'Отмена',
                                 type: 'secondary',
-                                action: () => console.log('Создание группы отменено')
+                                action: () => log('создание группы отменено')
                             },
                             {
                                 text: 'Создать',
@@ -87,11 +90,11 @@ export const controller = async (context) => {
                                     const groupNameInput = document.querySelector('#group-name-input');
                                     if (groupNameInput && groupNameInput.value.trim()) {
                                         const groupName = groupNameInput.value.trim();
-                                        console.log('🔧 Creating group:', groupName);
+                                        log('creating group: %s', groupName);
 
                                         try {
                                             const group = await context.createGroup(groupName);
-                                            console.log('✅ Group created successfully:', group);
+                                            log('group created successfully: %o', group);
 
                                             // Уведомляем chat-manager о создании группы
                                             const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
@@ -102,7 +105,7 @@ export const controller = async (context) => {
                                                 });
                                             }
                                         } catch (error) {
-                                            console.error('❌ Error creating group:', error);
+                                            log.error('error creating group: %o', error);
                                             await context.showModal({
                                                 title: 'Ошибка',
                                                 content: `<p>Не удалось создать группу: ${error.message}</p>`,
@@ -116,7 +119,7 @@ export const controller = async (context) => {
                         closeOnBackdropClick: true
                     });
                 } catch (error) {
-                    console.error('❌ Error in create group handler:', error);
+                    log.error('error in create group handler: %o', error);
                 }
             };
 
@@ -135,7 +138,7 @@ export const controller = async (context) => {
                     try {
                         await context.checkNodeStatus();
                     } catch (error) {
-                        console.error('❌ Error checking node status:', error);
+                        log.error('error checking node status: %o', error);
                     }
                 };
                 checkStatusBtn.addEventListener('click', checkStatusHandler);
@@ -155,7 +158,7 @@ export const controller = async (context) => {
             // Обработчик обнаружения групп
             const discoverGroupsHandler = async () => {
                 try {
-                    console.log('🔍 Запуск поиска групп...');
+                    log('запуск поиска групп');
 
                     // Показываем индикатор загрузки
                     await context.showSkeleton({
@@ -172,7 +175,7 @@ export const controller = async (context) => {
                     }, 2000);
 
                 } catch (error) {
-                    console.error('❌ Ошибка поиска групп:', error);
+                    log.error('ошибка поиска групп: %o', error);
                     await context.hideSkeleton();
 
                     await context.showModal({
@@ -213,7 +216,7 @@ export const controller = async (context) => {
                             if (group) {
                                 try {
                                     await context.joinGroup(group);
-                                    console.log('✅ Successfully joined group:', group.name);
+                                    log('successfully joined group: %s', group.name);
 
                                     // Уведомляем chat-manager о присоединении к группе
                                     const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
@@ -224,7 +227,7 @@ export const controller = async (context) => {
                                         });
                                     }
                                 } catch (error) {
-                                    console.error('❌ Error joining group:', error);
+                                    log.error('error joining group: %o', error);
                                     await context.showModal({
                                         title: 'Ошибка',
                                         content: `<p>Не удалось присоединиться к группе: ${error.message}</p>`,
@@ -249,9 +252,9 @@ export const controller = async (context) => {
                         if (groupId) {
                             try {
                                 await context.leaveGroup(groupId);
-                                console.log('✅ Successfully left group:', groupId);
+                                log('successfully left group: %s', groupId);
                             } catch (error) {
-                                console.error('❌ Error leaving group:', error);
+                                log.error('error leaving group: %o', error);
                                 await context.showModal({
                                     title: 'Ошибка',
                                     content: `<p>Не удалось покинуть группу: ${error.message}</p>`,
@@ -290,7 +293,7 @@ export const controller = async (context) => {
                 setupLeaveButtons();
             }, 100);
 
-            console.log('✅ [GroupManager] Контроллер инициализирован');
+            log('контроллер инициализирован');
         },
 
         /**
@@ -298,7 +301,7 @@ export const controller = async (context) => {
          * @async
          */
         async destroy() {
-            console.log('🔧 GroupManager controller destroying...');
+            log('controller destroying');
 
             // Очистка всех обработчиков событий
             eventListeners.forEach(({ element, handler }) => {
@@ -306,7 +309,7 @@ export const controller = async (context) => {
                     element.removeEventListener('click', handler);
                     element.removeEventListener('input', handler);
                 } catch (error) {
-                    console.warn('⚠️ Error removing event listener:', error);
+                    log.warn('error removing event listener: %o', error);
                 }
             });
 
@@ -316,10 +319,10 @@ export const controller = async (context) => {
                 context._groupObserver = null;
             }
 
-            console.log(`✅ Removed ${eventListeners.length} event listeners`);
+            log('removed %d event listeners', eventListeners.length);
             eventListeners = [];
 
-            console.log('✅ [GroupManager] Контроллер уничтожен');
+            log('контроллер уничтожен');
         }
     };
 };

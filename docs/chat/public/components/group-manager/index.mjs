@@ -2,11 +2,13 @@ import { BaseComponent } from '../../base/base-component.mjs';
 import * as template from './template/index.mjs';
 import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
+import { logger } from '@libp2p/logger';
 
 export class GroupManager extends BaseComponent {
     constructor() {
         super();
         this._templateMethods = template;
+        this.log = logger('group-manager');
         this.state = {
             groups: [],
             discoveredGroups: [],
@@ -19,42 +21,49 @@ export class GroupManager extends BaseComponent {
     }
 
     async _componentReady() {
-        console.log('🔧 GroupManager component ready');
+        this.log('component ready');
 
         this._controller = await controller(this);
         this._actions = await createActions(this);
+
+        this.log('controller and actions created: %o', {
+            hasController: !!this._controller,
+            hasActions: !!this._actions
+        });
+
+        await this._controller.init();
 
         // Сначала рендерим компонент
         await this.fullRender(this.state);
         await this._controller.init();
 
+        // Запускаем инициализацию ноды
+        await this.startNodeInitialization();
+        this.state._initialized = true;
+
         // Автоматический поиск групп при старте
         setTimeout(async () => {
             if (this.state.nodeReady) {
                 try {
-                    console.log('🔍 Автоматический поиск групп при старте...');
+                    this.log('автоматический поиск групп при старте');
                     await this.discoverGroups();
                 } catch (error) {
-                    console.log('⚠️ Автоматический поиск не удался:', error);
+                    this.log('автоматический поиск не удался: %o', error);
                 }
             }
         }, 3000);
 
-        // Затем запускаем инициализацию ноды
-        await this.startNodeInitialization();
-
-        this.state._initialized = true;
         return true;
     }
 
     async startNodeInitialization() {
-        console.log('🔧 Starting node initialization check...');
+        this.log('starting node initialization check');
 
         this._nodeCheckInterval = setInterval(async () => {
             try {
                 await this.initializeFromPeerConnection();
             } catch (error) {
-                console.log('⏳ Waiting for node...');
+                this.log('waiting for node');
             }
         }, 2000);
 
@@ -68,7 +77,7 @@ export class GroupManager extends BaseComponent {
             const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
 
             if (!peerConnection) {
-                console.warn('❌ PeerConnection component not found');
+                this.log('peer connection component not found');
                 return false;
             }
 
@@ -89,11 +98,11 @@ export class GroupManager extends BaseComponent {
                         this._nodeCheckInterval = null;
                     }
 
-                    console.log('✅ Node obtained from PeerConnection for GroupManager, PubSub is ready');
+                    this.log('node obtained from peer connection for group manager, pubsub is ready');
                     await this.safeUpdateUI();
                     return true;
                 } else {
-                    console.log('⏳ Node found but PubSub not ready yet...');
+                    this.log('node found but pubsub not ready yet');
                     return false;
                 }
             }
@@ -101,7 +110,7 @@ export class GroupManager extends BaseComponent {
             return false;
 
         } catch (error) {
-            console.error('❌ Failed to initialize from PeerConnection:', error);
+            this.log.error('failed to initialize from peer connection: %o', error);
             return false;
         }
     }
@@ -120,7 +129,7 @@ export class GroupManager extends BaseComponent {
                         state: this.state,
                         selector: '.node-status-section'
                     }).catch(() => {
-                        console.log('⚠️ Node status element not available for renderPart');
+                        this.log('node status element not available for renderPart');
                     })
                 );
             }
@@ -134,7 +143,7 @@ export class GroupManager extends BaseComponent {
                         state: this.state,
                         selector: '.quick-actions'
                     }).catch(() => {
-                        console.log('⚠️ Quick actions element not available for renderPart');
+                        this.log('quick actions element not available for renderPart');
                     })
                 );
             }
@@ -142,7 +151,7 @@ export class GroupManager extends BaseComponent {
             await Promise.allSettled(updates);
 
         } catch (error) {
-            console.warn('⚠️ Error in safeUpdateUI:', error);
+            this.log('error in safeUpdateUI: %o', error);
             // Если renderPart не работает, используем полный рендер
             await this.fullRender(this.state);
         }
@@ -151,20 +160,20 @@ export class GroupManager extends BaseComponent {
     async safeRenderPart(options) {
         try {
             if (!this.renderPart) {
-                console.warn('⚠️ renderPart method not available');
+                this.log('renderPart method not available');
                 return false;
             }
 
             const element = this.shadowRoot.querySelector(options.selector);
             if (!element) {
-                console.warn(`⚠️ Element with selector '${options.selector}' not found`);
+                this.log('element with selector %s not found', options.selector);
                 return false;
             }
 
             await this.renderPart(options);
             return true;
         } catch (error) {
-            console.warn(`⚠️ Error in safeRenderPart for '${options.selector}':`, error);
+            this.log('error in safeRenderPart for %s: %o', options.selector, error);
             return false;
         }
     }
@@ -176,16 +185,16 @@ export class GroupManager extends BaseComponent {
         }
 
         try {
-            console.log('🔧 Creating group in GroupManager:', groupName);
+            this.log('creating group: %s', groupName);
             const group = await this._actions.createGroup(groupName);
-            console.log('✅ Group created:', group);
+            this.log('group created: %o', group);
 
             // Безопасное обновление UI
             await this.safeUpdateGroupsList();
 
             return group;
         } catch (error) {
-            console.error('❌ Error creating group:', error);
+            this.log.error('error creating group: %o', error);
 
             // Если ошибка связана с PubSub, помечаем ноду как неготовую
             if (error.message.includes('Pubsub has not started')) {
@@ -212,7 +221,7 @@ export class GroupManager extends BaseComponent {
                 await this.fullRender(this.state);
             }
         } catch (error) {
-            console.warn('⚠️ Error updating groups list:', error);
+            this.log('error updating groups list: %o', error);
             await this.fullRender(this.state);
         }
     }
@@ -229,7 +238,7 @@ export class GroupManager extends BaseComponent {
             await this.safeUpdateDiscoveredGroups();
 
         } catch (error) {
-            console.error('❌ Error discovering groups:', error);
+            this.log.error('error discovering groups: %o', error);
             throw error;
         }
     }
@@ -243,11 +252,11 @@ export class GroupManager extends BaseComponent {
             });
 
             if (!updated) {
-                console.log('⚠️ Discovered groups list not found, using full render');
+                this.log('discovered groups list not found, using full render');
                 await this.fullRender(this.state);
             }
         } catch (error) {
-            console.warn('⚠️ Error updating discovered groups:', error);
+            this.log('error updating discovered groups: %o', error);
             await this.fullRender(this.state);
         }
     }
@@ -265,7 +274,7 @@ export class GroupManager extends BaseComponent {
             });
 
         } catch (error) {
-            console.error('❌ Error searching groups:', error);
+            this.log.error('error searching groups: %o', error);
             throw error;
         }
     }
@@ -276,16 +285,16 @@ export class GroupManager extends BaseComponent {
         }
 
         try {
-            console.log('🔧 Joining group in GroupManager:', group.name);
+            this.log('joining group: %s', group.name);
             const joinedGroup = await this._actions.joinGroup(group.topic || group.id);
-            console.log('✅ Group joined:', joinedGroup);
+            this.log('group joined: %o', joinedGroup);
 
             // Безопасное обновление списка присоединенных групп
             await this.safeUpdateJoinedGroups();
 
             return joinedGroup;
         } catch (error) {
-            console.error('❌ Error joining group:', error);
+            this.log.error('error joining group: %o', error);
             throw error;
         }
     }
@@ -302,7 +311,7 @@ export class GroupManager extends BaseComponent {
                 await this.fullRender(this.state);
             }
         } catch (error) {
-            console.warn('⚠️ Error updating joined groups:', error);
+            this.log('error updating joined groups: %o', error);
             await this.fullRender(this.state);
         }
     }
@@ -313,14 +322,14 @@ export class GroupManager extends BaseComponent {
         }
 
         try {
-            console.log('🔧 Leaving group in GroupManager:', groupId);
+            this.log('leaving group: %s', groupId);
             await this._actions.leaveGroup(groupId);
-            console.log('✅ Group left:', groupId);
+            this.log('group left: %s', groupId);
 
             await this.safeUpdateJoinedGroups();
 
         } catch (error) {
-            console.error('❌ Error leaving group:', error);
+            this.log.error('error leaving group: %o', error);
             throw error;
         }
     }
@@ -341,7 +350,7 @@ export class GroupManager extends BaseComponent {
 
             return this.state.nodeReady;
         } catch (error) {
-            console.error('❌ Error checking node status:', error);
+            this.log.error('error checking node status: %o', error);
             return false;
         }
     }

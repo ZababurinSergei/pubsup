@@ -12,11 +12,11 @@ var __export = (target, all2) => {
   for (var name3 in all2)
     __defProp(target, name3, { get: all2[name3], enumerable: true });
 };
-var __copyProps = (to, from3, except, desc) => {
-  if (from3 && typeof from3 === "object" || typeof from3 === "function") {
-    for (let key of __getOwnPropNames(from3))
+var __copyProps = (to, from4, except, desc) => {
+  if (from4 && typeof from4 === "object" || typeof from4 === "function") {
+    for (let key of __getOwnPropNames(from4))
       if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from3[key], enumerable: !(desc = __getOwnPropDesc(from3, key)) || desc.enumerable });
+        __defProp(to, key, { get: () => from4[key], enumerable: !(desc = __getOwnPropDesc(from4, key)) || desc.enumerable });
   }
   return to;
 };
@@ -94,30 +94,30 @@ var require_netmask = __commonJS({
       chra = chr("a");
       chrA = chr("A");
       atob = /* @__PURE__ */ __name(function(s2) {
-        var base3, dmax, i2, n2, start2;
+        var base4, dmax, i2, n2, start2;
         n2 = 0;
-        base3 = 10;
+        base4 = 10;
         dmax = "9";
         i2 = 0;
         if (s2.length > 1 && s2[i2] === "0") {
           if (s2[i2 + 1] === "x" || s2[i2 + 1] === "X") {
             i2 += 2;
-            base3 = 16;
+            base4 = 16;
           } else if ("0" <= s2[i2 + 1] && s2[i2 + 1] <= "9") {
             i2++;
-            base3 = 8;
+            base4 = 8;
             dmax = "7";
           }
         }
         start2 = i2;
         while (i2 < s2.length) {
           if ("0" <= s2[i2] && s2[i2] <= dmax) {
-            n2 = n2 * base3 + (chr(s2[i2]) - chr0) >>> 0;
-          } else if (base3 === 16) {
+            n2 = n2 * base4 + (chr(s2[i2]) - chr0) >>> 0;
+          } else if (base4 === 16) {
             if ("a" <= s2[i2] && s2[i2] <= "f") {
-              n2 = n2 * base3 + (10 + chr(s2[i2]) - chra) >>> 0;
+              n2 = n2 * base4 + (10 + chr(s2[i2]) - chra) >>> 0;
             } else if ("A" <= s2[i2] && s2[i2] <= "F") {
-              n2 = n2 * base3 + (10 + chr(s2[i2]) - chrA) >>> 0;
+              n2 = n2 * base4 + (10 + chr(s2[i2]) - chrA) >>> 0;
             } else {
               break;
             }
@@ -222,6 +222,489 @@ var require_netmask = __commonJS({
       exports.long2ip = long2ip;
       exports.Netmask = Netmask2;
     }).call(exports);
+  }
+});
+
+// node_modules/ms/index.js
+var require_ms = __commonJS({
+  "node_modules/ms/index.js"(exports, module) {
+    var s2 = 1e3;
+    var m2 = s2 * 60;
+    var h = m2 * 60;
+    var d2 = h * 24;
+    var w = d2 * 7;
+    var y = d2 * 365.25;
+    module.exports = function(val, options) {
+      options = options || {};
+      var type = typeof val;
+      if (type === "string" && val.length > 0) {
+        return parse(val);
+      } else if (type === "number" && isFinite(val)) {
+        return options.long ? fmtLong(val) : fmtShort(val);
+      }
+      throw new Error(
+        "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
+      );
+    };
+    function parse(str) {
+      str = String(str);
+      if (str.length > 100) {
+        return;
+      }
+      var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+        str
+      );
+      if (!match) {
+        return;
+      }
+      var n2 = parseFloat(match[1]);
+      var type = (match[2] || "ms").toLowerCase();
+      switch (type) {
+        case "years":
+        case "year":
+        case "yrs":
+        case "yr":
+        case "y":
+          return n2 * y;
+        case "weeks":
+        case "week":
+        case "w":
+          return n2 * w;
+        case "days":
+        case "day":
+        case "d":
+          return n2 * d2;
+        case "hours":
+        case "hour":
+        case "hrs":
+        case "hr":
+        case "h":
+          return n2 * h;
+        case "minutes":
+        case "minute":
+        case "mins":
+        case "min":
+        case "m":
+          return n2 * m2;
+        case "seconds":
+        case "second":
+        case "secs":
+        case "sec":
+        case "s":
+          return n2 * s2;
+        case "milliseconds":
+        case "millisecond":
+        case "msecs":
+        case "msec":
+        case "ms":
+          return n2;
+        default:
+          return void 0;
+      }
+    }
+    __name(parse, "parse");
+    function fmtShort(ms) {
+      var msAbs = Math.abs(ms);
+      if (msAbs >= d2) {
+        return Math.round(ms / d2) + "d";
+      }
+      if (msAbs >= h) {
+        return Math.round(ms / h) + "h";
+      }
+      if (msAbs >= m2) {
+        return Math.round(ms / m2) + "m";
+      }
+      if (msAbs >= s2) {
+        return Math.round(ms / s2) + "s";
+      }
+      return ms + "ms";
+    }
+    __name(fmtShort, "fmtShort");
+    function fmtLong(ms) {
+      var msAbs = Math.abs(ms);
+      if (msAbs >= d2) {
+        return plural(ms, msAbs, d2, "day");
+      }
+      if (msAbs >= h) {
+        return plural(ms, msAbs, h, "hour");
+      }
+      if (msAbs >= m2) {
+        return plural(ms, msAbs, m2, "minute");
+      }
+      if (msAbs >= s2) {
+        return plural(ms, msAbs, s2, "second");
+      }
+      return ms + " ms";
+    }
+    __name(fmtLong, "fmtLong");
+    function plural(ms, msAbs, n2, name3) {
+      var isPlural = msAbs >= n2 * 1.5;
+      return Math.round(ms / n2) + " " + name3 + (isPlural ? "s" : "");
+    }
+    __name(plural, "plural");
+  }
+});
+
+// node_modules/debug/src/common.js
+var require_common = __commonJS({
+  "node_modules/debug/src/common.js"(exports, module) {
+    function setup2(env) {
+      createDebug.debug = createDebug;
+      createDebug.default = createDebug;
+      createDebug.coerce = coerce3;
+      createDebug.disable = disable;
+      createDebug.enable = enable;
+      createDebug.enabled = enabled;
+      createDebug.humanize = require_ms();
+      createDebug.destroy = destroy;
+      Object.keys(env).forEach((key) => {
+        createDebug[key] = env[key];
+      });
+      createDebug.names = [];
+      createDebug.skips = [];
+      createDebug.formatters = {};
+      function selectColor(namespace) {
+        let hash = 0;
+        for (let i2 = 0; i2 < namespace.length; i2++) {
+          hash = (hash << 5) - hash + namespace.charCodeAt(i2);
+          hash |= 0;
+        }
+        return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+      }
+      __name(selectColor, "selectColor");
+      createDebug.selectColor = selectColor;
+      function createDebug(namespace) {
+        let prevTime;
+        let enableOverride = null;
+        let namespacesCache;
+        let enabledCache;
+        function debug2(...args) {
+          if (!debug2.enabled) {
+            return;
+          }
+          const self = debug2;
+          const curr = Number(/* @__PURE__ */ new Date());
+          const ms = curr - (prevTime || curr);
+          self.diff = ms;
+          self.prev = prevTime;
+          self.curr = curr;
+          prevTime = curr;
+          args[0] = createDebug.coerce(args[0]);
+          if (typeof args[0] !== "string") {
+            args.unshift("%O");
+          }
+          let index = 0;
+          args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format2) => {
+            if (match === "%%") {
+              return "%";
+            }
+            index++;
+            const formatter = createDebug.formatters[format2];
+            if (typeof formatter === "function") {
+              const val = args[index];
+              match = formatter.call(self, val);
+              args.splice(index, 1);
+              index--;
+            }
+            return match;
+          });
+          createDebug.formatArgs.call(self, args);
+          const logFn = self.log || createDebug.log;
+          logFn.apply(self, args);
+        }
+        __name(debug2, "debug");
+        debug2.namespace = namespace;
+        debug2.useColors = createDebug.useColors();
+        debug2.color = createDebug.selectColor(namespace);
+        debug2.extend = extend;
+        debug2.destroy = createDebug.destroy;
+        Object.defineProperty(debug2, "enabled", {
+          enumerable: true,
+          configurable: false,
+          get: /* @__PURE__ */ __name(() => {
+            if (enableOverride !== null) {
+              return enableOverride;
+            }
+            if (namespacesCache !== createDebug.namespaces) {
+              namespacesCache = createDebug.namespaces;
+              enabledCache = createDebug.enabled(namespace);
+            }
+            return enabledCache;
+          }, "get"),
+          set: /* @__PURE__ */ __name((v) => {
+            enableOverride = v;
+          }, "set")
+        });
+        if (typeof createDebug.init === "function") {
+          createDebug.init(debug2);
+        }
+        return debug2;
+      }
+      __name(createDebug, "createDebug");
+      function extend(namespace, delimiter) {
+        const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
+        newDebug.log = this.log;
+        return newDebug;
+      }
+      __name(extend, "extend");
+      function enable(namespaces) {
+        createDebug.save(namespaces);
+        createDebug.namespaces = namespaces;
+        createDebug.names = [];
+        createDebug.skips = [];
+        const split2 = (typeof namespaces === "string" ? namespaces : "").trim().replace(/\s+/g, ",").split(",").filter(Boolean);
+        for (const ns of split2) {
+          if (ns[0] === "-") {
+            createDebug.skips.push(ns.slice(1));
+          } else {
+            createDebug.names.push(ns);
+          }
+        }
+      }
+      __name(enable, "enable");
+      function matchesTemplate(search, template) {
+        let searchIndex = 0;
+        let templateIndex = 0;
+        let starIndex = -1;
+        let matchIndex = 0;
+        while (searchIndex < search.length) {
+          if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
+            if (template[templateIndex] === "*") {
+              starIndex = templateIndex;
+              matchIndex = searchIndex;
+              templateIndex++;
+            } else {
+              searchIndex++;
+              templateIndex++;
+            }
+          } else if (starIndex !== -1) {
+            templateIndex = starIndex + 1;
+            matchIndex++;
+            searchIndex = matchIndex;
+          } else {
+            return false;
+          }
+        }
+        while (templateIndex < template.length && template[templateIndex] === "*") {
+          templateIndex++;
+        }
+        return templateIndex === template.length;
+      }
+      __name(matchesTemplate, "matchesTemplate");
+      function disable() {
+        const namespaces = [
+          ...createDebug.names,
+          ...createDebug.skips.map((namespace) => "-" + namespace)
+        ].join(",");
+        createDebug.enable("");
+        return namespaces;
+      }
+      __name(disable, "disable");
+      function enabled(name3) {
+        for (const skip of createDebug.skips) {
+          if (matchesTemplate(name3, skip)) {
+            return false;
+          }
+        }
+        for (const ns of createDebug.names) {
+          if (matchesTemplate(name3, ns)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      __name(enabled, "enabled");
+      function coerce3(val) {
+        if (val instanceof Error) {
+          return val.stack || val.message;
+        }
+        return val;
+      }
+      __name(coerce3, "coerce");
+      function destroy() {
+        console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+      }
+      __name(destroy, "destroy");
+      createDebug.enable(createDebug.load());
+      return createDebug;
+    }
+    __name(setup2, "setup");
+    module.exports = setup2;
+  }
+});
+
+// node_modules/debug/src/browser.js
+var require_browser = __commonJS({
+  "node_modules/debug/src/browser.js"(exports, module) {
+    exports.formatArgs = formatArgs2;
+    exports.save = save2;
+    exports.load = load2;
+    exports.useColors = useColors2;
+    exports.storage = localstorage2();
+    exports.destroy = /* @__PURE__ */ (() => {
+      let warned = false;
+      return () => {
+        if (!warned) {
+          warned = true;
+          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+        }
+      };
+    })();
+    exports.colors = [
+      "#0000CC",
+      "#0000FF",
+      "#0033CC",
+      "#0033FF",
+      "#0066CC",
+      "#0066FF",
+      "#0099CC",
+      "#0099FF",
+      "#00CC00",
+      "#00CC33",
+      "#00CC66",
+      "#00CC99",
+      "#00CCCC",
+      "#00CCFF",
+      "#3300CC",
+      "#3300FF",
+      "#3333CC",
+      "#3333FF",
+      "#3366CC",
+      "#3366FF",
+      "#3399CC",
+      "#3399FF",
+      "#33CC00",
+      "#33CC33",
+      "#33CC66",
+      "#33CC99",
+      "#33CCCC",
+      "#33CCFF",
+      "#6600CC",
+      "#6600FF",
+      "#6633CC",
+      "#6633FF",
+      "#66CC00",
+      "#66CC33",
+      "#9900CC",
+      "#9900FF",
+      "#9933CC",
+      "#9933FF",
+      "#99CC00",
+      "#99CC33",
+      "#CC0000",
+      "#CC0033",
+      "#CC0066",
+      "#CC0099",
+      "#CC00CC",
+      "#CC00FF",
+      "#CC3300",
+      "#CC3333",
+      "#CC3366",
+      "#CC3399",
+      "#CC33CC",
+      "#CC33FF",
+      "#CC6600",
+      "#CC6633",
+      "#CC9900",
+      "#CC9933",
+      "#CCCC00",
+      "#CCCC33",
+      "#FF0000",
+      "#FF0033",
+      "#FF0066",
+      "#FF0099",
+      "#FF00CC",
+      "#FF00FF",
+      "#FF3300",
+      "#FF3333",
+      "#FF3366",
+      "#FF3399",
+      "#FF33CC",
+      "#FF33FF",
+      "#FF6600",
+      "#FF6633",
+      "#FF9900",
+      "#FF9933",
+      "#FFCC00",
+      "#FFCC33"
+    ];
+    function useColors2() {
+      if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
+        return true;
+      }
+      if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+        return false;
+      }
+      let m2;
+      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
+      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+      typeof navigator !== "undefined" && navigator.userAgent && (m2 = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m2[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+    }
+    __name(useColors2, "useColors");
+    function formatArgs2(args) {
+      args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
+      if (!this.useColors) {
+        return;
+      }
+      const c2 = "color: " + this.color;
+      args.splice(1, 0, c2, "color: inherit");
+      let index = 0;
+      let lastC = 0;
+      args[0].replace(/%[a-zA-Z%]/g, (match) => {
+        if (match === "%%") {
+          return;
+        }
+        index++;
+        if (match === "%c") {
+          lastC = index;
+        }
+      });
+      args.splice(lastC, 0, c2);
+    }
+    __name(formatArgs2, "formatArgs");
+    exports.log = console.debug || console.log || (() => {
+    });
+    function save2(namespaces) {
+      try {
+        if (namespaces) {
+          exports.storage.setItem("debug", namespaces);
+        } else {
+          exports.storage.removeItem("debug");
+        }
+      } catch (error) {
+      }
+    }
+    __name(save2, "save");
+    function load2() {
+      let r2;
+      try {
+        r2 = exports.storage.getItem("debug") || exports.storage.getItem("DEBUG");
+      } catch (error) {
+      }
+      if (!r2 && typeof process !== "undefined" && "env" in process) {
+        r2 = process.env.DEBUG;
+      }
+      return r2;
+    }
+    __name(load2, "load");
+    function localstorage2() {
+      try {
+        return localStorage;
+      } catch (error) {
+      }
+    }
+    __name(localstorage2, "localstorage");
+    module.exports = require_common()(exports);
+    var { formatters } = module.exports;
+    formatters.j = function(v) {
+      try {
+        return JSON.stringify(v);
+      } catch (error) {
+        return "[UnexpectedJSONParseError]: " + error.message;
+      }
+    };
   }
 });
 
@@ -2391,7 +2874,7 @@ function base(ALPHABET, name3) {
   var LEADER = ALPHABET.charAt(0);
   var FACTOR = Math.log(BASE) / Math.log(256);
   var iFACTOR = Math.log(256) / Math.log(BASE);
-  function encode8(source) {
+  function encode9(source) {
     if (source instanceof Uint8Array)
       ;
     else if (ArrayBuffer.isView(source)) {
@@ -2439,7 +2922,7 @@ function base(ALPHABET, name3) {
     }
     return str;
   }
-  __name(encode8, "encode");
+  __name(encode9, "encode");
   function decodeUnsafe(source) {
     if (typeof source !== "string") {
       throw new TypeError("Expected String");
@@ -2491,18 +2974,18 @@ function base(ALPHABET, name3) {
     return vch;
   }
   __name(decodeUnsafe, "decodeUnsafe");
-  function decode9(string2) {
+  function decode10(string2) {
     var buffer = decodeUnsafe(string2);
     if (buffer) {
       return buffer;
     }
     throw new Error(`Non-${name3} character`);
   }
-  __name(decode9, "decode");
+  __name(decode10, "decode");
   return {
-    encode: encode8,
+    encode: encode9,
     decodeUnsafe,
-    decode: decode9
+    decode: decode10
   };
 }
 __name(base, "base");
@@ -2616,17 +3099,17 @@ var Codec = class {
     return this.decoder.decode(input);
   }
 };
-function from({ name: name3, prefix, encode: encode8, decode: decode9 }) {
-  return new Codec(name3, prefix, encode8, decode9);
+function from({ name: name3, prefix, encode: encode9, decode: decode10 }) {
+  return new Codec(name3, prefix, encode9, decode10);
 }
 __name(from, "from");
 function baseX({ name: name3, prefix, alphabet: alphabet2 }) {
-  const { encode: encode8, decode: decode9 } = base_x_default(alphabet2, name3);
+  const { encode: encode9, decode: decode10 } = base_x_default(alphabet2, name3);
   return from({
     prefix,
     name: name3,
-    encode: encode8,
-    decode: /* @__PURE__ */ __name((text) => coerce(decode9(text)), "decode")
+    encode: encode9,
+    decode: /* @__PURE__ */ __name((text) => coerce(decode10(text)), "decode")
   });
 }
 __name(baseX, "baseX");
@@ -2931,13 +3414,13 @@ var Digest = class {
 };
 
 // node_modules/multiformats/dist/src/cid.js
-function format(link, base3) {
+function format(link, base4) {
   const { bytes, version: version2 } = link;
   switch (version2) {
     case 0:
-      return toStringV0(bytes, baseCache(link), base3 ?? base58btc.encoder);
+      return toStringV0(bytes, baseCache(link), base4 ?? base58btc.encoder);
     default:
-      return toStringV1(bytes, baseCache(link), base3 ?? base32.encoder);
+      return toStringV1(bytes, baseCache(link), base4 ?? base32.encoder);
   }
 }
 __name(format, "format");
@@ -3032,8 +3515,8 @@ var CID = class _CID {
     const unknown = other;
     return unknown != null && self.code === unknown.code && self.version === unknown.version && equals2(self.multihash, unknown.multihash);
   }
-  toString(base3) {
-    return format(this, base3);
+  toString(base4) {
+    return format(this, base4);
   }
   toJSON() {
     return { "/": format(this) };
@@ -3193,8 +3676,8 @@ var CID = class _CID {
    * throw an error if encoding of the CID is not compatible with supplied (or
    * a default decoder).
    */
-  static parse(source, base3) {
-    const [prefix, bytes] = parseCIDtoBytes(source, base3);
+  static parse(source, base4) {
+    const [prefix, bytes] = parseCIDtoBytes(source, base4);
     const cid = _CID.decode(bytes);
     if (cid.version === 0 && source[0] !== "Q") {
       throw Error("Version 0 CID string must not include multibase prefix");
@@ -3203,45 +3686,45 @@ var CID = class _CID {
     return cid;
   }
 };
-function parseCIDtoBytes(source, base3) {
+function parseCIDtoBytes(source, base4) {
   switch (source[0]) {
     // CIDv0 is parsed differently
     case "Q": {
-      const decoder = base3 ?? base58btc;
+      const decoder = base4 ?? base58btc;
       return [
         base58btc.prefix,
         decoder.decode(`${base58btc.prefix}${source}`)
       ];
     }
     case base58btc.prefix: {
-      const decoder = base3 ?? base58btc;
+      const decoder = base4 ?? base58btc;
       return [base58btc.prefix, decoder.decode(source)];
     }
     case base32.prefix: {
-      const decoder = base3 ?? base32;
+      const decoder = base4 ?? base32;
       return [base32.prefix, decoder.decode(source)];
     }
     case base36.prefix: {
-      const decoder = base3 ?? base36;
+      const decoder = base4 ?? base36;
       return [base36.prefix, decoder.decode(source)];
     }
     default: {
-      if (base3 == null) {
+      if (base4 == null) {
         throw Error("To parse non base32, base36 or base58btc encoded CID multibase decoder must be provided");
       }
-      return [source[0], base3.decode(source)];
+      return [source[0], base4.decode(source)];
     }
   }
 }
 __name(parseCIDtoBytes, "parseCIDtoBytes");
-function toStringV0(bytes, cache3, base3) {
-  const { prefix } = base3;
+function toStringV0(bytes, cache3, base4) {
+  const { prefix } = base4;
   if (prefix !== base58btc.prefix) {
-    throw Error(`Cannot string encode V0 in ${base3.name} encoding`);
+    throw Error(`Cannot string encode V0 in ${base4.name} encoding`);
   }
   const cid = cache3.get(prefix);
   if (cid == null) {
-    const cid2 = base3.encode(bytes).slice(1);
+    const cid2 = base4.encode(bytes).slice(1);
     cache3.set(prefix, cid2);
     return cid2;
   } else {
@@ -3249,11 +3732,11 @@ function toStringV0(bytes, cache3, base3) {
   }
 }
 __name(toStringV0, "toStringV0");
-function toStringV1(bytes, cache3, base3) {
-  const { prefix } = base3;
+function toStringV1(bytes, cache3, base4) {
+  const { prefix } = base4;
   const cid = cache3.get(prefix);
   if (cid == null) {
-    const cid2 = base3.encode(bytes);
+    const cid2 = base4.encode(bytes);
     cache3.set(prefix, cid2);
     return cid2;
   } else {
@@ -3935,8 +4418,8 @@ __export(sha2_browser_exports, {
 
 // node_modules/multiformats/dist/src/hashes/hasher.js
 var DEFAULT_MIN_DIGEST_LENGTH = 20;
-function from2({ name: name3, code: code3, encode: encode8, minDigestLength, maxDigestLength }) {
-  return new Hasher(name3, code3, encode8, minDigestLength, maxDigestLength);
+function from2({ name: name3, code: code3, encode: encode9, minDigestLength, maxDigestLength }) {
+  return new Hasher(name3, code3, encode9, minDigestLength, maxDigestLength);
 }
 __name(from2, "from");
 var Hasher = class {
@@ -3948,10 +4431,10 @@ var Hasher = class {
   encode;
   minDigestLength;
   maxDigestLength;
-  constructor(name3, code3, encode8, minDigestLength, maxDigestLength) {
+  constructor(name3, code3, encode9, minDigestLength, maxDigestLength) {
     this.name = name3;
     this.code = code3;
-    this.encode = encode8;
+    this.encode = encode9;
     this.minDigestLength = minDigestLength ?? DEFAULT_MIN_DIGEST_LENGTH;
     this.maxDigestLength = maxDigestLength;
   }
@@ -4007,17 +4490,17 @@ var bases = { ...identity_exports2, ...base2_exports, ...base8_exports, ...base1
 var hashes = { ...sha2_browser_exports, ...identity_exports };
 
 // node_modules/uint8arrays/dist/src/util/bases.js
-function createCodec(name3, prefix, encode8, decode9) {
+function createCodec(name3, prefix, encode9, decode10) {
   return {
     name: name3,
     prefix,
     encoder: {
       name: name3,
       prefix,
-      encode: encode8
+      encode: encode9
     },
     decoder: {
-      decode: decode9
+      decode: decode10
     }
   };
 }
@@ -4056,21 +4539,21 @@ var bases_default = BASES;
 
 // node_modules/uint8arrays/dist/src/from-string.js
 function fromString2(string2, encoding = "utf8") {
-  const base3 = bases_default[encoding];
-  if (base3 == null) {
+  const base4 = bases_default[encoding];
+  if (base4 == null) {
     throw new Error(`Unsupported encoding "${encoding}"`);
   }
-  return base3.decoder.decode(`${base3.prefix}${string2}`);
+  return base4.decoder.decode(`${base4.prefix}${string2}`);
 }
 __name(fromString2, "fromString");
 
 // node_modules/uint8arrays/dist/src/to-string.js
 function toString2(array, encoding = "utf8") {
-  const base3 = bases_default[encoding];
-  if (base3 == null) {
+  const base4 = bases_default[encoding];
+  if (base4 == null) {
     throw new Error(`Unsupported encoding "${encoding}"`);
   }
-  return base3.encoder.encode(array).substring(1);
+  return base4.encoder.encode(array).substring(1);
 }
 __name(toString2, "toString");
 
@@ -5839,15 +6322,15 @@ var wNAF = class {
     const { windows, windowSize } = calcWOpts(W, this.bits);
     const points = [];
     let p2 = point;
-    let base3 = p2;
+    let base4 = p2;
     for (let window2 = 0; window2 < windows; window2++) {
-      base3 = p2;
-      points.push(base3);
+      base4 = p2;
+      points.push(base4);
       for (let i2 = 1; i2 < windowSize; i2++) {
-        base3 = base3.add(p2);
-        points.push(base3);
+        base4 = base4.add(p2);
+        points.push(base4);
       }
-      p2 = base3.double();
+      p2 = base4.double();
     }
     return points;
   }
@@ -8133,12 +8616,12 @@ var CODEC_TYPES;
   CODEC_TYPES2[CODEC_TYPES2["END_GROUP"] = 4] = "END_GROUP";
   CODEC_TYPES2[CODEC_TYPES2["BIT32"] = 5] = "BIT32";
 })(CODEC_TYPES || (CODEC_TYPES = {}));
-function createCodec2(name3, type, encode8, decode9) {
+function createCodec2(name3, type, encode9, decode10) {
   return {
     name: name3,
     type,
-    encode: encode8,
-    decode: decode9
+    encode: encode9,
+    decode: decode10
   };
 }
 __name(createCodec2, "createCodec");
@@ -8152,21 +8635,21 @@ function enumeration(v) {
     return v[val];
   }
   __name(findValue, "findValue");
-  const encode8 = /* @__PURE__ */ __name(function enumEncode(val, writer) {
+  const encode9 = /* @__PURE__ */ __name(function enumEncode(val, writer) {
     const enumValue = findValue(val);
     writer.int32(enumValue);
   }, "enumEncode");
-  const decode9 = /* @__PURE__ */ __name(function enumDecode(reader) {
+  const decode10 = /* @__PURE__ */ __name(function enumDecode(reader) {
     const val = reader.int32();
     return findValue(val);
   }, "enumDecode");
-  return createCodec2("enum", CODEC_TYPES.VARINT, encode8, decode9);
+  return createCodec2("enum", CODEC_TYPES.VARINT, encode9, decode10);
 }
 __name(enumeration, "enumeration");
 
 // node_modules/protons-runtime/dist/src/codecs/message.js
-function message(encode8, decode9) {
-  return createCodec2("message", CODEC_TYPES.LENGTH_DELIMITED, encode8, decode9);
+function message(encode9, decode10) {
+  return createCodec2("message", CODEC_TYPES.LENGTH_DELIMITED, encode9, decode10);
 }
 __name(message, "message");
 
@@ -10568,10 +11051,10 @@ function parseIP(input, mapIPv4ToIPv6 = false) {
 __name(parseIP, "parseIP");
 
 // node_modules/@chainsafe/netmask/dist/src/util.js
-function allFF(a2, from3, to) {
+function allFF(a2, from4, to) {
   let i2 = 0;
   for (const e2 of a2) {
-    if (i2 < from3)
+    if (i2 < from4)
       continue;
     if (i2 > to)
       break;
@@ -10582,10 +11065,10 @@ function allFF(a2, from3, to) {
   return true;
 }
 __name(allFF, "allFF");
-function deepEqual(a2, b, from3, to) {
+function deepEqual(a2, b, from4, to) {
   let i2 = 0;
   for (const e2 of a2) {
-    if (i2 < from3)
+    if (i2 < from4)
       continue;
     if (i2 > to)
       break;
@@ -12813,15 +13296,15 @@ var CODE_P2P_CIRCUIT = 290;
 var CODE_MEMORY = 777;
 
 // node_modules/@multiformats/multiaddr/dist/src/utils.js
-function bytesToString(base3) {
+function bytesToString(base4) {
   return (buf) => {
-    return toString2(buf, base3);
+    return toString2(buf, base4);
   };
 }
 __name(bytesToString, "bytesToString");
-function stringToBytes(base3) {
+function stringToBytes(base4) {
   return (buf) => {
-    return fromString2(buf, base3);
+    return fromString2(buf, base4);
   };
 }
 __name(stringToBytes, "stringToBytes");
@@ -12986,9 +13469,9 @@ function mb2bytes(mbstr) {
   return anybaseDecoder.decode(mbstr);
 }
 __name(mb2bytes, "mb2bytes");
-function bytes2mb(base3) {
+function bytes2mb(base4) {
   return (buf) => {
-    return base3.encoder.encode(buf);
+    return base4.encoder.encode(buf);
   };
 }
 __name(bytes2mb, "bytes2mb");
@@ -14132,7 +14615,7 @@ __name(m, "m");
 function setup(env) {
   createDebug.debug = createDebug;
   createDebug.default = createDebug;
-  createDebug.coerce = coerce2;
+  createDebug.coerce = coerce3;
   createDebug.disable = disable;
   createDebug.enable = enable;
   createDebug.enabled = enabled;
@@ -14159,11 +14642,11 @@ function setup(env) {
     let enableOverride = null;
     let namespacesCache;
     let enabledCache;
-    function debug(...args) {
-      if (!debug.enabled) {
+    function debug2(...args) {
+      if (!debug2.enabled) {
         return;
       }
-      const self = debug;
+      const self = debug2;
       const curr = Number(/* @__PURE__ */ new Date());
       const ms = curr - (prevTime || curr);
       self.diff = ms;
@@ -14193,13 +14676,13 @@ function setup(env) {
       const logFn = self.log || createDebug.log;
       logFn.apply(self, args);
     }
-    __name(debug, "debug");
-    debug.namespace = namespace;
-    debug.useColors = createDebug.useColors();
-    debug.color = createDebug.selectColor(namespace);
-    debug.extend = extend;
-    debug.destroy = createDebug.destroy;
-    Object.defineProperty(debug, "enabled", {
+    __name(debug2, "debug");
+    debug2.namespace = namespace;
+    debug2.useColors = createDebug.useColors();
+    debug2.color = createDebug.selectColor(namespace);
+    debug2.extend = extend;
+    debug2.destroy = createDebug.destroy;
+    Object.defineProperty(debug2, "enabled", {
       enumerable: true,
       configurable: false,
       get: /* @__PURE__ */ __name(() => {
@@ -14217,9 +14700,9 @@ function setup(env) {
       }, "set")
     });
     if (typeof createDebug.init === "function") {
-      createDebug.init(debug);
+      createDebug.init(debug2);
     }
-    return debug;
+    return debug2;
   }
   __name(createDebug, "createDebug");
   function extend(namespace, delimiter) {
@@ -14281,13 +14764,13 @@ function setup(env) {
     return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
   }
   __name(toNamespace, "toNamespace");
-  function coerce2(val) {
+  function coerce3(val) {
     if (val instanceof Error) {
       return val.stack ?? val.message;
     }
     return val;
   }
-  __name(coerce2, "coerce");
+  __name(coerce3, "coerce");
   function destroy() {
     console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
   }
@@ -16144,7 +16627,10 @@ function renderMyGroups2({ groups = [], nodeReady = false } = {}) {
     `;
 }
 __name(renderMyGroups2, "renderMyGroups");
-function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false } = {}) {
+function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false, state = {} } = {}) {
+  discoveredGroups = state.discoveredGroups || [];
+  nodeReady = state.nodeReady;
+  console.log("ddddddddddddddd", discoveredGroups);
   return `
         <section class="section-card" id="discovered-groups-list">
             <div class="card-header">
@@ -16360,16 +16846,539 @@ function escapeHtml3(text) {
 }
 __name(escapeHtml3, "escapeHtml");
 
+// node_modules/@libp2p/logger/dist/src/index.js
+var import_debug = __toESM(require_browser(), 1);
+
+// node_modules/@libp2p/logger/node_modules/multiformats/vendor/base-x.js
+function base3(ALPHABET, name3) {
+  if (ALPHABET.length >= 255) {
+    throw new TypeError("Alphabet too long");
+  }
+  var BASE_MAP = new Uint8Array(256);
+  for (var j = 0; j < BASE_MAP.length; j++) {
+    BASE_MAP[j] = 255;
+  }
+  for (var i2 = 0; i2 < ALPHABET.length; i2++) {
+    var x = ALPHABET.charAt(i2);
+    var xc = x.charCodeAt(0);
+    if (BASE_MAP[xc] !== 255) {
+      throw new TypeError(x + " is ambiguous");
+    }
+    BASE_MAP[xc] = i2;
+  }
+  var BASE = ALPHABET.length;
+  var LEADER = ALPHABET.charAt(0);
+  var FACTOR = Math.log(BASE) / Math.log(256);
+  var iFACTOR = Math.log(256) / Math.log(BASE);
+  function encode9(source) {
+    if (source instanceof Uint8Array) ;
+    else if (ArrayBuffer.isView(source)) {
+      source = new Uint8Array(source.buffer, source.byteOffset, source.byteLength);
+    } else if (Array.isArray(source)) {
+      source = Uint8Array.from(source);
+    }
+    if (!(source instanceof Uint8Array)) {
+      throw new TypeError("Expected Uint8Array");
+    }
+    if (source.length === 0) {
+      return "";
+    }
+    var zeroes = 0;
+    var length3 = 0;
+    var pbegin = 0;
+    var pend = source.length;
+    while (pbegin !== pend && source[pbegin] === 0) {
+      pbegin++;
+      zeroes++;
+    }
+    var size = (pend - pbegin) * iFACTOR + 1 >>> 0;
+    var b58 = new Uint8Array(size);
+    while (pbegin !== pend) {
+      var carry = source[pbegin];
+      var i3 = 0;
+      for (var it1 = size - 1; (carry !== 0 || i3 < length3) && it1 !== -1; it1--, i3++) {
+        carry += 256 * b58[it1] >>> 0;
+        b58[it1] = carry % BASE >>> 0;
+        carry = carry / BASE >>> 0;
+      }
+      if (carry !== 0) {
+        throw new Error("Non-zero carry");
+      }
+      length3 = i3;
+      pbegin++;
+    }
+    var it2 = size - length3;
+    while (it2 !== size && b58[it2] === 0) {
+      it2++;
+    }
+    var str = LEADER.repeat(zeroes);
+    for (; it2 < size; ++it2) {
+      str += ALPHABET.charAt(b58[it2]);
+    }
+    return str;
+  }
+  __name(encode9, "encode");
+  function decodeUnsafe(source) {
+    if (typeof source !== "string") {
+      throw new TypeError("Expected String");
+    }
+    if (source.length === 0) {
+      return new Uint8Array();
+    }
+    var psz = 0;
+    if (source[psz] === " ") {
+      return;
+    }
+    var zeroes = 0;
+    var length3 = 0;
+    while (source[psz] === LEADER) {
+      zeroes++;
+      psz++;
+    }
+    var size = (source.length - psz) * FACTOR + 1 >>> 0;
+    var b256 = new Uint8Array(size);
+    while (source[psz]) {
+      var carry = BASE_MAP[source.charCodeAt(psz)];
+      if (carry === 255) {
+        return;
+      }
+      var i3 = 0;
+      for (var it3 = size - 1; (carry !== 0 || i3 < length3) && it3 !== -1; it3--, i3++) {
+        carry += BASE * b256[it3] >>> 0;
+        b256[it3] = carry % 256 >>> 0;
+        carry = carry / 256 >>> 0;
+      }
+      if (carry !== 0) {
+        throw new Error("Non-zero carry");
+      }
+      length3 = i3;
+      psz++;
+    }
+    if (source[psz] === " ") {
+      return;
+    }
+    var it4 = size - length3;
+    while (it4 !== size && b256[it4] === 0) {
+      it4++;
+    }
+    var vch = new Uint8Array(zeroes + (size - it4));
+    var j2 = zeroes;
+    while (it4 !== size) {
+      vch[j2++] = b256[it4++];
+    }
+    return vch;
+  }
+  __name(decodeUnsafe, "decodeUnsafe");
+  function decode10(string2) {
+    var buffer = decodeUnsafe(string2);
+    if (buffer) {
+      return buffer;
+    }
+    throw new Error(`Non-${name3} character`);
+  }
+  __name(decode10, "decode");
+  return {
+    encode: encode9,
+    decodeUnsafe,
+    decode: decode10
+  };
+}
+__name(base3, "base");
+var src2 = base3;
+var _brrp__multiformats_scope_baseX2 = src2;
+var base_x_default2 = _brrp__multiformats_scope_baseX2;
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bytes.js
+var empty2 = new Uint8Array(0);
+var coerce2 = /* @__PURE__ */ __name((o2) => {
+  if (o2 instanceof Uint8Array && o2.constructor.name === "Uint8Array") return o2;
+  if (o2 instanceof ArrayBuffer) return new Uint8Array(o2);
+  if (ArrayBuffer.isView(o2)) {
+    return new Uint8Array(o2.buffer, o2.byteOffset, o2.byteLength);
+  }
+  throw new Error("Unknown type, must be binary type");
+}, "coerce");
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base.js
+var Encoder2 = class {
+  static {
+    __name(this, "Encoder");
+  }
+  /**
+   * @param {Base} name
+   * @param {Prefix} prefix
+   * @param {(bytes:Uint8Array) => string} baseEncode
+   */
+  constructor(name3, prefix, baseEncode) {
+    this.name = name3;
+    this.prefix = prefix;
+    this.baseEncode = baseEncode;
+  }
+  /**
+   * @param {Uint8Array} bytes
+   * @returns {API.Multibase<Prefix>}
+   */
+  encode(bytes) {
+    if (bytes instanceof Uint8Array) {
+      return `${this.prefix}${this.baseEncode(bytes)}`;
+    } else {
+      throw Error("Unknown type, must be binary type");
+    }
+  }
+};
+var Decoder2 = class {
+  static {
+    __name(this, "Decoder");
+  }
+  /**
+   * @param {Base} name
+   * @param {Prefix} prefix
+   * @param {(text:string) => Uint8Array} baseDecode
+   */
+  constructor(name3, prefix, baseDecode) {
+    this.name = name3;
+    this.prefix = prefix;
+    if (prefix.codePointAt(0) === void 0) {
+      throw new Error("Invalid prefix character");
+    }
+    this.prefixCodePoint = /** @type {number} */
+    prefix.codePointAt(0);
+    this.baseDecode = baseDecode;
+  }
+  /**
+   * @param {string} text
+   */
+  decode(text) {
+    if (typeof text === "string") {
+      if (text.codePointAt(0) !== this.prefixCodePoint) {
+        throw Error(`Unable to decode multibase string ${JSON.stringify(text)}, ${this.name} decoder only supports inputs prefixed with ${this.prefix}`);
+      }
+      return this.baseDecode(text.slice(this.prefix.length));
+    } else {
+      throw Error("Can only multibase decode strings");
+    }
+  }
+  /**
+   * @template {string} OtherPrefix
+   * @param {API.UnibaseDecoder<OtherPrefix>|ComposedDecoder<OtherPrefix>} decoder
+   * @returns {ComposedDecoder<Prefix|OtherPrefix>}
+   */
+  or(decoder) {
+    return or2(this, decoder);
+  }
+};
+var ComposedDecoder2 = class {
+  static {
+    __name(this, "ComposedDecoder");
+  }
+  /**
+   * @param {Decoders<Prefix>} decoders
+   */
+  constructor(decoders3) {
+    this.decoders = decoders3;
+  }
+  /**
+   * @template {string} OtherPrefix
+   * @param {API.UnibaseDecoder<OtherPrefix>|ComposedDecoder<OtherPrefix>} decoder
+   * @returns {ComposedDecoder<Prefix|OtherPrefix>}
+   */
+  or(decoder) {
+    return or2(this, decoder);
+  }
+  /**
+   * @param {string} input
+   * @returns {Uint8Array}
+   */
+  decode(input) {
+    const prefix = (
+      /** @type {Prefix} */
+      input[0]
+    );
+    const decoder = this.decoders[prefix];
+    if (decoder) {
+      return decoder.decode(input);
+    } else {
+      throw RangeError(`Unable to decode multibase string ${JSON.stringify(input)}, only inputs prefixed with ${Object.keys(this.decoders)} are supported`);
+    }
+  }
+};
+var or2 = /* @__PURE__ */ __name((left, right) => new ComposedDecoder2(
+  /** @type {Decoders<L|R>} */
+  {
+    ...left.decoders || { [
+      /** @type API.UnibaseDecoder<L> */
+      left.prefix
+    ]: left },
+    ...right.decoders || { [
+      /** @type API.UnibaseDecoder<R> */
+      right.prefix
+    ]: right }
+  }
+), "or");
+var Codec2 = class {
+  static {
+    __name(this, "Codec");
+  }
+  /**
+   * @param {Base} name
+   * @param {Prefix} prefix
+   * @param {(bytes:Uint8Array) => string} baseEncode
+   * @param {(text:string) => Uint8Array} baseDecode
+   */
+  constructor(name3, prefix, baseEncode, baseDecode) {
+    this.name = name3;
+    this.prefix = prefix;
+    this.baseEncode = baseEncode;
+    this.baseDecode = baseDecode;
+    this.encoder = new Encoder2(name3, prefix, baseEncode);
+    this.decoder = new Decoder2(name3, prefix, baseDecode);
+  }
+  /**
+   * @param {Uint8Array} input
+   */
+  encode(input) {
+    return this.encoder.encode(input);
+  }
+  /**
+   * @param {string} input
+   */
+  decode(input) {
+    return this.decoder.decode(input);
+  }
+};
+var from3 = /* @__PURE__ */ __name(({ name: name3, prefix, encode: encode9, decode: decode10 }) => new Codec2(name3, prefix, encode9, decode10), "from");
+var baseX2 = /* @__PURE__ */ __name(({ prefix, name: name3, alphabet: alphabet2 }) => {
+  const { encode: encode9, decode: decode10 } = base_x_default2(alphabet2, name3);
+  return from3({
+    prefix,
+    name: name3,
+    encode: encode9,
+    /**
+     * @param {string} text
+     */
+    decode: /* @__PURE__ */ __name((text) => coerce2(decode10(text)), "decode")
+  });
+}, "baseX");
+var decode7 = /* @__PURE__ */ __name((string2, alphabet2, bitsPerChar, name3) => {
+  const codes = {};
+  for (let i2 = 0; i2 < alphabet2.length; ++i2) {
+    codes[alphabet2[i2]] = i2;
+  }
+  let end = string2.length;
+  while (string2[end - 1] === "=") {
+    --end;
+  }
+  const out = new Uint8Array(end * bitsPerChar / 8 | 0);
+  let bits = 0;
+  let buffer = 0;
+  let written = 0;
+  for (let i2 = 0; i2 < end; ++i2) {
+    const value2 = codes[string2[i2]];
+    if (value2 === void 0) {
+      throw new SyntaxError(`Non-${name3} character`);
+    }
+    buffer = buffer << bitsPerChar | value2;
+    bits += bitsPerChar;
+    if (bits >= 8) {
+      bits -= 8;
+      out[written++] = 255 & buffer >> bits;
+    }
+  }
+  if (bits >= bitsPerChar || 255 & buffer << 8 - bits) {
+    throw new SyntaxError("Unexpected end of data");
+  }
+  return out;
+}, "decode");
+var encode6 = /* @__PURE__ */ __name((data, alphabet2, bitsPerChar) => {
+  const pad = alphabet2[alphabet2.length - 1] === "=";
+  const mask = (1 << bitsPerChar) - 1;
+  let out = "";
+  let bits = 0;
+  let buffer = 0;
+  for (let i2 = 0; i2 < data.length; ++i2) {
+    buffer = buffer << 8 | data[i2];
+    bits += 8;
+    while (bits > bitsPerChar) {
+      bits -= bitsPerChar;
+      out += alphabet2[mask & buffer >> bits];
+    }
+  }
+  if (bits) {
+    out += alphabet2[mask & buffer << bitsPerChar - bits];
+  }
+  if (pad) {
+    while (out.length * bitsPerChar & 7) {
+      out += "=";
+    }
+  }
+  return out;
+}, "encode");
+var rfc46482 = /* @__PURE__ */ __name(({ name: name3, prefix, bitsPerChar, alphabet: alphabet2 }) => {
+  return from3({
+    prefix,
+    name: name3,
+    encode(input) {
+      return encode6(input, alphabet2, bitsPerChar);
+    },
+    decode(input) {
+      return decode7(input, alphabet2, bitsPerChar, name3);
+    }
+  });
+}, "rfc4648");
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base58.js
+var base58btc2 = baseX2({
+  name: "base58btc",
+  prefix: "z",
+  alphabet: "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+});
+var base58flickr2 = baseX2({
+  name: "base58flickr",
+  prefix: "Z",
+  alphabet: "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+});
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base32.js
+var base322 = rfc46482({
+  prefix: "b",
+  name: "base32",
+  alphabet: "abcdefghijklmnopqrstuvwxyz234567",
+  bitsPerChar: 5
+});
+var base32upper2 = rfc46482({
+  prefix: "B",
+  name: "base32upper",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+  bitsPerChar: 5
+});
+var base32pad2 = rfc46482({
+  prefix: "c",
+  name: "base32pad",
+  alphabet: "abcdefghijklmnopqrstuvwxyz234567=",
+  bitsPerChar: 5
+});
+var base32padupper2 = rfc46482({
+  prefix: "C",
+  name: "base32padupper",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=",
+  bitsPerChar: 5
+});
+var base32hex2 = rfc46482({
+  prefix: "v",
+  name: "base32hex",
+  alphabet: "0123456789abcdefghijklmnopqrstuv",
+  bitsPerChar: 5
+});
+var base32hexupper2 = rfc46482({
+  prefix: "V",
+  name: "base32hexupper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV",
+  bitsPerChar: 5
+});
+var base32hexpad2 = rfc46482({
+  prefix: "t",
+  name: "base32hexpad",
+  alphabet: "0123456789abcdefghijklmnopqrstuv=",
+  bitsPerChar: 5
+});
+var base32hexpadupper2 = rfc46482({
+  prefix: "T",
+  name: "base32hexpadupper",
+  alphabet: "0123456789ABCDEFGHIJKLMNOPQRSTUV=",
+  bitsPerChar: 5
+});
+var base32z2 = rfc46482({
+  prefix: "h",
+  name: "base32z",
+  alphabet: "ybndrfg8ejkmcpqxot1uwisza345h769",
+  bitsPerChar: 5
+});
+
+// node_modules/@libp2p/logger/node_modules/multiformats/src/bases/base64.js
+var base642 = rfc46482({
+  prefix: "m",
+  name: "base64",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+  bitsPerChar: 6
+});
+var base64pad2 = rfc46482({
+  prefix: "M",
+  name: "base64pad",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+  bitsPerChar: 6
+});
+var base64url2 = rfc46482({
+  prefix: "u",
+  name: "base64url",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
+  bitsPerChar: 6
+});
+var base64urlpad2 = rfc46482({
+  prefix: "U",
+  name: "base64urlpad",
+  alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=",
+  bitsPerChar: 6
+});
+
+// node_modules/@libp2p/logger/dist/src/index.js
+import_debug.default.formatters.b = (v) => {
+  return v == null ? "undefined" : base58btc2.baseEncode(v);
+};
+import_debug.default.formatters.t = (v) => {
+  return v == null ? "undefined" : base322.baseEncode(v);
+};
+import_debug.default.formatters.m = (v) => {
+  return v == null ? "undefined" : base642.baseEncode(v);
+};
+import_debug.default.formatters.p = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+import_debug.default.formatters.c = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+import_debug.default.formatters.k = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+import_debug.default.formatters.a = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+function createDisabledLogger(namespace) {
+  const logger3 = /* @__PURE__ */ __name(() => {
+  }, "logger");
+  logger3.enabled = false;
+  logger3.color = "";
+  logger3.diff = 0;
+  logger3.log = () => {
+  };
+  logger3.namespace = namespace;
+  logger3.destroy = () => true;
+  logger3.extend = () => logger3;
+  return logger3;
+}
+__name(createDisabledLogger, "createDisabledLogger");
+function logger(name3) {
+  let trace = createDisabledLogger(`${name3}:trace`);
+  if (import_debug.default.enabled(`${name3}:trace`) && import_debug.default.names.map((r2) => r2.toString()).find((n2) => n2.includes(":trace")) != null) {
+    trace = (0, import_debug.default)(`${name3}:trace`);
+  }
+  return Object.assign((0, import_debug.default)(name3), {
+    error: (0, import_debug.default)(`${name3}:error`),
+    trace
+  });
+}
+__name(logger, "logger");
+
 // public/components/group-manager/controller/index.mjs
 var controller3 = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
+  const log2 = logger("group-manager:controller");
   return {
     /**
      * Инициализирует контроллер компонента GroupManager
      * @async
      */
     async init() {
-      console.log("\u{1F527} GroupManager controller initializing...");
+      log2("controller initializing");
       const createGroupBtn = context.shadowRoot.querySelector("#create-group-btn");
       const createFirstGroupBtn = context.shadowRoot.querySelector("#create-first-group");
       const createGroupActionBtn = context.shadowRoot.querySelector("#create-group");
@@ -16417,7 +17426,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                                     placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."
                                     style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
                                            border-radius: 8px; background: rgba(255,255,255,0.05); 
-                                           color: var(--cosmic-text-primary); font-size: 1rem;"
+                                           color: var(--cosmic-primary); font-size: 1rem;"
                                     autofocus
                                 >
                                 <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
@@ -16429,7 +17438,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
               {
                 text: "\u041E\u0442\u043C\u0435\u043D\u0430",
                 type: "secondary",
-                action: /* @__PURE__ */ __name(() => console.log("\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E"), "action")
+                action: /* @__PURE__ */ __name(() => log2("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E"), "action")
               },
               {
                 text: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C",
@@ -16438,10 +17447,10 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                   const groupNameInput = document.querySelector("#group-name-input");
                   if (groupNameInput && groupNameInput.value.trim()) {
                     const groupName = groupNameInput.value.trim();
-                    console.log("\u{1F527} Creating group:", groupName);
+                    log2("creating group: %s", groupName);
                     try {
                       const group = await context.createGroup(groupName);
-                      console.log("\u2705 Group created successfully:", group);
+                      log2("group created successfully: %o", group);
                       const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
                       if (chatManager) {
                         await chatManager.postMessage({
@@ -16450,7 +17459,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                         });
                       }
                     } catch (error) {
-                      console.error("\u274C Error creating group:", error);
+                      log2.error("error creating group: %o", error);
                       await context.showModal({
                         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                         content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -16464,7 +17473,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
             closeOnBackdropClick: true
           });
         } catch (error) {
-          console.error("\u274C Error in create group handler:", error);
+          log2.error("error in create group handler: %o", error);
         }
       }, "createGroupHandler");
       [createGroupBtn, createFirstGroupBtn, createGroupActionBtn].forEach((btn) => {
@@ -16479,7 +17488,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
           try {
             await context.checkNodeStatus();
           } catch (error) {
-            console.error("\u274C Error checking node status:", error);
+            log2.error("error checking node status: %o", error);
           }
         }, "checkStatusHandler");
         checkStatusBtn.addEventListener("click", checkStatusHandler);
@@ -16495,7 +17504,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
       }
       const discoverGroupsHandler = /* @__PURE__ */ __name(async () => {
         try {
-          console.log("\u{1F50D} \u0417\u0430\u043F\u0443\u0441\u043A \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F...");
+          log2("\u0437\u0430\u043F\u0443\u0441\u043A \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
           await context.showSkeleton({
             selector: "#discovered-groups-list",
             replace: true
@@ -16505,7 +17514,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
             await context.hideSkeleton();
           }, 2e3);
         } catch (error) {
-          console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F:", error);
+          log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
           await context.hideSkeleton();
           await context.showModal({
             title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430",
@@ -16537,7 +17546,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
               if (group) {
                 try {
                   await context.joinGroup(group);
-                  console.log("\u2705 Successfully joined group:", group.name);
+                  log2("successfully joined group: %s", group.name);
                   const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
                   if (chatManager) {
                     await chatManager.postMessage({
@@ -16546,7 +17555,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                     });
                   }
                 } catch (error) {
-                  console.error("\u274C Error joining group:", error);
+                  log2.error("error joining group: %o", error);
                   await context.showModal({
                     title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                     content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
@@ -16568,9 +17577,9 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
             if (groupId) {
               try {
                 await context.leaveGroup(groupId);
-                console.log("\u2705 Successfully left group:", groupId);
+                log2("successfully left group: %s", groupId);
               } catch (error) {
-                console.error("\u274C Error leaving group:", error);
+                log2.error("error leaving group: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -16600,29 +17609,29 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
         setupJoinButtons();
         setupLeaveButtons();
       }, 100);
-      console.log("\u2705 [GroupManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log2("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
-      console.log("\u{1F527} GroupManager controller destroying...");
+      log2("controller destroying");
       eventListeners.forEach(({ element, handler }) => {
         try {
           element.removeEventListener("click", handler);
           element.removeEventListener("input", handler);
         } catch (error) {
-          console.warn("\u26A0\uFE0F Error removing event listener:", error);
+          log2.warn("error removing event listener: %o", error);
         }
       });
       if (context._groupObserver) {
         context._groupObserver.disconnect();
         context._groupObserver = null;
       }
-      console.log(`\u2705 Removed ${eventListeners.length} event listeners`);
+      log2("removed %d event listeners", eventListeners.length);
       eventListeners = [];
-      console.log("\u2705 [GroupManager] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      log2("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
@@ -16632,6 +17641,7 @@ async function createActions3(context) {
   let libp2p = null;
   let discoveredGroupsInterval = null;
   const GROUPS_ANNOUNCEMENT_TOPIC = "chat-groups-announcements";
+  const log2 = logger("group-manager:actions");
   return {
     /**
      * Инициализация Libp2p для работы с группами
@@ -16642,7 +17652,7 @@ async function createActions3(context) {
       libp2p = libp2pInstance;
       await this.subscribeToGroupsAnnouncements();
       this.startGroupDiscovery();
-      console.log("[GroupManager] Libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
+      log2("libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
     }, "initializeLibp2p"),
     /**
      * Подписывается на топик анонсов групп
@@ -16662,13 +17672,13 @@ async function createActions3(context) {
                 this.handleDiscoveryRequest(event.detail);
               }
             } catch (error) {
-              console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+              log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
             }
           }
         });
-        console.log(`[GroupManager] \u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: ${GROUPS_ANNOUNCEMENT_TOPIC}`);
+        log2("\u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %s", GROUPS_ANNOUNCEMENT_TOPIC);
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432: %o", error);
       }
     },
     /**
@@ -16681,10 +17691,10 @@ async function createActions3(context) {
         if (announcement.type === "GROUP_CREATED" || announcement.type === "GROUP_UPDATED") {
           const groupInfo = announcement.data;
           await this.updateDiscoveredGroups(groupInfo);
-          console.log(`[GroupManager] \u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: ${groupInfo.name}`);
+          log2("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
         }
       } catch (error) {
-        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
       }
     },
     /**
@@ -16719,12 +17729,12 @@ async function createActions3(context) {
     async safeUpdateDiscoveredGroupsUI() {
       try {
         if (!context.renderPart) {
-          console.warn("\u26A0\uFE0F renderPart method not available in actions");
+          log2.warn("renderPart method not available in actions");
           return;
         }
         const discoveredGroupsElement = context.shadowRoot?.querySelector("#discovered-groups-list");
         if (!discoveredGroupsElement) {
-          console.warn("\u26A0\uFE0F Discovered groups list element not found");
+          log2.warn("discovered groups list element not found");
           return;
         }
         await context.renderPart({
@@ -16733,7 +17743,7 @@ async function createActions3(context) {
           selector: "#discovered-groups-list"
         });
       } catch (error) {
-        console.warn("\u26A0\uFE0F Error updating discovered groups UI:", error);
+        log2.warn("error updating discovered groups UI: %o", error);
       }
     },
     /**
@@ -16758,24 +17768,24 @@ async function createActions3(context) {
         throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
       }
       try {
-        console.log("[GroupManager] \u0417\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F...");
+        log2("\u0437\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
         const discoveryRequest = {
           type: "GROUPS_DISCOVERY_REQUEST",
           data: {
             requester: libp2p.peerId.toString(),
             timestamp: Date.now(),
-            protocols: ["chat-group-", "universe-chat-"]
+            protocols: ["chat-groups-", "chat-group-", "universe-chat-"]
           }
         };
         await libp2p.services.pubsub.publish(
           GROUPS_ANNOUNCEMENT_TOPIC,
           new TextEncoder().encode(JSON.stringify(discoveryRequest))
         );
-        console.log("[GroupManager] \u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
+        log2("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
         await this.discoverGroups();
         return true;
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
         throw error;
       }
     },
@@ -16800,7 +17810,7 @@ async function createActions3(context) {
               GROUPS_ANNOUNCEMENT_TOPIC,
               new TextEncoder().encode(JSON.stringify(response))
             );
-            console.log(`[GroupManager] \u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 ${myGroups.length} \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438`);
+            log2("\u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 %d \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438", myGroups.length);
           }
         }
         if (request.type === "GROUPS_DISCOVERY_RESPONSE") {
@@ -16808,10 +17818,10 @@ async function createActions3(context) {
           for (const group of discoveredGroups) {
             await this.updateDiscoveredGroups(group);
           }
-          console.log(`[GroupManager] \u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E ${discoveredGroups.length} \u0433\u0440\u0443\u043F\u043F \u043E\u0442 ${request.data.responder}`);
+          log2("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
         }
       } catch (error) {
-        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F:", error);
+        log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
       }
     },
     /**
@@ -16820,14 +17830,15 @@ async function createActions3(context) {
      */
     discoverGroups: /* @__PURE__ */ __name(async function() {
       if (!libp2p) {
-        console.warn("[GroupManager] Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        log2.warn("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         return;
       }
       try {
         const topics = libp2p.services.pubsub?.getTopics() || [];
         const groupTopics = topics.filter(
-          (topic) => topic.startsWith("chat-group-") || topic.startsWith("universe-chat-")
+          (topic) => topic.startsWith("chat-group-") || topic.startsWith("universe-chat-") || topic.startsWith("chat-groups-")
         );
+        log2("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0442\u043E\u043F\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %d", groupTopics.length);
         const discoveredGroups = [];
         for (const topic of groupTopics) {
           try {
@@ -16838,6 +17849,8 @@ async function createActions3(context) {
               groupName = topic.replace("chat-group-", "").split("-")[0];
             } else if (topic.startsWith("universe-chat-")) {
               groupName = topic.replace("universe-chat-", "");
+            } else if (topic.startsWith("chat-groups-")) {
+              groupName = topic.replace("chat-groups-", "").split("-")[0];
             }
             let groupInfo = {
               id: topic,
@@ -16850,14 +17863,14 @@ async function createActions3(context) {
             };
             discoveredGroups.push(groupInfo);
           } catch (error) {
-            console.warn(`[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 ${topic}:`, error);
+            log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
           }
         }
         context.state.discoveredGroups = discoveredGroups;
         await this.safeUpdateDiscoveredGroupsUI();
-        console.log(`[GroupManager] \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: ${discoveredGroups.length}`);
+        log2("\u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: %d", discoveredGroups.length);
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "discoverGroups",
@@ -16891,19 +17904,18 @@ async function createActions3(context) {
           tags: options.tags || ["general"],
           language: options.language || "ru"
         };
-        console.log("libp2p.services.pubsub: ", libp2p.services.pubsub);
-        debugger;
+        log2("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0441 \u0442\u043E\u043F\u0438\u043A\u043E\u043C: %s", topic);
         await libp2p.services.pubsub.subscribe(topic);
         await this.announceGroupCreation(group);
         if (!context.state.groups) {
           context.state.groups = [];
         }
         context.state.groups.push(group);
-        console.log(`[GroupManager] \u0421\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: ${groupName} (${topic})`);
+        log2("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", groupName, topic);
         await this.safeUpdateMyGroupsUI();
         return group;
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "createGroup",
@@ -16919,12 +17931,12 @@ async function createActions3(context) {
     async safeUpdateMyGroupsUI() {
       try {
         if (!context.renderPart) {
-          console.warn("\u26A0\uFE0F renderPart method not available for my groups");
+          log2.warn("renderPart method not available for my groups");
           return;
         }
         const myGroupsElement = context.shadowRoot?.querySelector("#my-groups-list");
         if (!myGroupsElement) {
-          console.warn("\u26A0\uFE0F My groups list element not found");
+          log2.warn("my groups list element not found");
           return;
         }
         await context.renderPart({
@@ -16933,7 +17945,7 @@ async function createActions3(context) {
           selector: "#my-groups-list"
         });
       } catch (error) {
-        console.warn("\u26A0\uFE0F Error updating my groups UI:", error);
+        log2.warn("error updating my groups UI: %o", error);
       }
     },
     /**
@@ -16965,9 +17977,9 @@ async function createActions3(context) {
           GROUPS_ANNOUNCEMENT_TOPIC,
           new TextEncoder().encode(JSON.stringify(announcement))
         );
-        console.log(`[GroupManager] \u0410\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: ${group.name}`);
+        log2("\u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group.name);
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "announceGroupCreation",
@@ -17005,11 +18017,11 @@ async function createActions3(context) {
         if (!context.state.joinedGroups.find((g) => g.id === topic)) {
           context.state.joinedGroups.push(group);
         }
-        console.log(`[GroupManager] \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${group.name} (${topic})`);
+        log2("\u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %s (%s)", group.name, topic);
         await this.safeUpdateJoinedGroupsUI();
         return group;
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "joinGroup",
@@ -17025,12 +18037,12 @@ async function createActions3(context) {
     async safeUpdateJoinedGroupsUI() {
       try {
         if (!context.renderPart) {
-          console.warn("\u26A0\uFE0F renderPart method not available for joined groups");
+          log2.warn("renderPart method not available for joined groups");
           return;
         }
         const joinedGroupsElement = context.shadowRoot?.querySelector("#joined-groups-list");
         if (!joinedGroupsElement) {
-          console.warn("\u26A0\uFE0F Joined groups list element not found");
+          log2.warn("joined groups list element not found");
           return;
         }
         await context.renderPart({
@@ -17039,7 +18051,7 @@ async function createActions3(context) {
           selector: "#joined-groups-list"
         });
       } catch (error) {
-        console.warn("\u26A0\uFE0F Error updating joined groups UI:", error);
+        log2.warn("error updating joined groups UI: %o", error);
       }
     },
     /**
@@ -17056,10 +18068,10 @@ async function createActions3(context) {
         if (context.state.joinedGroups) {
           context.state.joinedGroups = context.state.joinedGroups.filter((g) => g.id !== topic);
         }
-        console.log(`[GroupManager] \u041F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: ${topic}`);
+        log2("\u043F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
         await this.safeUpdateJoinedGroupsUI();
       } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        log2.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "leaveGroup",
@@ -17083,7 +18095,7 @@ async function createActions3(context) {
       const filteredGroups = (context.state.discoveredGroups || []).filter(
         (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm) || group.tags && group.tags.some((tag) => tag.toLowerCase().includes(searchTerm))
       );
-      console.log(`[GroupManager] \u041F\u043E\u0438\u0441\u043A "${query}": \u043D\u0430\u0439\u0434\u0435\u043D\u043E ${filteredGroups.length} \u0433\u0440\u0443\u043F\u043F`);
+      log2('\u043F\u043E\u0438\u0441\u043A "%s": \u043D\u0430\u0439\u0434\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F', query, filteredGroups.length);
       return filteredGroups;
     }, "searchGroups"),
     /**
@@ -17100,7 +18112,7 @@ async function createActions3(context) {
         const subscribers = libp2p.services.pubsub.getSubscribers(topic);
         return subscribers.map((peerId) => peerId.toString());
       } catch (error) {
-        console.warn(`[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B ${topic}:`, error);
+        log2.warn("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
         return [];
       }
     }, "getGroupMembers"),
@@ -17156,7 +18168,7 @@ async function createActions3(context) {
         discoveredGroupsInterval = null;
       }
       libp2p = null;
-      console.log("[GroupManager] \u0420\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
+      log2("\u0440\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
     }, "cleanup")
   };
 }
@@ -17170,6 +18182,7 @@ var GroupManager = class extends BaseComponent {
   constructor() {
     super();
     this._templateMethods = template_exports3;
+    this.log = logger("group-manager");
     this.state = {
       groups: [],
       discoveredGroups: [],
@@ -17182,32 +18195,37 @@ var GroupManager = class extends BaseComponent {
     this._nodeCheckInterval = null;
   }
   async _componentReady() {
-    console.log("\u{1F527} GroupManager component ready");
+    this.log("component ready");
     this._controller = await controller3(this);
     this._actions = await createActions3(this);
+    this.log("controller and actions created: %o", {
+      hasController: !!this._controller,
+      hasActions: !!this._actions
+    });
+    await this._controller.init();
     await this.fullRender(this.state);
     await this._controller.init();
+    await this.startNodeInitialization();
+    this.state._initialized = true;
     setTimeout(async () => {
       if (this.state.nodeReady) {
         try {
-          console.log("\u{1F50D} \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F \u043F\u0440\u0438 \u0441\u0442\u0430\u0440\u0442\u0435...");
+          this.log("\u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F \u043F\u0440\u0438 \u0441\u0442\u0430\u0440\u0442\u0435");
           await this.discoverGroups();
         } catch (error) {
-          console.log("\u26A0\uFE0F \u0410\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u043E\u0438\u0441\u043A \u043D\u0435 \u0443\u0434\u0430\u043B\u0441\u044F:", error);
+          this.log("\u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u043E\u0438\u0441\u043A \u043D\u0435 \u0443\u0434\u0430\u043B\u0441\u044F: %o", error);
         }
       }
     }, 3e3);
-    await this.startNodeInitialization();
-    this.state._initialized = true;
     return true;
   }
   async startNodeInitialization() {
-    console.log("\u{1F527} Starting node initialization check...");
+    this.log("starting node initialization check");
     this._nodeCheckInterval = setInterval(async () => {
       try {
         await this.initializeFromPeerConnection();
       } catch (error) {
-        console.log("\u23F3 Waiting for node...");
+        this.log("waiting for node");
       }
     }, 2e3);
     await this.initializeFromPeerConnection();
@@ -17216,7 +18234,7 @@ var GroupManager = class extends BaseComponent {
     try {
       const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
       if (!peerConnection) {
-        console.warn("\u274C PeerConnection component not found");
+        this.log("peer connection component not found");
         return false;
       }
       if (peerConnection.isNodeReady && peerConnection.isNodeReady()) {
@@ -17228,17 +18246,17 @@ var GroupManager = class extends BaseComponent {
             clearInterval(this._nodeCheckInterval);
             this._nodeCheckInterval = null;
           }
-          console.log("\u2705 Node obtained from PeerConnection for GroupManager, PubSub is ready");
+          this.log("node obtained from peer connection for group manager, pubsub is ready");
           await this.safeUpdateUI();
           return true;
         } else {
-          console.log("\u23F3 Node found but PubSub not ready yet...");
+          this.log("node found but pubsub not ready yet");
           return false;
         }
       }
       return false;
     } catch (error) {
-      console.error("\u274C Failed to initialize from PeerConnection:", error);
+      this.log.error("failed to initialize from peer connection: %o", error);
       return false;
     }
   }
@@ -17253,7 +18271,7 @@ var GroupManager = class extends BaseComponent {
             state: this.state,
             selector: ".node-status-section"
           }).catch(() => {
-            console.log("\u26A0\uFE0F Node status element not available for renderPart");
+            this.log("node status element not available for renderPart");
           })
         );
       }
@@ -17265,31 +18283,31 @@ var GroupManager = class extends BaseComponent {
             state: this.state,
             selector: ".quick-actions"
           }).catch(() => {
-            console.log("\u26A0\uFE0F Quick actions element not available for renderPart");
+            this.log("quick actions element not available for renderPart");
           })
         );
       }
       await Promise.allSettled(updates);
     } catch (error) {
-      console.warn("\u26A0\uFE0F Error in safeUpdateUI:", error);
+      this.log("error in safeUpdateUI: %o", error);
       await this.fullRender(this.state);
     }
   }
   async safeRenderPart(options) {
     try {
       if (!this.renderPart) {
-        console.warn("\u26A0\uFE0F renderPart method not available");
+        this.log("renderPart method not available");
         return false;
       }
       const element = this.shadowRoot.querySelector(options.selector);
       if (!element) {
-        console.warn(`\u26A0\uFE0F Element with selector '${options.selector}' not found`);
+        this.log("element with selector %s not found", options.selector);
         return false;
       }
       await this.renderPart(options);
       return true;
     } catch (error) {
-      console.warn(`\u26A0\uFE0F Error in safeRenderPart for '${options.selector}':`, error);
+      this.log("error in safeRenderPart for %s: %o", options.selector, error);
       return false;
     }
   }
@@ -17298,13 +18316,13 @@ var GroupManager = class extends BaseComponent {
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430. \u041F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.");
     }
     try {
-      console.log("\u{1F527} Creating group in GroupManager:", groupName);
+      this.log("creating group: %s", groupName);
       const group = await this._actions.createGroup(groupName);
-      console.log("\u2705 Group created:", group);
+      this.log("group created: %o", group);
       await this.safeUpdateGroupsList();
       return group;
     } catch (error) {
-      console.error("\u274C Error creating group:", error);
+      this.log.error("error creating group: %o", error);
       if (error.message.includes("Pubsub has not started")) {
         this.state.nodeReady = false;
         await this.safeUpdateUI();
@@ -17324,7 +18342,7 @@ var GroupManager = class extends BaseComponent {
         await this.fullRender(this.state);
       }
     } catch (error) {
-      console.warn("\u26A0\uFE0F Error updating groups list:", error);
+      this.log("error updating groups list: %o", error);
       await this.fullRender(this.state);
     }
   }
@@ -17336,7 +18354,7 @@ var GroupManager = class extends BaseComponent {
       await this._actions.discoverGroups();
       await this.safeUpdateDiscoveredGroups();
     } catch (error) {
-      console.error("\u274C Error discovering groups:", error);
+      this.log.error("error discovering groups: %o", error);
       throw error;
     }
   }
@@ -17348,11 +18366,11 @@ var GroupManager = class extends BaseComponent {
         selector: "#discovered-groups-list"
       });
       if (!updated) {
-        console.log("\u26A0\uFE0F Discovered groups list not found, using full render");
+        this.log("discovered groups list not found, using full render");
         await this.fullRender(this.state);
       }
     } catch (error) {
-      console.warn("\u26A0\uFE0F Error updating discovered groups:", error);
+      this.log("error updating discovered groups: %o", error);
       await this.fullRender(this.state);
     }
   }
@@ -17366,7 +18384,7 @@ var GroupManager = class extends BaseComponent {
         selector: "#search-results"
       });
     } catch (error) {
-      console.error("\u274C Error searching groups:", error);
+      this.log.error("error searching groups: %o", error);
       throw error;
     }
   }
@@ -17375,13 +18393,13 @@ var GroupManager = class extends BaseComponent {
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430.");
     }
     try {
-      console.log("\u{1F527} Joining group in GroupManager:", group.name);
+      this.log("joining group: %s", group.name);
       const joinedGroup = await this._actions.joinGroup(group.topic || group.id);
-      console.log("\u2705 Group joined:", joinedGroup);
+      this.log("group joined: %o", joinedGroup);
       await this.safeUpdateJoinedGroups();
       return joinedGroup;
     } catch (error) {
-      console.error("\u274C Error joining group:", error);
+      this.log.error("error joining group: %o", error);
       throw error;
     }
   }
@@ -17396,7 +18414,7 @@ var GroupManager = class extends BaseComponent {
         await this.fullRender(this.state);
       }
     } catch (error) {
-      console.warn("\u26A0\uFE0F Error updating joined groups:", error);
+      this.log("error updating joined groups: %o", error);
       await this.fullRender(this.state);
     }
   }
@@ -17405,12 +18423,12 @@ var GroupManager = class extends BaseComponent {
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430.");
     }
     try {
-      console.log("\u{1F527} Leaving group in GroupManager:", groupId);
+      this.log("leaving group: %s", groupId);
       await this._actions.leaveGroup(groupId);
-      console.log("\u2705 Group left:", groupId);
+      this.log("group left: %s", groupId);
       await this.safeUpdateJoinedGroups();
     } catch (error) {
-      console.error("\u274C Error leaving group:", error);
+      this.log.error("error leaving group: %o", error);
       throw error;
     }
   }
@@ -17428,7 +18446,7 @@ var GroupManager = class extends BaseComponent {
       }
       return this.state.nodeReady;
     } catch (error) {
-      console.error("\u274C Error checking node status:", error);
+      this.log.error("error checking node status: %o", error);
       return false;
     }
   }
@@ -18583,40 +19601,40 @@ ${stack}`;
   }
   return v.toString();
 };
-function createDisabledLogger(namespace) {
-  const logger2 = /* @__PURE__ */ __name(() => {
+function createDisabledLogger2(namespace) {
+  const logger3 = /* @__PURE__ */ __name(() => {
   }, "logger");
-  logger2.enabled = false;
-  logger2.color = "";
-  logger2.diff = 0;
-  logger2.log = () => {
+  logger3.enabled = false;
+  logger3.color = "";
+  logger3.diff = 0;
+  logger3.log = () => {
   };
-  logger2.namespace = namespace;
-  logger2.destroy = () => true;
-  logger2.extend = () => logger2;
-  return logger2;
+  logger3.namespace = namespace;
+  logger3.destroy = () => true;
+  logger3.extend = () => logger3;
+  return logger3;
 }
-__name(createDisabledLogger, "createDisabledLogger");
+__name(createDisabledLogger2, "createDisabledLogger");
 function defaultLogger() {
   return {
     forComponent(name3) {
-      return logger(name3);
+      return logger2(name3);
     }
   };
 }
 __name(defaultLogger, "defaultLogger");
-function logger(name3) {
-  let trace = createDisabledLogger(`${name3}:trace`);
+function logger2(name3) {
+  let trace = createDisabledLogger2(`${name3}:trace`);
   if (src_default2.enabled(`${name3}:trace`) && src_default2.names.map((r2) => r2.toString()).find((n2) => n2.includes(":trace")) != null) {
     trace = src_default2(`${name3}:trace`);
   }
   return Object.assign(src_default2(name3), {
     error: src_default2(`${name3}:error`),
     trace,
-    newScope: /* @__PURE__ */ __name((scope) => logger(`${name3}:${scope}`), "newScope")
+    newScope: /* @__PURE__ */ __name((scope) => logger2(`${name3}:${scope}`), "newScope")
   });
 }
-__name(logger, "logger");
+__name(logger2, "logger");
 function notEmpty(str) {
   if (str == null) {
     return;
@@ -21956,7 +22974,7 @@ var optional = /* @__PURE__ */ __name((matcher) => {
     }, "match")
   };
 }, "optional");
-var or2 = /* @__PURE__ */ __name((...matchers) => {
+var or3 = /* @__PURE__ */ __name((...matchers) => {
   return {
     match: /* @__PURE__ */ __name((vals) => {
       let matches;
@@ -22037,12 +23055,12 @@ var _DNS = value(CODE_DNS);
 var DNS4 = fmt(_DNS4, optional(value(CODE_P2P)));
 var DNS6 = fmt(_DNS6, optional(value(CODE_P2P)));
 var DNSADDR = fmt(_DNSADDR, optional(value(CODE_P2P)));
-var DNS = fmt(or2(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)));
+var DNS = fmt(or3(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)));
 var _IP4 = and(value(CODE_IP4), optional(value(CODE_IPCIDR)));
 var _IP6 = and(optional(value(CODE_IP6ZONE)), value(CODE_IP6), optional(value(CODE_IPCIDR)));
-var _IP = or2(_IP4, _IP6);
-var _IP_OR_DOMAIN = or2(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
-var IP_OR_DOMAIN = fmt(or2(_IP, and(or2(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)))));
+var _IP = or3(_IP4, _IP6);
+var _IP_OR_DOMAIN = or3(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
+var IP_OR_DOMAIN = fmt(or3(_IP, and(or3(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)))));
 var IP4 = fmt(_IP4);
 var IP6 = fmt(_IP6);
 var IP = fmt(_IP);
@@ -22052,31 +23070,31 @@ var TCP = fmt(and(_TCP, optional(value(CODE_P2P))));
 var UDP = fmt(_UDP);
 var _QUIC = and(_UDP, code2(CODE_QUIC), optional(value(CODE_P2P)));
 var _QUIC_V1 = and(_UDP, code2(CODE_QUIC_V1), optional(value(CODE_P2P)));
-var QUIC_V0_OR_V1 = or2(_QUIC, _QUIC_V1);
+var QUIC_V0_OR_V1 = or3(_QUIC, _QUIC_V1);
 var QUIC = fmt(_QUIC);
 var QUIC_V1 = fmt(_QUIC_V1);
-var _WEB = or2(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUIC_V1);
-var _WebSockets = or2(and(_WEB, code2(CODE_WS), optional(value(CODE_P2P))));
+var _WEB = or3(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUIC_V1);
+var _WebSockets = or3(and(_WEB, code2(CODE_WS), optional(value(CODE_P2P))));
 var WebSockets = fmt(_WebSockets);
-var _WebSocketsSecure = or2(and(_WEB, code2(CODE_WSS), optional(value(CODE_P2P))), and(_WEB, code2(CODE_TLS), optional(value(CODE_SNI)), code2(CODE_WS), optional(value(CODE_P2P))));
+var _WebSocketsSecure = or3(and(_WEB, code2(CODE_WSS), optional(value(CODE_P2P))), and(_WEB, code2(CODE_TLS), optional(value(CODE_SNI)), code2(CODE_WS), optional(value(CODE_P2P))));
 var WebSocketsSecure = fmt(_WebSocketsSecure);
 var _WebRTCDirect = and(_UDP, code2(CODE_WEBRTC_DIRECT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
 var WebRTCDirect = fmt(_WebRTCDirect);
 var _WebTransport = and(_QUIC_V1, code2(CODE_WEBTRANSPORT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
 var WebTransport = fmt(_WebTransport);
-var _P2P = or2(_WebSockets, _WebSocketsSecure, and(_TCP, optional(value(CODE_P2P))), and(QUIC_V0_OR_V1, optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, optional(value(CODE_P2P))), _WebRTCDirect, _WebTransport, value(CODE_P2P));
+var _P2P = or3(_WebSockets, _WebSocketsSecure, and(_TCP, optional(value(CODE_P2P))), and(QUIC_V0_OR_V1, optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, optional(value(CODE_P2P))), _WebRTCDirect, _WebTransport, value(CODE_P2P));
 var P2P = fmt(_P2P);
 var _Circuit = and(optional(_P2P), code2(CODE_P2P_CIRCUIT), not(code2(CODE_WEBRTC)), optional(value(CODE_P2P)));
 var Circuit = fmt(_Circuit);
-var _WebRTC = or2(and(_P2P, code2(CODE_P2P_CIRCUIT), code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(_P2P, code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(code2(CODE_WEBRTC), optional(value(CODE_P2P))));
+var _WebRTC = or3(and(_P2P, code2(CODE_P2P_CIRCUIT), code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(_P2P, code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(code2(CODE_WEBRTC), optional(value(CODE_P2P))));
 var WebRTC = fmt(_WebRTC);
-var _HTTP = or2(and(_IP_OR_DOMAIN, value(CODE_TCP), code2(CODE_HTTP), optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, code2(CODE_HTTP), optional(value(CODE_P2P))));
+var _HTTP = or3(and(_IP_OR_DOMAIN, value(CODE_TCP), code2(CODE_HTTP), optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, code2(CODE_HTTP), optional(value(CODE_P2P))));
 var HTTP = fmt(_HTTP);
-var _HTTPS = and(_IP_OR_DOMAIN, or2(and(value(CODE_TCP, "443"), code2(CODE_HTTP)), and(value(CODE_TCP), code2(CODE_HTTPS)), and(value(CODE_TCP), code2(CODE_TLS), code2(CODE_HTTP)), and(code2(CODE_TLS), code2(CODE_HTTP)), code2(CODE_TLS), code2(CODE_HTTPS)), optional(value(CODE_P2P)));
+var _HTTPS = and(_IP_OR_DOMAIN, or3(and(value(CODE_TCP, "443"), code2(CODE_HTTP)), and(value(CODE_TCP), code2(CODE_HTTPS)), and(value(CODE_TCP), code2(CODE_TLS), code2(CODE_HTTP)), and(code2(CODE_TLS), code2(CODE_HTTP)), code2(CODE_TLS), code2(CODE_HTTPS)), optional(value(CODE_P2P)));
 var HTTPS = fmt(_HTTPS);
-var _Memory = or2(and(value(CODE_MEMORY), optional(value(CODE_P2P))));
+var _Memory = or3(and(value(CODE_MEMORY), optional(value(CODE_P2P))));
 var Memory = fmt(_Memory);
-var _Unix = or2(and(value(CODE_UNIX), optional(value(CODE_P2P))));
+var _Unix = or3(and(value(CODE_UNIX), optional(value(CODE_P2P))));
 var Unix = fmt(_Unix);
 
 // node_modules/libp2p/dist/src/address-manager/dns-mappings.js
@@ -26782,7 +27800,7 @@ var defaultEncoder = /* @__PURE__ */ __name((length3) => {
   return lengthBuf;
 }, "defaultEncoder");
 defaultEncoder.bytes = 0;
-function encode6(source, options) {
+function encode7(source, options) {
   options = options ?? {};
   const encodeLength2 = options.lengthEncoder ?? defaultEncoder;
   const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH;
@@ -26814,8 +27832,8 @@ function encode6(source, options) {
     }
   })();
 }
-__name(encode6, "encode");
-encode6.single = (chunk, options) => {
+__name(encode7, "encode");
+encode7.single = (chunk, options) => {
   options = options ?? {};
   const encodeLength2 = options.lengthEncoder ?? defaultEncoder;
   const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH;
@@ -26835,7 +27853,7 @@ var defaultDecoder = /* @__PURE__ */ __name((buf) => {
   return length3;
 }, "defaultDecoder");
 defaultDecoder.bytes = 0;
-function decode7(source, options) {
+function decode8(source, options) {
   const buffer = new Uint8ArrayList();
   let mode = ReadMode.LENGTH;
   let dataLength = -1;
@@ -26905,8 +27923,8 @@ function decode7(source, options) {
     }
   })();
 }
-__name(decode7, "decode");
-decode7.fromReader = (reader, options) => {
+__name(decode8, "decode");
+decode8.fromReader = (reader, options) => {
   let byteLength = 1;
   const varByteSource = (async function* () {
     while (true) {
@@ -26931,7 +27949,7 @@ decode7.fromReader = (reader, options) => {
   const onLength = /* @__PURE__ */ __name((l2) => {
     byteLength = l2;
   }, "onLength");
-  return decode7(varByteSource, {
+  return decode8(varByteSource, {
     ...options ?? {},
     onLength
   });
@@ -26967,7 +27985,7 @@ async function handle(stream, protocols, options = {}) {
       return protocol;
     }
     if (protocol === "ls") {
-      const protos = new Uint8ArrayList(...protocols.map((p2) => encode6.single(fromString2(`${p2}
+      const protos = new Uint8ArrayList(...protocols.map((p2) => encode7.single(fromString2(`${p2}
 `))), fromString2("\n"));
       log2.trace('respond with "%s" for %s', protocols, protocol);
       await lp.write(protos, options);
@@ -29808,7 +30826,7 @@ function decodeHeader(data) {
   };
 }
 __name(decodeHeader, "decodeHeader");
-var Decoder2 = class {
+var Decoder3 = class {
   static {
     __name(this, "Decoder");
   }
@@ -30174,7 +31192,7 @@ var YamuxMuxer = class extends AbstractStreamMuxer {
     this.keepAliveInterval = init.keepAliveInterval ?? defaultConfig.keepAliveInterval;
     this.maxInboundStreams = init.maxInboundStreams ?? defaultConfig.maxInboundStreams;
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultConfig.maxOutboundStreams;
-    this.decoder = new Decoder2();
+    this.decoder = new Decoder3();
     this.numInboundStreams = 0;
     this.numOutboundStreams = 0;
     this.nextStreamID = this.client ? 1 : 2;
@@ -32598,7 +33616,7 @@ var defaultEncoder2 = /* @__PURE__ */ __name((length3) => {
   return lengthBuf;
 }, "defaultEncoder");
 defaultEncoder2.bytes = 0;
-function encode7(source, options) {
+function encode8(source, options) {
   options = options ?? {};
   const encodeLength2 = options.lengthEncoder ?? defaultEncoder2;
   const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH2;
@@ -32630,8 +33648,8 @@ function encode7(source, options) {
     }
   })();
 }
-__name(encode7, "encode");
-encode7.single = (chunk, options) => {
+__name(encode8, "encode");
+encode8.single = (chunk, options) => {
   options = options ?? {};
   const encodeLength2 = options.lengthEncoder ?? defaultEncoder2;
   const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH2;
@@ -32651,7 +33669,7 @@ var defaultDecoder2 = /* @__PURE__ */ __name((buf) => {
   return length3;
 }, "defaultDecoder");
 defaultDecoder2.bytes = 0;
-function decode8(source, options) {
+function decode9(source, options) {
   const buffer = new Uint8ArrayList();
   let mode = ReadMode2.LENGTH;
   let dataLength = -1;
@@ -32721,8 +33739,8 @@ function decode8(source, options) {
     }
   })();
 }
-__name(decode8, "decode");
-decode8.fromReader = (reader, options) => {
+__name(decode9, "decode");
+decode9.fromReader = (reader, options) => {
   let byteLength = 1;
   const varByteSource = (async function* () {
     while (true) {
@@ -32747,21 +33765,21 @@ decode8.fromReader = (reader, options) => {
   const onLength = /* @__PURE__ */ __name((l2) => {
     byteLength = l2;
   }, "onLength");
-  return decode8(varByteSource, {
+  return decode9(varByteSource, {
     ...options ?? {},
     onLength
   });
 };
 
 // node_modules/detect-browser/es/index.js
-var __spreadArray = function(to, from3, pack) {
-  if (pack || arguments.length === 2) for (var i2 = 0, l2 = from3.length, ar; i2 < l2; i2++) {
-    if (ar || !(i2 in from3)) {
-      if (!ar) ar = Array.prototype.slice.call(from3, 0, i2);
-      ar[i2] = from3[i2];
+var __spreadArray = function(to, from4, pack) {
+  if (pack || arguments.length === 2) for (var i2 = 0, l2 = from4.length, ar; i2 < l2; i2++) {
+    if (ar || !(i2 in from4)) {
+      if (!ar) ar = Array.prototype.slice.call(from4, 0, i2);
+      ar[i2] = from4[i2];
     }
   }
-  return to.concat(ar || Array.prototype.slice.call(from3));
+  return to.concat(ar || Array.prototype.slice.call(from4));
 };
 var BrowserInfo = (
   /** @class */
@@ -33045,7 +34063,7 @@ var WebRTCStream = class extends AbstractStream {
       }
     };
     Promise.resolve().then(async () => {
-      for await (const buf of decode8(this.incomingData)) {
+      for await (const buf of decode9(this.incomingData)) {
         this.processIncomingProtobuf(buf);
       }
     }).catch((err) => {
@@ -33095,7 +34113,7 @@ var WebRTCStream = class extends AbstractStream {
         canSendMore: false
       };
     }
-    this._sendMessage(encode7.single(Message.encode({
+    this._sendMessage(encode8.single(Message.encode({
       message: data.subarray()
     })));
     return {
@@ -33169,7 +34187,7 @@ var WebRTCStream = class extends AbstractStream {
     }
     this.log.trace("sending flag %s", flag.toString());
     const messageBuf = Message.encode({ flag });
-    const prefixedBuf = encode7.single(messageBuf);
+    const prefixedBuf = encode8.single(messageBuf);
     try {
       this._sendMessage(prefixedBuf);
       return true;
@@ -33507,7 +34525,7 @@ function getRemotePeer(ma) {
 __name(getRemotePeer, "getRemotePeer");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/initiate-connection.js
-async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log2, logger: logger2, onProgress }) {
+async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log2, logger: logger3, onProgress }) {
   const { circuitAddress, targetPeer } = splitAddr(ma);
   metrics?.dialerEvents.increment({ open: true });
   log2.trace("dialing circuit address: %a", circuitAddress);
@@ -34970,7 +35988,6 @@ var PeerConnection = class extends BaseComponent {
     if (this.state.uptime !== uptimeFormatted) {
       this.state.uptime = uptimeFormatted;
       this.updateUptimeDisplay();
-      this.sendConnectionStatusToChatInterface();
     }
   }
   /**

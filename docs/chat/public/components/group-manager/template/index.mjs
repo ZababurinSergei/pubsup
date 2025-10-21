@@ -131,7 +131,11 @@ export function renderMyGroups({ groups = [], nodeReady = false } = {}) {
 /**
  * Обнаруженные группы
  */
-export function renderDiscoveredGroups({ discoveredGroups = [], nodeReady = false } = {}) {
+export function renderDiscoveredGroups({ discoveredGroups = [], nodeReady = false, state = {}} = {}) {
+    discoveredGroups = state.discoveredGroups || []
+    nodeReady = state.nodeReady
+
+    console.log('ddddddddddddddd', discoveredGroups)
     return `
         <section class="section-card" id="discovered-groups-list">
             <div class="card-header">

@@ -1,3 +1,5 @@
+import { logger } from '@libp2p/logger';
+
 /**
  * Фабричная функция для создания действий компонента GroupManager
  * @param {Object} context - Контекст компонента
@@ -7,6 +9,7 @@ export async function createActions(context) {
     let libp2p = null;
     let discoveredGroupsInterval = null;
     const GROUPS_ANNOUNCEMENT_TOPIC = 'chat-groups-announcements';
+    const log = logger('group-manager:actions');
 
     return {
         /**
@@ -23,7 +26,8 @@ export async function createActions(context) {
             // Запускаем периодический поиск групп
             this.startGroupDiscovery();
 
-            console.log('[GroupManager] Libp2p инициализирован для управления группами');
+            log('libp2p инициализирован для управления группами');
+
         },
 
         /**
@@ -49,14 +53,14 @@ export async function createActions(context) {
                                 this.handleDiscoveryRequest(event.detail);
                             }
                         } catch (error) {
-                            console.warn('[GroupManager] Ошибка обработки сообщения:', error);
+                            log.warn('ошибка обработки сообщения: %o', error);
                         }
                     }
                 });
 
-                console.log(`[GroupManager] Подписан на топик анонсов групп: ${GROUPS_ANNOUNCEMENT_TOPIC}`);
+                log('подписан на топик анонсов групп: %s', GROUPS_ANNOUNCEMENT_TOPIC);
             } catch (error) {
-                console.error('[GroupManager] Ошибка подписки на топик анонсов:', error);
+                log.error('ошибка подписки на топик анонсов: %o', error);
             }
         },
 
@@ -74,10 +78,10 @@ export async function createActions(context) {
                     // Обновляем список обнаруженных групп
                     await this.updateDiscoveredGroups(groupInfo);
 
-                    console.log(`[GroupManager] Получен анонс группы: ${groupInfo.name}`);
+                    log('получен анонс группы: %s', groupInfo.name);
                 }
             } catch (error) {
-                console.warn('[GroupManager] Ошибка обработки анонса группы:', error);
+                log.warn('ошибка обработки анонса группы: %o', error);
             }
         },
 
@@ -124,14 +128,14 @@ export async function createActions(context) {
             try {
                 // Проверяем доступность метода renderPart
                 if (!context.renderPart) {
-                    console.warn('⚠️ renderPart method not available in actions');
+                    log.warn('renderPart method not available in actions');
                     return;
                 }
 
                 // Проверяем существование элемента
                 const discoveredGroupsElement = context.shadowRoot?.querySelector('#discovered-groups-list');
                 if (!discoveredGroupsElement) {
-                    console.warn('⚠️ Discovered groups list element not found');
+                    log.warn('discovered groups list element not found');
                     return;
                 }
 
@@ -140,9 +144,8 @@ export async function createActions(context) {
                     state: context.state,
                     selector: '#discovered-groups-list'
                 });
-
             } catch (error) {
-                console.warn('⚠️ Error updating discovered groups UI:', error);
+                log.warn('error updating discovered groups UI: %o', error);
                 // Не выбрасываем ошибку дальше, чтобы не прерывать логику
             }
         },
@@ -175,7 +178,7 @@ export async function createActions(context) {
             }
 
             try {
-                console.log('[GroupManager] Запуск активного поиска групп...');
+                log('запуск активного поиска групп');
 
                 // Отправляем запрос на поиск групп
                 const discoveryRequest = {
@@ -183,7 +186,7 @@ export async function createActions(context) {
                     data: {
                         requester: libp2p.peerId.toString(),
                         timestamp: Date.now(),
-                        protocols: ['chat-group-', 'universe-chat-']
+                        protocols: ['chat-groups-', 'chat-group-', 'universe-chat-']
                     }
                 };
 
@@ -193,7 +196,7 @@ export async function createActions(context) {
                     new TextEncoder().encode(JSON.stringify(discoveryRequest))
                 );
 
-                console.log('[GroupManager] Запрос на обнаружение групп отправлен');
+                log('запрос на обнаружение групп отправлен');
 
                 // Также выполняем локальный поиск
                 await this.discoverGroups();
@@ -201,7 +204,7 @@ export async function createActions(context) {
                 return true;
 
             } catch (error) {
-                console.error('[GroupManager] Ошибка активного поиска групп:', error);
+                log.error('ошибка активного поиска групп: %o', error);
                 throw error;
             }
         },
@@ -232,7 +235,7 @@ export async function createActions(context) {
                             new TextEncoder().encode(JSON.stringify(response))
                         );
 
-                        console.log(`[GroupManager] Отправлен ответ с ${myGroups.length} группами`);
+                        log('отправлен ответ с %d группами', myGroups.length);
                     }
                 }
 
@@ -244,11 +247,11 @@ export async function createActions(context) {
                         await this.updateDiscoveredGroups(group);
                     }
 
-                    console.log(`[GroupManager] Получено ${discoveredGroups.length} групп от ${request.data.responder}`);
+                    log('получено %d групп от %s', discoveredGroups.length, request.data.responder);
                 }
 
             } catch (error) {
-                console.warn('[GroupManager] Ошибка обработки запроса обнаружения:', error);
+                log.warn('ошибка обработки запроса обнаружения: %o', error);
             }
         },
 
@@ -258,7 +261,7 @@ export async function createActions(context) {
          */
         discoverGroups: async function() {
             if (!libp2p) {
-                console.warn('[GroupManager] Libp2p не инициализирован');
+                log.warn('libp2p не инициализирован');
                 return;
             }
 
@@ -268,8 +271,11 @@ export async function createActions(context) {
 
                 const groupTopics = topics.filter(topic =>
                     topic.startsWith('chat-group-') ||
-                    topic.startsWith('universe-chat-')
+                    topic.startsWith('universe-chat-') ||
+                    topic.startsWith('chat-groups-')
                 );
+
+                log('найдено топиков групп: %d', groupTopics.length);
 
                 const discoveredGroups = [];
 
@@ -284,6 +290,8 @@ export async function createActions(context) {
                             groupName = topic.replace('chat-group-', '').split('-')[0];
                         } else if (topic.startsWith('universe-chat-')) {
                             groupName = topic.replace('universe-chat-', '');
+                        } else if (topic.startsWith('chat-groups-')) {
+                            groupName = topic.replace('chat-groups-', '').split('-')[0];
                         }
 
                         // Получаем дополнительную информацию о группе
@@ -299,7 +307,7 @@ export async function createActions(context) {
 
                         discoveredGroups.push(groupInfo);
                     } catch (error) {
-                        console.warn(`[GroupManager] Ошибка получения информации о группе ${topic}:`, error);
+                        log.warn('ошибка получения информации о группе %s: %o', topic, error);
                     }
                 }
 
@@ -309,10 +317,10 @@ export async function createActions(context) {
                 // Безопасное обновление UI вместо прямого вызова renderPart
                 await this.safeUpdateDiscoveredGroupsUI();
 
-                console.log(`[GroupManager] Обнаружено групп: ${discoveredGroups.length}`);
+                log('обнаружено групп: %d', discoveredGroups.length);
 
             } catch (error) {
-                console.error('[GroupManager] Ошибка обнаружения групп:', error);
+                log.error('ошибка обнаружения групп: %o', error);
                 context.addError({
                     componentName: 'GroupManager',
                     source: 'discoverGroups',
@@ -351,8 +359,8 @@ export async function createActions(context) {
                     language: options.language || 'ru'
                 };
 
-                console.log('libp2p.services.pubsub: ', libp2p.services.pubsub)
-                debugger
+                log('создание группы с топиком: %s', topic);
+
                 // Подписываемся на топик группы
                 await libp2p.services.pubsub.subscribe(topic);
 
@@ -365,7 +373,7 @@ export async function createActions(context) {
                 }
                 context.state.groups.push(group);
 
-                console.log(`[GroupManager] Создана группа: ${groupName} (${topic})`);
+                log('создана группа: %s (%s)', groupName, topic);
 
                 // Безопасное обновление UI
                 await this.safeUpdateMyGroupsUI();
@@ -373,7 +381,7 @@ export async function createActions(context) {
                 return group;
 
             } catch (error) {
-                console.error('[GroupManager] Ошибка создания группы:', error);
+                log.error('ошибка создания группы: %o', error);
                 context.addError({
                     componentName: 'GroupManager',
                     source: 'createGroup',
@@ -390,13 +398,13 @@ export async function createActions(context) {
         async safeUpdateMyGroupsUI() {
             try {
                 if (!context.renderPart) {
-                    console.warn('⚠️ renderPart method not available for my groups');
+                    log.warn('renderPart method not available for my groups');
                     return;
                 }
 
                 const myGroupsElement = context.shadowRoot?.querySelector('#my-groups-list');
                 if (!myGroupsElement) {
-                    console.warn('⚠️ My groups list element not found');
+                    log.warn('my groups list element not found');
                     return;
                 }
 
@@ -407,7 +415,7 @@ export async function createActions(context) {
                 });
 
             } catch (error) {
-                console.warn('⚠️ Error updating my groups UI:', error);
+                log.warn('error updating my groups UI: %o', error);
             }
         },
 
@@ -444,10 +452,10 @@ export async function createActions(context) {
                     new TextEncoder().encode(JSON.stringify(announcement))
                 );
 
-                console.log(`[GroupManager] Анонсирована созданная группа: ${group.name}`);
+                log('анонсирована созданная группа: %s', group.name);
 
             } catch (error) {
-                console.error('[GroupManager] Ошибка анонсирования группы:', error);
+                log.error('ошибка анонсирования группы: %o', error);
                 context.addError({
                     componentName: 'GroupManager',
                     source: 'announceGroupCreation',
@@ -495,7 +503,7 @@ export async function createActions(context) {
                     context.state.joinedGroups.push(group);
                 }
 
-                console.log(`[GroupManager] Присоединились к группе: ${group.name} (${topic})`);
+                log('присоединились к группе: %s (%s)', group.name, topic);
 
                 // Безопасное обновление UI
                 await this.safeUpdateJoinedGroupsUI();
@@ -503,7 +511,7 @@ export async function createActions(context) {
                 return group;
 
             } catch (error) {
-                console.error('[GroupManager] Ошибка присоединения к группе:', error);
+                log.error('ошибка присоединения к группе: %o', error);
                 context.addError({
                     componentName: 'GroupManager',
                     source: 'joinGroup',
@@ -520,13 +528,13 @@ export async function createActions(context) {
         async safeUpdateJoinedGroupsUI() {
             try {
                 if (!context.renderPart) {
-                    console.warn('⚠️ renderPart method not available for joined groups');
+                    log.warn('renderPart method not available for joined groups');
                     return;
                 }
 
                 const joinedGroupsElement = context.shadowRoot?.querySelector('#joined-groups-list');
                 if (!joinedGroupsElement) {
-                    console.warn('⚠️ Joined groups list element not found');
+                    log.warn('joined groups list element not found');
                     return;
                 }
 
@@ -537,7 +545,7 @@ export async function createActions(context) {
                 });
 
             } catch (error) {
-                console.warn('⚠️ Error updating joined groups UI:', error);
+                log.warn('error updating joined groups UI: %o', error);
             }
         },
 
@@ -560,13 +568,13 @@ export async function createActions(context) {
                     context.state.joinedGroups = context.state.joinedGroups.filter(g => g.id !== topic);
                 }
 
-                console.log(`[GroupManager] Покинули группу: ${topic}`);
+                log('покинули группу: %s', topic);
 
                 // Безопасное обновление UI
                 await this.safeUpdateJoinedGroupsUI();
 
             } catch (error) {
-                console.error('[GroupManager] Ошибка выхода из группы:', error);
+                log.error('ошибка выхода из группы: %o', error);
                 context.addError({
                     componentName: 'GroupManager',
                     source: 'leaveGroup',
@@ -597,7 +605,7 @@ export async function createActions(context) {
                 (group.tags && group.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
             );
 
-            console.log(`[GroupManager] Поиск "${query}": найдено ${filteredGroups.length} групп`);
+            log('поиск "%s": найдено %d групп', query, filteredGroups.length);
 
             return filteredGroups;
         },
@@ -617,7 +625,7 @@ export async function createActions(context) {
                 const subscribers = libp2p.services.pubsub.getSubscribers(topic);
                 return subscribers.map(peerId => peerId.toString());
             } catch (error) {
-                console.warn(`[GroupManager] Ошибка получения участников группы ${topic}:`, error);
+                log.warn('ошибка получения участников группы %s: %o', topic, error);
                 return [];
             }
         },
@@ -687,7 +695,7 @@ export async function createActions(context) {
             }
 
             libp2p = null;
-            console.log('[GroupManager] Ресурсы очищены');
+            log('ресурсы очищены');
         }
     };
 }

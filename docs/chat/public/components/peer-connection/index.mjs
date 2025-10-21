@@ -133,7 +133,7 @@ export class PeerConnection extends BaseComponent {
             this.updateUptimeDisplay();
 
             // Отправляем обновление статуса в chat-interface
-            this.sendConnectionStatusToChatInterface();
+            // this.sendConnectionStatusToChatInterface();
         }
     }
 
