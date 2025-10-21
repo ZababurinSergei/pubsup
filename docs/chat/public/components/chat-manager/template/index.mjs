@@ -181,7 +181,7 @@ export default function defaultTemplate({state = {}} = {}) {
         <footer class="manager-footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <span class="info-item">Peer ID: ${state.peerId ? state.peerId.substring(0, 16) + '...' : 'Не доступен'}</span>
+                    <span class="info-item">Peer ID: ${state.peerId ? state.peerId : 'Не доступен'}</span>
                     <span class="info-divider">•</span>
                     <span class="info-item">Режим: ${state.mode === 'listener' ? 'Слушатель' : 'Инициатор'}</span>
                     <span class="info-divider">•</span>

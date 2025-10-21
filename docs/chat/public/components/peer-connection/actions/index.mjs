@@ -9,6 +9,8 @@ import { identify } from '@libp2p/identify';
 import { floodsub } from '@libp2p/floodsub';
 import { multiaddr } from '@multiformats/multiaddr';
 import { fromString } from 'uint8arrays';
+import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher";
+
 /**
  * Фабричная функция для создания действий компонента PeerConnection
  * @param {Object} context - Контекст компонента
@@ -121,6 +123,8 @@ export async function createActions(context) {
             // Обнаружение пиров
             libp2p.addEventListener('peer:discovery', (event) => {
                 console.log('Обнаружен пир:', event.detail.id.toString());
+                // Также обновляем список при обнаружении новых пиров
+                setTimeout(() => self.updatePeerList(), 1000);
             });
         },
 
@@ -218,6 +222,7 @@ export async function createActions(context) {
 
             if (peersElement && context.renderPart) {
                 console.log('🎯 updatePeerList: выполняем renderPart');
+                debugger
                 await context.renderPart({
                     partName: 'renderPeersList',
                     state: context.state,
@@ -239,7 +244,7 @@ export async function createActions(context) {
                 return;
             }
 
-            const addresses = libp2p.getMultiaddrs().map(ma => ma.toString());
+            const addresses = libp2p.getMultiaddrs().filter(ma => WebRTC.matches(ma)).map(ma => ma.toString());
             context.state.listeningAddresses = addresses;
 
             console.log('📋 updateAddressList: адресов найдено:', addresses.length);

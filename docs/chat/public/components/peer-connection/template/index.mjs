@@ -524,7 +524,7 @@ export function renderStatus({state = {}} = {}) {
     return `
     <div class="status-message connected">
         <span class="status-icon">🟢</span>
-        <span class="status-text">Подключено к группу "${state.currentGroup.name}"</span>
+        <span class="status-text">Подключено к группу \"${state.currentGroup.name}\"</span>
         <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + '...' : 'Неизвестен'}</span>
     </div>
     `;

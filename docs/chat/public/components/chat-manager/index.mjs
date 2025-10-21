@@ -2,6 +2,9 @@ import { BaseComponent } from '../../base/base-component.mjs';
 import * as template from './template/index.mjs';
 import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
+import { lpStream } from '@libp2p/utils';
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string';
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string';
 
 export class ChatManager extends BaseComponent {
     constructor() {
@@ -18,6 +21,8 @@ export class ChatManager extends BaseComponent {
             listeningAddresses: [],
             connectedPeers: []
         };
+        this.node = null;
+        this.activeStreams = new Map(); // Для хранения активных стримов
     }
 
     async _componentReady() {
@@ -25,9 +30,59 @@ export class ChatManager extends BaseComponent {
         this._actions = await createActions(this);
         await this._controller.init();
 
-        await this._actions.initializeLibp2p(this.state.mode);
+        // Получаем ноду из peer-connection вместо создания своей
+        await this.initializeFromPeerConnection();
 
         return true;
+    }
+
+    async initializeFromPeerConnection() {
+        try {
+            // Получаем компонент peer-connection
+            const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
+
+            if (!peerConnection) {
+                console.warn('❌ PeerConnection component not found');
+                return;
+            }
+
+            // Ждем пока peer-connection будет готов
+            let attempts = 0;
+            const maxAttempts = 10;
+
+            while (attempts < maxAttempts) {
+                if (peerConnection.isNodeReady && peerConnection.isNodeReady()) {
+                    this.node = peerConnection.getNode();
+                    this.state.connected = true;
+                    this.state.peerId = this.node.peerId.toString();
+                    this.state.mode = peerConnection.state.mode;
+
+                    console.log('✅ Node obtained from PeerConnection:', {
+                        peerId: this.state.peerId,
+                        mode: this.state.mode,
+                        connected: this.state.connected
+                    });
+
+                    await this.fullRender(this.state);
+                    return;
+                }
+
+                console.log(`⏳ Waiting for PeerConnection node... (attempt ${attempts + 1}/${maxAttempts})`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                attempts++;
+            }
+
+            throw new Error('PeerConnection node not ready after maximum attempts');
+
+        } catch (error) {
+            console.error('❌ Failed to initialize from PeerConnection:', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'initializeFromPeerConnection',
+                message: 'Не удалось получить ноду из PeerConnection',
+                details: error
+            });
+        }
     }
 
     async switchMode(mode) {
@@ -35,11 +90,13 @@ export class ChatManager extends BaseComponent {
             this.state.mode = mode;
             await this.fullRender(this.state);
 
-            if (this._actions.cleanup) {
-                await this._actions.cleanup();
+            // Переключаем режим через peer-connection
+            const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
+            if (peerConnection && peerConnection.switchMode) {
+                await peerConnection.switchMode(mode);
+                // После переключения режима обновляем ноду
+                await this.initializeFromPeerConnection();
             }
-
-            await this._actions.initializeLibp2p(mode);
         }
     }
 
@@ -110,11 +167,132 @@ export class ChatManager extends BaseComponent {
 
         await this._actions.subscribeToGroup(topic);
 
+        // Начинаем слушать стрим для этой группы
+        await this.setupGroupStream(topic);
+
         await this.fullRender(this.state);
 
         const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
         if (chatInterface) {
             await chatInterface.setCurrentGroup(this.state.currentGroup);
+        }
+    }
+
+    /**
+     * Настройка стрима для группы с использованием lpStream
+     */
+    async setupGroupStream(topic) {
+        if (!this.node) {
+            console.warn('❌ Node not available for stream setup');
+            return;
+        }
+
+        try {
+            // Получаем список пиров в топике
+            const peers = this.node.services.pubsub.getSubscribers(topic);
+
+            for (const peer of peers) {
+                if (peer.toString() === this.node.peerId.toString()) {
+                    continue; // Пропускаем себя
+                }
+
+                // Создаем стрим к пиру
+                const stream = await this.node.dialProtocol(peer, '/chat/1.0.0');
+
+                // Создаем lpStream
+                const lp = lpStream(stream);
+
+                // Сохраняем стрим
+                this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
+
+                // Запускаем чтение из стрима
+                this.streamToChat(lp, peer.toString(), topic);
+
+                console.log(`✅ Stream setup for peer ${peer.toString()} in topic ${topic}`);
+            }
+
+        } catch (error) {
+            console.error('❌ Error setting up group stream:', error);
+        }
+    }
+
+    /**
+     * Чтение сообщений из стрима и вывод в чат
+     */
+    async streamToChat(lp, peerId, topic) {
+        try {
+            while (true) {
+                const message = await lp.read();
+                const text = uint8ArrayToString(message.subarray());
+
+                console.log(`📨 Message from ${peerId} in ${topic}: ${text}`);
+
+                // Добавляем сообщение в чат
+                await this.addMessage({
+                    text: text,
+                    topic: topic,
+                    from: peerId,
+                    type: 'received',
+                    timestamp: Date.now()
+                });
+
+            }
+        } catch (error) {
+            console.error(`❌ Error reading from stream for peer ${peerId}:`, error);
+            // Удаляем стрим из активных
+            this.activeStreams.delete(`${topic}-${peerId}`);
+        }
+    }
+
+    /**
+     * Отправка сообщения через стрим
+     */
+    async sendMessageViaStream(topic, messageText) {
+        if (!this.node || !this.state.currentGroup) {
+            console.warn('❌ Node or current group not available');
+            return false;
+        }
+
+        try {
+            const peers = this.node.services.pubsub.getSubscribers(topic);
+            let sent = false;
+
+            for (const peer of peers) {
+                if (peer.toString() === this.node.peerId.toString()) {
+                    continue;
+                }
+
+                const streamKey = `${topic}-${peer.toString()}`;
+                let streamData = this.activeStreams.get(streamKey);
+
+                // Если стрима нет, создаем его
+                if (!streamData) {
+                    const stream = await this.node.dialProtocol(peer, '/chat/1.0.0');
+                    const lp = lpStream(stream);
+                    streamData = { stream, lp, peer };
+                    this.activeStreams.set(streamKey, streamData);
+
+                    // Запускаем чтение из нового стрима
+                    this.streamToChat(lp, peer.toString(), topic);
+                }
+
+                // Отправляем сообщение через lpStream
+                await streamData.lp.write(uint8ArrayFromString(messageText));
+                sent = true;
+
+                console.log(`✅ Message sent via stream to ${peer.toString()}`);
+            }
+
+            // Также отправляем через PubSub для широковещания
+            if (this._actions && this._actions.sendMessage) {
+                await this._actions.sendMessage(topic, messageText);
+            }
+
+            return sent;
+
+        } catch (error) {
+            console.error('❌ Error sending message via stream:', error);
+            return false;
         }
     }
 
@@ -134,8 +312,18 @@ export class ChatManager extends BaseComponent {
     }
 
     async sendGroupMessage(messageText) {
-        if (this.state.currentGroup && this._actions) {
-            await this._actions.sendMessage(this.state.currentGroup.topic, messageText);
+        if (this.state.currentGroup && this.state.currentGroup.topic) {
+            // Используем стрим для отправки сообщения
+            await this.sendMessageViaStream(this.state.currentGroup.topic, messageText);
+
+            // Также добавляем сообщение локально как отправленное
+            await this.addMessage({
+                text: messageText,
+                topic: this.state.currentGroup.topic,
+                from: this.state.peerId,
+                type: 'sent',
+                timestamp: Date.now()
+            });
         }
     }
 
@@ -229,11 +417,18 @@ export class ChatManager extends BaseComponent {
     }
 
     async _componentDisconnected() {
+        // Закрываем все активные стримы
+        for (const [key, streamData] of this.activeStreams.entries()) {
+            try {
+                await streamData.stream.close();
+            } catch (error) {
+                console.warn(`Error closing stream ${key}:`, error);
+            }
+        }
+        this.activeStreams.clear();
+
         if (this._controller && this._controller.destroy) {
             await this._controller.destroy();
-        }
-        if (this._actions && this._actions.cleanup) {
-            await this._actions.cleanup();
         }
         this._templateMethods = null;
     }

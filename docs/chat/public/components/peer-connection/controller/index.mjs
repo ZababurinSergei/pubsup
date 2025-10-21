@@ -13,6 +13,65 @@ export const controller = async (context) => {
          */
         async init() {
             console.log('🔧 PeerConnection controller initializing...');
+
+            // Обработчики для копирования адресов
+            const setupCopyHandlers = () => {
+                const copyButtons = context.shadowRoot.querySelectorAll('.address-action.copy');
+                copyButtons.forEach(button => {
+                    const handler = async (e) => {
+                        const addressItem = e.target.closest('.address-item');
+                        if (addressItem) {
+                            const address = addressItem.getAttribute('data-address');
+                            if (address) {
+                                await context.copyToClipboard(address, 'Адрес скопирован в буфер обмена');
+                            }
+                        }
+                    };
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler: handler });
+                });
+            };
+
+            // Обработчики для копирования Peer ID из детализированного списка
+            const setupPeerCopyHandlers = () => {
+                const copyPeerButtons = context.shadowRoot.querySelectorAll('.copy-peer-id');
+                copyPeerButtons.forEach(button => {
+                    const handler = async (e) => {
+                        const peerId = e.target.getAttribute('data-peer-id');
+                        if (peerId) {
+                            await context.copyToClipboard(peerId, 'Peer ID скопирован в буфер обмена');
+                        }
+                    };
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler: handler });
+                });
+            };
+
+            // Наблюдатель за изменениями DOM для динамических кнопок
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        setupCopyHandlers();
+                        setupPeerCopyHandlers();
+                    }
+                });
+            });
+
+            // Начинаем наблюдение за изменениями в shadowRoot
+            observer.observe(context.shadowRoot, {
+                childList: true,
+                subtree: true
+            });
+
+            // Сохраняем observer для очистки
+            context._copyObserver = observer;
+
+            // Инициализация кнопок при первом рендере
+            setTimeout(() => {
+                setupCopyHandlers();
+                setupPeerCopyHandlers();
+            }, 100);
+
             // Обработчик подключения к пиру
             const connectBtn = context.shadowRoot.querySelector('#connect-peer-btn');
             const peerAddressInput = context.shadowRoot.querySelector('#peer-address-input');
@@ -98,7 +157,6 @@ export const controller = async (context) => {
 
             if (connectBtn && peerAddressInput) {
                 const connectHandler = async () => {
-                    debugger
                     const address = peerAddressInput.value.trim();
                     if (address) {
                         try {
@@ -161,18 +219,7 @@ export const controller = async (context) => {
                         console.log('🔧 Copying addresses...');
                         const addresses = await context.getRelayAddresses();
                         const textToCopy = addresses.join('\n');
-                        await navigator.clipboard.writeText(textToCopy);
-                        console.log('✅ Адреса скопированы в буфер обмена');
-
-                        // Временная визуальная обратная связь
-                        const originalText = copyAddressesBtn.textContent;
-                        copyAddressesBtn.textContent = 'Скопировано!';
-                        copyAddressesBtn.style.background = 'var(--success-gradient)';
-
-                        setTimeout(() => {
-                            copyAddressesBtn.textContent = originalText;
-                            copyAddressesBtn.style.background = '';
-                        }, 2000);
+                        await context.copyToClipboard(textToCopy, 'Все адреса скопированы в буфер обмена');
                     } catch (error) {
                         console.error('❌ Ошибка копирования адресов:', error);
                         context.addError({
@@ -226,14 +273,7 @@ export const controller = async (context) => {
                 const copyPeerHandler = async () => {
                     try {
                         if (context.state.peerId) {
-                            await navigator.clipboard.writeText(context.state.peerId);
-                            console.log('✅ Peer ID скопирован:', context.state.peerId);
-
-                            // Визуальная обратная связь
-                            copyPeerIdBtn.textContent = 'Скопировано!';
-                            setTimeout(() => {
-                                copyPeerIdBtn.textContent = 'Копировать Peer ID';
-                            }, 2000);
+                            await context.copyToClipboard(context.state.peerId, 'Peer ID скопирован в буфер обмена');
                         }
                     } catch (error) {
                         console.error('❌ Ошибка копирования Peer ID:', error);
@@ -250,13 +290,8 @@ export const controller = async (context) => {
                     try {
                         const addresses = context.state.listeningAddresses || [];
                         if (addresses.length > 0) {
-                            await navigator.clipboard.writeText(addresses.join('\n'));
-                            console.log('✅ Все адреса скопированы');
-
-                            copyAllAddressesBtn.textContent = 'Скопировано!';
-                            setTimeout(() => {
-                                copyAllAddressesBtn.textContent = 'Копировать адреса';
-                            }, 2000);
+                            const textToCopy = addresses.join('\n');
+                            await context.copyToClipboard(textToCopy, 'Все адреса скопированы в буфер обмена');
                         }
                     } catch (error) {
                         console.error('❌ Ошибка копирования всех адресов:', error);
@@ -287,9 +322,8 @@ export const controller = async (context) => {
             if (restartNodeBtn) {
                 const restartHandler = async () => {
                     try {
-                        console.log('=======================================', context.state.mode)
                         console.log('🔧 Restarting node...');
-                        // await context.switchMode(context.state.mode); // Перезапуск в текущем режиме
+                        await context.switchMode(context.state.mode); // Перезапуск в текущем режиме
                         console.log('✅ Узел перезапущен');
                     } catch (error) {
                         console.error('❌ Ошибка перезапуска узла:', error);
@@ -337,6 +371,12 @@ export const controller = async (context) => {
                     console.warn('⚠️ Error removing event listener:', error);
                 }
             });
+
+            // Остановка наблюдателя за DOM
+            if (context._copyObserver) {
+                context._copyObserver.disconnect();
+                context._copyObserver = null;
+            }
 
             console.log(`✅ Removed ${eventListeners.length} event listeners`);
             eventListeners = [];

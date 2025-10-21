@@ -1274,7 +1274,7 @@ function defaultTemplate({ state = {} } = {}) {
         <footer class="manager-footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <span class="info-item">Peer ID: ${state.peerId ? state.peerId.substring(0, 16) + "..." : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
+                    <span class="info-item">Peer ID: ${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
                     <span class="info-divider">\u2022</span>
                     <span class="info-item">\u0420\u0435\u0436\u0438\u043C: ${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
                     <span class="info-divider">\u2022</span>
@@ -1711,6 +1711,117 @@ var controller = /* @__PURE__ */ __name(async (context) => {
     }
   };
 }, "controller");
+
+// public/components/chat-manager/actions/index.mjs
+async function createActions(context) {
+  return {
+    async subscribeToGroup(topic) {
+      if (context.node) {
+        try {
+          await context.node.services.pubsub.subscribe(topic);
+          console.log(`\u2705 Subscribed to group: ${topic}`);
+          return true;
+        } catch (error) {
+          console.error(`\u274C Error subscribing to group ${topic}:`, error);
+          return false;
+        }
+      }
+      return false;
+    },
+    async unsubscribeFromGroup(topic) {
+      if (context.node) {
+        try {
+          await context.node.services.pubsub.unsubscribe(topic);
+          console.log(`\u2705 Unsubscribed from group: ${topic}`);
+          return true;
+        } catch (error) {
+          console.error(`\u274C Error unsubscribing from group ${topic}:`, error);
+          return false;
+        }
+      }
+      return false;
+    },
+    async sendMessage(topic, messageText) {
+      if (context.node) {
+        try {
+          await context.node.services.pubsub.publish(topic, new TextEncoder().encode(messageText));
+          console.log(`\u2705 Message sent to topic ${topic}: ${messageText}`);
+          return true;
+        } catch (error) {
+          console.error(`\u274C Error sending message to topic ${topic}:`, error);
+          return false;
+        }
+      }
+      return false;
+    },
+    async discoverGroups() {
+      if (!context.node) return [];
+      try {
+        const topics = Array.from(context.node.services.pubsub.getTopics());
+        const groups = [];
+        for (const topic of topics) {
+          if (topic.startsWith("chat-group-")) {
+            const peers = context.node.services.pubsub.getSubscribers(topic);
+            groups.push({
+              topic,
+              name: topic.replace("chat-group-", "").split("-")[0],
+              memberCount: peers.size,
+              peers: Array.from(peers).map((p2) => p2.toString())
+            });
+          }
+        }
+        return groups;
+      } catch (error) {
+        console.error("\u274C Error discovering groups:", error);
+        return [];
+      }
+    }
+  };
+}
+__name(createActions, "createActions");
+
+// node_modules/@libp2p/crypto/dist/src/errors.js
+var SigningError = class extends Error {
+  static {
+    __name(this, "SigningError");
+  }
+  constructor(message2 = "An error occurred while signing a message") {
+    super(message2);
+    this.name = "SigningError";
+  }
+};
+var VerificationError = class extends Error {
+  static {
+    __name(this, "VerificationError");
+  }
+  constructor(message2 = "An error occurred while verifying a message") {
+    super(message2);
+    this.name = "VerificationError";
+  }
+};
+var WebCryptoMissingError = class extends Error {
+  static {
+    __name(this, "WebCryptoMissingError");
+  }
+  constructor(message2 = "Missing Web Crypto API") {
+    super(message2);
+    this.name = "WebCryptoMissingError";
+  }
+};
+
+// node_modules/@libp2p/crypto/dist/src/webcrypto/webcrypto.browser.js
+var webcrypto_browser_default = {
+  get(win = globalThis) {
+    const nativeCrypto = win.crypto;
+    if (nativeCrypto?.subtle == null) {
+      throw new WebCryptoMissingError("Missing Web Crypto API. The most likely cause of this error is that this page is being accessed from an insecure context (i.e. not HTTPS). For more information and possible resolutions see https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/README.md#web-crypto-api");
+    }
+    return nativeCrypto;
+  }
+};
+
+// node_modules/@libp2p/crypto/dist/src/webcrypto/index.js
+var webcrypto_default = webcrypto_browser_default;
 
 // node_modules/@libp2p/interface/dist/src/connection.js
 var connectionSymbol = Symbol.for("@libp2p/connection");
@@ -6393,49 +6504,6 @@ var x25519 = /* @__PURE__ */ (() => {
   });
 })();
 
-// node_modules/@libp2p/crypto/dist/src/errors.js
-var SigningError = class extends Error {
-  static {
-    __name(this, "SigningError");
-  }
-  constructor(message2 = "An error occurred while signing a message") {
-    super(message2);
-    this.name = "SigningError";
-  }
-};
-var VerificationError = class extends Error {
-  static {
-    __name(this, "VerificationError");
-  }
-  constructor(message2 = "An error occurred while verifying a message") {
-    super(message2);
-    this.name = "VerificationError";
-  }
-};
-var WebCryptoMissingError = class extends Error {
-  static {
-    __name(this, "WebCryptoMissingError");
-  }
-  constructor(message2 = "Missing Web Crypto API") {
-    super(message2);
-    this.name = "WebCryptoMissingError";
-  }
-};
-
-// node_modules/@libp2p/crypto/dist/src/webcrypto/webcrypto.browser.js
-var webcrypto_browser_default = {
-  get(win = globalThis) {
-    const nativeCrypto = win.crypto;
-    if (nativeCrypto?.subtle == null) {
-      throw new WebCryptoMissingError("Missing Web Crypto API. The most likely cause of this error is that this page is being accessed from an insecure context (i.e. not HTTPS). For more information and possible resolutions see https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/README.md#web-crypto-api");
-    }
-    return nativeCrypto;
-  }
-};
-
-// node_modules/@libp2p/crypto/dist/src/webcrypto/index.js
-var webcrypto_default = webcrypto_browser_default;
-
 // node_modules/@libp2p/crypto/dist/src/keys/ed25519/index.browser.js
 var PUBLIC_KEY_BYTE_LENGTH = 32;
 var PRIVATE_KEY_BYTE_LENGTH = 64;
@@ -9709,918 +9777,6 @@ function toCurve(curve) {
   throw new InvalidParametersError("Unsupported curve, should be P-256, P-384 or P-521");
 }
 __name(toCurve, "toCurve");
-
-// node_modules/@libp2p/peer-id/dist/src/peer-id.js
-var inspect = Symbol.for("nodejs.util.inspect.custom");
-var LIBP2P_KEY_CODE = 114;
-var PeerIdImpl = class {
-  static {
-    __name(this, "PeerIdImpl");
-  }
-  type;
-  multihash;
-  publicKey;
-  string;
-  constructor(init) {
-    this.type = init.type;
-    this.multihash = init.multihash;
-    Object.defineProperty(this, "string", {
-      enumerable: false,
-      writable: true
-    });
-  }
-  get [Symbol.toStringTag]() {
-    return `PeerId(${this.toString()})`;
-  }
-  [peerIdSymbol] = true;
-  toString() {
-    if (this.string == null) {
-      this.string = base58btc.encode(this.multihash.bytes).slice(1);
-    }
-    return this.string;
-  }
-  toMultihash() {
-    return this.multihash;
-  }
-  // return self-describing String representation
-  // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
-  toCID() {
-    return CID.createV1(LIBP2P_KEY_CODE, this.multihash);
-  }
-  toJSON() {
-    return this.toString();
-  }
-  /**
-   * Checks the equality of `this` peer against a given PeerId
-   */
-  equals(id) {
-    if (id == null) {
-      return false;
-    }
-    if (id instanceof Uint8Array) {
-      return equals3(this.multihash.bytes, id);
-    } else if (typeof id === "string") {
-      return this.toString() === id;
-    } else if (id?.toMultihash()?.bytes != null) {
-      return equals3(this.multihash.bytes, id.toMultihash().bytes);
-    } else {
-      throw new Error("not valid Id");
-    }
-  }
-  /**
-   * Returns PeerId as a human-readable string
-   * https://nodejs.org/api/util.html#utilinspectcustom
-   *
-   * @example
-   * ```TypeScript
-   * import { peerIdFromString } from '@libp2p/peer-id'
-   *
-   * console.info(peerIdFromString('QmFoo'))
-   * // 'PeerId(QmFoo)'
-   * ```
-   */
-  [inspect]() {
-    return `PeerId(${this.toString()})`;
-  }
-};
-var RSAPeerId = class extends PeerIdImpl {
-  static {
-    __name(this, "RSAPeerId");
-  }
-  type = "RSA";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "RSA" });
-    this.publicKey = init.publicKey;
-  }
-};
-var Ed25519PeerId = class extends PeerIdImpl {
-  static {
-    __name(this, "Ed25519PeerId");
-  }
-  type = "Ed25519";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "Ed25519" });
-    this.publicKey = init.publicKey;
-  }
-};
-var Secp256k1PeerId = class extends PeerIdImpl {
-  static {
-    __name(this, "Secp256k1PeerId");
-  }
-  type = "secp256k1";
-  publicKey;
-  constructor(init) {
-    super({ ...init, type: "secp256k1" });
-    this.publicKey = init.publicKey;
-  }
-};
-var TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 2336;
-var URLPeerId = class {
-  static {
-    __name(this, "URLPeerId");
-  }
-  type = "url";
-  multihash;
-  publicKey;
-  url;
-  constructor(url) {
-    this.url = url.toString();
-    this.multihash = identity.digest(fromString2(this.url));
-  }
-  [inspect]() {
-    return `PeerId(${this.url})`;
-  }
-  [peerIdSymbol] = true;
-  toString() {
-    return this.toCID().toString();
-  }
-  toMultihash() {
-    return this.multihash;
-  }
-  toCID() {
-    return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, this.toMultihash());
-  }
-  toJSON() {
-    return this.toString();
-  }
-  equals(other) {
-    if (other == null) {
-      return false;
-    }
-    if (other instanceof Uint8Array) {
-      other = toString2(other);
-    }
-    return other.toString() === this.toString();
-  }
-};
-
-// node_modules/@libp2p/peer-id/dist/src/index.js
-var LIBP2P_KEY_CODE2 = 114;
-var TRANSPORT_IPFS_GATEWAY_HTTP_CODE2 = 2336;
-function peerIdFromString(str, decoder) {
-  let multihash;
-  if (str.charAt(0) === "1" || str.charAt(0) === "Q") {
-    multihash = decode4(base58btc.decode(`z${str}`));
-  } else if (str.startsWith("k51qzi5uqu5") || str.startsWith("kzwfwjn5ji4") || str.startsWith("k2k4r8") || str.startsWith("bafz")) {
-    return peerIdFromCID(CID.parse(str));
-  } else {
-    if (decoder == null) {
-      throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
-    }
-    multihash = decode4(decoder.decode(str));
-  }
-  return peerIdFromMultihash(multihash);
-}
-__name(peerIdFromString, "peerIdFromString");
-function peerIdFromPublicKey(publicKey) {
-  if (publicKey.type === "Ed25519") {
-    return new Ed25519PeerId({
-      multihash: publicKey.toCID().multihash,
-      publicKey
-    });
-  } else if (publicKey.type === "secp256k1") {
-    return new Secp256k1PeerId({
-      multihash: publicKey.toCID().multihash,
-      publicKey
-    });
-  } else if (publicKey.type === "RSA") {
-    return new RSAPeerId({
-      multihash: publicKey.toCID().multihash,
-      publicKey
-    });
-  }
-  throw new UnsupportedKeyTypeError();
-}
-__name(peerIdFromPublicKey, "peerIdFromPublicKey");
-function peerIdFromPrivateKey(privateKey) {
-  return peerIdFromPublicKey(privateKey.publicKey);
-}
-__name(peerIdFromPrivateKey, "peerIdFromPrivateKey");
-function peerIdFromMultihash(multihash) {
-  if (isSha256Multihash(multihash)) {
-    return new RSAPeerId({ multihash });
-  } else if (isIdentityMultihash(multihash)) {
-    try {
-      const publicKey = publicKeyFromMultihash(multihash);
-      if (publicKey.type === "Ed25519") {
-        return new Ed25519PeerId({ multihash, publicKey });
-      } else if (publicKey.type === "secp256k1") {
-        return new Secp256k1PeerId({ multihash, publicKey });
-      }
-    } catch (err) {
-      const url = toString2(multihash.digest);
-      return new URLPeerId(new URL(url));
-    }
-  }
-  throw new InvalidMultihashError("Supplied PeerID Multihash is invalid");
-}
-__name(peerIdFromMultihash, "peerIdFromMultihash");
-function peerIdFromCID(cid) {
-  if (cid?.multihash == null || cid.version == null || cid.version === 1 && cid.code !== LIBP2P_KEY_CODE2 && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE2) {
-    throw new InvalidCIDError("Supplied PeerID CID is invalid");
-  }
-  if (cid.code === TRANSPORT_IPFS_GATEWAY_HTTP_CODE2) {
-    const url = toString2(cid.multihash.digest);
-    return new URLPeerId(new URL(url));
-  }
-  return peerIdFromMultihash(cid.multihash);
-}
-__name(peerIdFromCID, "peerIdFromCID");
-function isIdentityMultihash(multihash) {
-  return multihash.code === identity.code;
-}
-__name(isIdentityMultihash, "isIdentityMultihash");
-function isSha256Multihash(multihash) {
-  return multihash.code === sha256.code;
-}
-__name(isSha256Multihash, "isSha256Multihash");
-
-// node_modules/libp2p/dist/src/config.js
-async function validateConfig(opts) {
-  if (opts.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
-    throw new InvalidParametersError("Private network is enforced, but no protector was provided");
-  }
-  return opts;
-}
-__name(validateConfig, "validateConfig");
-
-// node_modules/weald/node_modules/ms/dist/index.js
-var e = 1e3;
-var t = e * 60;
-var n = t * 60;
-var r = n * 24;
-var i = r * 7;
-var a = r * 365.25;
-var o = a / 12;
-function s(e2, t2) {
-  if (typeof e2 == `string`) return l(e2);
-  if (typeof e2 == `number`) return p(e2, t2);
-  throw Error(`Value provided to ms() must be a string or number. value=${JSON.stringify(e2)}`);
-}
-__name(s, "s");
-var c = s;
-function l(s2) {
-  if (typeof s2 != `string` || s2.length === 0 || s2.length > 100) throw Error(`Value provided to ms.parse() must be a string with length between 1 and 99. value=${JSON.stringify(s2)}`);
-  let c2 = /^(?<value>-?\d*\.?\d+) *(?<unit>milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|months?|mo|years?|yrs?|y)?$/i.exec(s2);
-  if (!c2?.groups) return NaN;
-  let { value: l2, unit: u = `ms` } = c2.groups, d2 = parseFloat(l2), f2 = u.toLowerCase();
-  switch (f2) {
-    case `years`:
-    case `year`:
-    case `yrs`:
-    case `yr`:
-    case `y`:
-      return d2 * a;
-    case `months`:
-    case `month`:
-    case `mo`:
-      return d2 * o;
-    case `weeks`:
-    case `week`:
-    case `w`:
-      return d2 * i;
-    case `days`:
-    case `day`:
-    case `d`:
-      return d2 * r;
-    case `hours`:
-    case `hour`:
-    case `hrs`:
-    case `hr`:
-    case `h`:
-      return d2 * n;
-    case `minutes`:
-    case `minute`:
-    case `mins`:
-    case `min`:
-    case `m`:
-      return d2 * t;
-    case `seconds`:
-    case `second`:
-    case `secs`:
-    case `sec`:
-    case `s`:
-      return d2 * e;
-    case `milliseconds`:
-    case `millisecond`:
-    case `msecs`:
-    case `msec`:
-    case `ms`:
-      return d2;
-    default:
-      throw Error(`Unknown unit "${f2}" provided to ms.parse(). value=${JSON.stringify(s2)}`);
-  }
-}
-__name(l, "l");
-function d(s2) {
-  let c2 = Math.abs(s2);
-  return c2 >= a ? `${Math.round(s2 / a)}y` : c2 >= o ? `${Math.round(s2 / o)}mo` : c2 >= i ? `${Math.round(s2 / i)}w` : c2 >= r ? `${Math.round(s2 / r)}d` : c2 >= n ? `${Math.round(s2 / n)}h` : c2 >= t ? `${Math.round(s2 / t)}m` : c2 >= e ? `${Math.round(s2 / e)}s` : `${s2}ms`;
-}
-__name(d, "d");
-function f(s2) {
-  let c2 = Math.abs(s2);
-  return c2 >= a ? m(s2, c2, a, `year`) : c2 >= o ? m(s2, c2, o, `month`) : c2 >= i ? m(s2, c2, i, `week`) : c2 >= r ? m(s2, c2, r, `day`) : c2 >= n ? m(s2, c2, n, `hour`) : c2 >= t ? m(s2, c2, t, `minute`) : c2 >= e ? m(s2, c2, e, `second`) : `${s2} ms`;
-}
-__name(f, "f");
-function p(e2, t2) {
-  if (typeof e2 != `number` || !Number.isFinite(e2)) throw Error(`Value provided to ms.format() must be of type number.`);
-  return t2?.long ? f(e2) : d(e2);
-}
-__name(p, "p");
-function m(e2, t2, n2, r2) {
-  let i2 = t2 >= n2 * 1.5;
-  return `${Math.round(e2 / n2)} ${r2}${i2 ? `s` : ``}`;
-}
-__name(m, "m");
-
-// node_modules/weald/dist/src/common.js
-function setup(env) {
-  createDebug.debug = createDebug;
-  createDebug.default = createDebug;
-  createDebug.coerce = coerce2;
-  createDebug.disable = disable;
-  createDebug.enable = enable;
-  createDebug.enabled = enabled;
-  createDebug.humanize = c;
-  createDebug.destroy = destroy;
-  Object.keys(env).forEach((key) => {
-    createDebug[key] = env[key];
-  });
-  createDebug.names = [];
-  createDebug.skips = [];
-  createDebug.formatters = {};
-  function selectColor(namespace) {
-    let hash = 0;
-    for (let i2 = 0; i2 < namespace.length; i2++) {
-      hash = (hash << 5) - hash + namespace.charCodeAt(i2);
-      hash |= 0;
-    }
-    return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
-  }
-  __name(selectColor, "selectColor");
-  createDebug.selectColor = selectColor;
-  function createDebug(namespace) {
-    let prevTime;
-    let enableOverride = null;
-    let namespacesCache;
-    let enabledCache;
-    function debug(...args) {
-      if (!debug.enabled) {
-        return;
-      }
-      const self = debug;
-      const curr = Number(/* @__PURE__ */ new Date());
-      const ms = curr - (prevTime || curr);
-      self.diff = ms;
-      self.prev = prevTime;
-      self.curr = curr;
-      prevTime = curr;
-      args[0] = createDebug.coerce(args[0]);
-      if (typeof args[0] !== "string") {
-        args.unshift("%O");
-      }
-      let index = 0;
-      args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format2) => {
-        if (match === "%%") {
-          return "%";
-        }
-        index++;
-        const formatter = createDebug.formatters[format2];
-        if (typeof formatter === "function") {
-          const val = args[index];
-          match = formatter.call(self, val);
-          args.splice(index, 1);
-          index--;
-        }
-        return match;
-      });
-      createDebug.formatArgs.call(self, args);
-      const logFn = self.log || createDebug.log;
-      logFn.apply(self, args);
-    }
-    __name(debug, "debug");
-    debug.namespace = namespace;
-    debug.useColors = createDebug.useColors();
-    debug.color = createDebug.selectColor(namespace);
-    debug.extend = extend;
-    debug.destroy = createDebug.destroy;
-    Object.defineProperty(debug, "enabled", {
-      enumerable: true,
-      configurable: false,
-      get: /* @__PURE__ */ __name(() => {
-        if (enableOverride !== null) {
-          return enableOverride;
-        }
-        if (namespacesCache !== createDebug.namespaces) {
-          namespacesCache = createDebug.namespaces;
-          enabledCache = createDebug.enabled(namespace);
-        }
-        return enabledCache;
-      }, "get"),
-      set: /* @__PURE__ */ __name((v) => {
-        enableOverride = v;
-      }, "set")
-    });
-    if (typeof createDebug.init === "function") {
-      createDebug.init(debug);
-    }
-    return debug;
-  }
-  __name(createDebug, "createDebug");
-  function extend(namespace, delimiter) {
-    const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
-    newDebug.log = this.log;
-    return newDebug;
-  }
-  __name(extend, "extend");
-  function enable(namespaces) {
-    createDebug.save(namespaces);
-    createDebug.namespaces = namespaces;
-    createDebug.names = [];
-    createDebug.skips = [];
-    let i2;
-    const split2 = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
-    const len = split2.length;
-    for (i2 = 0; i2 < len; i2++) {
-      if (!split2[i2]) {
-        continue;
-      }
-      namespaces = split2[i2].replace(/\*/g, ".*?");
-      if (namespaces[0] === "-") {
-        createDebug.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
-      } else {
-        createDebug.names.push(new RegExp("^" + namespaces + "$"));
-      }
-    }
-  }
-  __name(enable, "enable");
-  function disable() {
-    const namespaces = [
-      ...createDebug.names.map(toNamespace),
-      ...createDebug.skips.map(toNamespace).map((namespace) => "-" + namespace)
-    ].join(",");
-    createDebug.enable("");
-    return namespaces;
-  }
-  __name(disable, "disable");
-  function enabled(name3) {
-    if (name3[name3.length - 1] === "*") {
-      return true;
-    }
-    let i2;
-    let len;
-    for (i2 = 0, len = createDebug.skips.length; i2 < len; i2++) {
-      if (createDebug.skips[i2].test(name3)) {
-        return false;
-      }
-    }
-    for (i2 = 0, len = createDebug.names.length; i2 < len; i2++) {
-      if (createDebug.names[i2].test(name3)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  __name(enabled, "enabled");
-  function toNamespace(regexp) {
-    return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
-  }
-  __name(toNamespace, "toNamespace");
-  function coerce2(val) {
-    if (val instanceof Error) {
-      return val.stack ?? val.message;
-    }
-    return val;
-  }
-  __name(coerce2, "coerce");
-  function destroy() {
-    console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-  }
-  __name(destroy, "destroy");
-  createDebug.setupFormatters(createDebug.formatters);
-  createDebug.enable(createDebug.load());
-  return createDebug;
-}
-__name(setup, "setup");
-
-// node_modules/weald/dist/src/browser.js
-var storage = localstorage();
-var colors = [
-  "#0000CC",
-  "#0000FF",
-  "#0033CC",
-  "#0033FF",
-  "#0066CC",
-  "#0066FF",
-  "#0099CC",
-  "#0099FF",
-  "#00CC00",
-  "#00CC33",
-  "#00CC66",
-  "#00CC99",
-  "#00CCCC",
-  "#00CCFF",
-  "#3300CC",
-  "#3300FF",
-  "#3333CC",
-  "#3333FF",
-  "#3366CC",
-  "#3366FF",
-  "#3399CC",
-  "#3399FF",
-  "#33CC00",
-  "#33CC33",
-  "#33CC66",
-  "#33CC99",
-  "#33CCCC",
-  "#33CCFF",
-  "#6600CC",
-  "#6600FF",
-  "#6633CC",
-  "#6633FF",
-  "#66CC00",
-  "#66CC33",
-  "#9900CC",
-  "#9900FF",
-  "#9933CC",
-  "#9933FF",
-  "#99CC00",
-  "#99CC33",
-  "#CC0000",
-  "#CC0033",
-  "#CC0066",
-  "#CC0099",
-  "#CC00CC",
-  "#CC00FF",
-  "#CC3300",
-  "#CC3333",
-  "#CC3366",
-  "#CC3399",
-  "#CC33CC",
-  "#CC33FF",
-  "#CC6600",
-  "#CC6633",
-  "#CC9900",
-  "#CC9933",
-  "#CCCC00",
-  "#CCCC33",
-  "#FF0000",
-  "#FF0033",
-  "#FF0066",
-  "#FF0099",
-  "#FF00CC",
-  "#FF00FF",
-  "#FF3300",
-  "#FF3333",
-  "#FF3366",
-  "#FF3399",
-  "#FF33CC",
-  "#FF33FF",
-  "#FF6600",
-  "#FF6633",
-  "#FF9900",
-  "#FF9933",
-  "#FFCC00",
-  "#FFCC33"
-];
-function useColors() {
-  if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
-    return true;
-  }
-  if (typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/(edge|trident)\/(\d+)/) != null) {
-    return false;
-  }
-  return typeof document !== "undefined" && document.documentElement?.style?.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-  // @ts-expect-error window.console.firebug and window.console.exception are not in the types
-  typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-  // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-  typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/firefox\/(\d+)/) != null && parseInt(RegExp.$1, 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-  typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/applewebkit\/(\d+)/);
-}
-__name(useColors, "useColors");
-function formatArgs(args) {
-  args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + c(this.diff);
-  if (!this.useColors) {
-    return;
-  }
-  const c2 = "color: " + this.color;
-  args.splice(1, 0, c2, "color: inherit");
-  let index = 0;
-  let lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, (match) => {
-    if (match === "%%") {
-      return;
-    }
-    index++;
-    if (match === "%c") {
-      lastC = index;
-    }
-  });
-  args.splice(lastC, 0, c2);
-}
-__name(formatArgs, "formatArgs");
-var log = console.debug ?? console.log ?? (() => {
-});
-function save(namespaces) {
-  try {
-    if (namespaces) {
-      storage?.setItem("debug", namespaces);
-    } else {
-      storage?.removeItem("debug");
-    }
-  } catch (error) {
-  }
-}
-__name(save, "save");
-function load() {
-  let r2;
-  try {
-    r2 = storage?.getItem("debug");
-  } catch (error) {
-  }
-  if (!r2 && typeof globalThis.process !== "undefined" && "env" in globalThis.process) {
-    r2 = globalThis.process.env.DEBUG;
-  }
-  return r2;
-}
-__name(load, "load");
-function localstorage() {
-  try {
-    return localStorage;
-  } catch (error) {
-  }
-}
-__name(localstorage, "localstorage");
-function setupFormatters(formatters) {
-  formatters.j = function(v) {
-    try {
-      return JSON.stringify(v);
-    } catch (error) {
-      return "[UnexpectedJSONParseError]: " + error.message;
-    }
-  };
-}
-__name(setupFormatters, "setupFormatters");
-var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log });
-
-// node_modules/weald/dist/src/index.js
-var src_default = browser_default;
-
-// node_modules/libp2p/node_modules/@libp2p/logger/dist/src/index.js
-src_default.formatters.b = (v) => {
-  return v == null ? "undefined" : base58btc.baseEncode(v);
-};
-src_default.formatters.t = (v) => {
-  return v == null ? "undefined" : base32.baseEncode(v);
-};
-src_default.formatters.m = (v) => {
-  return v == null ? "undefined" : base64.baseEncode(v);
-};
-src_default.formatters.p = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.c = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.k = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.a = (v) => {
-  return v == null ? "undefined" : v.toString();
-};
-src_default.formatters.e = (v) => {
-  if (v == null) {
-    return "undefined";
-  }
-  const message2 = notEmpty(v.message);
-  const stack = notEmpty(v.stack);
-  if (message2 != null && stack != null) {
-    if (stack.includes(message2)) {
-      return stack;
-    }
-    return `${message2}
-${stack}`;
-  }
-  if (stack != null) {
-    return stack;
-  }
-  if (message2 != null) {
-    return message2;
-  }
-  return v.toString();
-};
-function createDisabledLogger(namespace) {
-  const logger2 = /* @__PURE__ */ __name(() => {
-  }, "logger");
-  logger2.enabled = false;
-  logger2.color = "";
-  logger2.diff = 0;
-  logger2.log = () => {
-  };
-  logger2.namespace = namespace;
-  logger2.destroy = () => true;
-  logger2.extend = () => logger2;
-  return logger2;
-}
-__name(createDisabledLogger, "createDisabledLogger");
-function defaultLogger() {
-  return {
-    forComponent(name3) {
-      return logger(name3);
-    }
-  };
-}
-__name(defaultLogger, "defaultLogger");
-function logger(name3) {
-  let trace = createDisabledLogger(`${name3}:trace`);
-  if (src_default.enabled(`${name3}:trace`) && src_default.names.map((r2) => r2.toString()).find((n2) => n2.includes(":trace")) != null) {
-    trace = src_default(`${name3}:trace`);
-  }
-  return Object.assign(src_default(name3), {
-    error: src_default(`${name3}:error`),
-    trace,
-    newScope: /* @__PURE__ */ __name((scope) => logger(`${name3}:${scope}`), "newScope")
-  });
-}
-__name(logger, "logger");
-function notEmpty(str) {
-  if (str == null) {
-    return;
-  }
-  str = str.trim();
-  if (str.length === 0) {
-    return;
-  }
-  return str;
-}
-__name(notEmpty, "notEmpty");
-
-// node_modules/@libp2p/peer-collections/dist/src/util.js
-function mapIterable(iter, map) {
-  const iterator = {
-    [Symbol.iterator]: () => {
-      return iterator;
-    },
-    next: /* @__PURE__ */ __name(() => {
-      const next = iter.next();
-      const val = next.value;
-      if (next.done === true || val == null) {
-        const result = {
-          done: true,
-          value: void 0
-        };
-        return result;
-      }
-      return {
-        done: false,
-        value: map(val)
-      };
-    }, "next")
-  };
-  return iterator;
-}
-__name(mapIterable, "mapIterable");
-function peerIdFromString2(str) {
-  const multihash = decode4(base58btc.decode(`z${str}`));
-  return peerIdFromMultihash(multihash);
-}
-__name(peerIdFromString2, "peerIdFromString");
-
-// node_modules/@libp2p/peer-collections/dist/src/map.js
-var PeerMap = class {
-  static {
-    __name(this, "PeerMap");
-  }
-  map;
-  constructor(map) {
-    this.map = /* @__PURE__ */ new Map();
-    if (map != null) {
-      for (const [key, value2] of map.entries()) {
-        this.map.set(key.toString(), { key, value: value2 });
-      }
-    }
-  }
-  [Symbol.iterator]() {
-    return this.entries();
-  }
-  clear() {
-    this.map.clear();
-  }
-  delete(peer) {
-    return this.map.delete(peer.toString());
-  }
-  entries() {
-    return mapIterable(this.map.entries(), (val) => {
-      return [val[1].key, val[1].value];
-    });
-  }
-  forEach(fn) {
-    this.map.forEach((value2, key) => {
-      fn(value2.value, value2.key, this);
-    });
-  }
-  get(peer) {
-    return this.map.get(peer.toString())?.value;
-  }
-  has(peer) {
-    return this.map.has(peer.toString());
-  }
-  set(peer, value2) {
-    this.map.set(peer.toString(), { key: peer, value: value2 });
-  }
-  keys() {
-    return mapIterable(this.map.values(), (val) => {
-      return val.key;
-    });
-  }
-  values() {
-    return mapIterable(this.map.values(), (val) => val.value);
-  }
-  get size() {
-    return this.map.size;
-  }
-};
-
-// node_modules/@libp2p/peer-collections/dist/src/set.js
-var PeerSet = class _PeerSet {
-  static {
-    __name(this, "PeerSet");
-  }
-  set;
-  constructor(set) {
-    this.set = /* @__PURE__ */ new Set();
-    if (set != null) {
-      for (const key of set) {
-        this.set.add(key.toString());
-      }
-    }
-  }
-  get size() {
-    return this.set.size;
-  }
-  [Symbol.iterator]() {
-    return this.values();
-  }
-  add(peer) {
-    this.set.add(peer.toString());
-  }
-  clear() {
-    this.set.clear();
-  }
-  delete(peer) {
-    this.set.delete(peer.toString());
-  }
-  entries() {
-    return mapIterable(this.set.entries(), (val) => {
-      const peerId = peerIdFromString2(val[0]);
-      return [peerId, peerId];
-    });
-  }
-  forEach(predicate) {
-    this.set.forEach((str) => {
-      const peerId = peerIdFromString2(str);
-      predicate(peerId, peerId, this);
-    });
-  }
-  has(peer) {
-    return this.set.has(peer.toString());
-  }
-  values() {
-    return mapIterable(this.set.values(), (val) => {
-      return peerIdFromString2(val);
-    });
-  }
-  intersection(other) {
-    const output = new _PeerSet();
-    for (const peerId of other) {
-      if (this.has(peerId)) {
-        output.add(peerId);
-      }
-    }
-    return output;
-  }
-  difference(other) {
-    const output = new _PeerSet();
-    for (const peerId of this) {
-      if (!other.has(peerId)) {
-        output.add(peerId);
-      }
-    }
-    return output;
-  }
-  union(other) {
-    const output = new _PeerSet();
-    for (const peerId of other) {
-      output.add(peerId);
-    }
-    for (const peerId of this) {
-      output.add(peerId);
-    }
-    return output;
-  }
-};
 
 // node_modules/@sindresorhus/fnv1a/index.js
 var FNV_PRIMES = {
@@ -14127,7 +13283,7 @@ function sizeForAddr(codec, bytes, offset) {
 __name(sizeForAddr, "sizeForAddr");
 
 // node_modules/@multiformats/multiaddr/dist/src/multiaddr.js
-var inspect2 = Symbol.for("nodejs.util.inspect.custom");
+var inspect = Symbol.for("nodejs.util.inspect.custom");
 var symbol2 = Symbol.for("@multiformats/multiaddr");
 function toComponents(addr) {
   if (addr == null) {
@@ -14235,7 +13391,7 @@ var Multiaddr = class _Multiaddr {
    * // 'Multiaddr(/ip4/127.0.0.1/tcp/4001)'
    * ```
    */
-  [inspect2]() {
+  [inspect]() {
     return `Multiaddr(${this.toString()})`;
   }
 };
@@ -14448,7 +13604,7 @@ function merge(...sources) {
   return mergeSources(sources);
 }
 __name(merge, "merge");
-var src_default2 = merge;
+var src_default = merge;
 
 // node_modules/@libp2p/utils/dist/src/stream-utils.js
 var DEFAULT_MAX_BUFFER_SIZE = 4194304;
@@ -14754,6 +13910,428 @@ var LengthPrefixedDecoder = class {
     }
   }
 };
+
+// node_modules/weald/node_modules/ms/dist/index.js
+var e = 1e3;
+var t = e * 60;
+var n = t * 60;
+var r = n * 24;
+var i = r * 7;
+var a = r * 365.25;
+var o = a / 12;
+function s(e2, t2) {
+  if (typeof e2 == `string`) return l(e2);
+  if (typeof e2 == `number`) return p(e2, t2);
+  throw Error(`Value provided to ms() must be a string or number. value=${JSON.stringify(e2)}`);
+}
+__name(s, "s");
+var c = s;
+function l(s2) {
+  if (typeof s2 != `string` || s2.length === 0 || s2.length > 100) throw Error(`Value provided to ms.parse() must be a string with length between 1 and 99. value=${JSON.stringify(s2)}`);
+  let c2 = /^(?<value>-?\d*\.?\d+) *(?<unit>milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|months?|mo|years?|yrs?|y)?$/i.exec(s2);
+  if (!c2?.groups) return NaN;
+  let { value: l2, unit: u = `ms` } = c2.groups, d2 = parseFloat(l2), f2 = u.toLowerCase();
+  switch (f2) {
+    case `years`:
+    case `year`:
+    case `yrs`:
+    case `yr`:
+    case `y`:
+      return d2 * a;
+    case `months`:
+    case `month`:
+    case `mo`:
+      return d2 * o;
+    case `weeks`:
+    case `week`:
+    case `w`:
+      return d2 * i;
+    case `days`:
+    case `day`:
+    case `d`:
+      return d2 * r;
+    case `hours`:
+    case `hour`:
+    case `hrs`:
+    case `hr`:
+    case `h`:
+      return d2 * n;
+    case `minutes`:
+    case `minute`:
+    case `mins`:
+    case `min`:
+    case `m`:
+      return d2 * t;
+    case `seconds`:
+    case `second`:
+    case `secs`:
+    case `sec`:
+    case `s`:
+      return d2 * e;
+    case `milliseconds`:
+    case `millisecond`:
+    case `msecs`:
+    case `msec`:
+    case `ms`:
+      return d2;
+    default:
+      throw Error(`Unknown unit "${f2}" provided to ms.parse(). value=${JSON.stringify(s2)}`);
+  }
+}
+__name(l, "l");
+function d(s2) {
+  let c2 = Math.abs(s2);
+  return c2 >= a ? `${Math.round(s2 / a)}y` : c2 >= o ? `${Math.round(s2 / o)}mo` : c2 >= i ? `${Math.round(s2 / i)}w` : c2 >= r ? `${Math.round(s2 / r)}d` : c2 >= n ? `${Math.round(s2 / n)}h` : c2 >= t ? `${Math.round(s2 / t)}m` : c2 >= e ? `${Math.round(s2 / e)}s` : `${s2}ms`;
+}
+__name(d, "d");
+function f(s2) {
+  let c2 = Math.abs(s2);
+  return c2 >= a ? m(s2, c2, a, `year`) : c2 >= o ? m(s2, c2, o, `month`) : c2 >= i ? m(s2, c2, i, `week`) : c2 >= r ? m(s2, c2, r, `day`) : c2 >= n ? m(s2, c2, n, `hour`) : c2 >= t ? m(s2, c2, t, `minute`) : c2 >= e ? m(s2, c2, e, `second`) : `${s2} ms`;
+}
+__name(f, "f");
+function p(e2, t2) {
+  if (typeof e2 != `number` || !Number.isFinite(e2)) throw Error(`Value provided to ms.format() must be of type number.`);
+  return t2?.long ? f(e2) : d(e2);
+}
+__name(p, "p");
+function m(e2, t2, n2, r2) {
+  let i2 = t2 >= n2 * 1.5;
+  return `${Math.round(e2 / n2)} ${r2}${i2 ? `s` : ``}`;
+}
+__name(m, "m");
+
+// node_modules/weald/dist/src/common.js
+function setup(env) {
+  createDebug.debug = createDebug;
+  createDebug.default = createDebug;
+  createDebug.coerce = coerce2;
+  createDebug.disable = disable;
+  createDebug.enable = enable;
+  createDebug.enabled = enabled;
+  createDebug.humanize = c;
+  createDebug.destroy = destroy;
+  Object.keys(env).forEach((key) => {
+    createDebug[key] = env[key];
+  });
+  createDebug.names = [];
+  createDebug.skips = [];
+  createDebug.formatters = {};
+  function selectColor(namespace) {
+    let hash = 0;
+    for (let i2 = 0; i2 < namespace.length; i2++) {
+      hash = (hash << 5) - hash + namespace.charCodeAt(i2);
+      hash |= 0;
+    }
+    return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
+  }
+  __name(selectColor, "selectColor");
+  createDebug.selectColor = selectColor;
+  function createDebug(namespace) {
+    let prevTime;
+    let enableOverride = null;
+    let namespacesCache;
+    let enabledCache;
+    function debug(...args) {
+      if (!debug.enabled) {
+        return;
+      }
+      const self = debug;
+      const curr = Number(/* @__PURE__ */ new Date());
+      const ms = curr - (prevTime || curr);
+      self.diff = ms;
+      self.prev = prevTime;
+      self.curr = curr;
+      prevTime = curr;
+      args[0] = createDebug.coerce(args[0]);
+      if (typeof args[0] !== "string") {
+        args.unshift("%O");
+      }
+      let index = 0;
+      args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format2) => {
+        if (match === "%%") {
+          return "%";
+        }
+        index++;
+        const formatter = createDebug.formatters[format2];
+        if (typeof formatter === "function") {
+          const val = args[index];
+          match = formatter.call(self, val);
+          args.splice(index, 1);
+          index--;
+        }
+        return match;
+      });
+      createDebug.formatArgs.call(self, args);
+      const logFn = self.log || createDebug.log;
+      logFn.apply(self, args);
+    }
+    __name(debug, "debug");
+    debug.namespace = namespace;
+    debug.useColors = createDebug.useColors();
+    debug.color = createDebug.selectColor(namespace);
+    debug.extend = extend;
+    debug.destroy = createDebug.destroy;
+    Object.defineProperty(debug, "enabled", {
+      enumerable: true,
+      configurable: false,
+      get: /* @__PURE__ */ __name(() => {
+        if (enableOverride !== null) {
+          return enableOverride;
+        }
+        if (namespacesCache !== createDebug.namespaces) {
+          namespacesCache = createDebug.namespaces;
+          enabledCache = createDebug.enabled(namespace);
+        }
+        return enabledCache;
+      }, "get"),
+      set: /* @__PURE__ */ __name((v) => {
+        enableOverride = v;
+      }, "set")
+    });
+    if (typeof createDebug.init === "function") {
+      createDebug.init(debug);
+    }
+    return debug;
+  }
+  __name(createDebug, "createDebug");
+  function extend(namespace, delimiter) {
+    const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
+    newDebug.log = this.log;
+    return newDebug;
+  }
+  __name(extend, "extend");
+  function enable(namespaces) {
+    createDebug.save(namespaces);
+    createDebug.namespaces = namespaces;
+    createDebug.names = [];
+    createDebug.skips = [];
+    let i2;
+    const split2 = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
+    const len = split2.length;
+    for (i2 = 0; i2 < len; i2++) {
+      if (!split2[i2]) {
+        continue;
+      }
+      namespaces = split2[i2].replace(/\*/g, ".*?");
+      if (namespaces[0] === "-") {
+        createDebug.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
+      } else {
+        createDebug.names.push(new RegExp("^" + namespaces + "$"));
+      }
+    }
+  }
+  __name(enable, "enable");
+  function disable() {
+    const namespaces = [
+      ...createDebug.names.map(toNamespace),
+      ...createDebug.skips.map(toNamespace).map((namespace) => "-" + namespace)
+    ].join(",");
+    createDebug.enable("");
+    return namespaces;
+  }
+  __name(disable, "disable");
+  function enabled(name3) {
+    if (name3[name3.length - 1] === "*") {
+      return true;
+    }
+    let i2;
+    let len;
+    for (i2 = 0, len = createDebug.skips.length; i2 < len; i2++) {
+      if (createDebug.skips[i2].test(name3)) {
+        return false;
+      }
+    }
+    for (i2 = 0, len = createDebug.names.length; i2 < len; i2++) {
+      if (createDebug.names[i2].test(name3)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  __name(enabled, "enabled");
+  function toNamespace(regexp) {
+    return regexp.toString().substring(2, regexp.toString().length - 2).replace(/\.\*\?$/, "*");
+  }
+  __name(toNamespace, "toNamespace");
+  function coerce2(val) {
+    if (val instanceof Error) {
+      return val.stack ?? val.message;
+    }
+    return val;
+  }
+  __name(coerce2, "coerce");
+  function destroy() {
+    console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
+  }
+  __name(destroy, "destroy");
+  createDebug.setupFormatters(createDebug.formatters);
+  createDebug.enable(createDebug.load());
+  return createDebug;
+}
+__name(setup, "setup");
+
+// node_modules/weald/dist/src/browser.js
+var storage = localstorage();
+var colors = [
+  "#0000CC",
+  "#0000FF",
+  "#0033CC",
+  "#0033FF",
+  "#0066CC",
+  "#0066FF",
+  "#0099CC",
+  "#0099FF",
+  "#00CC00",
+  "#00CC33",
+  "#00CC66",
+  "#00CC99",
+  "#00CCCC",
+  "#00CCFF",
+  "#3300CC",
+  "#3300FF",
+  "#3333CC",
+  "#3333FF",
+  "#3366CC",
+  "#3366FF",
+  "#3399CC",
+  "#3399FF",
+  "#33CC00",
+  "#33CC33",
+  "#33CC66",
+  "#33CC99",
+  "#33CCCC",
+  "#33CCFF",
+  "#6600CC",
+  "#6600FF",
+  "#6633CC",
+  "#6633FF",
+  "#66CC00",
+  "#66CC33",
+  "#9900CC",
+  "#9900FF",
+  "#9933CC",
+  "#9933FF",
+  "#99CC00",
+  "#99CC33",
+  "#CC0000",
+  "#CC0033",
+  "#CC0066",
+  "#CC0099",
+  "#CC00CC",
+  "#CC00FF",
+  "#CC3300",
+  "#CC3333",
+  "#CC3366",
+  "#CC3399",
+  "#CC33CC",
+  "#CC33FF",
+  "#CC6600",
+  "#CC6633",
+  "#CC9900",
+  "#CC9933",
+  "#CCCC00",
+  "#CCCC33",
+  "#FF0000",
+  "#FF0033",
+  "#FF0066",
+  "#FF0099",
+  "#FF00CC",
+  "#FF00FF",
+  "#FF3300",
+  "#FF3333",
+  "#FF3366",
+  "#FF3399",
+  "#FF33CC",
+  "#FF33FF",
+  "#FF6600",
+  "#FF6633",
+  "#FF9900",
+  "#FF9933",
+  "#FFCC00",
+  "#FFCC33"
+];
+function useColors() {
+  if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
+    return true;
+  }
+  if (typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/(edge|trident)\/(\d+)/) != null) {
+    return false;
+  }
+  return typeof document !== "undefined" && document.documentElement?.style?.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
+  // @ts-expect-error window.console.firebug and window.console.exception are not in the types
+  typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+  // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+  typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/firefox\/(\d+)/) != null && parseInt(RegExp.$1, 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+  typeof navigator !== "undefined" && navigator.userAgent?.toLowerCase().match(/applewebkit\/(\d+)/);
+}
+__name(useColors, "useColors");
+function formatArgs(args) {
+  args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + c(this.diff);
+  if (!this.useColors) {
+    return;
+  }
+  const c2 = "color: " + this.color;
+  args.splice(1, 0, c2, "color: inherit");
+  let index = 0;
+  let lastC = 0;
+  args[0].replace(/%[a-zA-Z%]/g, (match) => {
+    if (match === "%%") {
+      return;
+    }
+    index++;
+    if (match === "%c") {
+      lastC = index;
+    }
+  });
+  args.splice(lastC, 0, c2);
+}
+__name(formatArgs, "formatArgs");
+var log = console.debug ?? console.log ?? (() => {
+});
+function save(namespaces) {
+  try {
+    if (namespaces) {
+      storage?.setItem("debug", namespaces);
+    } else {
+      storage?.removeItem("debug");
+    }
+  } catch (error) {
+  }
+}
+__name(save, "save");
+function load() {
+  let r2;
+  try {
+    r2 = storage?.getItem("debug");
+  } catch (error) {
+  }
+  if (!r2 && typeof globalThis.process !== "undefined" && "env" in globalThis.process) {
+    r2 = globalThis.process.env.DEBUG;
+  }
+  return r2;
+}
+__name(load, "load");
+function localstorage() {
+  try {
+    return localStorage;
+  } catch (error) {
+  }
+}
+__name(localstorage, "localstorage");
+function setupFormatters(formatters) {
+  formatters.j = function(v) {
+    try {
+      return JSON.stringify(v);
+    } catch (error) {
+      return "[UnexpectedJSONParseError]: " + error.message;
+    }
+  };
+}
+__name(setupFormatters, "setupFormatters");
+var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log });
+
+// node_modules/weald/dist/src/index.js
+var src_default2 = browser_default;
 
 // node_modules/@libp2p/utils/dist/src/peer-queue.js
 var PeerQueue = class extends Queue {
@@ -15077,6 +14655,3211 @@ function trackedMap(config) {
   return map;
 }
 __name(trackedMap, "trackedMap");
+
+// public/components/chat-manager/index.mjs
+var ChatManager = class extends BaseComponent {
+  static {
+    __name(this, "ChatManager");
+  }
+  constructor() {
+    super();
+    this._templateMethods = template_exports;
+    this.state = {
+      mode: "listener",
+      connected: false,
+      messages: [],
+      currentGroup: null,
+      groups: [],
+      searchQuery: "",
+      peerId: null,
+      listeningAddresses: [],
+      connectedPeers: []
+    };
+    this.node = null;
+    this.activeStreams = /* @__PURE__ */ new Map();
+  }
+  async _componentReady() {
+    this._controller = await controller(this);
+    this._actions = await createActions(this);
+    await this._controller.init();
+    await this.initializeFromPeerConnection();
+    return true;
+  }
+  async initializeFromPeerConnection() {
+    try {
+      const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
+      if (!peerConnection) {
+        console.warn("\u274C PeerConnection component not found");
+        return;
+      }
+      let attempts = 0;
+      const maxAttempts = 10;
+      while (attempts < maxAttempts) {
+        if (peerConnection.isNodeReady && peerConnection.isNodeReady()) {
+          this.node = peerConnection.getNode();
+          this.state.connected = true;
+          this.state.peerId = this.node.peerId.toString();
+          this.state.mode = peerConnection.state.mode;
+          console.log("\u2705 Node obtained from PeerConnection:", {
+            peerId: this.state.peerId,
+            mode: this.state.mode,
+            connected: this.state.connected
+          });
+          await this.fullRender(this.state);
+          return;
+        }
+        console.log(`\u23F3 Waiting for PeerConnection node... (attempt ${attempts + 1}/${maxAttempts})`);
+        await new Promise((resolve) => setTimeout(resolve, 1e3));
+        attempts++;
+      }
+      throw new Error("PeerConnection node not ready after maximum attempts");
+    } catch (error) {
+      console.error("\u274C Failed to initialize from PeerConnection:", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "initializeFromPeerConnection",
+        message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u044C \u043D\u043E\u0434\u0443 \u0438\u0437 PeerConnection",
+        details: error
+      });
+    }
+  }
+  async switchMode(mode) {
+    if (this.state.mode !== mode) {
+      this.state.mode = mode;
+      await this.fullRender(this.state);
+      const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
+      if (peerConnection && peerConnection.switchMode) {
+        await peerConnection.switchMode(mode);
+        await this.initializeFromPeerConnection();
+      }
+    }
+  }
+  async addMessage(message2) {
+    this.state.messages.push({
+      ...message2,
+      timestamp: Date.now(),
+      id: Math.random().toString(36).substr(2, 9)
+    });
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-container"
+    });
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+    if (chatInterface) {
+      await chatInterface.addMessage(message2);
+    }
+  }
+  async createGroup(groupName) {
+    const group = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: groupName,
+      topic: `chat-group-${groupName.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}`,
+      peers: [],
+      createdAt: Date.now(),
+      isPublic: true
+    };
+    this.state.groups.push(group);
+    await this._actions.subscribeToGroup(group.topic);
+    await this.renderPart({
+      partName: "renderGroups",
+      state: this.state,
+      selector: "#groups-container"
+    });
+    const groupManager = await this.getComponentAsync("group-manager", "main-group-manager");
+    if (groupManager) {
+      await groupManager.createGroup(groupName);
+    }
+    return group;
+  }
+  async joinGroup(topic, groupName = null) {
+    const existingGroup = this.state.groups.find((g) => g.topic === topic);
+    if (!existingGroup) {
+      const group = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: groupName || topic,
+        topic,
+        peers: [],
+        joinedAt: Date.now()
+      };
+      this.state.groups.push(group);
+      this.state.currentGroup = group;
+    } else {
+      this.state.currentGroup = existingGroup;
+    }
+    await this._actions.subscribeToGroup(topic);
+    await this.setupGroupStream(topic);
+    await this.fullRender(this.state);
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+    if (chatInterface) {
+      await chatInterface.setCurrentGroup(this.state.currentGroup);
+    }
+  }
+  /**
+   * Настройка стрима для группы с использованием lpStream
+   */
+  async setupGroupStream(topic) {
+    if (!this.node) {
+      console.warn("\u274C Node not available for stream setup");
+      return;
+    }
+    try {
+      const peers = this.node.services.pubsub.getSubscribers(topic);
+      for (const peer of peers) {
+        if (peer.toString() === this.node.peerId.toString()) {
+          continue;
+        }
+        const stream = await this.node.dialProtocol(peer, "/chat/1.0.0");
+        const lp = lpStream(stream);
+        this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
+        this.streamToChat(lp, peer.toString(), topic);
+        console.log(`\u2705 Stream setup for peer ${peer.toString()} in topic ${topic}`);
+      }
+    } catch (error) {
+      console.error("\u274C Error setting up group stream:", error);
+    }
+  }
+  /**
+   * Чтение сообщений из стрима и вывод в чат
+   */
+  async streamToChat(lp, peerId, topic) {
+    try {
+      while (true) {
+        const message2 = await lp.read();
+        const text = toString2(message2.subarray());
+        console.log(`\u{1F4E8} Message from ${peerId} in ${topic}: ${text}`);
+        await this.addMessage({
+          text,
+          topic,
+          from: peerId,
+          type: "received",
+          timestamp: Date.now()
+        });
+      }
+    } catch (error) {
+      console.error(`\u274C Error reading from stream for peer ${peerId}:`, error);
+      this.activeStreams.delete(`${topic}-${peerId}`);
+    }
+  }
+  /**
+   * Отправка сообщения через стрим
+   */
+  async sendMessageViaStream(topic, messageText) {
+    if (!this.node || !this.state.currentGroup) {
+      console.warn("\u274C Node or current group not available");
+      return false;
+    }
+    try {
+      const peers = this.node.services.pubsub.getSubscribers(topic);
+      let sent = false;
+      for (const peer of peers) {
+        if (peer.toString() === this.node.peerId.toString()) {
+          continue;
+        }
+        const streamKey = `${topic}-${peer.toString()}`;
+        let streamData = this.activeStreams.get(streamKey);
+        if (!streamData) {
+          const stream = await this.node.dialProtocol(peer, "/chat/1.0.0");
+          const lp = lpStream(stream);
+          streamData = { stream, lp, peer };
+          this.activeStreams.set(streamKey, streamData);
+          this.streamToChat(lp, peer.toString(), topic);
+        }
+        await streamData.lp.write(fromString2(messageText));
+        sent = true;
+        console.log(`\u2705 Message sent via stream to ${peer.toString()}`);
+      }
+      if (this._actions && this._actions.sendMessage) {
+        await this._actions.sendMessage(topic, messageText);
+      }
+      return sent;
+    } catch (error) {
+      console.error("\u274C Error sending message via stream:", error);
+      return false;
+    }
+  }
+  async searchGroups(query) {
+    this.state.searchQuery = query;
+    const filteredGroups = this.state.groups.filter(
+      (group) => group.name.toLowerCase().includes(query.toLowerCase()) || group.topic.toLowerCase().includes(query.toLowerCase())
+    );
+    await this.renderPart({
+      partName: "renderGroupSearch",
+      state: { ...this.state, filteredGroups },
+      selector: "#group-search-results"
+    });
+  }
+  async sendGroupMessage(messageText) {
+    if (this.state.currentGroup && this.state.currentGroup.topic) {
+      await this.sendMessageViaStream(this.state.currentGroup.topic, messageText);
+      await this.addMessage({
+        text: messageText,
+        topic: this.state.currentGroup.topic,
+        from: this.state.peerId,
+        type: "sent",
+        timestamp: Date.now()
+      });
+    }
+  }
+  async updateConnectionStatus(connected, peerId = null, addresses = []) {
+    this.state.connected = connected;
+    if (peerId) this.state.peerId = peerId;
+    if (addresses.length > 0) this.state.listeningAddresses = addresses;
+    await this.renderPart({
+      partName: "renderConnectionStatus",
+      state: this.state,
+      selector: "#connection-status"
+    });
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+    if (chatInterface) {
+      await chatInterface.updateConnectionStatus(connected);
+    }
+  }
+  async updatePeerList(peers) {
+    this.state.connectedPeers = peers;
+    await this.renderPart({
+      partName: "renderConnectedPeers",
+      state: this.state,
+      selector: "#connected-peers-list"
+    });
+  }
+  async connectToPeer(multiaddr2) {
+    if (this._actions && this._actions.connectToPeer) {
+      await this._actions.connectToPeer(multiaddr2);
+    }
+  }
+  async getRelayAddresses() {
+    return this.state.listeningAddresses.filter(
+      (addr) => addr.includes("/p2p-circuit") || addr.includes("/webrtc")
+    );
+  }
+  async postMessage(event) {
+    try {
+      switch (event.type) {
+        case "SWITCH_MODE":
+          await this.switchMode(event.data.mode);
+          break;
+        case "CREATE_GROUP":
+          await this.createGroup(event.data.groupName);
+          break;
+        case "JOIN_GROUP":
+          await this.joinGroup(event.data.topic, event.data.groupName);
+          break;
+        case "SEND_MESSAGE":
+          await this.sendGroupMessage(event.data.message);
+          break;
+        case "SEARCH_GROUPS":
+          await this.searchGroups(event.data.query);
+          break;
+        case "CONNECT_TO_PEER":
+          await this.connectToPeer(event.data.multiaddr);
+          break;
+        case "UPDATE_CONNECTION_STATUS":
+          await this.updateConnectionStatus(
+            event.data.connected,
+            event.data.peerId,
+            event.data.addresses
+          );
+          break;
+        case "UPDATE_PEER_LIST":
+          await this.updatePeerList(event.data.peers);
+          break;
+        default:
+          console.warn(`[ChatManager] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${event.type}`);
+      }
+    } catch (error) {
+      this.addError({
+        componentName: this.constructor.name,
+        source: "postMessage",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: error
+      });
+    }
+  }
+  async _componentAttributeChanged(name3, oldValue, newValue) {
+    if (name3 === "mode" && oldValue !== newValue) {
+      await this.switchMode(newValue);
+    }
+  }
+  async _componentDisconnected() {
+    for (const [key, streamData] of this.activeStreams.entries()) {
+      try {
+        await streamData.stream.close();
+      } catch (error) {
+        console.warn(`Error closing stream ${key}:`, error);
+      }
+    }
+    this.activeStreams.clear();
+    if (this._controller && this._controller.destroy) {
+      await this._controller.destroy();
+    }
+    this._templateMethods = null;
+  }
+};
+if (!customElements.get("chat-manager")) {
+  customElements.define("chat-manager", ChatManager);
+}
+
+// public/components/chat-interface/template/index.mjs
+var template_exports2 = {};
+__export(template_exports2, {
+  default: () => defaultTemplate2,
+  renderConnectionStatus: () => renderConnectionStatus,
+  renderMembersList: () => renderMembersList,
+  renderMessage: () => renderMessage,
+  renderMessages: () => renderMessages2,
+  renderSearchOverlay: () => renderSearchOverlay,
+  renderSearchResults: () => renderSearchResults,
+  renderStatus: () => renderStatus,
+  renderTypingIndicator: () => renderTypingIndicator
+});
+function defaultTemplate2({ state = {} } = {}) {
+  return `
+    <div class="chat-interface">
+        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->
+        <header class="chat-header">
+            <div class="header-content">
+                <div class="chat-info">
+                    <div class="chat-avatar">
+                        ${getChatAvatar(state.currentGroup)}
+                    </div>
+                    <div class="chat-details">
+                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "P2P \u0427\u0430\u0442"}</h3>
+                        <div class="chat-status">
+                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
+                            <span class="status-text">${getStatusText(state)}</span>
+                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
+                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>
+                    </button>
+                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
+                        <span class="btn-icon">\u{1F50D}</span>
+                    </button>
+                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
+                        <span class="btn-icon">\u{1F465}</span>
+                    </button>
+                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
+                        <span class="btn-icon">\u2699\uFE0F</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
+        <div class="connection-status" id="connection-status">
+            ${renderConnectionStatus({ state })}
+        </div>
+
+        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->
+        <main class="chat-main">
+            <!-- \u0411\u043E\u043A\u043E\u0432\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 -->
+            <aside class="members-sidebar" id="members-panel">
+                <div class="sidebar-header">
+                    <h4>\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438</h4>
+                    <button class="close-sidebar" id="close-members">\u2715</button>
+                </div>
+                <div class="members-list">
+                    ${renderMembersList({ state })}
+                </div>
+            </aside>
+
+            <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0447\u0430\u0442\u0430 -->
+            <section class="chat-content">
+                <!-- \u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 -->
+                <div class="messages-container">
+                    <div class="messages-list" id="messages-list">
+                        ${renderMessages2({ state })}
+                    </div>
+                </div>
+
+                <!-- \u0418\u043D\u0434\u0438\u043A\u0430\u0442\u043E\u0440 \u043D\u0430\u0431\u043E\u0440\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
+                ${state.isTyping ? renderTypingIndicator({ state }) : ""}
+            </section>
+        </main>
+
+        <!-- \u041F\u0430\u043D\u0435\u043B\u044C \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
+        <footer class="chat-input">
+            <div class="input-container">
+                <div class="input-actions">
+                    <button class="input-action-btn" id="attach-file" title="\u041F\u0440\u0438\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u0444\u0430\u0439\u043B">
+                        <span class="btn-icon">\u{1F4CE}</span>
+                    </button>
+                    <button class="input-action-btn" id="emoji-picker" title="\u042D\u043C\u043E\u0434\u0437\u0438">
+                        <span class="btn-icon">\u{1F60A}</span>
+                    </button>
+                    <button class="input-action-btn" id="format-text" title="\u0424\u043E\u0440\u043C\u0430\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435">
+                        <span class="btn-icon">\u{1D400}</span>
+                    </button>
+                </div>
+                <div class="message-input-wrapper">
+                    <textarea 
+                        id="message-input" 
+                        class="message-input" 
+                        placeholder="${getInputPlaceholder2(state)}"
+                        rows="1"
+                        ${!state.connected || !state.currentGroup ? "disabled" : ""}
+                    ></textarea>
+                    <button 
+                        id="send-button" 
+                        class="send-button"
+                        ${!state.connected || !state.currentGroup ? "disabled" : ""}
+                        title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"
+                    >
+                        <span class="send-icon">\u2708\uFE0F</span>
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+        <!-- \u041E\u0432\u0435\u0440\u043B\u0435\u0439 \u043F\u043E\u0438\u0441\u043A\u0430 -->
+        ${state.showSearch ? renderSearchOverlay({ state }) : ""}
+    </div>
+    `;
+}
+__name(defaultTemplate2, "defaultTemplate");
+function renderConnectionStatus({ state = {} } = {}) {
+  if (!state.connected) {
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
+            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
+        </div>
+        `;
+  }
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
+        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
+    </div>
+    `;
+}
+__name(renderConnectionStatus, "renderConnectionStatus");
+function renderStatus({ state = {} } = {}) {
+  if (!state.connected) {
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
+        </div>
+        `;
+  }
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.currentGroup.name}</span>
+    </div>
+    `;
+}
+__name(renderStatus, "renderStatus");
+function renderMembersList({ state = {} } = {}) {
+  const members = state.currentGroup?.members || [];
+  if (members.length === 0) {
+    return `
+        <div class="empty-members">
+            <div class="empty-icon">\u{1F465}</div>
+            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</p>
+        </div>
+        `;
+  }
+  return `
+    <div class="members-container">
+        ${members.map((member) => `
+        <div class="member-item" data-peer-id="${member.id}">
+            <div class="member-avatar">
+                ${member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
+            </div>
+            <div class="member-info">
+                <div class="member-name">${member.name || "\u0410\u043D\u043E\u043D\u0438\u043C\u043D\u044B\u0439 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A"}</div>
+                <div class="member-status ${member.online ? "online" : "offline"}">
+                    ${member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
+                </div>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderMembersList, "renderMembersList");
+function renderMessages2({ state = {} } = {}) {
+  const messages2 = state.messages || [];
+  if (messages2.length === 0) {
+    return `
+        <div class="empty-chat">
+            <div class="empty-content">
+                <div class="empty-icon">\u{1F4AC}</div>
+                <h3 class="empty-title">\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
+                <p class="empty-description">\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435</p>
+                ${!state.currentGroup ? `
+                <button class="empty-action" id="find-groups">
+                    \u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B
+                </button>
+                ` : ""}
+            </div>
+        </div>
+        `;
+  }
+  return `
+    <div class="messages-content">
+        ${messages2.map((message2) => renderMessage({ message: message2 })).join("")}
+    </div>
+    `;
+}
+__name(renderMessages2, "renderMessages");
+function renderMessage({ message: message2 = {} } = {}) {
+  const messageClass = message2.type === "sent" ? "message-sent" : "message-received";
+  const time = new Date(message2.timestamp).toLocaleTimeString("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+  return `
+    <div class="message-item ${messageClass}" data-message-id="${message2.id}">
+        <div class="message-bubble">
+            ${message2.type === "received" ? `
+            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
+            ` : ""}
+            <div class="message-content">${escapeHtml2(message2.text)}</div>
+            <div class="message-meta">
+                <span class="message-time">${time}</span>
+                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}
+                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderMessage, "renderMessage");
+function renderTypingIndicator({ state = {} } = {}) {
+  return `
+    <div class="typing-indicator">
+        <div class="typing-avatar">
+            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : "??"}
+        </div>
+        <div class="typing-content">
+            <div class="typing-name">${state.typingUser?.name || "\u041A\u0442\u043E-\u0442\u043E"} \u043F\u0435\u0447\u0430\u0442\u0430\u0435\u0442</div>
+            <div class="typing-dots">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderTypingIndicator, "renderTypingIndicator");
+function renderSearchOverlay({ state = {} } = {}) {
+  return `
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-header">
+            <h3>\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
+            <button class="close-search" id="close-search">\u2715</button>
+        </div>
+        <div class="search-content">
+            <div class="search-input-container">
+                <input 
+                    type="text" 
+                    id="search-messages-input" 
+                    class="search-input" 
+                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430..."
+                    value="${state.searchQuery || ""}"
+                >
+                <button class="search-action" id="perform-search">
+                    <span class="btn-icon">\u{1F50D}</span>
+                </button>
+            </div>
+            <div class="search-results" id="search-results">
+                ${renderSearchResults({ state })}
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderSearchOverlay, "renderSearchOverlay");
+function renderSearchResults({ state = {} } = {}) {
+  if (!state.searchQuery) {
+    return `
+        <div class="search-empty">
+            <div class="empty-icon">\u{1F50D}</div>
+            <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</p>
+        </div>
+        `;
+  }
+  const results = state.searchResults || [];
+  if (results.length === 0) {
+    return `
+        <div class="search-empty">
+            <div class="empty-icon">\u{1F614}</div>
+            <p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>
+            <p class="empty-hint">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441</p>
+        </div>
+        `;
+  }
+  return `
+    <div class="results-list">
+        ${results.map((result) => `
+        <div class="search-result-item" data-message-id="${result.id}">
+            <div class="result-message">
+                <div class="result-sender">${result.from ? result.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
+                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>
+                <div class="result-time">${new Date(result.timestamp).toLocaleString("ru-RU")}</div>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderSearchResults, "renderSearchResults");
+function getChatAvatar(group) {
+  if (!group) return "\u{1F4AC}";
+  return group.name ? group.name.charAt(0).toUpperCase() : "\u{1F4AC}";
+}
+__name(getChatAvatar, "getChatAvatar");
+function getStatusText(state) {
+  if (!state.connected) return "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E";
+  if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443";
+  return state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432` : "\u0422\u043E\u043B\u044C\u043A\u043E \u0432\u044B";
+}
+__name(getStatusText, "getStatusText");
+function getInputPlaceholder2(state) {
+  if (!state.connected) return "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0441\u0435\u0442\u0438...";
+  if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F...";
+  return "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...";
+}
+__name(getInputPlaceholder2, "getInputPlaceholder");
+function escapeHtml2(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+__name(escapeHtml2, "escapeHtml");
+function highlightSearchText(text, query) {
+  if (!query) return escapeHtml2(text);
+  const regex = new RegExp(`(${escapeRegex(query)})`, "gi");
+  return escapeHtml2(text).replace(regex, "<mark>$1</mark>");
+}
+__name(highlightSearchText, "highlightSearchText");
+function escapeRegex(string2) {
+  return string2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+__name(escapeRegex, "escapeRegex");
+
+// public/components/chat-interface/controller/index.mjs
+var controller2 = /* @__PURE__ */ __name(async (context) => {
+  let eventListeners = [];
+  return {
+    /**
+     * Инициализирует контроллер компонента ChatInterface
+     * @async
+     */
+    async init() {
+      const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
+      const messageInput = context.shadowRoot.querySelector("#message-input");
+      if (sendMessageBtn && messageInput) {
+        const sendMessageHandler = /* @__PURE__ */ __name(async () => {
+          if (messageInput.value.trim() && context.state.currentGroup) {
+            const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+            if (chatManager) {
+              await chatManager.postMessage({
+                type: "SEND_MESSAGE",
+                data: {
+                  message: messageInput.value.trim(),
+                  topic: context.state.currentGroup.topic
+                }
+              });
+              messageInput.value = "";
+            }
+          }
+        }, "sendMessageHandler");
+        sendMessageBtn.addEventListener("click", sendMessageHandler);
+        eventListeners.push({ element: sendMessageBtn, handler: sendMessageHandler });
+        const enterHandler = /* @__PURE__ */ __name((e2) => {
+          if (e2.key === "Enter" && !e2.shiftKey) {
+            e2.preventDefault();
+            sendMessageHandler();
+          }
+        }, "enterHandler");
+        messageInput.addEventListener("keypress", enterHandler);
+        eventListeners.push({ element: messageInput, handler: enterHandler });
+      }
+      const clearChatBtn = context.shadowRoot.querySelector("#clear-chat");
+      if (clearChatBtn) {
+        const clearChatHandler = /* @__PURE__ */ __name(async () => {
+          await context.clearMessages();
+        }, "clearChatHandler");
+        clearChatBtn.addEventListener("click", clearChatHandler);
+        eventListeners.push({ element: clearChatBtn, handler: clearChatHandler });
+      }
+      const copyChatIdBtn = context.shadowRoot.querySelector("#copy-chat-id");
+      if (copyChatIdBtn) {
+        const copyChatIdHandler = /* @__PURE__ */ __name(async () => {
+          if (context.state.currentGroup) {
+            try {
+              await navigator.clipboard.writeText(context.state.currentGroup.topic);
+              const originalText = copyChatIdBtn.textContent;
+              copyChatIdBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
+              setTimeout(() => {
+                copyChatIdBtn.textContent = originalText;
+              }, 2e3);
+            } catch (err) {
+              console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F:", err);
+            }
+          }
+        }, "copyChatIdHandler");
+        copyChatIdBtn.addEventListener("click", copyChatIdHandler);
+        eventListeners.push({ element: copyChatIdBtn, handler: copyChatIdHandler });
+      }
+      const toggleMembersBtn = context.shadowRoot.querySelector("#toggle-members");
+      if (toggleMembersBtn) {
+        const toggleMembersHandler = /* @__PURE__ */ __name(() => {
+          const membersPanel = context.shadowRoot.querySelector("#members-panel");
+          if (membersPanel) {
+            const isVisible = membersPanel.style.display !== "none";
+            membersPanel.style.display = isVisible ? "none" : "block";
+            toggleMembersBtn.textContent = isVisible ? "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432" : "\u0421\u043A\u0440\u044B\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432";
+          }
+        }, "toggleMembersHandler");
+        toggleMembersBtn.addEventListener("click", toggleMembersHandler);
+        eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
+      }
+      if (messageInput) {
+        setTimeout(() => {
+          messageInput.focus();
+        }, 100);
+      }
+      console.log("[ChatInterface] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+    },
+    /**
+     * Уничтожает контроллер и очищает ресурсы
+     * @async
+     */
+    async destroy() {
+      eventListeners.forEach(({ element, handler }) => {
+        element.removeEventListener("click", handler);
+        element.removeEventListener("keypress", handler);
+      });
+      eventListeners = [];
+      console.log("[ChatInterface] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+    }
+  };
+}, "controller");
+
+// public/components/chat-interface/actions/index.mjs
+async function createActions2(context) {
+  return {
+    /**
+     * Отправка сообщения в чат
+     * @async
+     * @param {string} message - Текст сообщения
+     * @param {string} topic - Топик/группа для отправки
+     */
+    sendMessage: sendMessage.bind(context),
+    /**
+     * Обработка входящего сообщения
+     * @async
+     * @param {Object} messageData - Данные сообщения
+     */
+    handleIncomingMessage: handleIncomingMessage.bind(context),
+    /**
+     * Очистка истории сообщений
+     * @async
+     */
+    clearChatHistory: clearChatHistory.bind(context),
+    /**
+     * Установка текущей группы/топика
+     * @async
+     * @param {Object} group - Данные группы
+     */
+    setActiveGroup: setActiveGroup.bind(context),
+    /**
+     * Поиск по сообщениям
+     * @async
+     * @param {string} query - Поисковый запрос
+     */
+    searchMessages: searchMessages.bind(context)
+  };
+}
+__name(createActions2, "createActions");
+async function sendMessage(message2, topic) {
+  try {
+    if (!message2.trim()) {
+      await this.showModal({
+        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+        content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
+        buttons: [{ text: "OK", type: "primary" }]
+      });
+      return;
+    }
+    if (!topic) {
+      await this.showModal({
+        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+        content: "<p>\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438</p>",
+        buttons: [{ text: "OK", type: "primary" }]
+      });
+      return;
+    }
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager && chatManager._actions) {
+      await chatManager._actions.sendMessage(topic, message2);
+      const messageInput = this.shadowRoot.querySelector("#message-input");
+      if (messageInput) {
+        messageInput.value = "";
+      }
+    } else {
+      throw new Error("\u0427\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+    }
+  } catch (error) {
+    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "sendMessage",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      details: error
+    });
+    await this.showModal({
+      title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
+      content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
+      buttons: [{ text: "OK", type: "primary" }]
+    });
+  }
+}
+__name(sendMessage, "sendMessage");
+async function handleIncomingMessage(messageData) {
+  try {
+    if (this.state.currentGroup && messageData.topic === this.state.currentGroup.topic) {
+      await this.addMessage({
+        text: messageData.text,
+        from: messageData.from,
+        type: messageData.type || "received",
+        timestamp: messageData.timestamp || Date.now(),
+        topic: messageData.topic
+      });
+      if (document.hidden) {
+        this.showNotification(`\u041D\u043E\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 ${this.state.currentGroup.name}`);
+      }
+    } else if (!this.state.currentGroup && messageData.type === "received") {
+      console.log(`\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B ${messageData.topic}: ${messageData.text}`);
+    }
+  } catch (error) {
+    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "handleIncomingMessage",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      details: { messageData, error }
+    });
+  }
+}
+__name(handleIncomingMessage, "handleIncomingMessage");
+async function clearChatHistory() {
+  try {
+    await this.showModal({
+      title: "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435",
+      content: "<p>\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u043E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0438\u0441\u0442\u043E\u0440\u0438\u044E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439?</p>",
+      buttons: [
+        {
+          text: "\u041E\u0442\u043C\u0435\u043D\u0430",
+          type: "secondary",
+          action: /* @__PURE__ */ __name(() => console.log("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
+        },
+        {
+          text: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
+          type: "primary",
+          action: /* @__PURE__ */ __name(async () => {
+            await this.clearMessages();
+            console.log("\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
+          }, "action")
+        }
+      ]
+    });
+  } catch (error) {
+    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438:", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "clearChatHistory",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439",
+      details: error
+    });
+  }
+}
+__name(clearChatHistory, "clearChatHistory");
+async function setActiveGroup(group) {
+  try {
+    if (!group || !group.topic) {
+      throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B");
+    }
+    await this.showSkeleton({
+      selector: "#messages-list",
+      replace: true
+    });
+    await this.setCurrentGroup(group);
+    await this.updateConnectionStatus(true);
+    await this.hideSkeleton();
+    console.log(`\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0438\u043B\u0438\u0441\u044C \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${group.name} (${group.topic})`);
+  } catch (error) {
+    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+    await this.hideSkeleton();
+    this.addError({
+      componentName: this.constructor.name,
+      source: "setActiveGroup",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B",
+      details: { group, error }
+    });
+    await this.showModal({
+      title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+      content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
+      buttons: [{ text: "OK", type: "primary" }]
+    });
+  }
+}
+__name(setActiveGroup, "setActiveGroup");
+async function searchMessages(query) {
+  try {
+    if (!query.trim()) {
+      await this.renderPart({
+        partName: "renderMessages",
+        state: this.state,
+        selector: "#messages-list"
+      });
+      return;
+    }
+    const filteredMessages = this.state.messages.filter(
+      (message2) => message2.text.toLowerCase().includes(query.toLowerCase()) || message2.from.toLowerCase().includes(query.toLowerCase())
+    );
+    const originalMessages = [...this.state.messages];
+    this.state.messages = filteredMessages;
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-list"
+    });
+    this.state.messages = originalMessages;
+    const resultsCount = filteredMessages.length;
+    await this.showModal({
+      title: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430",
+      content: `<p>\u041D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: ${resultsCount}</p>`,
+      buttons: [{ text: "OK", type: "primary" }],
+      closeOnBackdropClick: true
+    });
+  } catch (error) {
+    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439:", error);
+    this.addError({
+      componentName: this.constructor.name,
+      source: "searchMessages",
+      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u043F\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F\u043C",
+      details: { query, error }
+    });
+  }
+}
+__name(searchMessages, "searchMessages");
+
+// public/components/chat-interface/index.mjs
+var ChatInterface = class extends BaseComponent {
+  static {
+    __name(this, "ChatInterface");
+  }
+  constructor() {
+    super();
+    this._templateMethods = template_exports2;
+    this.state = {
+      messages: [],
+      currentMessage: "",
+      connected: false,
+      currentGroup: null
+    };
+  }
+  async _componentReady() {
+    this._controller = await controller2(this);
+    this._actions = await createActions2(this);
+    await this._controller.init();
+    return true;
+  }
+  async addMessage(message2) {
+    this.state.messages.push({
+      ...message2,
+      timestamp: Date.now(),
+      id: Math.random().toString(36).substr(2, 9)
+    });
+    if (this.state.messages.length > 100) {
+      this.state.messages = this.state.messages.slice(-100);
+    }
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-list"
+    });
+    const messagesContainer = this.shadowRoot.querySelector("#messages-list");
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+  async setCurrentGroup(group) {
+    this.state.currentGroup = group;
+    this.state.messages = [];
+    await this.fullRender(this.state);
+  }
+  async updateConnectionStatus(connected) {
+    this.state.connected = connected;
+    await this.renderPart({
+      partName: "renderStatus",
+      state: this.state,
+      selector: "#connection-status"
+    });
+  }
+  async clearMessages() {
+    this.state.messages = [];
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-list"
+    });
+  }
+  async _componentDisconnected() {
+    if (this._controller && this._controller.destroy) {
+      await this._controller.destroy();
+    }
+    this._templateMethods = null;
+  }
+};
+if (!customElements.get("chat-interface")) {
+  customElements.define("chat-interface", ChatInterface);
+}
+
+// public/components/group-manager/template/index.mjs
+var template_exports3 = {};
+__export(template_exports3, {
+  default: () => defaultTemplate3,
+  renderDiscoveredGroups: () => renderDiscoveredGroups2,
+  renderHeader: () => renderHeader,
+  renderJoinedGroups: () => renderJoinedGroups2,
+  renderMainContent: () => renderMainContent,
+  renderMyGroups: () => renderMyGroups2,
+  renderSearch: () => renderSearch,
+  renderSearchResults: () => renderSearchResults2
+});
+function defaultTemplate3({ state = {} } = {}) {
+  const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = state;
+  return `
+        <div class="group-manager">
+            ${renderHeader({ groups, discoveredGroups, joinedGroups })}
+            ${renderSearch({ searchQuery })}
+            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery })}
+        </div>
+    `;
+}
+__name(defaultTemplate3, "defaultTemplate");
+function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [] } = {}) {
+  return `
+        <header class="manager-header">
+            <div class="header-content">
+                <h1 class="manager-title">\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438</h1>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">\u041C\u043E\u0438</span>
+                        <span class="stat-value">${groups.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.</span>
+                        <span class="stat-value">${joinedGroups.length}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">\u041D\u0430\u0439\u0434\u0435\u043D\u043E</span>
+                        <span class="stat-value">${discoveredGroups.length}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+    `;
+}
+__name(renderHeader, "renderHeader");
+function renderSearch({ searchQuery = "" } = {}) {
+  return `
+        <section class="search-section">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="group-search-input" 
+                    class="search-input" 
+                    placeholder="\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F..."
+                    value="${escapeHtml3(searchQuery)}"
+                >
+                <button class="search-btn" id="search-groups">
+                    <span>\u{1F50D}</span>
+                    \u041F\u043E\u0438\u0441\u043A
+                </button>
+            </div>
+        </section>
+    `;
+}
+__name(renderSearch, "renderSearch");
+function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
+  return `
+        <main class="manager-main">
+            <div class="content-grid">
+                ${renderMyGroups2({ groups })}
+                ${renderDiscoveredGroups2({ discoveredGroups })}
+                ${renderJoinedGroups2({ joinedGroups })}
+                ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery }) : ""}
+            </div>
+        </main>
+    `;
+}
+__name(renderMainContent, "renderMainContent");
+function renderMyGroups2({ groups = [] } = {}) {
+  return `
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B</h3>
+                <span class="card-badge">${groups.length}</span>
+            </div>
+            <div class="card-content">
+                ${groups.length > 0 ? renderGroupsList(groups, "my") : renderEmptyState("my")}
+            </div>
+        </section>
+    `;
+}
+__name(renderMyGroups2, "renderMyGroups");
+function renderDiscoveredGroups2({ discoveredGroups = [] } = {}) {
+  return `
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435</h3>
+                <span class="card-badge">${discoveredGroups.length}</span>
+            </div>
+            <div class="card-content">
+                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered") : renderEmptyState("discovered")}
+            </div>
+        </section>
+    `;
+}
+__name(renderDiscoveredGroups2, "renderDiscoveredGroups");
+function renderJoinedGroups2({ joinedGroups = [] } = {}) {
+  return `
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435</h3>
+                <span class="card-badge">${joinedGroups.length}</span>
+            </div>
+            <div class="card-content">
+                ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, "joined") : renderEmptyState("joined")}
+            </div>
+        </section>
+    `;
+}
+__name(renderJoinedGroups2, "renderJoinedGroups");
+function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
+  const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
+  const filteredGroups = allGroups.filter(
+    (group) => group.name?.toLowerCase().includes(searchQuery.toLowerCase()) || group.topic?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  return `
+        <section class="section-card">
+            <div class="card-header">
+                <h3 class="card-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430</h3>
+                <span class="card-badge">${filteredGroups.length}</span>
+            </div>
+            <div class="card-content">
+                ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, "search") : renderEmptyState("search", searchQuery)}
+            </div>
+        </section>
+    `;
+}
+__name(renderSearchResults2, "renderSearchResults");
+function renderGroupsList(groups, type) {
+  return `
+        <div class="groups-list">
+            ${groups.map((group) => renderGroupItem(group, type)).join("")}
+        </div>
+    `;
+}
+__name(renderGroupsList, "renderGroupsList");
+function renderGroupItem(group, type) {
+  const { id, name: name3, topic, memberCount = 1, description } = group;
+  return `
+        <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
+            <div class="group-avatar">
+                ${name3 ? name3.charAt(0).toUpperCase() : "G"}
+            </div>
+            <div class="group-info">
+                <div class="group-name">${escapeHtml3(name3)}</div>
+                <div class="group-meta">
+                    <span class="meta-item">\u{1F465} ${memberCount}</span>
+                    <span class="meta-item">${getGroupTypeLabel(type)}</span>
+                </div>
+            </div>
+            <div class="group-actions">
+                ${renderGroupActions(type, id, topic)}
+            </div>
+        </div>
+    `;
+}
+__name(renderGroupItem, "renderGroupItem");
+function renderGroupActions(type, groupId, topic) {
+  switch (type) {
+    case "my":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" title="\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
+                    \u{1F4AC}
+                </button>
+                <button class="action-btn leave" data-group-id="${groupId}" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
+                    \u{1F5D1}\uFE0F
+                </button>
+            `;
+    case "discovered":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                    \u2795
+                </button>
+            `;
+    case "joined":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" title="\u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
+                    \u{1F4AC}
+                </button>
+                <button class="action-btn leave" data-group-id="${groupId}" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">
+                    \u{1F6AA}
+                </button>
+            `;
+    case "search":
+      return `
+                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
+                    \u2795
+                </button>
+            `;
+    default:
+      return "";
+  }
+}
+__name(renderGroupActions, "renderGroupActions");
+function renderEmptyState(type, searchQuery = "") {
+  const states = {
+    my: {
+      icon: "\u{1F3E0}",
+      title: "\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
+      description: "\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      action: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443"
+    },
+    discovered: {
+      icon: "\u{1F310}",
+      title: "\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B",
+      description: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u044C\u0442\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0432 \u0441\u0435\u0442\u0438",
+      action: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C"
+    },
+    joined: {
+      icon: "\u{1F91D}",
+      title: "\u041D\u0435\u0442 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
+      description: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+      action: "\u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B"
+    },
+    search: {
+      icon: "\u{1F50D}",
+      title: `\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 "${searchQuery}" \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E`,
+      description: "\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441",
+      action: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A"
+    }
+  };
+  const state = states[type] || states.my;
+  return `
+        <div class="empty-state">
+            <div class="empty-icon">${state.icon}</div>
+            <p class="empty-text">${state.title}</p>
+            <button class="empty-action" id="${type}-action">
+                ${state.action}
+            </button>
+        </div>
+    `;
+}
+__name(renderEmptyState, "renderEmptyState");
+function getGroupTypeLabel(type) {
+  const labels = {
+    my: "\u041C\u043E\u044F",
+    discovered: "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F",
+    joined: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.",
+    search: "\u041D\u0430\u0439\u0434\u0435\u043D\u0430"
+  };
+  return labels[type] || "\u0413\u0440\u0443\u043F\u043F\u0430";
+}
+__name(getGroupTypeLabel, "getGroupTypeLabel");
+function escapeHtml3(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+__name(escapeHtml3, "escapeHtml");
+
+// public/components/group-manager/controller/index.mjs
+var controller3 = /* @__PURE__ */ __name(async (context) => {
+  let eventListeners = [];
+  return {
+    /**
+     * Инициализирует контроллер компонента GroupManager
+     * @async
+     */
+    async init() {
+      const createGroupBtn = context.shadowRoot.querySelector("#create-group-btn");
+      if (createGroupBtn) {
+        const createGroupHandler = /* @__PURE__ */ __name(async () => {
+          const groupNameInput = context.shadowRoot.querySelector("#group-name-input");
+          if (groupNameInput && groupNameInput.value.trim()) {
+            await context.createGroup(groupNameInput.value.trim());
+            groupNameInput.value = "";
+          }
+        }, "createGroupHandler");
+        createGroupBtn.addEventListener("click", createGroupHandler);
+        eventListeners.push({ element: createGroupBtn, handler: createGroupHandler });
+      }
+      const searchInput = context.shadowRoot.querySelector("#group-search-input");
+      if (searchInput) {
+        const searchHandler = /* @__PURE__ */ __name((e2) => {
+          context.searchGroups(e2.target.value);
+        }, "searchHandler");
+        searchInput.addEventListener("input", searchHandler);
+        eventListeners.push({ element: searchInput, handler: searchHandler });
+      }
+      const discoverBtn = context.shadowRoot.querySelector("#discover-groups-btn");
+      if (discoverBtn) {
+        const discoverHandler = /* @__PURE__ */ __name(async () => {
+          await context.discoverGroups();
+        }, "discoverHandler");
+        discoverBtn.addEventListener("click", discoverHandler);
+        eventListeners.push({ element: discoverBtn, handler: discoverHandler });
+      }
+      const setupJoinButtons = /* @__PURE__ */ __name(() => {
+        const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
+        joinButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const groupId = e2.target.dataset.groupId;
+            const group = context.state.discoveredGroups.find((g) => g.id === groupId) || context.state.groups.find((g) => g.id === groupId);
+            if (group) {
+              await context.joinGroup(group);
+              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+              if (chatManager) {
+                await chatManager.postMessage({
+                  type: "JOIN_GROUP",
+                  data: group
+                });
+              }
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+      }, "setupJoinButtons");
+      const setupLeaveButtons = /* @__PURE__ */ __name(() => {
+        const leaveButtons = context.shadowRoot.querySelectorAll(".leave-group-btn");
+        leaveButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const groupId = e2.target.dataset.groupId;
+            await context.leaveGroup(groupId);
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+      }, "setupLeaveButtons");
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "childList") {
+            setupJoinButtons();
+            setupLeaveButtons();
+          }
+        });
+      });
+      observer.observe(context.shadowRoot, {
+        childList: true,
+        subtree: true
+      });
+      context._groupObserver = observer;
+      setTimeout(() => {
+        setupJoinButtons();
+        setupLeaveButtons();
+      }, 100);
+    },
+    /**
+     * Уничтожает контроллер и очищает ресурсы
+     * @async
+     */
+    async destroy() {
+      eventListeners.forEach(({ element, handler }) => {
+        element.removeEventListener("click", handler);
+      });
+      eventListeners = [];
+      if (context._groupObserver) {
+        context._groupObserver.disconnect();
+        context._groupObserver = null;
+      }
+    }
+  };
+}, "controller");
+
+// public/components/group-manager/actions/index.mjs
+async function createActions3(context) {
+  let libp2p = null;
+  let discoveredGroupsInterval = null;
+  return {
+    /**
+     * Инициализация Libp2p для работы с группами
+     * @async
+     * @param {Object} libp2pInstance - Экземпляр Libp2p
+     */
+    initializeLibp2p: /* @__PURE__ */ __name(async function(libp2pInstance) {
+      libp2p = libp2pInstance;
+      this.startGroupDiscovery();
+      console.log("[GroupManager] Libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
+    }, "initializeLibp2p"),
+    /**
+     * Запуск процесса обнаружения групп
+     * @async
+     */
+    startGroupDiscovery: /* @__PURE__ */ __name(async function() {
+      if (discoveredGroupsInterval) {
+        clearInterval(discoveredGroupsInterval);
+      }
+      discoveredGroupsInterval = setInterval(async () => {
+        await this.discoverGroups();
+      }, 1e4);
+      await this.discoverGroups();
+    }, "startGroupDiscovery"),
+    /**
+     * Обнаружение доступных групп через PubSub
+     * @async
+     */
+    discoverGroups: /* @__PURE__ */ __name(async function() {
+      if (!libp2p) {
+        console.warn("[GroupManager] Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        return;
+      }
+      try {
+        const topics = libp2p.services.pubsub?.getTopics() || [];
+        const groupTopics = topics.filter(
+          (topic) => topic.startsWith("chat-group-") || topic.startsWith("universe-chat-")
+        );
+        const discoveredGroups = [];
+        for (const topic of groupTopics) {
+          try {
+            const subscribers = libp2p.services.pubsub.getSubscribers(topic);
+            const memberCount = subscribers.length;
+            let groupName = topic;
+            if (topic.startsWith("chat-group-")) {
+              groupName = topic.replace("chat-group-", "").split("-")[0];
+            } else if (topic.startsWith("universe-chat-")) {
+              groupName = topic.replace("universe-chat-", "");
+            }
+            let groupInfo = {
+              id: topic,
+              name: this.formatGroupName(groupName),
+              topic,
+              memberCount,
+              description: this.generateGroupDescription(groupName),
+              isPublic: true,
+              discoveryTime: Date.now()
+            };
+            discoveredGroups.push(groupInfo);
+          } catch (error) {
+            console.warn(`[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 ${topic}:`, error);
+          }
+        }
+        context.state.discoveredGroups = discoveredGroups;
+        if (context.renderPart) {
+          await context.renderPart({
+            partName: "renderDiscoveredGroups",
+            state: context.state,
+            selector: "#discovered-groups-list"
+          });
+        }
+        console.log(`[GroupManager] \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: ${discoveredGroups.length}`);
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F:", error);
+        context.addError({
+          componentName: "GroupManager",
+          source: "discoverGroups",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F",
+          details: error
+        });
+      }
+    }, "discoverGroups"),
+    /**
+     * Создание новой группы чата
+     * @async
+     * @param {string} groupName - Название группы
+     * @param {Object} options - Дополнительные опции
+     * @returns {Promise<Object>} Созданная группа
+     */
+    createGroup: /* @__PURE__ */ __name(async function(groupName, options = {}) {
+      if (!libp2p) {
+        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      }
+      try {
+        const topic = `chat-group-${this.sanitizeTopicName(groupName)}-${Date.now()}`;
+        const group = {
+          id: topic,
+          name: groupName,
+          topic,
+          memberCount: 1,
+          description: options.description || `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${groupName}`,
+          isPublic: options.isPublic !== false,
+          createdAt: Date.now(),
+          createdBy: libp2p.peerId.toString()
+        };
+        await libp2p.services.pubsub.subscribe(topic);
+        if (group.isPublic) {
+          await this.announceGroupCreation(group);
+        }
+        console.log(`[GroupManager] \u0421\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: ${groupName} (${topic})`);
+        return group;
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        context.addError({
+          componentName: "GroupManager",
+          source: "createGroup",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B",
+          details: error
+        });
+        throw error;
+      }
+    }, "createGroup"),
+    /**
+     * Присоединение к существующей группе
+     * @async
+     * @param {string} topic - Топик группы
+     * @returns {Promise<Object>} Информация о группе
+     */
+    joinGroup: /* @__PURE__ */ __name(async function(topic) {
+      if (!libp2p) {
+        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      }
+      try {
+        await libp2p.services.pubsub.subscribe(topic);
+        const subscribers = libp2p.services.pubsub.getSubscribers(topic);
+        const memberCount = subscribers.length;
+        const group = {
+          id: topic,
+          name: this.extractGroupNameFromTopic(topic),
+          topic,
+          memberCount,
+          description: `\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: ${this.extractGroupNameFromTopic(topic)}`,
+          joinedAt: Date.now(),
+          isPublic: true
+        };
+        console.log(`[GroupManager] \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${group.name} (${topic})`);
+        return group;
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435:", error);
+        context.addError({
+          componentName: "GroupManager",
+          source: "joinGroup",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435",
+          details: error
+        });
+        throw error;
+      }
+    }, "joinGroup"),
+    /**
+     * Выход из группы
+     * @async
+     * @param {string} topic - Топик группы
+     */
+    leaveGroup: /* @__PURE__ */ __name(async function(topic) {
+      if (!libp2p) {
+        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      }
+      try {
+        await libp2p.services.pubsub.unsubscribe(topic);
+        console.log(`[GroupManager] \u041F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: ${topic}`);
+      } catch (error) {
+        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+        context.addError({
+          componentName: "GroupManager",
+          source: "leaveGroup",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B",
+          details: error
+        });
+        throw error;
+      }
+    }, "leaveGroup"),
+    /**
+     * Поиск групп по названию или описанию
+     * @async
+     * @param {string} query - Поисковый запрос
+     * @returns {Promise<Array>} Найденные группы
+     */
+    searchGroups: /* @__PURE__ */ __name(async function(query) {
+      if (!query || !query.trim()) {
+        return context.state.discoveredGroups || [];
+      }
+      const searchTerm = query.toLowerCase().trim();
+      const filteredGroups = (context.state.discoveredGroups || []).filter(
+        (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm)
+      );
+      console.log(`[GroupManager] \u041F\u043E\u0438\u0441\u043A "${query}": \u043D\u0430\u0439\u0434\u0435\u043D\u043E ${filteredGroups.length} \u0433\u0440\u0443\u043F\u043F`);
+      return filteredGroups;
+    }, "searchGroups"),
+    /**
+     * Получение списка участников группы
+     * @async
+     * @param {string} topic - Топик группы
+     * @returns {Promise<Array>} Список участников
+     */
+    getGroupMembers: /* @__PURE__ */ __name(async function(topic) {
+      if (!libp2p) {
+        return [];
+      }
+      try {
+        const subscribers = libp2p.services.pubsub.getSubscribers(topic);
+        return subscribers.map((peerId) => peerId.toString());
+      } catch (error) {
+        console.warn(`[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B ${topic}:`, error);
+        return [];
+      }
+    }, "getGroupMembers"),
+    /**
+     * Анонсирование создания новой группы
+     * @async
+     * @param {Object} group - Информация о группе
+     */
+    announceGroupCreation: /* @__PURE__ */ __name(async function(group) {
+      if (!libp2p) return;
+      try {
+        const announcement = {
+          type: "group_announcement",
+          group: {
+            id: group.id,
+            name: group.name,
+            topic: group.topic,
+            description: group.description,
+            createdAt: group.createdAt,
+            createdBy: group.createdBy
+          },
+          timestamp: Date.now()
+        };
+        const announcementTopic = "chat-group-announcements";
+        await libp2p.services.pubsub.publish(
+          announcementTopic,
+          new TextEncoder().encode(JSON.stringify(announcement))
+        );
+      } catch (error) {
+        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
+      }
+    }, "announceGroupCreation"),
+    /**
+     * Форматирование названия группы
+     * @param {string} rawName - Сырое название
+     * @returns {string} Отформатированное название
+     */
+    formatGroupName: /* @__PURE__ */ __name(function(rawName) {
+      return rawName.replace(/[_-]/g, " ").replace(/\b\w/g, (l2) => l2.toUpperCase()).trim();
+    }, "formatGroupName"),
+    /**
+     * Генерация описания группы
+     * @param {string} groupName - Название группы
+     * @returns {string} Описание группы
+     */
+    generateGroupDescription: /* @__PURE__ */ __name(function(groupName) {
+      const descriptions = [
+        `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u044F: ${groupName}`,
+        `\u0421\u043E\u043E\u0431\u0449\u0435\u0441\u0442\u0432\u043E \u043F\u043E \u0438\u043D\u0442\u0435\u0440\u0435\u0441\u0430\u043C: ${groupName}`,
+        `\u0427\u0430\u0442 \u0433\u0440\u0443\u043F\u043F\u044B: ${groupName}`,
+        `\u041E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u0435 \u0442\u0435\u043C\u044B: ${groupName}`
+      ];
+      return descriptions[Math.floor(Math.random() * descriptions.length)];
+    }, "generateGroupDescription"),
+    /**
+     * Санитизация названия для топика
+     * @param {string} name - Исходное название
+     * @returns {string} Санитизированное название
+     */
+    sanitizeTopicName: /* @__PURE__ */ __name(function(name3) {
+      return name3.toLowerCase().replace(/[^a-z0-9а-яё]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    }, "sanitizeTopicName"),
+    /**
+     * Извлечение названия группы из топика
+     * @param {string} topic - Топик группы
+     * @returns {string} Название группы
+     */
+    extractGroupNameFromTopic: /* @__PURE__ */ __name(function(topic) {
+      if (topic.startsWith("chat-group-")) {
+        const parts = topic.replace("chat-group-", "").split("-");
+        return this.formatGroupName(parts[0]);
+      }
+      return this.formatGroupName(topic);
+    }, "extractGroupNameFromTopic"),
+    /**
+     * Очистка ресурсов
+     * @async
+     */
+    cleanup: /* @__PURE__ */ __name(async function() {
+      if (discoveredGroupsInterval) {
+        clearInterval(discoveredGroupsInterval);
+        discoveredGroupsInterval = null;
+      }
+      libp2p = null;
+      console.log("[GroupManager] \u0420\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
+    }, "cleanup")
+  };
+}
+__name(createActions3, "createActions");
+
+// public/components/group-manager/index.mjs
+var GroupManager = class extends BaseComponent {
+  static {
+    __name(this, "GroupManager");
+  }
+  constructor() {
+    super();
+    this._templateMethods = template_exports3;
+    this.state = {
+      groups: [],
+      discoveredGroups: [],
+      searchQuery: "",
+      joinedGroups: []
+    };
+  }
+  async _componentReady() {
+    this._controller = await controller3(this);
+    this._actions = await createActions3(this);
+    await this._controller.init();
+    return true;
+  }
+  async createGroup(groupName) {
+    const group = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: groupName,
+      topic: `chat-group-${groupName}-${Date.now()}`,
+      memberCount: 1,
+      createdAt: Date.now(),
+      isPublic: true
+    };
+    this.state.groups.push(group);
+    await this.renderPart({
+      partName: "renderMyGroups",
+      state: this.state,
+      selector: "#my-groups-list"
+    });
+    return group;
+  }
+  async discoverGroups() {
+    const mockDiscoveredGroups = [
+      {
+        id: "discovered-1",
+        name: "\u041E\u0431\u0449\u0438\u0439 \u0447\u0430\u0442",
+        topic: "chat-general",
+        memberCount: 5,
+        description: "\u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u0447\u0430\u0442 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F"
+      },
+      {
+        id: "discovered-2",
+        name: "\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0438",
+        topic: "chat-tech",
+        memberCount: 3,
+        description: "\u041E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0439"
+      }
+    ];
+    this.state.discoveredGroups = mockDiscoveredGroups;
+    await this.renderPart({
+      partName: "renderDiscoveredGroups",
+      state: this.state,
+      selector: "#discovered-groups-list"
+    });
+  }
+  async searchGroups(query) {
+    this.state.searchQuery = query;
+    await this.renderPart({
+      partName: "renderSearchResults",
+      state: this.state,
+      selector: "#search-results"
+    });
+  }
+  async joinGroup(group) {
+    if (!this.state.joinedGroups.find((g) => g.id === group.id)) {
+      this.state.joinedGroups.push({
+        ...group,
+        joinedAt: Date.now()
+      });
+    }
+    await this.renderPart({
+      partName: "renderJoinedGroups",
+      state: this.state,
+      selector: "#joined-groups-list"
+    });
+    return group;
+  }
+  async leaveGroup(groupId) {
+    this.state.joinedGroups = this.state.joinedGroups.filter((g) => g.id !== groupId);
+    await this.renderPart({
+      partName: "renderJoinedGroups",
+      state: this.state,
+      selector: "#joined-groups-list"
+    });
+  }
+  async _componentDisconnected() {
+    if (this._controller && this._controller.destroy) {
+      await this._controller.destroy();
+    }
+    this._templateMethods = null;
+  }
+};
+if (!customElements.get("group-manager")) {
+  customElements.define("group-manager", GroupManager);
+}
+
+// public/components/peer-connection/template/index.mjs
+var template_exports4 = {};
+__export(template_exports4, {
+  default: () => defaultTemplate4,
+  renderAddresses: () => renderAddresses,
+  renderAddressesList: () => renderAddressesList,
+  renderConnectedPeers: () => renderConnectedPeers,
+  renderConnectedPeersDetailed: () => renderConnectedPeersDetailed,
+  renderConnectionControls: () => renderConnectionControls,
+  renderPeersList: () => renderPeersList,
+  renderQuickActions: () => renderQuickActions2,
+  renderStatistics: () => renderStatistics2,
+  renderStatus: () => renderStatus2,
+  renderSystemStatus: () => renderSystemStatus
+});
+function defaultTemplate4({ state = {} } = {}) {
+  return `
+    <div class="peer-connection">
+        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->
+        <header class="connection-header">
+            <div class="header-main">
+                <h1 class="connection-title">
+                    <span class="title-icon">\u{1F310}</span>
+                    P2P \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435
+                </h1>
+                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">
+                    <span class="status-dot"></span>
+                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>
+                </div>
+            </div>
+            <div class="header-meta">
+                <div class="meta-item">
+                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>
+                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Peer ID:</span>
+                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->
+        <main class="connection-grid">
+            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
+            <section class="grid-card status-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F4CA}</span>
+                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B
+                    </h3>
+                </div>
+                <div class="card-content">
+                    ${renderSystemStatus({ state })}
+                </div>
+            </section>
+
+            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->
+            <section class="grid-card control-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u26A1</span>
+                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435
+                    </h3>
+                </div>
+                <div class="card-content">
+                    ${renderConnectionControls({ state })}
+                </div>
+            </section>
+
+            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->
+            <section class="grid-card peers-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F465}</span>
+                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B
+                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
+                    </h3>
+                </div>
+                <div class="card-content">
+                    ${renderPeersList({ state })}
+                </div>
+            </section>
+
+            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->
+            <section class="grid-card addresses-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F4CD}</span>
+                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F
+                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>
+                    </h3>
+                </div>
+                <div class="card-content">
+                     <div id="listening-addresses">
+                        ${renderAddressesList({ state })}
+                    </div>
+                </div>
+            </section>
+
+            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->
+            <section class="grid-card actions-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F680}</span>
+                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F
+                    </h3>
+                </div>
+                <div class="card-content">
+                    ${renderQuickActions2({ state })}
+                </div>
+            </section>
+
+            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->
+            <section class="grid-card stats-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F4C8}</span>
+                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430
+                    </h3>
+                </div>
+                <div class="card-content">
+                    ${renderStatistics2({ state })}
+                </div>
+            </section>
+
+            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->
+            <section class="grid-card connected-peers-section" style="display: none;">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <span class="card-icon">\u{1F517}</span>
+                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F
+                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
+                    </h3>
+                </div>
+                <div class="card-content">
+                    <div id="connected-peers-list">
+                        ${renderConnectedPeersDetailed({ state })}
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->
+        <footer class="connection-footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>
+                    <span class="info-dot"></span>
+                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="footer-btn" id="refresh-all">
+                        <span class="btn-icon">\u{1F504}</span>
+                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+    `;
+}
+__name(defaultTemplate4, "defaultTemplate");
+function renderSystemStatus({ state = {} } = {}) {
+  return `
+    <div class="status-grid">
+        <div class="status-item">
+            <div class="status-icon ${state.connected ? "connected" : "disconnected"}">
+                ${state.connected ? "\u{1F7E2}" : "\u{1F534}"}
+            </div>
+            <div class="status-info">
+                <span class="status-label">\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435</span>
+                <span class="status-value">${state.connected ? "\u0410\u043A\u0442\u0438\u0432\u043D\u043E" : "\u041D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E"}</span>
+            </div>
+        </div>
+        <div class="status-item">
+            <div class="status-icon">
+                \u{1F310}
+            </div>
+            <div class="status-info">
+                <span class="status-label">\u0420\u0435\u0436\u0438\u043C</span>
+                <span class="status-value">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
+            </div>
+        </div>
+        <div class="status-item">
+            <div class="status-icon ${state.relayEnabled ? "enabled" : "disabled"}">
+                ${state.relayEnabled ? "\u{1F517}" : "\u26D3\uFE0F"}
+            </div>
+            <div class="status-info">
+                <span class="status-label">Relay</span>
+                <span class="status-value">${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
+            </div>
+        </div>
+        <div class="status-item">
+            <div class="status-icon">
+                \u23F1\uFE0F
+            </div>
+            <div class="status-info">
+                <span class="status-label">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B</span>
+                <span class="status-value">${state.uptime || "0:00"}</span>
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderSystemStatus, "renderSystemStatus");
+function renderConnectionControls({ state = {} } = {}) {
+  return `
+    <div class="controls-container">
+        <!-- \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u0440\u0435\u0436\u0438\u043C\u043E\u0432 -->
+        <div class="control-group">
+            <label class="control-label">\u0420\u0435\u0436\u0438\u043C \u0440\u0430\u0431\u043E\u0442\u044B</label>
+            <div class="mode-switcher">
+                <button class="mode-btn ${state.mode === "listener" ? "active" : ""}" id="listener-mode-btn">
+                    <span class="btn-icon">\u{1F4E1}</span>
+                    \u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C
+                </button>
+                <button class="mode-btn ${state.mode === "dialer" ? "active" : ""}" id="dialer-mode-btn">
+                    <span class="btn-icon">\u{1F517}</span>
+                    \u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440
+                </button>
+            </div>
+        </div>
+
+        <!-- \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 -->
+        <div class="control-group">
+            <label class="control-label">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043A \u043F\u0438\u0440\u0443</label>
+            <div class="connection-input-group">
+                <input 
+                    type="text" 
+                    id="peer-address-input" 
+                    class="connection-input"
+                    placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooW..."
+                    ${!state.connected ? "disabled" : ""}
+                >
+                <button 
+                    id="connect-peer-btn" 
+                    class="connect-btn"
+                    ${!state.connected ? "disabled" : ""}
+                >
+                    <span class="btn-icon">\u{1F50C}</span>
+                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C
+                </button>
+            </div>
+        </div>
+
+        <!-- \u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 Relay -->
+        <div class="control-group">
+            <label class="control-label">\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0441\u0435\u0442\u0438</label>
+            <div class="settings-group">
+                <label class="setting-toggle">
+                    <input 
+                        type="checkbox" 
+                        id="relay-toggle" 
+                        ${state.relayEnabled ? "checked" : ""}
+                        ${state.connected ? "disabled" : ""}
+                    >
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C Relay</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderConnectionControls, "renderConnectionControls");
+function renderPeersList({ state = {} } = {}) {
+  const peers = state.connectedPeers || [];
+  if (peers.length === 0) {
+    return `
+        <div class="empty-state">
+            <div class="empty-icon">\u{1F465}</div>
+            <p class="empty-title">\u041D\u0435\u0442 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432</p>
+            <p class="empty-description">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0434\u0440\u0443\u0433\u0438\u043C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0430\u043C \u0441\u0435\u0442\u0438</p>
+        </div>
+        `;
+  }
+  return `
+    <div class="peers-container" id="connected-peers-list">
+        ${peers.map((peer, index) => `
+        <div class="peer-item" data-peer-id="${peer.id}">
+            <div class="peer-avatar">
+                ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
+            </div>
+            <div class="peer-info">
+                <div class="peer-name">\u041F\u0438\u0440 #${index + 1}</div>
+                <div class="peer-id">${peer.id.substring(0, 24)}...</div>
+                <div class="peer-meta">
+                    <span class="peer-connections">${peer.connections ? peer.connections.length : 1} \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</span>
+                </div>
+            </div>
+            <div class="peer-actions">
+                <button class="peer-action-btn disconnect" data-peer-id="${peer.id}">
+                    <span class="action-icon">\u274C</span>
+                </button>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderPeersList, "renderPeersList");
+function renderConnectedPeersDetailed({ state = {} } = {}) {
+  const peers = state.connectedPeers || [];
+  if (peers.length === 0) {
+    return `
+        <div class="empty-state">
+            <div class="empty-icon">\u{1F50C}</div>
+            <p class="empty-title">\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</p>
+            <p class="empty-description">\u041F\u0438\u0440\u044B \u043F\u043E\u044F\u0432\u044F\u0442\u0441\u044F \u0437\u0434\u0435\u0441\u044C \u043F\u043E\u0441\u043B\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</p>
+        </div>
+        `;
+  }
+  return `
+    <div class="peers-detailed-container">
+        ${peers.map((peer, index) => `
+        <div class="peer-detailed-item" data-peer-id="${peer.id}">
+            <div class="peer-header">
+                <div class="peer-avatar-large">
+                    ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
+                </div>
+                <div class="peer-main-info">
+                    <div class="peer-name">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 #${index + 1}</div>
+                    <div class="peer-id-full">${peer.id}</div>
+                </div>
+                <div class="peer-status-indicator connected">
+                    <span class="status-dot"></span>
+                    <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D</span>
+                </div>
+            </div>
+            
+            <div class="peer-connections-info">
+                <div class="connections-header">
+                    <span class="connections-label">\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F:</span>
+                    <span class="connections-count">${peer.connections ? peer.connections.length : 1}</span>
+                </div>
+                
+                ${peer.connections ? peer.connections.map((conn) => `
+                <div class="connection-item">
+                    <div class="connection-protocol">
+                        <span class="protocol-icon">\u{1F517}</span>
+                        <span class="protocol-name">${getConnectionProtocol(conn.remoteAddr)}</span>
+                    </div>
+                    <div class="connection-address">${conn.remoteAddr}</div>
+                    <div class="connection-status ${conn.status}">
+                        <span class="status-badge">${conn.status}</span>
+                    </div>
+                </div>
+                `).join("") : `
+                <div class="connection-item">
+                    <div class="connection-protocol">
+                        <span class="protocol-icon">\u{1F310}</span>
+                        <span class="protocol-name">P2P</span>
+                    </div>
+                    <div class="connection-address">\u041F\u0440\u044F\u043C\u043E\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435</div>
+                    <div class="connection-status open">
+                        <span class="status-badge">active</span>
+                    </div>
+                </div>
+                `}
+            </div>
+            
+            <div class="peer-actions-detailed">
+                <button class="action-btn secondary disconnect-peer" data-peer-id="${peer.id}">
+                    <span class="btn-icon">\u{1F6AB}</span>
+                    \u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C
+                </button>
+                <button class="action-btn outline copy-peer-id" data-peer-id="${peer.id}">
+                    <span class="btn-icon">\u{1F4CB}</span>
+                    ID
+                </button>
+                <button class="action-btn outline peer-info" data-peer-id="${peer.id}">
+                    <span class="btn-icon">\u2139\uFE0F</span>
+                    \u0418\u043D\u0444\u043E
+                </button>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderConnectedPeersDetailed, "renderConnectedPeersDetailed");
+function renderAddressesList({ state = {} } = {}) {
+  const addresses = state.listeningAddresses || [];
+  if (addresses.length === 0) {
+    return `
+        <div class="empty-state">
+            <div class="empty-icon">\u{1F4CD}</div>
+            <p class="empty-title">\u041D\u0435\u0442 \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F</p>
+            <p class="empty-description">\u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 P2P \u0443\u0437\u0435\u043B \u0434\u043B\u044F \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432</p>
+        </div>
+        `;
+  }
+  return `
+    <div class="addresses-container">
+        ${addresses.map((address, index) => `
+        <div class="address-item" data-address="${address}">
+            <div class="address-index">${index + 1}</div>
+            <div class="address-content">
+                <div class="address-protocol">
+                    ${getProtocolIcon(address)}
+                    ${getProtocolName(address)}
+                </div>
+                <div class="address-value">${address}</div>
+            </div>
+            <button class="address-action copy" data-address="${address}">
+                <span class="action-icon">\u{1F4CB}</span>
+            </button>
+        </div>
+        `).join("")}
+    </div>
+    `;
+}
+__name(renderAddressesList, "renderAddressesList");
+function renderQuickActions2({ state = {} } = {}) {
+  return `
+    <div class="actions-grid">
+        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>
+            <span class="btn-icon">\u{1F4CB}</span>
+            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>
+        </button>
+        
+        <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>
+            <span class="btn-icon">\u{1F310}</span>
+            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>
+        </button>
+        
+        <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>
+            <span class="btn-icon">\u{1F6AB}</span>
+            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>
+        </button>
+        
+        <button class="action-btn outline" id="restart-node">
+            <span class="btn-icon">\u{1F504}</span>
+            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>
+        </button>
+    </div>
+    `;
+}
+__name(renderQuickActions2, "renderQuickActions");
+function renderStatistics2({ state = {} } = {}) {
+  const peersCount = state.connectedPeers ? state.connectedPeers.length : 0;
+  const addressesCount = state.listeningAddresses ? state.listeningAddresses.length : 0;
+  const connectionCount = state.connectedPeers ? state.connectedPeers.reduce((total, peer) => total + (peer.connections ? peer.connections.length : 1), 0) : 0;
+  return `
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-value">${peersCount}</div>
+            <div class="stat-label">\u041F\u0438\u0440\u043E\u0432</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${connectionCount}</div>
+            <div class="stat-label">\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${addressesCount}</div>
+            <div class="stat-label">\u0410\u0434\u0440\u0435\u0441\u043E\u0432</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${state.mode === "listener" ? "\u0412\u0445\u043E\u0434\u044F\u0449\u0438\u0435" : "\u0418\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435"}</div>
+            <div class="stat-label">\u0422\u0438\u043F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</div>
+        </div>
+    </div>
+    `;
+}
+__name(renderStatistics2, "renderStatistics");
+function renderAddresses({ state = {} } = {}) {
+  return renderAddressesList({ state });
+}
+__name(renderAddresses, "renderAddresses");
+function renderConnectedPeers({ state = {} } = {}) {
+  return renderConnectedPeersDetailed({ state });
+}
+__name(renderConnectedPeers, "renderConnectedPeers");
+function renderStatus2({ state = {} } = {}) {
+  if (!state.connected) {
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
+            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
+        </div>
+        `;
+  }
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
+        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
+    </div>
+    `;
+}
+__name(renderStatus2, "renderStatus");
+function getProtocolIcon(address) {
+  if (address.includes("/ws")) return "\u{1F517}";
+  if (address.includes("/wss")) return "\u{1F512}";
+  if (address.includes("/webrtc")) return "\u{1F310}";
+  if (address.includes("/p2p-circuit")) return "\u{1F504}";
+  return "\u26A1";
+}
+__name(getProtocolIcon, "getProtocolIcon");
+function getProtocolName(address) {
+  if (address.includes("/ws")) return "WebSocket";
+  if (address.includes("/wss")) return "Secure WS";
+  if (address.includes("/webrtc")) return "WebRTC";
+  if (address.includes("/p2p-circuit")) return "Relay";
+  return "Unknown";
+}
+__name(getProtocolName, "getProtocolName");
+function getConnectionProtocol(address) {
+  if (address.includes("/ws")) return "WebSocket";
+  if (address.includes("/wss")) return "Secure WebSocket";
+  if (address.includes("/webrtc")) return "WebRTC";
+  if (address.includes("/p2p-circuit")) return "Circuit Relay";
+  if (address.includes("/tcp")) return "TCP";
+  return "Direct";
+}
+__name(getConnectionProtocol, "getConnectionProtocol");
+
+// public/components/peer-connection/controller/index.mjs
+var controller4 = /* @__PURE__ */ __name(async (context) => {
+  let eventListeners = [];
+  return {
+    /**
+     * Инициализирует контроллер компонента
+     * @async
+     */
+    async init() {
+      console.log("\u{1F527} PeerConnection controller initializing...");
+      const setupCopyHandlers = /* @__PURE__ */ __name(() => {
+        const copyButtons = context.shadowRoot.querySelectorAll(".address-action.copy");
+        copyButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const addressItem = e2.target.closest(".address-item");
+            if (addressItem) {
+              const address = addressItem.getAttribute("data-address");
+              if (address) {
+                await context.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+              }
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+      }, "setupCopyHandlers");
+      const setupPeerCopyHandlers = /* @__PURE__ */ __name(() => {
+        const copyPeerButtons = context.shadowRoot.querySelectorAll(".copy-peer-id");
+        copyPeerButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const peerId = e2.target.getAttribute("data-peer-id");
+            if (peerId) {
+              await context.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+      }, "setupPeerCopyHandlers");
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === "childList") {
+            setupCopyHandlers();
+            setupPeerCopyHandlers();
+          }
+        });
+      });
+      observer.observe(context.shadowRoot, {
+        childList: true,
+        subtree: true
+      });
+      context._copyObserver = observer;
+      setTimeout(() => {
+        setupCopyHandlers();
+        setupPeerCopyHandlers();
+      }, 100);
+      const connectBtn = context.shadowRoot.querySelector("#connect-peer-btn");
+      const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
+      const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
+      const dialerBtn = context.shadowRoot.querySelector("#dialer-mode-btn");
+      console.log("\u{1F50D} Debug: button elements found", {
+        listenerBtn: !!listenerBtn,
+        dialerBtn: !!dialerBtn,
+        listenerBtnId: listenerBtn?.id,
+        dialerBtnId: dialerBtn?.id
+      });
+      if (listenerBtn) {
+        const listenerHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Listener mode button clicked");
+            await context.switchMode("listener");
+            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener:", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "controller-listener",
+              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C \u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044F",
+              details: error
+            });
+          }
+        }, "listenerHandler");
+        listenerBtn.addEventListener("click", listenerHandler);
+        eventListeners.push({ element: listenerBtn, handler: listenerHandler });
+        console.log("\u2705 Listener button handler attached");
+      }
+      if (dialerBtn) {
+        const dialerHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Dialer mode button clicked");
+            await context.switchMode("dialer");
+            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer:", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "controller-dialer",
+              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C \u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440\u0430",
+              details: error
+            });
+          }
+        }, "dialerHandler");
+        dialerBtn.addEventListener("click", dialerHandler);
+        eventListeners.push({ element: dialerBtn, handler: dialerHandler });
+        console.log("\u2705 Dialer button handler attached");
+      }
+      const modeSwitcher = context.shadowRoot.querySelector(".mode-switcher");
+      if (modeSwitcher) {
+        const modeDelegationHandler = /* @__PURE__ */ __name(async (event) => {
+          const button = event.target.closest(".mode-btn");
+          if (button) {
+            event.preventDefault();
+            event.stopPropagation();
+            const mode = button.id === "listener-mode-btn" ? "listener" : "dialer";
+            console.log("\u{1F527} Mode delegation handler triggered:", mode);
+            try {
+              await context.switchMode(mode);
+              console.log("\u2705 Mode switched via delegation:", mode);
+            } catch (error) {
+              console.error("\u274C Error in mode delegation:", error);
+            }
+          }
+        }, "modeDelegationHandler");
+        modeSwitcher.addEventListener("click", modeDelegationHandler);
+        eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
+        console.log("\u2705 Mode switcher delegation handler attached");
+      }
+      if (connectBtn && peerAddressInput) {
+        const connectHandler = /* @__PURE__ */ __name(async () => {
+          const address = peerAddressInput.value.trim();
+          if (address) {
+            try {
+              console.log("\u{1F527} Connecting to peer:", address);
+              await context.connectToPeer(address);
+              peerAddressInput.value = "";
+              console.log(`\u2705 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: ${address}`);
+            } catch (error) {
+              console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
+              context.addError({
+                componentName: context.constructor.name,
+                source: "controller-connect",
+                message: `\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A ${address}`,
+                details: error
+              });
+            }
+          } else {
+            console.warn("\u26A0\uFE0F \u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
+          }
+        }, "connectHandler");
+        connectBtn.addEventListener("click", connectHandler);
+        eventListeners.push({ element: connectBtn, handler: connectHandler });
+        const enterHandler = /* @__PURE__ */ __name((event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            connectHandler();
+          }
+        }, "enterHandler");
+        peerAddressInput.addEventListener("keypress", enterHandler);
+        eventListeners.push({ element: peerAddressInput, handler: enterHandler });
+        console.log("\u2705 Peer connection handlers attached");
+      }
+      const refreshBtn = context.shadowRoot.querySelector("#refresh-peers-btn");
+      if (refreshBtn) {
+        const refreshHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Refreshing peer list...");
+            await context.updatePeerList();
+            console.log("\u2705 \u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432:", error);
+          }
+        }, "refreshHandler");
+        refreshBtn.addEventListener("click", refreshHandler);
+        eventListeners.push({ element: refreshBtn, handler: refreshHandler });
+        console.log("\u2705 Refresh peers handler attached");
+      }
+      const copyAddressesBtn = context.shadowRoot.querySelector("#copy-addresses-btn");
+      if (copyAddressesBtn) {
+        const copyHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Copying addresses...");
+            const addresses = await context.getRelayAddresses();
+            const textToCopy = addresses.join("\n");
+            await context.copyToClipboard(textToCopy, "\u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "controller-copy-addresses",
+              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432",
+              details: error
+            });
+          }
+        }, "copyHandler");
+        copyAddressesBtn.addEventListener("click", copyHandler);
+        eventListeners.push({ element: copyAddressesBtn, handler: copyHandler });
+        console.log("\u2705 Copy addresses handler attached");
+      }
+      const relayToggle = context.shadowRoot.querySelector("#relay-toggle");
+      if (relayToggle) {
+        const relayHandler = /* @__PURE__ */ __name((event) => {
+          context.state.relayEnabled = event.target.checked;
+          console.log(`\u{1F527} Relay ${context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}`);
+          context.renderPart({
+            partName: "renderSystemStatus",
+            state: context.state,
+            selector: ".status-card .card-content"
+          }).catch(console.error);
+        }, "relayHandler");
+        relayToggle.addEventListener("change", relayHandler);
+        eventListeners.push({ element: relayToggle, handler: relayHandler });
+        console.log("\u2705 Relay toggle handler attached");
+      }
+      this.setupQuickActions(context, eventListeners);
+      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      console.log("\u{1F4CA} Total event listeners:", eventListeners.length);
+    },
+    /**
+     * Настраивает обработчики для быстрых действий
+     * @param {HTMLElement} context - Контекст компонента
+     * @param {Array} eventListeners - Массив обработчиков событий
+     */
+    setupQuickActions(context2, eventListeners2) {
+      const copyPeerIdBtn = context2.shadowRoot.querySelector("#copy-peer-id");
+      if (copyPeerIdBtn) {
+        const copyPeerHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            if (context2.state.peerId) {
+              await context2.copyToClipboard(context2.state.peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+            }
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID:", error);
+          }
+        }, "copyPeerHandler");
+        copyPeerIdBtn.addEventListener("click", copyPeerHandler);
+        eventListeners2.push({ element: copyPeerIdBtn, handler: copyPeerHandler });
+      }
+      const copyAllAddressesBtn = context2.shadowRoot.querySelector("#copy-addresses");
+      if (copyAllAddressesBtn) {
+        const copyAllAddressesHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            const addresses = context2.state.listeningAddresses || [];
+            if (addresses.length > 0) {
+              const textToCopy = addresses.join("\n");
+              await context2.copyToClipboard(textToCopy, "\u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+            }
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
+          }
+        }, "copyAllAddressesHandler");
+        copyAllAddressesBtn.addEventListener("click", copyAllAddressesHandler);
+        eventListeners2.push({ element: copyAllAddressesBtn, handler: copyAllAddressesHandler });
+      }
+      const disconnectAllBtn = context2.shadowRoot.querySelector("#disconnect-all");
+      if (disconnectAllBtn) {
+        const disconnectAllHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Disconnecting all peers...");
+            console.log("\u2705 \u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432:", error);
+          }
+        }, "disconnectAllHandler");
+        disconnectAllBtn.addEventListener("click", disconnectAllHandler);
+        eventListeners2.push({ element: disconnectAllBtn, handler: disconnectAllHandler });
+      }
+      const restartNodeBtn = context2.shadowRoot.querySelector("#restart-node");
+      if (restartNodeBtn) {
+        const restartHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Restarting node...");
+            await context2.switchMode(context2.state.mode);
+            console.log("\u2705 \u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430:", error);
+          }
+        }, "restartHandler");
+        restartNodeBtn.addEventListener("click", restartHandler);
+        eventListeners2.push({ element: restartNodeBtn, handler: restartHandler });
+      }
+      const refreshAllBtn = context2.shadowRoot.querySelector("#refresh-all");
+      if (refreshAllBtn) {
+        const refreshAllHandler = /* @__PURE__ */ __name(async () => {
+          try {
+            console.log("\u{1F527} Refreshing all data...");
+            await context2.updatePeerList();
+            console.log("\u2705 \u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+          } catch (error) {
+            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445:", error);
+          }
+        }, "refreshAllHandler");
+        refreshAllBtn.addEventListener("click", refreshAllHandler);
+        eventListeners2.push({ element: refreshAllBtn, handler: refreshAllHandler });
+      }
+      console.log("\u2705 Quick actions handlers attached");
+    },
+    /**
+     * Уничтожает контроллер и очищает ресурсы
+     * @async
+     */
+    async destroy() {
+      console.log("\u{1F527} PeerConnection controller destroying...");
+      eventListeners.forEach(({ element, handler }) => {
+        try {
+          element.removeEventListener("click", handler);
+          element.removeEventListener("input", handler);
+          element.removeEventListener("keypress", handler);
+          element.removeEventListener("change", handler);
+        } catch (error) {
+          console.warn("\u26A0\uFE0F Error removing event listener:", error);
+        }
+      });
+      if (context._copyObserver) {
+        context._copyObserver.disconnect();
+        context._copyObserver = null;
+      }
+      console.log(`\u2705 Removed ${eventListeners.length} event listeners`);
+      eventListeners = [];
+      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+    }
+  };
+}, "controller");
+
+// node_modules/@libp2p/peer-id/dist/src/peer-id.js
+var inspect2 = Symbol.for("nodejs.util.inspect.custom");
+var LIBP2P_KEY_CODE = 114;
+var PeerIdImpl = class {
+  static {
+    __name(this, "PeerIdImpl");
+  }
+  type;
+  multihash;
+  publicKey;
+  string;
+  constructor(init) {
+    this.type = init.type;
+    this.multihash = init.multihash;
+    Object.defineProperty(this, "string", {
+      enumerable: false,
+      writable: true
+    });
+  }
+  get [Symbol.toStringTag]() {
+    return `PeerId(${this.toString()})`;
+  }
+  [peerIdSymbol] = true;
+  toString() {
+    if (this.string == null) {
+      this.string = base58btc.encode(this.multihash.bytes).slice(1);
+    }
+    return this.string;
+  }
+  toMultihash() {
+    return this.multihash;
+  }
+  // return self-describing String representation
+  // in default format from RFC 0001: https://github.com/libp2p/specs/pull/209
+  toCID() {
+    return CID.createV1(LIBP2P_KEY_CODE, this.multihash);
+  }
+  toJSON() {
+    return this.toString();
+  }
+  /**
+   * Checks the equality of `this` peer against a given PeerId
+   */
+  equals(id) {
+    if (id == null) {
+      return false;
+    }
+    if (id instanceof Uint8Array) {
+      return equals3(this.multihash.bytes, id);
+    } else if (typeof id === "string") {
+      return this.toString() === id;
+    } else if (id?.toMultihash()?.bytes != null) {
+      return equals3(this.multihash.bytes, id.toMultihash().bytes);
+    } else {
+      throw new Error("not valid Id");
+    }
+  }
+  /**
+   * Returns PeerId as a human-readable string
+   * https://nodejs.org/api/util.html#utilinspectcustom
+   *
+   * @example
+   * ```TypeScript
+   * import { peerIdFromString } from '@libp2p/peer-id'
+   *
+   * console.info(peerIdFromString('QmFoo'))
+   * // 'PeerId(QmFoo)'
+   * ```
+   */
+  [inspect2]() {
+    return `PeerId(${this.toString()})`;
+  }
+};
+var RSAPeerId = class extends PeerIdImpl {
+  static {
+    __name(this, "RSAPeerId");
+  }
+  type = "RSA";
+  publicKey;
+  constructor(init) {
+    super({ ...init, type: "RSA" });
+    this.publicKey = init.publicKey;
+  }
+};
+var Ed25519PeerId = class extends PeerIdImpl {
+  static {
+    __name(this, "Ed25519PeerId");
+  }
+  type = "Ed25519";
+  publicKey;
+  constructor(init) {
+    super({ ...init, type: "Ed25519" });
+    this.publicKey = init.publicKey;
+  }
+};
+var Secp256k1PeerId = class extends PeerIdImpl {
+  static {
+    __name(this, "Secp256k1PeerId");
+  }
+  type = "secp256k1";
+  publicKey;
+  constructor(init) {
+    super({ ...init, type: "secp256k1" });
+    this.publicKey = init.publicKey;
+  }
+};
+var TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 2336;
+var URLPeerId = class {
+  static {
+    __name(this, "URLPeerId");
+  }
+  type = "url";
+  multihash;
+  publicKey;
+  url;
+  constructor(url) {
+    this.url = url.toString();
+    this.multihash = identity.digest(fromString2(this.url));
+  }
+  [inspect2]() {
+    return `PeerId(${this.url})`;
+  }
+  [peerIdSymbol] = true;
+  toString() {
+    return this.toCID().toString();
+  }
+  toMultihash() {
+    return this.multihash;
+  }
+  toCID() {
+    return CID.createV1(TRANSPORT_IPFS_GATEWAY_HTTP_CODE, this.toMultihash());
+  }
+  toJSON() {
+    return this.toString();
+  }
+  equals(other) {
+    if (other == null) {
+      return false;
+    }
+    if (other instanceof Uint8Array) {
+      other = toString2(other);
+    }
+    return other.toString() === this.toString();
+  }
+};
+
+// node_modules/@libp2p/peer-id/dist/src/index.js
+var LIBP2P_KEY_CODE2 = 114;
+var TRANSPORT_IPFS_GATEWAY_HTTP_CODE2 = 2336;
+function peerIdFromString(str, decoder) {
+  let multihash;
+  if (str.charAt(0) === "1" || str.charAt(0) === "Q") {
+    multihash = decode4(base58btc.decode(`z${str}`));
+  } else if (str.startsWith("k51qzi5uqu5") || str.startsWith("kzwfwjn5ji4") || str.startsWith("k2k4r8") || str.startsWith("bafz")) {
+    return peerIdFromCID(CID.parse(str));
+  } else {
+    if (decoder == null) {
+      throw new InvalidParametersError('Please pass a multibase decoder for strings that do not start with "1" or "Q"');
+    }
+    multihash = decode4(decoder.decode(str));
+  }
+  return peerIdFromMultihash(multihash);
+}
+__name(peerIdFromString, "peerIdFromString");
+function peerIdFromPublicKey(publicKey) {
+  if (publicKey.type === "Ed25519") {
+    return new Ed25519PeerId({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    });
+  } else if (publicKey.type === "secp256k1") {
+    return new Secp256k1PeerId({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    });
+  } else if (publicKey.type === "RSA") {
+    return new RSAPeerId({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    });
+  }
+  throw new UnsupportedKeyTypeError();
+}
+__name(peerIdFromPublicKey, "peerIdFromPublicKey");
+function peerIdFromPrivateKey(privateKey) {
+  return peerIdFromPublicKey(privateKey.publicKey);
+}
+__name(peerIdFromPrivateKey, "peerIdFromPrivateKey");
+function peerIdFromMultihash(multihash) {
+  if (isSha256Multihash(multihash)) {
+    return new RSAPeerId({ multihash });
+  } else if (isIdentityMultihash(multihash)) {
+    try {
+      const publicKey = publicKeyFromMultihash(multihash);
+      if (publicKey.type === "Ed25519") {
+        return new Ed25519PeerId({ multihash, publicKey });
+      } else if (publicKey.type === "secp256k1") {
+        return new Secp256k1PeerId({ multihash, publicKey });
+      }
+    } catch (err) {
+      const url = toString2(multihash.digest);
+      return new URLPeerId(new URL(url));
+    }
+  }
+  throw new InvalidMultihashError("Supplied PeerID Multihash is invalid");
+}
+__name(peerIdFromMultihash, "peerIdFromMultihash");
+function peerIdFromCID(cid) {
+  if (cid?.multihash == null || cid.version == null || cid.version === 1 && cid.code !== LIBP2P_KEY_CODE2 && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE2) {
+    throw new InvalidCIDError("Supplied PeerID CID is invalid");
+  }
+  if (cid.code === TRANSPORT_IPFS_GATEWAY_HTTP_CODE2) {
+    const url = toString2(cid.multihash.digest);
+    return new URLPeerId(new URL(url));
+  }
+  return peerIdFromMultihash(cid.multihash);
+}
+__name(peerIdFromCID, "peerIdFromCID");
+function isIdentityMultihash(multihash) {
+  return multihash.code === identity.code;
+}
+__name(isIdentityMultihash, "isIdentityMultihash");
+function isSha256Multihash(multihash) {
+  return multihash.code === sha256.code;
+}
+__name(isSha256Multihash, "isSha256Multihash");
+
+// node_modules/libp2p/dist/src/config.js
+async function validateConfig(opts) {
+  if (opts.connectionProtector === null && globalThis.process?.env?.LIBP2P_FORCE_PNET != null) {
+    throw new InvalidParametersError("Private network is enforced, but no protector was provided");
+  }
+  return opts;
+}
+__name(validateConfig, "validateConfig");
+
+// node_modules/libp2p/node_modules/@libp2p/logger/dist/src/index.js
+src_default2.formatters.b = (v) => {
+  return v == null ? "undefined" : base58btc.baseEncode(v);
+};
+src_default2.formatters.t = (v) => {
+  return v == null ? "undefined" : base32.baseEncode(v);
+};
+src_default2.formatters.m = (v) => {
+  return v == null ? "undefined" : base64.baseEncode(v);
+};
+src_default2.formatters.p = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+src_default2.formatters.c = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+src_default2.formatters.k = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+src_default2.formatters.a = (v) => {
+  return v == null ? "undefined" : v.toString();
+};
+src_default2.formatters.e = (v) => {
+  if (v == null) {
+    return "undefined";
+  }
+  const message2 = notEmpty(v.message);
+  const stack = notEmpty(v.stack);
+  if (message2 != null && stack != null) {
+    if (stack.includes(message2)) {
+      return stack;
+    }
+    return `${message2}
+${stack}`;
+  }
+  if (stack != null) {
+    return stack;
+  }
+  if (message2 != null) {
+    return message2;
+  }
+  return v.toString();
+};
+function createDisabledLogger(namespace) {
+  const logger2 = /* @__PURE__ */ __name(() => {
+  }, "logger");
+  logger2.enabled = false;
+  logger2.color = "";
+  logger2.diff = 0;
+  logger2.log = () => {
+  };
+  logger2.namespace = namespace;
+  logger2.destroy = () => true;
+  logger2.extend = () => logger2;
+  return logger2;
+}
+__name(createDisabledLogger, "createDisabledLogger");
+function defaultLogger() {
+  return {
+    forComponent(name3) {
+      return logger(name3);
+    }
+  };
+}
+__name(defaultLogger, "defaultLogger");
+function logger(name3) {
+  let trace = createDisabledLogger(`${name3}:trace`);
+  if (src_default2.enabled(`${name3}:trace`) && src_default2.names.map((r2) => r2.toString()).find((n2) => n2.includes(":trace")) != null) {
+    trace = src_default2(`${name3}:trace`);
+  }
+  return Object.assign(src_default2(name3), {
+    error: src_default2(`${name3}:error`),
+    trace,
+    newScope: /* @__PURE__ */ __name((scope) => logger(`${name3}:${scope}`), "newScope")
+  });
+}
+__name(logger, "logger");
+function notEmpty(str) {
+  if (str == null) {
+    return;
+  }
+  str = str.trim();
+  if (str.length === 0) {
+    return;
+  }
+  return str;
+}
+__name(notEmpty, "notEmpty");
+
+// node_modules/@libp2p/peer-collections/dist/src/util.js
+function mapIterable(iter, map) {
+  const iterator = {
+    [Symbol.iterator]: () => {
+      return iterator;
+    },
+    next: /* @__PURE__ */ __name(() => {
+      const next = iter.next();
+      const val = next.value;
+      if (next.done === true || val == null) {
+        const result = {
+          done: true,
+          value: void 0
+        };
+        return result;
+      }
+      return {
+        done: false,
+        value: map(val)
+      };
+    }, "next")
+  };
+  return iterator;
+}
+__name(mapIterable, "mapIterable");
+function peerIdFromString2(str) {
+  const multihash = decode4(base58btc.decode(`z${str}`));
+  return peerIdFromMultihash(multihash);
+}
+__name(peerIdFromString2, "peerIdFromString");
+
+// node_modules/@libp2p/peer-collections/dist/src/map.js
+var PeerMap = class {
+  static {
+    __name(this, "PeerMap");
+  }
+  map;
+  constructor(map) {
+    this.map = /* @__PURE__ */ new Map();
+    if (map != null) {
+      for (const [key, value2] of map.entries()) {
+        this.map.set(key.toString(), { key, value: value2 });
+      }
+    }
+  }
+  [Symbol.iterator]() {
+    return this.entries();
+  }
+  clear() {
+    this.map.clear();
+  }
+  delete(peer) {
+    return this.map.delete(peer.toString());
+  }
+  entries() {
+    return mapIterable(this.map.entries(), (val) => {
+      return [val[1].key, val[1].value];
+    });
+  }
+  forEach(fn) {
+    this.map.forEach((value2, key) => {
+      fn(value2.value, value2.key, this);
+    });
+  }
+  get(peer) {
+    return this.map.get(peer.toString())?.value;
+  }
+  has(peer) {
+    return this.map.has(peer.toString());
+  }
+  set(peer, value2) {
+    this.map.set(peer.toString(), { key: peer, value: value2 });
+  }
+  keys() {
+    return mapIterable(this.map.values(), (val) => {
+      return val.key;
+    });
+  }
+  values() {
+    return mapIterable(this.map.values(), (val) => val.value);
+  }
+  get size() {
+    return this.map.size;
+  }
+};
+
+// node_modules/@libp2p/peer-collections/dist/src/set.js
+var PeerSet = class _PeerSet {
+  static {
+    __name(this, "PeerSet");
+  }
+  set;
+  constructor(set) {
+    this.set = /* @__PURE__ */ new Set();
+    if (set != null) {
+      for (const key of set) {
+        this.set.add(key.toString());
+      }
+    }
+  }
+  get size() {
+    return this.set.size;
+  }
+  [Symbol.iterator]() {
+    return this.values();
+  }
+  add(peer) {
+    this.set.add(peer.toString());
+  }
+  clear() {
+    this.set.clear();
+  }
+  delete(peer) {
+    this.set.delete(peer.toString());
+  }
+  entries() {
+    return mapIterable(this.set.entries(), (val) => {
+      const peerId = peerIdFromString2(val[0]);
+      return [peerId, peerId];
+    });
+  }
+  forEach(predicate) {
+    this.set.forEach((str) => {
+      const peerId = peerIdFromString2(str);
+      predicate(peerId, peerId, this);
+    });
+  }
+  has(peer) {
+    return this.set.has(peer.toString());
+  }
+  values() {
+    return mapIterable(this.set.values(), (val) => {
+      return peerIdFromString2(val);
+    });
+  }
+  intersection(other) {
+    const output = new _PeerSet();
+    for (const peerId of other) {
+      if (this.has(peerId)) {
+        output.add(peerId);
+      }
+    }
+    return output;
+  }
+  difference(other) {
+    const output = new _PeerSet();
+    for (const peerId of this) {
+      if (!other.has(peerId)) {
+        output.add(peerId);
+      }
+    }
+    return output;
+  }
+  union(other) {
+    const output = new _PeerSet();
+    for (const peerId of other) {
+      output.add(peerId);
+    }
+    for (const peerId of this) {
+      output.add(peerId);
+    }
+    return output;
+  }
+};
 
 // node_modules/@libp2p/peer-collections/dist/src/filter.js
 var PeerFilter = class {
@@ -16436,7 +19219,7 @@ var MAX_PEER_AGE = 216e5;
 
 // node_modules/@libp2p/peer-store/dist/src/pb/peer.js
 var Peer;
-(function(Peer4) {
+(function(Peer3) {
   let Peer$metadataEntry;
   (function(Peer$metadataEntry2) {
     let _codec2;
@@ -16491,7 +19274,7 @@ var Peer;
     Peer$metadataEntry2.decode = (buf, opts) => {
       return decodeMessage(buf, Peer$metadataEntry2.codec(), opts);
     };
-  })(Peer$metadataEntry = Peer4.Peer$metadataEntry || (Peer4.Peer$metadataEntry = {}));
+  })(Peer$metadataEntry = Peer3.Peer$metadataEntry || (Peer3.Peer$metadataEntry = {}));
   let Peer$tagsEntry;
   (function(Peer$tagsEntry2) {
     let _codec2;
@@ -16547,9 +19330,9 @@ var Peer;
     Peer$tagsEntry2.decode = (buf, opts) => {
       return decodeMessage(buf, Peer$tagsEntry2.codec(), opts);
     };
-  })(Peer$tagsEntry = Peer4.Peer$tagsEntry || (Peer4.Peer$tagsEntry = {}));
+  })(Peer$tagsEntry = Peer3.Peer$tagsEntry || (Peer3.Peer$tagsEntry = {}));
   let _codec;
-  Peer4.codec = () => {
+  Peer3.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -16578,13 +19361,13 @@ var Peer;
         if (obj.metadata != null && obj.metadata.size !== 0) {
           for (const [key, value2] of obj.metadata.entries()) {
             w.uint32(50);
-            Peer4.Peer$metadataEntry.codec().encode({ key, value: value2 }, w);
+            Peer3.Peer$metadataEntry.codec().encode({ key, value: value2 }, w);
           }
         }
         if (obj.tags != null && obj.tags.size !== 0) {
           for (const [key, value2] of obj.tags.entries()) {
             w.uint32(58);
-            Peer4.Peer$tagsEntry.codec().encode({ key, value: value2 }, w);
+            Peer3.Peer$tagsEntry.codec().encode({ key, value: value2 }, w);
           }
         }
         if (obj.updated != null) {
@@ -16633,7 +19416,7 @@ var Peer;
               if (opts.limits?.metadata != null && obj.metadata.size === opts.limits.metadata) {
                 throw new MaxSizeError('Decode error - map field "metadata" had too many elements');
               }
-              const entry = Peer4.Peer$metadataEntry.codec().decode(reader, reader.uint32());
+              const entry = Peer3.Peer$metadataEntry.codec().decode(reader, reader.uint32());
               obj.metadata.set(entry.key, entry.value);
               break;
             }
@@ -16641,7 +19424,7 @@ var Peer;
               if (opts.limits?.tags != null && obj.tags.size === opts.limits.tags) {
                 throw new MaxSizeError('Decode error - map field "tags" had too many elements');
               }
-              const entry = Peer4.Peer$tagsEntry.codec().decode(reader, reader.uint32(), {
+              const entry = Peer3.Peer$tagsEntry.codec().decode(reader, reader.uint32(), {
                 limits: {
                   value: opts.limits?.tags$value
                 }
@@ -16664,11 +19447,11 @@ var Peer;
     }
     return _codec;
   };
-  Peer4.encode = (obj) => {
-    return encodeMessage(obj, Peer4.codec());
+  Peer3.encode = (obj) => {
+    return encodeMessage(obj, Peer3.codec());
   };
-  Peer4.decode = (buf, opts) => {
-    return decodeMessage(buf, Peer4.codec(), opts);
+  Peer3.decode = (buf, opts) => {
+    return decodeMessage(buf, Peer3.codec(), opts);
   };
 })(Peer || (Peer = {}));
 var Address;
@@ -22054,7 +24837,7 @@ var CompoundContentRouting = class {
     }
     const self = this;
     const seen = new PeerSet();
-    for await (const peer of src_default2(...self.routers.filter((router) => router.findProviders instanceof Function).map((router) => router.findProviders(key, options)))) {
+    for await (const peer of src_default(...self.routers.filter((router) => router.findProviders instanceof Function).map((router) => router.findProviders(key, options)))) {
       if (peer == null) {
         continue;
       }
@@ -22281,7 +25064,7 @@ var DefaultPeerRouting = class {
       throw new QueriedForSelfError("Should not try to find self");
     }
     const self = this;
-    const source = src_default2(...this.routers.filter((router) => router.findPeer instanceof Function).map((router) => (async function* () {
+    const source = src_default(...this.routers.filter((router) => router.findPeer instanceof Function).map((router) => (async function* () {
       try {
         yield await router.findPeer(id, options);
       } catch (err) {
@@ -22311,7 +25094,7 @@ var DefaultPeerRouting = class {
     const self = this;
     const seen = createScalableCuckooFilter(1024);
     for await (const peer of parallel((async function* () {
-      const source = src_default2(...self.routers.filter((router) => router.getClosestPeers instanceof Function).map((router) => router.getClosestPeers(key, options)));
+      const source = src_default(...self.routers.filter((router) => router.getClosestPeers instanceof Function).map((router) => router.getClosestPeers(key, options)));
       for await (let peer2 of source) {
         yield async () => {
           if (peer2.multiaddrs.length === 0) {
@@ -26978,9 +29761,9 @@ var StopMessage;
   };
 })(StopMessage || (StopMessage = {}));
 var Peer2;
-(function(Peer4) {
+(function(Peer3) {
   let _codec;
-  Peer4.codec = () => {
+  Peer3.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -27030,11 +29813,11 @@ var Peer2;
     }
     return _codec;
   };
-  Peer4.encode = (obj) => {
-    return encodeMessage(obj, Peer4.codec());
+  Peer3.encode = (obj) => {
+    return encodeMessage(obj, Peer3.codec());
   };
-  Peer4.decode = (buf, opts) => {
-    return decodeMessage(buf, Peer4.codec(), opts);
+  Peer3.decode = (buf, opts) => {
+    return decodeMessage(buf, Peer3.codec(), opts);
   };
 })(Peer2 || (Peer2 = {}));
 var Reservation;
@@ -32089,3206 +34872,6 @@ function floodsub(init = {}) {
 }
 __name(floodsub, "floodsub");
 
-// public/components/chat-manager/actions/libp2p-config.js
-import { gossipsub } from "https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm";
-
-// node_modules/@libp2p/bootstrap/dist/src/index.js
-var DEFAULT_BOOTSTRAP_TAG_NAME = "bootstrap";
-var DEFAULT_BOOTSTRAP_TAG_VALUE = 50;
-var DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT = 1e3;
-var Bootstrap = class extends TypedEventEmitter {
-  static {
-    __name(this, "Bootstrap");
-  }
-  static tag = "bootstrap";
-  log;
-  timer;
-  list;
-  timeout;
-  components;
-  _init;
-  constructor(components, options = { list: [] }) {
-    if (options.list == null || options.list.length === 0) {
-      throw new Error("Bootstrap requires a list of peer addresses");
-    }
-    super();
-    this.components = components;
-    this.log = components.logger.forComponent("libp2p:bootstrap");
-    this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT;
-    this.list = options.list.map((str) => multiaddr(str)).filter((ma) => {
-      if (!P2P.matches(ma)) {
-        this.log.error("invalid multiaddr %a", ma);
-        return false;
-      }
-      const peerIdStr = ma.getComponents().findLast((c2) => c2.code === CODE_P2P)?.value;
-      if (peerIdStr == null) {
-        this.log.error("invalid bootstrap multiaddr without peer id");
-        return false;
-      }
-      return true;
-    }).map((ma) => {
-      return {
-        id: peerIdFromString(ma.getComponents().findLast((c2) => c2.code === CODE_P2P)?.value ?? ""),
-        multiaddrs: [ma]
-      };
-    });
-    this._init = options;
-  }
-  [peerDiscoverySymbol] = this;
-  [Symbol.toStringTag] = "@libp2p/bootstrap";
-  [serviceCapabilities] = [
-    "@libp2p/peer-discovery"
-  ];
-  isStarted() {
-    return Boolean(this.timer);
-  }
-  /**
-   * Start emitting events
-   */
-  start() {
-    if (this.isStarted()) {
-      return;
-    }
-    this.log("Starting bootstrap node discovery, discovering peers after %s ms", this.timeout);
-    this.timer = setTimeout(() => {
-      void this._discoverBootstrapPeers().catch((err) => {
-        this.log.error("failed to discover bootstrap peers - %e", err);
-      });
-    }, this.timeout);
-  }
-  /**
-   * Emit each address in the list as a PeerInfo
-   */
-  async _discoverBootstrapPeers() {
-    if (this.timer == null) {
-      return;
-    }
-    for (const peerData of this.list) {
-      await this.components.peerStore.merge(peerData.id, {
-        tags: {
-          [this._init.tagName ?? DEFAULT_BOOTSTRAP_TAG_NAME]: {
-            value: this._init.tagValue ?? DEFAULT_BOOTSTRAP_TAG_VALUE,
-            ttl: this._init.tagTTL
-          }
-        },
-        multiaddrs: peerData.multiaddrs
-      });
-      if (this.timer == null) {
-        return;
-      }
-      this.safeDispatchEvent("peer", { detail: peerData });
-      this.components.connectionManager.openConnection(peerData.id).catch((err) => {
-        this.log.error("could not dial bootstrap peer %p - %e", peerData.id, err);
-      });
-    }
-  }
-  /**
-   * Stop emitting events
-   */
-  stop() {
-    if (this.timer != null) {
-      clearTimeout(this.timer);
-    }
-    this.timer = void 0;
-  }
-};
-function bootstrap(init) {
-  return (components) => new Bootstrap(components, init);
-}
-__name(bootstrap, "bootstrap");
-
-// node_modules/@libp2p/pubsub-peer-discovery/dist/src/peer.js
-var Peer3;
-(function(Peer4) {
-  let _codec;
-  Peer4.codec = () => {
-    if (_codec == null) {
-      _codec = message((obj, w, opts = {}) => {
-        if (opts.lengthDelimited !== false) {
-          w.fork();
-        }
-        if (obj.publicKey != null && obj.publicKey.byteLength > 0) {
-          w.uint32(10);
-          w.bytes(obj.publicKey);
-        }
-        if (obj.addrs != null) {
-          for (const value2 of obj.addrs) {
-            w.uint32(18);
-            w.bytes(value2);
-          }
-        }
-        if (opts.lengthDelimited !== false) {
-          w.ldelim();
-        }
-      }, (reader, length3, opts = {}) => {
-        const obj = {
-          publicKey: alloc(0),
-          addrs: []
-        };
-        const end = length3 == null ? reader.len : reader.pos + length3;
-        while (reader.pos < end) {
-          const tag = reader.uint32();
-          switch (tag >>> 3) {
-            case 1: {
-              obj.publicKey = reader.bytes();
-              break;
-            }
-            case 2: {
-              if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
-                throw new MaxLengthError('Decode error - map field "addrs" had too many elements');
-              }
-              obj.addrs.push(reader.bytes());
-              break;
-            }
-            default: {
-              reader.skipType(tag & 7);
-              break;
-            }
-          }
-        }
-        return obj;
-      });
-    }
-    return _codec;
-  };
-  Peer4.encode = (obj) => {
-    return encodeMessage(obj, Peer4.codec());
-  };
-  Peer4.decode = (buf, opts) => {
-    return decodeMessage(buf, Peer4.codec(), opts);
-  };
-})(Peer3 || (Peer3 = {}));
-
-// node_modules/@libp2p/pubsub-peer-discovery/dist/src/index.js
-var TOPIC = "_peer-discovery._p2p._pubsub";
-var PubSubPeerDiscovery = class extends TypedEventEmitter {
-  static {
-    __name(this, "PubSubPeerDiscovery");
-  }
-  [peerDiscoverySymbol] = true;
-  [Symbol.toStringTag] = "@libp2p/pubsub-peer-discovery";
-  interval;
-  listenOnly;
-  topics;
-  intervalId;
-  components;
-  log;
-  constructor(components, init = {}) {
-    super();
-    const { interval, topics, listenOnly } = init;
-    this.components = components;
-    this.interval = interval ?? 1e4;
-    this.listenOnly = listenOnly ?? false;
-    this.log = components.logger.forComponent("libp2p:discovery:pubsub");
-    if (Array.isArray(topics) && topics.length > 0) {
-      this.topics = topics;
-    } else {
-      this.topics = [TOPIC];
-    }
-    this._onMessage = this._onMessage.bind(this);
-  }
-  isStarted() {
-    return this.intervalId != null;
-  }
-  start() {
-  }
-  /**
-   * Subscribes to the discovery topic on `libp2p.pubsub` and performs a broadcast
-   * immediately, and every `this.interval`
-   */
-  afterStart() {
-    if (this.intervalId != null) {
-      return;
-    }
-    const pubsub = this.components.pubsub;
-    if (pubsub == null) {
-      throw new Error("PubSub not configured");
-    }
-    for (const topic of this.topics) {
-      pubsub.subscribe(topic);
-      pubsub.addEventListener("message", this._onMessage);
-    }
-    if (this.listenOnly) {
-      return;
-    }
-    this._broadcast();
-    this.intervalId = setInterval(() => {
-      this._broadcast();
-    }, this.interval);
-  }
-  beforeStop() {
-    const pubsub = this.components.pubsub;
-    if (pubsub == null) {
-      throw new Error("PubSub not configured");
-    }
-    for (const topic of this.topics) {
-      pubsub.unsubscribe(topic);
-      pubsub.removeEventListener("message", this._onMessage);
-    }
-  }
-  /**
-   * Unsubscribes from the discovery topic
-   */
-  stop() {
-    if (this.intervalId != null) {
-      clearInterval(this.intervalId);
-      this.intervalId = void 0;
-    }
-  }
-  /**
-   * Performs a broadcast via Pubsub publish
-   */
-  _broadcast() {
-    const peerId = this.components.peerId;
-    if (peerId.publicKey == null) {
-      throw new Error("PeerId was missing public key");
-    }
-    const peer = {
-      publicKey: publicKeyToProtobuf(peerId.publicKey),
-      addrs: this.components.addressManager.getAddresses().map((ma) => ma.bytes)
-    };
-    const encodedPeer = Peer3.encode(peer);
-    const pubsub = this.components.pubsub;
-    if (pubsub == null) {
-      throw new Error("PubSub not configured");
-    }
-    for (const topic of this.topics) {
-      if (pubsub.getSubscribers(topic).length === 0) {
-        this.log("skipping broadcasting our peer data on topic %s because there are no peers present", topic);
-        continue;
-      }
-      this.log("broadcasting our peer data on topic %s", topic);
-      void pubsub.publish(topic, encodedPeer);
-    }
-  }
-  /**
-   * Handles incoming pubsub messages for our discovery topic
-   */
-  _onMessage(event) {
-    if (!this.isStarted()) {
-      return;
-    }
-    const message2 = event.detail;
-    if (!this.topics.includes(message2.topic)) {
-      return;
-    }
-    try {
-      const peer = Peer3.decode(message2.data);
-      const publicKey = publicKeyFromProtobuf(peer.publicKey);
-      const peerId = peerIdFromPublicKey(publicKey);
-      if (peerId.equals(this.components.peerId)) {
-        return;
-      }
-      this.log("discovered peer %p on %s", peerId, message2.topic);
-      this.safeDispatchEvent("peer", {
-        detail: {
-          id: peerId,
-          multiaddrs: peer.addrs.map((b) => multiaddr(b))
-        }
-      });
-    } catch (err) {
-      this.log.error("error handling incoming message", err);
-    }
-  }
-};
-function pubsubPeerDiscovery(init = {}) {
-  return (components) => new PubSubPeerDiscovery(components, init);
-}
-__name(pubsubPeerDiscovery, "pubsubPeerDiscovery");
-
-// public/components/chat-manager/actions/libp2p-config.js
-var serverPeerId = "12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
-var PORT = 6835;
-var RENDER_EXTERNAL_HOSTNAME = window.location.hostname;
-async function CreateLibp2p(mode = "listener") {
-  const isLocalhost = window.location.hostname === "localhost";
-  const listenAddresses = [
-    "/p2p-circuit",
-    "/webrtc"
-  ];
-  if (mode === "listener") {
-    if (isLocalhost) {
-      listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/ws/p2p/${serverPeerId}`);
-    } else {
-      listenAddresses.push(`/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/wss/p2p/${serverPeerId}`);
-    }
-  }
-  const bootstrapList = [
-    isLocalhost ? `/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/ws/p2p/${serverPeerId}` : `/dns4/${RENDER_EXTERNAL_HOSTNAME}/tcp/${PORT}/wss/p2p/${serverPeerId}`
-  ];
-  const libp2p = await createLibp2p({
-    addresses: {
-      listen: [
-        "/p2p-circuit",
-        "/webrtc"
-      ]
-    },
-    transports: [
-      webSockets(),
-      webRTC(),
-      circuitRelayTransport({
-        // Резервируем слоты на релеях для входящих соединений
-        discoverRelays: 1,
-        reservationConcurrency: 1
-      })
-    ],
-    connectionEncrypters: [noise()],
-    streamMuxers: [yamux()],
-    peerDiscovery: [
-      bootstrap({
-        list: bootstrapList,
-        timeout: 1e3
-      }),
-      pubsubPeerDiscovery({
-        interval: 1e4,
-        topics: ["_peer-discovery._p2p._pubsub"],
-        listenOnly: false
-      })
-    ],
-    services: {
-      identify: identify(),
-      pubsub: gossipsub({
-        emitSelf: false,
-        canRelayMessage: true,
-        doPX: true
-      })
-    },
-    connectionManager: {
-      minConnections: 1,
-      maxConnections: 50,
-      autoDial: true
-    },
-    connectionGater: {
-      denyDialMultiaddr: /* @__PURE__ */ __name(() => false, "denyDialMultiaddr"),
-      denyDialPeer: /* @__PURE__ */ __name(() => false, "denyDialPeer"),
-      denyInboundConnection: /* @__PURE__ */ __name(() => false, "denyInboundConnection"),
-      denyOutboundConnection: /* @__PURE__ */ __name(() => false, "denyOutboundConnection"),
-      denyInboundEncryptedConnection: /* @__PURE__ */ __name(() => false, "denyInboundEncryptedConnection"),
-      denyOutboundEncryptedConnection: /* @__PURE__ */ __name(() => false, "denyOutboundEncryptedConnection"),
-      denyInboundUpgradedConnection: /* @__PURE__ */ __name(() => false, "denyInboundUpgradedConnection"),
-      denyOutboundUpgradedConnection: /* @__PURE__ */ __name(() => false, "denyOutboundUpgradedConnection")
-    }
-  });
-  await libp2p.start();
-  console.log(`Libp2p ${mode} \u0437\u0430\u043F\u0443\u0449\u0435\u043D \u0441 PeerID:`, libp2p.peerId.toString());
-  console.log("\u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F:", libp2p.getMultiaddrs().map((ma) => ma.toString()));
-  return libp2p;
-}
-__name(CreateLibp2p, "CreateLibp2p");
-
-// public/components/chat-manager/actions/index.mjs
-async function createActions(context) {
-  let libp2p = null;
-  let chatInterface = null;
-  let groupManager = null;
-  return {
-    async initializeLibp2p() {
-      try {
-        libp2p = await CreateLibp2p(context.state.mode);
-        console.log(`Libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0440\u0435\u0436\u0438\u043C\u0435: ${context.state.mode}`);
-        console.log("Peer ID:", libp2p.peerId.toString());
-        console.log("\u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F:", libp2p.getMultiaddrs().map((ma) => ma.toString()));
-        chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
-        groupManager = await context.getComponentAsync("group-manager", "group-manager");
-        if (chatInterface) {
-          await chatInterface.updateConnectionStatus(true);
-        }
-        libp2p.addEventListener("peer:discovery", (evt) => {
-          const peerId = evt.detail.id.toString();
-          console.log("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440:", peerId);
-          context.addMessage({
-            text: `\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043D\u043E\u0432\u044B\u0439 \u043F\u0438\u0440: ${peerId}`,
-            type: "system",
-            timestamp: Date.now()
-          });
-        });
-        libp2p.addEventListener("peer:connect", (evt) => {
-          const peerId = evt.detail.toString();
-          console.log("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043A \u043F\u0438\u0440\u0443:", peerId);
-          context.addMessage({
-            text: `\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043A \u043F\u0438\u0440\u0443: ${peerId}`,
-            type: "system",
-            timestamp: Date.now()
-          });
-        });
-        libp2p.addEventListener("peer:disconnect", (evt) => {
-          const peerId = evt.detail.toString();
-          console.log("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043E\u0442 \u043F\u0438\u0440\u0430:", peerId);
-          context.addMessage({
-            text: `\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043E\u0442 \u043F\u0438\u0440\u0430: ${peerId}`,
-            type: "system",
-            timestamp: Date.now()
-          });
-        });
-        libp2p.services.pubsub.addEventListener("message", (event) => {
-          try {
-            const messageText = new TextDecoder().decode(event.detail.data);
-            const topic = event.detail.topic;
-            const fromPeer = event.detail.from.toString();
-            console.log(`\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u0442\u0435\u043C\u0435 ${topic} \u043E\u0442 ${fromPeer}: ${messageText}`);
-            const message2 = {
-              text: messageText,
-              topic,
-              from: fromPeer,
-              type: "received",
-              timestamp: Date.now(),
-              id: Math.random().toString(36).substr(2, 9)
-            };
-            context.addMessage(message2);
-            if (messageText.startsWith("GROUP_CREATED:")) {
-              const groupData = JSON.parse(messageText.replace("GROUP_CREATED:", ""));
-              if (groupManager) {
-                groupManager.addDiscoveredGroup(groupData);
-              }
-            }
-          } catch (error) {
-            console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
-          }
-        });
-        await this.subscribeToGroup("chat-discovery");
-        return libp2p;
-      } catch (error) {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p:", error);
-        context.addMessage({
-          text: `\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438: ${error.message}`,
-          type: "error",
-          timestamp: Date.now()
-        });
-        throw error;
-      }
-    },
-    async subscribeToGroup(topic) {
-      if (libp2p) {
-        try {
-          await libp2p.services.pubsub.subscribe(topic);
-          console.log(`\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${topic}`);
-          context.addMessage({
-            text: `\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${topic}`,
-            type: "system",
-            timestamp: Date.now()
-          });
-          return true;
-        } catch (error) {
-          console.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 ${topic}:`, error);
-          context.addMessage({
-            text: `\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 ${topic}: ${error.message}`,
-            type: "error",
-            timestamp: Date.now()
-          });
-          return false;
-        }
-      }
-      return false;
-    },
-    async unsubscribeFromGroup(topic) {
-      if (libp2p) {
-        try {
-          await libp2p.services.pubsub.unsubscribe(topic);
-          console.log(`\u041E\u0442\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043E\u0442 \u0433\u0440\u0443\u043F\u043F\u044B: ${topic}`);
-          context.addMessage({
-            text: `\u041E\u0442\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043E\u0442 \u0433\u0440\u0443\u043F\u043F\u044B: ${topic}`,
-            type: "system",
-            timestamp: Date.now()
-          });
-          return true;
-        } catch (error) {
-          console.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0438\u0441\u043A\u0438 \u043E\u0442 \u0433\u0440\u0443\u043F\u043F\u044B ${topic}:`, error);
-          return false;
-        }
-      }
-      return false;
-    },
-    async sendMessage(topic, messageText) {
-      if (libp2p) {
-        try {
-          await libp2p.services.pubsub.publish(topic, new TextEncoder().encode(messageText));
-          console.log(`\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0432 \u0442\u0435\u043C\u0443 ${topic}: ${messageText}`);
-          const chatMessage = {
-            text: messageText,
-            topic,
-            from: libp2p.peerId.toString(),
-            type: "sent",
-            timestamp: Date.now(),
-            id: Math.random().toString(36).substr(2, 9)
-          };
-          context.addMessage(chatMessage);
-          return true;
-        } catch (error) {
-          console.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0432 \u0442\u0435\u043C\u0443 ${topic}:`, error);
-          context.addMessage({
-            text: `\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${error.message}`,
-            type: "error",
-            timestamp: Date.now()
-          });
-          return false;
-        }
-      }
-      return false;
-    },
-    async createAndAnnounceGroup(groupData) {
-      if (libp2p) {
-        try {
-          const announcement = `GROUP_CREATED:${JSON.stringify(groupData)}`;
-          await libp2p.services.pubsub.publish("chat-discovery", new TextEncoder().encode(announcement));
-          console.log("\u0410\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u043D\u043E\u0432\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430:", groupData.name);
-          return true;
-        } catch (error) {
-          console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
-          return false;
-        }
-      }
-      return false;
-    },
-    async discoverGroups() {
-      if (libp2p) {
-        try {
-          const topics = Array.from(libp2p.services.pubsub.getTopics());
-          console.log("\u0414\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0442\u043E\u043F\u0438\u043A\u0438:", topics);
-          const groups = [];
-          for (const topic of topics) {
-            if (topic.startsWith("chat-group-")) {
-              const peers = libp2p.services.pubsub.getSubscribers(topic);
-              groups.push({
-                topic,
-                name: topic.replace("chat-group-", "").split("-")[0],
-                memberCount: peers.size,
-                peers: Array.from(peers).map((p2) => p2.toString())
-              });
-            }
-          }
-          return groups;
-        } catch (error) {
-          console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F:", error);
-          return [];
-        }
-      }
-      return [];
-    },
-    async connectToPeer(multiaddr2) {
-      if (libp2p) {
-        try {
-          const ma = multiaddr2;
-          console.log("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u043C\u0441\u044F \u043A:", ma);
-          await libp2p.dial(ma);
-          context.addMessage({
-            text: `\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u043B\u0438\u0441\u044C \u043A: ${ma}`,
-            type: "system",
-            timestamp: Date.now()
-          });
-          return true;
-        } catch (error) {
-          console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
-          context.addMessage({
-            text: `\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A ${multiaddr2}: ${error.message}`,
-            type: "error",
-            timestamp: Date.now()
-          });
-          throw error;
-        }
-      }
-      return false;
-    },
-    async getConnectedPeers() {
-      if (libp2p) {
-        return Array.from(libp2p.getPeers()).map((peerId) => ({
-          id: peerId.toString(),
-          connections: libp2p.getConnections(peerId).map((conn) => ({
-            id: conn.id,
-            remoteAddr: conn.remoteAddr.toString(),
-            status: conn.status
-          }))
-        }));
-      }
-      return [];
-    },
-    async getListeningAddresses() {
-      if (libp2p) {
-        return libp2p.getMultiaddrs().map((ma) => ma.toString());
-      }
-      return [];
-    },
-    async getPeerId() {
-      if (libp2p) {
-        return libp2p.peerId.toString();
-      }
-      return null;
-    },
-    async cleanup() {
-      if (libp2p) {
-        try {
-          const topics = Array.from(libp2p.services.pubsub.getTopics());
-          for (const topic of topics) {
-            await libp2p.services.pubsub.unsubscribe(topic);
-          }
-          await libp2p.stop();
-          libp2p = null;
-          console.log("Libp2p \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0438 \u043E\u0447\u0438\u0449\u0435\u043D");
-          if (chatInterface) {
-            await chatInterface.updateConnectionStatus(false);
-          }
-        } catch (error) {
-          console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 Libp2p:", error);
-        }
-      }
-    },
-    async switchToDialerMode() {
-      await this.cleanup();
-      return await this.initializeLibp2p();
-    },
-    async switchToListenerMode() {
-      await this.cleanup();
-      return await this.initializeLibp2p();
-    }
-  };
-}
-__name(createActions, "createActions");
-
-// public/components/chat-manager/index.mjs
-var ChatManager = class extends BaseComponent {
-  static {
-    __name(this, "ChatManager");
-  }
-  constructor() {
-    super();
-    this._templateMethods = template_exports;
-    this.state = {
-      mode: "listener",
-      connected: false,
-      messages: [],
-      currentGroup: null,
-      groups: [],
-      searchQuery: "",
-      peerId: null,
-      listeningAddresses: [],
-      connectedPeers: []
-    };
-  }
-  async _componentReady() {
-    this._controller = await controller(this);
-    this._actions = await createActions(this);
-    await this._controller.init();
-    await this._actions.initializeLibp2p(this.state.mode);
-    return true;
-  }
-  async switchMode(mode) {
-    if (this.state.mode !== mode) {
-      this.state.mode = mode;
-      await this.fullRender(this.state);
-      if (this._actions.cleanup) {
-        await this._actions.cleanup();
-      }
-      await this._actions.initializeLibp2p(mode);
-    }
-  }
-  async addMessage(message2) {
-    this.state.messages.push({
-      ...message2,
-      timestamp: Date.now(),
-      id: Math.random().toString(36).substr(2, 9)
-    });
-    await this.renderPart({
-      partName: "renderMessages",
-      state: this.state,
-      selector: "#messages-container"
-    });
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-    if (chatInterface) {
-      await chatInterface.addMessage(message2);
-    }
-  }
-  async createGroup(groupName) {
-    const group = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: groupName,
-      topic: `chat-group-${groupName.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}`,
-      peers: [],
-      createdAt: Date.now(),
-      isPublic: true
-    };
-    this.state.groups.push(group);
-    await this._actions.subscribeToGroup(group.topic);
-    await this.renderPart({
-      partName: "renderGroups",
-      state: this.state,
-      selector: "#groups-container"
-    });
-    const groupManager = await this.getComponentAsync("group-manager", "main-group-manager");
-    if (groupManager) {
-      await groupManager.createGroup(groupName);
-    }
-    return group;
-  }
-  async joinGroup(topic, groupName = null) {
-    const existingGroup = this.state.groups.find((g) => g.topic === topic);
-    if (!existingGroup) {
-      const group = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: groupName || topic,
-        topic,
-        peers: [],
-        joinedAt: Date.now()
-      };
-      this.state.groups.push(group);
-      this.state.currentGroup = group;
-    } else {
-      this.state.currentGroup = existingGroup;
-    }
-    await this._actions.subscribeToGroup(topic);
-    await this.fullRender(this.state);
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-    if (chatInterface) {
-      await chatInterface.setCurrentGroup(this.state.currentGroup);
-    }
-  }
-  async searchGroups(query) {
-    this.state.searchQuery = query;
-    const filteredGroups = this.state.groups.filter(
-      (group) => group.name.toLowerCase().includes(query.toLowerCase()) || group.topic.toLowerCase().includes(query.toLowerCase())
-    );
-    await this.renderPart({
-      partName: "renderGroupSearch",
-      state: { ...this.state, filteredGroups },
-      selector: "#group-search-results"
-    });
-  }
-  async sendGroupMessage(messageText) {
-    if (this.state.currentGroup && this._actions) {
-      await this._actions.sendMessage(this.state.currentGroup.topic, messageText);
-    }
-  }
-  async updateConnectionStatus(connected, peerId = null, addresses = []) {
-    this.state.connected = connected;
-    if (peerId) this.state.peerId = peerId;
-    if (addresses.length > 0) this.state.listeningAddresses = addresses;
-    await this.renderPart({
-      partName: "renderConnectionStatus",
-      state: this.state,
-      selector: "#connection-status"
-    });
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-    if (chatInterface) {
-      await chatInterface.updateConnectionStatus(connected);
-    }
-  }
-  async updatePeerList(peers) {
-    this.state.connectedPeers = peers;
-    await this.renderPart({
-      partName: "renderConnectedPeers",
-      state: this.state,
-      selector: "#connected-peers-list"
-    });
-  }
-  async connectToPeer(multiaddr2) {
-    if (this._actions && this._actions.connectToPeer) {
-      await this._actions.connectToPeer(multiaddr2);
-    }
-  }
-  async getRelayAddresses() {
-    return this.state.listeningAddresses.filter(
-      (addr) => addr.includes("/p2p-circuit") || addr.includes("/webrtc")
-    );
-  }
-  async postMessage(event) {
-    try {
-      switch (event.type) {
-        case "SWITCH_MODE":
-          await this.switchMode(event.data.mode);
-          break;
-        case "CREATE_GROUP":
-          await this.createGroup(event.data.groupName);
-          break;
-        case "JOIN_GROUP":
-          await this.joinGroup(event.data.topic, event.data.groupName);
-          break;
-        case "SEND_MESSAGE":
-          await this.sendGroupMessage(event.data.message);
-          break;
-        case "SEARCH_GROUPS":
-          await this.searchGroups(event.data.query);
-          break;
-        case "CONNECT_TO_PEER":
-          await this.connectToPeer(event.data.multiaddr);
-          break;
-        case "UPDATE_CONNECTION_STATUS":
-          await this.updateConnectionStatus(
-            event.data.connected,
-            event.data.peerId,
-            event.data.addresses
-          );
-          break;
-        case "UPDATE_PEER_LIST":
-          await this.updatePeerList(event.data.peers);
-          break;
-        default:
-          console.warn(`[ChatManager] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${event.type}`);
-      }
-    } catch (error) {
-      this.addError({
-        componentName: this.constructor.name,
-        source: "postMessage",
-        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-        details: error
-      });
-    }
-  }
-  async _componentAttributeChanged(name3, oldValue, newValue) {
-    if (name3 === "mode" && oldValue !== newValue) {
-      await this.switchMode(newValue);
-    }
-  }
-  async _componentDisconnected() {
-    if (this._controller && this._controller.destroy) {
-      await this._controller.destroy();
-    }
-    if (this._actions && this._actions.cleanup) {
-      await this._actions.cleanup();
-    }
-    this._templateMethods = null;
-  }
-};
-if (!customElements.get("chat-manager")) {
-  customElements.define("chat-manager", ChatManager);
-}
-
-// public/components/chat-interface/template/index.mjs
-var template_exports2 = {};
-__export(template_exports2, {
-  default: () => defaultTemplate2,
-  renderConnectionStatus: () => renderConnectionStatus,
-  renderMembersList: () => renderMembersList,
-  renderMessage: () => renderMessage,
-  renderMessages: () => renderMessages2,
-  renderSearchOverlay: () => renderSearchOverlay,
-  renderSearchResults: () => renderSearchResults,
-  renderStatus: () => renderStatus,
-  renderTypingIndicator: () => renderTypingIndicator
-});
-function defaultTemplate2({ state = {} } = {}) {
-  return `
-    <div class="chat-interface">
-        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->
-        <header class="chat-header">
-            <div class="header-content">
-                <div class="chat-info">
-                    <div class="chat-avatar">
-                        ${getChatAvatar(state.currentGroup)}
-                    </div>
-                    <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "P2P \u0427\u0430\u0442"}</h3>
-                        <div class="chat-status">
-                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
-                            <span class="status-text">${getStatusText(state)}</span>
-                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
-                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>
-                    </button>
-                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
-                        <span class="btn-icon">\u{1F50D}</span>
-                    </button>
-                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
-                        <span class="btn-icon">\u{1F465}</span>
-                    </button>
-                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
-                        <span class="btn-icon">\u2699\uFE0F</span>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
-        <div class="connection-status" id="connection-status">
-            ${renderConnectionStatus({ state })}
-        </div>
-
-        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->
-        <main class="chat-main">
-            <!-- \u0411\u043E\u043A\u043E\u0432\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 -->
-            <aside class="members-sidebar" id="members-panel">
-                <div class="sidebar-header">
-                    <h4>\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438</h4>
-                    <button class="close-sidebar" id="close-members">\u2715</button>
-                </div>
-                <div class="members-list">
-                    ${renderMembersList({ state })}
-                </div>
-            </aside>
-
-            <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0447\u0430\u0442\u0430 -->
-            <section class="chat-content">
-                <!-- \u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 -->
-                <div class="messages-container">
-                    <div class="messages-list" id="messages-list">
-                        ${renderMessages2({ state })}
-                    </div>
-                </div>
-
-                <!-- \u0418\u043D\u0434\u0438\u043A\u0430\u0442\u043E\u0440 \u043D\u0430\u0431\u043E\u0440\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
-                ${state.isTyping ? renderTypingIndicator({ state }) : ""}
-            </section>
-        </main>
-
-        <!-- \u041F\u0430\u043D\u0435\u043B\u044C \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
-        <footer class="chat-input">
-            <div class="input-container">
-                <div class="input-actions">
-                    <button class="input-action-btn" id="attach-file" title="\u041F\u0440\u0438\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u0444\u0430\u0439\u043B">
-                        <span class="btn-icon">\u{1F4CE}</span>
-                    </button>
-                    <button class="input-action-btn" id="emoji-picker" title="\u042D\u043C\u043E\u0434\u0437\u0438">
-                        <span class="btn-icon">\u{1F60A}</span>
-                    </button>
-                    <button class="input-action-btn" id="format-text" title="\u0424\u043E\u0440\u043C\u0430\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435">
-                        <span class="btn-icon">\u{1D400}</span>
-                    </button>
-                </div>
-                <div class="message-input-wrapper">
-                    <textarea 
-                        id="message-input" 
-                        class="message-input" 
-                        placeholder="${getInputPlaceholder2(state)}"
-                        rows="1"
-                        ${!state.connected || !state.currentGroup ? "disabled" : ""}
-                    ></textarea>
-                    <button 
-                        id="send-button" 
-                        class="send-button"
-                        ${!state.connected || !state.currentGroup ? "disabled" : ""}
-                        title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"
-                    >
-                        <span class="send-icon">\u2708\uFE0F</span>
-                    </button>
-                </div>
-            </div>
-        </footer>
-
-        <!-- \u041E\u0432\u0435\u0440\u043B\u0435\u0439 \u043F\u043E\u0438\u0441\u043A\u0430 -->
-        ${state.showSearch ? renderSearchOverlay({ state }) : ""}
-    </div>
-    `;
-}
-__name(defaultTemplate2, "defaultTemplate");
-function renderConnectionStatus({ state = {} } = {}) {
-  if (!state.connected) {
-    return `
-        <div class="status-message disconnected">
-            <span class="status-icon">\u{1F534}</span>
-            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
-            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
-        </div>
-        `;
-  }
-  if (!state.currentGroup) {
-    return `
-        <div class="status-message info">
-            <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
-        </div>
-        `;
-  }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
-        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
-    </div>
-    `;
-}
-__name(renderConnectionStatus, "renderConnectionStatus");
-function renderStatus({ state = {} } = {}) {
-  if (!state.connected) {
-    return `
-        <div class="status-message disconnected">
-            <span class="status-icon">\u{1F534}</span>
-            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>
-        </div>
-        `;
-  }
-  if (!state.currentGroup) {
-    return `
-        <div class="status-message info">
-            <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
-        </div>
-        `;
-  }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.currentGroup.name}</span>
-    </div>
-    `;
-}
-__name(renderStatus, "renderStatus");
-function renderMembersList({ state = {} } = {}) {
-  const members = state.currentGroup?.members || [];
-  if (members.length === 0) {
-    return `
-        <div class="empty-members">
-            <div class="empty-icon">\u{1F465}</div>
-            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</p>
-        </div>
-        `;
-  }
-  return `
-    <div class="members-container">
-        ${members.map((member) => `
-        <div class="member-item" data-peer-id="${member.id}">
-            <div class="member-avatar">
-                ${member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
-            </div>
-            <div class="member-info">
-                <div class="member-name">${member.name || "\u0410\u043D\u043E\u043D\u0438\u043C\u043D\u044B\u0439 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A"}</div>
-                <div class="member-status ${member.online ? "online" : "offline"}">
-                    ${member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
-                </div>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
-}
-__name(renderMembersList, "renderMembersList");
-function renderMessages2({ state = {} } = {}) {
-  const messages2 = state.messages || [];
-  if (messages2.length === 0) {
-    return `
-        <div class="empty-chat">
-            <div class="empty-content">
-                <div class="empty-icon">\u{1F4AC}</div>
-                <h3 class="empty-title">\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
-                <p class="empty-description">\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435</p>
-                ${!state.currentGroup ? `
-                <button class="empty-action" id="find-groups">
-                    \u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B
-                </button>
-                ` : ""}
-            </div>
-        </div>
-        `;
-  }
-  return `
-    <div class="messages-content">
-        ${messages2.map((message2) => renderMessage({ message: message2 })).join("")}
-    </div>
-    `;
-}
-__name(renderMessages2, "renderMessages");
-function renderMessage({ message: message2 = {} } = {}) {
-  const messageClass = message2.type === "sent" ? "message-sent" : "message-received";
-  const time = new Date(message2.timestamp).toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-  return `
-    <div class="message-item ${messageClass}" data-message-id="${message2.id}">
-        <div class="message-bubble">
-            ${message2.type === "received" ? `
-            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
-            ` : ""}
-            <div class="message-content">${escapeHtml2(message2.text)}</div>
-            <div class="message-meta">
-                <span class="message-time">${time}</span>
-                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}
-                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}
-            </div>
-        </div>
-    </div>
-    `;
-}
-__name(renderMessage, "renderMessage");
-function renderTypingIndicator({ state = {} } = {}) {
-  return `
-    <div class="typing-indicator">
-        <div class="typing-avatar">
-            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : "??"}
-        </div>
-        <div class="typing-content">
-            <div class="typing-name">${state.typingUser?.name || "\u041A\u0442\u043E-\u0442\u043E"} \u043F\u0435\u0447\u0430\u0442\u0430\u0435\u0442</div>
-            <div class="typing-dots">
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-            </div>
-        </div>
-    </div>
-    `;
-}
-__name(renderTypingIndicator, "renderTypingIndicator");
-function renderSearchOverlay({ state = {} } = {}) {
-  return `
-    <div class="search-overlay" id="search-overlay">
-        <div class="search-header">
-            <h3>\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
-            <button class="close-search" id="close-search">\u2715</button>
-        </div>
-        <div class="search-content">
-            <div class="search-input-container">
-                <input 
-                    type="text" 
-                    id="search-messages-input" 
-                    class="search-input" 
-                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430..."
-                    value="${state.searchQuery || ""}"
-                >
-                <button class="search-action" id="perform-search">
-                    <span class="btn-icon">\u{1F50D}</span>
-                </button>
-            </div>
-            <div class="search-results" id="search-results">
-                ${renderSearchResults({ state })}
-            </div>
-        </div>
-    </div>
-    `;
-}
-__name(renderSearchOverlay, "renderSearchOverlay");
-function renderSearchResults({ state = {} } = {}) {
-  if (!state.searchQuery) {
-    return `
-        <div class="search-empty">
-            <div class="empty-icon">\u{1F50D}</div>
-            <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</p>
-        </div>
-        `;
-  }
-  const results = state.searchResults || [];
-  if (results.length === 0) {
-    return `
-        <div class="search-empty">
-            <div class="empty-icon">\u{1F614}</div>
-            <p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>
-            <p class="empty-hint">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441</p>
-        </div>
-        `;
-  }
-  return `
-    <div class="results-list">
-        ${results.map((result) => `
-        <div class="search-result-item" data-message-id="${result.id}">
-            <div class="result-message">
-                <div class="result-sender">${result.from ? result.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
-                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>
-                <div class="result-time">${new Date(result.timestamp).toLocaleString("ru-RU")}</div>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
-}
-__name(renderSearchResults, "renderSearchResults");
-function getChatAvatar(group) {
-  if (!group) return "\u{1F4AC}";
-  return group.name ? group.name.charAt(0).toUpperCase() : "\u{1F4AC}";
-}
-__name(getChatAvatar, "getChatAvatar");
-function getStatusText(state) {
-  if (!state.connected) return "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E";
-  if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443";
-  return state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432` : "\u0422\u043E\u043B\u044C\u043A\u043E \u0432\u044B";
-}
-__name(getStatusText, "getStatusText");
-function getInputPlaceholder2(state) {
-  if (!state.connected) return "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0441\u0435\u0442\u0438...";
-  if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F...";
-  return "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...";
-}
-__name(getInputPlaceholder2, "getInputPlaceholder");
-function escapeHtml2(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-__name(escapeHtml2, "escapeHtml");
-function highlightSearchText(text, query) {
-  if (!query) return escapeHtml2(text);
-  const regex = new RegExp(`(${escapeRegex(query)})`, "gi");
-  return escapeHtml2(text).replace(regex, "<mark>$1</mark>");
-}
-__name(highlightSearchText, "highlightSearchText");
-function escapeRegex(string2) {
-  return string2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-__name(escapeRegex, "escapeRegex");
-
-// public/components/chat-interface/controller/index.mjs
-var controller2 = /* @__PURE__ */ __name(async (context) => {
-  let eventListeners = [];
-  return {
-    /**
-     * Инициализирует контроллер компонента ChatInterface
-     * @async
-     */
-    async init() {
-      const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
-      const messageInput = context.shadowRoot.querySelector("#message-input");
-      if (sendMessageBtn && messageInput) {
-        const sendMessageHandler = /* @__PURE__ */ __name(async () => {
-          if (messageInput.value.trim() && context.state.currentGroup) {
-            const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-            if (chatManager) {
-              await chatManager.postMessage({
-                type: "SEND_MESSAGE",
-                data: {
-                  message: messageInput.value.trim(),
-                  topic: context.state.currentGroup.topic
-                }
-              });
-              messageInput.value = "";
-            }
-          }
-        }, "sendMessageHandler");
-        sendMessageBtn.addEventListener("click", sendMessageHandler);
-        eventListeners.push({ element: sendMessageBtn, handler: sendMessageHandler });
-        const enterHandler = /* @__PURE__ */ __name((e2) => {
-          if (e2.key === "Enter" && !e2.shiftKey) {
-            e2.preventDefault();
-            sendMessageHandler();
-          }
-        }, "enterHandler");
-        messageInput.addEventListener("keypress", enterHandler);
-        eventListeners.push({ element: messageInput, handler: enterHandler });
-      }
-      const clearChatBtn = context.shadowRoot.querySelector("#clear-chat");
-      if (clearChatBtn) {
-        const clearChatHandler = /* @__PURE__ */ __name(async () => {
-          await context.clearMessages();
-        }, "clearChatHandler");
-        clearChatBtn.addEventListener("click", clearChatHandler);
-        eventListeners.push({ element: clearChatBtn, handler: clearChatHandler });
-      }
-      const copyChatIdBtn = context.shadowRoot.querySelector("#copy-chat-id");
-      if (copyChatIdBtn) {
-        const copyChatIdHandler = /* @__PURE__ */ __name(async () => {
-          if (context.state.currentGroup) {
-            try {
-              await navigator.clipboard.writeText(context.state.currentGroup.topic);
-              const originalText = copyChatIdBtn.textContent;
-              copyChatIdBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
-              setTimeout(() => {
-                copyChatIdBtn.textContent = originalText;
-              }, 2e3);
-            } catch (err) {
-              console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F:", err);
-            }
-          }
-        }, "copyChatIdHandler");
-        copyChatIdBtn.addEventListener("click", copyChatIdHandler);
-        eventListeners.push({ element: copyChatIdBtn, handler: copyChatIdHandler });
-      }
-      const toggleMembersBtn = context.shadowRoot.querySelector("#toggle-members");
-      if (toggleMembersBtn) {
-        const toggleMembersHandler = /* @__PURE__ */ __name(() => {
-          const membersPanel = context.shadowRoot.querySelector("#members-panel");
-          if (membersPanel) {
-            const isVisible = membersPanel.style.display !== "none";
-            membersPanel.style.display = isVisible ? "none" : "block";
-            toggleMembersBtn.textContent = isVisible ? "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432" : "\u0421\u043A\u0440\u044B\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432";
-          }
-        }, "toggleMembersHandler");
-        toggleMembersBtn.addEventListener("click", toggleMembersHandler);
-        eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
-      }
-      if (messageInput) {
-        setTimeout(() => {
-          messageInput.focus();
-        }, 100);
-      }
-      console.log("[ChatInterface] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-    },
-    /**
-     * Уничтожает контроллер и очищает ресурсы
-     * @async
-     */
-    async destroy() {
-      eventListeners.forEach(({ element, handler }) => {
-        element.removeEventListener("click", handler);
-        element.removeEventListener("keypress", handler);
-      });
-      eventListeners = [];
-      console.log("[ChatInterface] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
-    }
-  };
-}, "controller");
-
-// public/components/chat-interface/actions/index.mjs
-async function createActions2(context) {
-  return {
-    /**
-     * Отправка сообщения в чат
-     * @async
-     * @param {string} message - Текст сообщения
-     * @param {string} topic - Топик/группа для отправки
-     */
-    sendMessage: sendMessage.bind(context),
-    /**
-     * Обработка входящего сообщения
-     * @async
-     * @param {Object} messageData - Данные сообщения
-     */
-    handleIncomingMessage: handleIncomingMessage.bind(context),
-    /**
-     * Очистка истории сообщений
-     * @async
-     */
-    clearChatHistory: clearChatHistory.bind(context),
-    /**
-     * Установка текущей группы/топика
-     * @async
-     * @param {Object} group - Данные группы
-     */
-    setActiveGroup: setActiveGroup.bind(context),
-    /**
-     * Поиск по сообщениям
-     * @async
-     * @param {string} query - Поисковый запрос
-     */
-    searchMessages: searchMessages.bind(context)
-  };
-}
-__name(createActions2, "createActions");
-async function sendMessage(message2, topic) {
-  try {
-    if (!message2.trim()) {
-      await this.showModal({
-        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-        content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
-        buttons: [{ text: "OK", type: "primary" }]
-      });
-      return;
-    }
-    if (!topic) {
-      await this.showModal({
-        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-        content: "<p>\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438</p>",
-        buttons: [{ text: "OK", type: "primary" }]
-      });
-      return;
-    }
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager && chatManager._actions) {
-      await chatManager._actions.sendMessage(topic, message2);
-      const messageInput = this.shadowRoot.querySelector("#message-input");
-      if (messageInput) {
-        messageInput.value = "";
-      }
-    } else {
-      throw new Error("\u0427\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
-    }
-  } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
-    this.addError({
-      componentName: this.constructor.name,
-      source: "sendMessage",
-      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-      details: error
-    });
-    await this.showModal({
-      title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
-      content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
-      buttons: [{ text: "OK", type: "primary" }]
-    });
-  }
-}
-__name(sendMessage, "sendMessage");
-async function handleIncomingMessage(messageData) {
-  try {
-    if (this.state.currentGroup && messageData.topic === this.state.currentGroup.topic) {
-      await this.addMessage({
-        text: messageData.text,
-        from: messageData.from,
-        type: messageData.type || "received",
-        timestamp: messageData.timestamp || Date.now(),
-        topic: messageData.topic
-      });
-      if (document.hidden) {
-        this.showNotification(`\u041D\u043E\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 ${this.state.currentGroup.name}`);
-      }
-    } else if (!this.state.currentGroup && messageData.type === "received") {
-      console.log(`\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B ${messageData.topic}: ${messageData.text}`);
-    }
-  } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F:", error);
-    this.addError({
-      componentName: this.constructor.name,
-      source: "handleIncomingMessage",
-      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-      details: { messageData, error }
-    });
-  }
-}
-__name(handleIncomingMessage, "handleIncomingMessage");
-async function clearChatHistory() {
-  try {
-    await this.showModal({
-      title: "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435",
-      content: "<p>\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u043E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0438\u0441\u0442\u043E\u0440\u0438\u044E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439?</p>",
-      buttons: [
-        {
-          text: "\u041E\u0442\u043C\u0435\u043D\u0430",
-          type: "secondary",
-          action: /* @__PURE__ */ __name(() => console.log("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
-        },
-        {
-          text: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
-          type: "primary",
-          action: /* @__PURE__ */ __name(async () => {
-            await this.clearMessages();
-            console.log("\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
-          }, "action")
-        }
-      ]
-    });
-  } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438:", error);
-    this.addError({
-      componentName: this.constructor.name,
-      source: "clearChatHistory",
-      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439",
-      details: error
-    });
-  }
-}
-__name(clearChatHistory, "clearChatHistory");
-async function setActiveGroup(group) {
-  try {
-    if (!group || !group.topic) {
-      throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B");
-    }
-    await this.showSkeleton({
-      selector: "#messages-list",
-      replace: true
-    });
-    await this.setCurrentGroup(group);
-    await this.updateConnectionStatus(true);
-    await this.hideSkeleton();
-    console.log(`\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0438\u043B\u0438\u0441\u044C \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${group.name} (${group.topic})`);
-  } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
-    await this.hideSkeleton();
-    this.addError({
-      componentName: this.constructor.name,
-      source: "setActiveGroup",
-      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B",
-      details: { group, error }
-    });
-    await this.showModal({
-      title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-      content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
-      buttons: [{ text: "OK", type: "primary" }]
-    });
-  }
-}
-__name(setActiveGroup, "setActiveGroup");
-async function searchMessages(query) {
-  try {
-    if (!query.trim()) {
-      await this.renderPart({
-        partName: "renderMessages",
-        state: this.state,
-        selector: "#messages-list"
-      });
-      return;
-    }
-    const filteredMessages = this.state.messages.filter(
-      (message2) => message2.text.toLowerCase().includes(query.toLowerCase()) || message2.from.toLowerCase().includes(query.toLowerCase())
-    );
-    const originalMessages = [...this.state.messages];
-    this.state.messages = filteredMessages;
-    await this.renderPart({
-      partName: "renderMessages",
-      state: this.state,
-      selector: "#messages-list"
-    });
-    this.state.messages = originalMessages;
-    const resultsCount = filteredMessages.length;
-    await this.showModal({
-      title: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430",
-      content: `<p>\u041D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: ${resultsCount}</p>`,
-      buttons: [{ text: "OK", type: "primary" }],
-      closeOnBackdropClick: true
-    });
-  } catch (error) {
-    console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439:", error);
-    this.addError({
-      componentName: this.constructor.name,
-      source: "searchMessages",
-      message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u043F\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F\u043C",
-      details: { query, error }
-    });
-  }
-}
-__name(searchMessages, "searchMessages");
-
-// public/components/chat-interface/index.mjs
-var ChatInterface = class extends BaseComponent {
-  static {
-    __name(this, "ChatInterface");
-  }
-  constructor() {
-    super();
-    this._templateMethods = template_exports2;
-    this.state = {
-      messages: [],
-      currentMessage: "",
-      connected: false,
-      currentGroup: null
-    };
-  }
-  async _componentReady() {
-    this._controller = await controller2(this);
-    this._actions = await createActions2(this);
-    await this._controller.init();
-    return true;
-  }
-  async addMessage(message2) {
-    this.state.messages.push({
-      ...message2,
-      timestamp: Date.now(),
-      id: Math.random().toString(36).substr(2, 9)
-    });
-    if (this.state.messages.length > 100) {
-      this.state.messages = this.state.messages.slice(-100);
-    }
-    await this.renderPart({
-      partName: "renderMessages",
-      state: this.state,
-      selector: "#messages-list"
-    });
-    const messagesContainer = this.shadowRoot.querySelector("#messages-list");
-    if (messagesContainer) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-  }
-  async setCurrentGroup(group) {
-    this.state.currentGroup = group;
-    this.state.messages = [];
-    await this.fullRender(this.state);
-  }
-  async updateConnectionStatus(connected) {
-    this.state.connected = connected;
-    await this.renderPart({
-      partName: "renderStatus",
-      state: this.state,
-      selector: "#connection-status"
-    });
-  }
-  async clearMessages() {
-    this.state.messages = [];
-    await this.renderPart({
-      partName: "renderMessages",
-      state: this.state,
-      selector: "#messages-list"
-    });
-  }
-  async _componentDisconnected() {
-    if (this._controller && this._controller.destroy) {
-      await this._controller.destroy();
-    }
-    this._templateMethods = null;
-  }
-};
-if (!customElements.get("chat-interface")) {
-  customElements.define("chat-interface", ChatInterface);
-}
-
-// public/components/group-manager/template/index.mjs
-var template_exports3 = {};
-__export(template_exports3, {
-  default: () => defaultTemplate3,
-  renderDiscoveredGroups: () => renderDiscoveredGroups2,
-  renderHeader: () => renderHeader,
-  renderJoinedGroups: () => renderJoinedGroups2,
-  renderMainContent: () => renderMainContent,
-  renderMyGroups: () => renderMyGroups2,
-  renderSearch: () => renderSearch,
-  renderSearchResults: () => renderSearchResults2
-});
-function defaultTemplate3({ state = {} } = {}) {
-  const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = state;
-  return `
-        <div class="group-manager">
-            ${renderHeader({ groups, discoveredGroups, joinedGroups })}
-            ${renderSearch({ searchQuery })}
-            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery })}
-        </div>
-    `;
-}
-__name(defaultTemplate3, "defaultTemplate");
-function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [] } = {}) {
-  return `
-        <header class="manager-header">
-            <div class="header-content">
-                <h1 class="manager-title">\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438</h1>
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">\u041C\u043E\u0438</span>
-                        <span class="stat-value">${groups.length}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.</span>
-                        <span class="stat-value">${joinedGroups.length}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">\u041D\u0430\u0439\u0434\u0435\u043D\u043E</span>
-                        <span class="stat-value">${discoveredGroups.length}</span>
-                    </div>
-                </div>
-            </div>
-        </header>
-    `;
-}
-__name(renderHeader, "renderHeader");
-function renderSearch({ searchQuery = "" } = {}) {
-  return `
-        <section class="search-section">
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    id="group-search-input" 
-                    class="search-input" 
-                    placeholder="\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F..."
-                    value="${escapeHtml3(searchQuery)}"
-                >
-                <button class="search-btn" id="search-groups">
-                    <span>\u{1F50D}</span>
-                    \u041F\u043E\u0438\u0441\u043A
-                </button>
-            </div>
-        </section>
-    `;
-}
-__name(renderSearch, "renderSearch");
-function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
-  return `
-        <main class="manager-main">
-            <div class="content-grid">
-                ${renderMyGroups2({ groups })}
-                ${renderDiscoveredGroups2({ discoveredGroups })}
-                ${renderJoinedGroups2({ joinedGroups })}
-                ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery }) : ""}
-            </div>
-        </main>
-    `;
-}
-__name(renderMainContent, "renderMainContent");
-function renderMyGroups2({ groups = [] } = {}) {
-  return `
-        <section class="section-card">
-            <div class="card-header">
-                <h3 class="card-title">\u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B</h3>
-                <span class="card-badge">${groups.length}</span>
-            </div>
-            <div class="card-content">
-                ${groups.length > 0 ? renderGroupsList(groups, "my") : renderEmptyState("my")}
-            </div>
-        </section>
-    `;
-}
-__name(renderMyGroups2, "renderMyGroups");
-function renderDiscoveredGroups2({ discoveredGroups = [] } = {}) {
-  return `
-        <section class="section-card">
-            <div class="card-header">
-                <h3 class="card-title">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435</h3>
-                <span class="card-badge">${discoveredGroups.length}</span>
-            </div>
-            <div class="card-content">
-                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered") : renderEmptyState("discovered")}
-            </div>
-        </section>
-    `;
-}
-__name(renderDiscoveredGroups2, "renderDiscoveredGroups");
-function renderJoinedGroups2({ joinedGroups = [] } = {}) {
-  return `
-        <section class="section-card">
-            <div class="card-header">
-                <h3 class="card-title">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435</h3>
-                <span class="card-badge">${joinedGroups.length}</span>
-            </div>
-            <div class="card-content">
-                ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, "joined") : renderEmptyState("joined")}
-            </div>
-        </section>
-    `;
-}
-__name(renderJoinedGroups2, "renderJoinedGroups");
-function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "" } = {}) {
-  const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
-  const filteredGroups = allGroups.filter(
-    (group) => group.name?.toLowerCase().includes(searchQuery.toLowerCase()) || group.topic?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  return `
-        <section class="section-card">
-            <div class="card-header">
-                <h3 class="card-title">\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430</h3>
-                <span class="card-badge">${filteredGroups.length}</span>
-            </div>
-            <div class="card-content">
-                ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, "search") : renderEmptyState("search", searchQuery)}
-            </div>
-        </section>
-    `;
-}
-__name(renderSearchResults2, "renderSearchResults");
-function renderGroupsList(groups, type) {
-  return `
-        <div class="groups-list">
-            ${groups.map((group) => renderGroupItem(group, type)).join("")}
-        </div>
-    `;
-}
-__name(renderGroupsList, "renderGroupsList");
-function renderGroupItem(group, type) {
-  const { id, name: name3, topic, memberCount = 1, description } = group;
-  return `
-        <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
-            <div class="group-avatar">
-                ${name3 ? name3.charAt(0).toUpperCase() : "G"}
-            </div>
-            <div class="group-info">
-                <div class="group-name">${escapeHtml3(name3)}</div>
-                <div class="group-meta">
-                    <span class="meta-item">\u{1F465} ${memberCount}</span>
-                    <span class="meta-item">${getGroupTypeLabel(type)}</span>
-                </div>
-            </div>
-            <div class="group-actions">
-                ${renderGroupActions(type, id, topic)}
-            </div>
-        </div>
-    `;
-}
-__name(renderGroupItem, "renderGroupItem");
-function renderGroupActions(type, groupId, topic) {
-  switch (type) {
-    case "my":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" title="\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
-                    \u{1F4AC}
-                </button>
-                <button class="action-btn leave" data-group-id="${groupId}" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
-                    \u{1F5D1}\uFE0F
-                </button>
-            `;
-    case "discovered":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
-                    \u2795
-                </button>
-            `;
-    case "joined":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" title="\u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
-                    \u{1F4AC}
-                </button>
-                <button class="action-btn leave" data-group-id="${groupId}" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">
-                    \u{1F6AA}
-                </button>
-            `;
-    case "search":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
-                    \u2795
-                </button>
-            `;
-    default:
-      return "";
-  }
-}
-__name(renderGroupActions, "renderGroupActions");
-function renderEmptyState(type, searchQuery = "") {
-  const states = {
-    my: {
-      icon: "\u{1F3E0}",
-      title: "\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
-      description: "\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-      action: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443"
-    },
-    discovered: {
-      icon: "\u{1F310}",
-      title: "\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B",
-      description: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u044C\u0442\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0432 \u0441\u0435\u0442\u0438",
-      action: "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C"
-    },
-    joined: {
-      icon: "\u{1F91D}",
-      title: "\u041D\u0435\u0442 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
-      description: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-      action: "\u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B"
-    },
-    search: {
-      icon: "\u{1F50D}",
-      title: `\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 "${searchQuery}" \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E`,
-      description: "\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441",
-      action: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A"
-    }
-  };
-  const state = states[type] || states.my;
-  return `
-        <div class="empty-state">
-            <div class="empty-icon">${state.icon}</div>
-            <p class="empty-text">${state.title}</p>
-            <button class="empty-action" id="${type}-action">
-                ${state.action}
-            </button>
-        </div>
-    `;
-}
-__name(renderEmptyState, "renderEmptyState");
-function getGroupTypeLabel(type) {
-  const labels = {
-    my: "\u041C\u043E\u044F",
-    discovered: "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F",
-    joined: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.",
-    search: "\u041D\u0430\u0439\u0434\u0435\u043D\u0430"
-  };
-  return labels[type] || "\u0413\u0440\u0443\u043F\u043F\u0430";
-}
-__name(getGroupTypeLabel, "getGroupTypeLabel");
-function escapeHtml3(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-__name(escapeHtml3, "escapeHtml");
-
-// public/components/group-manager/controller/index.mjs
-var controller3 = /* @__PURE__ */ __name(async (context) => {
-  let eventListeners = [];
-  return {
-    /**
-     * Инициализирует контроллер компонента GroupManager
-     * @async
-     */
-    async init() {
-      const createGroupBtn = context.shadowRoot.querySelector("#create-group-btn");
-      if (createGroupBtn) {
-        const createGroupHandler = /* @__PURE__ */ __name(async () => {
-          const groupNameInput = context.shadowRoot.querySelector("#group-name-input");
-          if (groupNameInput && groupNameInput.value.trim()) {
-            await context.createGroup(groupNameInput.value.trim());
-            groupNameInput.value = "";
-          }
-        }, "createGroupHandler");
-        createGroupBtn.addEventListener("click", createGroupHandler);
-        eventListeners.push({ element: createGroupBtn, handler: createGroupHandler });
-      }
-      const searchInput = context.shadowRoot.querySelector("#group-search-input");
-      if (searchInput) {
-        const searchHandler = /* @__PURE__ */ __name((e2) => {
-          context.searchGroups(e2.target.value);
-        }, "searchHandler");
-        searchInput.addEventListener("input", searchHandler);
-        eventListeners.push({ element: searchInput, handler: searchHandler });
-      }
-      const discoverBtn = context.shadowRoot.querySelector("#discover-groups-btn");
-      if (discoverBtn) {
-        const discoverHandler = /* @__PURE__ */ __name(async () => {
-          await context.discoverGroups();
-        }, "discoverHandler");
-        discoverBtn.addEventListener("click", discoverHandler);
-        eventListeners.push({ element: discoverBtn, handler: discoverHandler });
-      }
-      const setupJoinButtons = /* @__PURE__ */ __name(() => {
-        const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
-        joinButtons.forEach((button) => {
-          const handler = /* @__PURE__ */ __name(async (e2) => {
-            const groupId = e2.target.dataset.groupId;
-            const group = context.state.discoveredGroups.find((g) => g.id === groupId) || context.state.groups.find((g) => g.id === groupId);
-            if (group) {
-              await context.joinGroup(group);
-              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-              if (chatManager) {
-                await chatManager.postMessage({
-                  type: "JOIN_GROUP",
-                  data: group
-                });
-              }
-            }
-          }, "handler");
-          button.addEventListener("click", handler);
-          eventListeners.push({ element: button, handler });
-        });
-      }, "setupJoinButtons");
-      const setupLeaveButtons = /* @__PURE__ */ __name(() => {
-        const leaveButtons = context.shadowRoot.querySelectorAll(".leave-group-btn");
-        leaveButtons.forEach((button) => {
-          const handler = /* @__PURE__ */ __name(async (e2) => {
-            const groupId = e2.target.dataset.groupId;
-            await context.leaveGroup(groupId);
-          }, "handler");
-          button.addEventListener("click", handler);
-          eventListeners.push({ element: button, handler });
-        });
-      }, "setupLeaveButtons");
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === "childList") {
-            setupJoinButtons();
-            setupLeaveButtons();
-          }
-        });
-      });
-      observer.observe(context.shadowRoot, {
-        childList: true,
-        subtree: true
-      });
-      context._groupObserver = observer;
-      setTimeout(() => {
-        setupJoinButtons();
-        setupLeaveButtons();
-      }, 100);
-    },
-    /**
-     * Уничтожает контроллер и очищает ресурсы
-     * @async
-     */
-    async destroy() {
-      eventListeners.forEach(({ element, handler }) => {
-        element.removeEventListener("click", handler);
-      });
-      eventListeners = [];
-      if (context._groupObserver) {
-        context._groupObserver.disconnect();
-        context._groupObserver = null;
-      }
-    }
-  };
-}, "controller");
-
-// public/components/group-manager/actions/index.mjs
-async function createActions3(context) {
-  let libp2p = null;
-  let discoveredGroupsInterval = null;
-  return {
-    /**
-     * Инициализация Libp2p для работы с группами
-     * @async
-     * @param {Object} libp2pInstance - Экземпляр Libp2p
-     */
-    initializeLibp2p: /* @__PURE__ */ __name(async function(libp2pInstance) {
-      libp2p = libp2pInstance;
-      this.startGroupDiscovery();
-      console.log("[GroupManager] Libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
-    }, "initializeLibp2p"),
-    /**
-     * Запуск процесса обнаружения групп
-     * @async
-     */
-    startGroupDiscovery: /* @__PURE__ */ __name(async function() {
-      if (discoveredGroupsInterval) {
-        clearInterval(discoveredGroupsInterval);
-      }
-      discoveredGroupsInterval = setInterval(async () => {
-        await this.discoverGroups();
-      }, 1e4);
-      await this.discoverGroups();
-    }, "startGroupDiscovery"),
-    /**
-     * Обнаружение доступных групп через PubSub
-     * @async
-     */
-    discoverGroups: /* @__PURE__ */ __name(async function() {
-      if (!libp2p) {
-        console.warn("[GroupManager] Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-        return;
-      }
-      try {
-        const topics = libp2p.services.pubsub?.getTopics() || [];
-        const groupTopics = topics.filter(
-          (topic) => topic.startsWith("chat-group-") || topic.startsWith("universe-chat-")
-        );
-        const discoveredGroups = [];
-        for (const topic of groupTopics) {
-          try {
-            const subscribers = libp2p.services.pubsub.getSubscribers(topic);
-            const memberCount = subscribers.length;
-            let groupName = topic;
-            if (topic.startsWith("chat-group-")) {
-              groupName = topic.replace("chat-group-", "").split("-")[0];
-            } else if (topic.startsWith("universe-chat-")) {
-              groupName = topic.replace("universe-chat-", "");
-            }
-            let groupInfo = {
-              id: topic,
-              name: this.formatGroupName(groupName),
-              topic,
-              memberCount,
-              description: this.generateGroupDescription(groupName),
-              isPublic: true,
-              discoveryTime: Date.now()
-            };
-            discoveredGroups.push(groupInfo);
-          } catch (error) {
-            console.warn(`[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 ${topic}:`, error);
-          }
-        }
-        context.state.discoveredGroups = discoveredGroups;
-        if (context.renderPart) {
-          await context.renderPart({
-            partName: "renderDiscoveredGroups",
-            state: context.state,
-            selector: "#discovered-groups-list"
-          });
-        }
-        console.log(`[GroupManager] \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: ${discoveredGroups.length}`);
-      } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F:", error);
-        context.addError({
-          componentName: "GroupManager",
-          source: "discoverGroups",
-          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F",
-          details: error
-        });
-      }
-    }, "discoverGroups"),
-    /**
-     * Создание новой группы чата
-     * @async
-     * @param {string} groupName - Название группы
-     * @param {Object} options - Дополнительные опции
-     * @returns {Promise<Object>} Созданная группа
-     */
-    createGroup: /* @__PURE__ */ __name(async function(groupName, options = {}) {
-      if (!libp2p) {
-        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      }
-      try {
-        const topic = `chat-group-${this.sanitizeTopicName(groupName)}-${Date.now()}`;
-        const group = {
-          id: topic,
-          name: groupName,
-          topic,
-          memberCount: 1,
-          description: options.description || `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${groupName}`,
-          isPublic: options.isPublic !== false,
-          createdAt: Date.now(),
-          createdBy: libp2p.peerId.toString()
-        };
-        await libp2p.services.pubsub.subscribe(topic);
-        if (group.isPublic) {
-          await this.announceGroupCreation(group);
-        }
-        console.log(`[GroupManager] \u0421\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: ${groupName} (${topic})`);
-        return group;
-      } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
-        context.addError({
-          componentName: "GroupManager",
-          source: "createGroup",
-          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B",
-          details: error
-        });
-        throw error;
-      }
-    }, "createGroup"),
-    /**
-     * Присоединение к существующей группе
-     * @async
-     * @param {string} topic - Топик группы
-     * @returns {Promise<Object>} Информация о группе
-     */
-    joinGroup: /* @__PURE__ */ __name(async function(topic) {
-      if (!libp2p) {
-        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      }
-      try {
-        await libp2p.services.pubsub.subscribe(topic);
-        const subscribers = libp2p.services.pubsub.getSubscribers(topic);
-        const memberCount = subscribers.length;
-        const group = {
-          id: topic,
-          name: this.extractGroupNameFromTopic(topic),
-          topic,
-          memberCount,
-          description: `\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: ${this.extractGroupNameFromTopic(topic)}`,
-          joinedAt: Date.now(),
-          isPublic: true
-        };
-        console.log(`[GroupManager] \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${group.name} (${topic})`);
-        return group;
-      } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435:", error);
-        context.addError({
-          componentName: "GroupManager",
-          source: "joinGroup",
-          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435",
-          details: error
-        });
-        throw error;
-      }
-    }, "joinGroup"),
-    /**
-     * Выход из группы
-     * @async
-     * @param {string} topic - Топик группы
-     */
-    leaveGroup: /* @__PURE__ */ __name(async function(topic) {
-      if (!libp2p) {
-        throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      }
-      try {
-        await libp2p.services.pubsub.unsubscribe(topic);
-        console.log(`[GroupManager] \u041F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: ${topic}`);
-      } catch (error) {
-        console.error("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B:", error);
-        context.addError({
-          componentName: "GroupManager",
-          source: "leaveGroup",
-          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B",
-          details: error
-        });
-        throw error;
-      }
-    }, "leaveGroup"),
-    /**
-     * Поиск групп по названию или описанию
-     * @async
-     * @param {string} query - Поисковый запрос
-     * @returns {Promise<Array>} Найденные группы
-     */
-    searchGroups: /* @__PURE__ */ __name(async function(query) {
-      if (!query || !query.trim()) {
-        return context.state.discoveredGroups || [];
-      }
-      const searchTerm = query.toLowerCase().trim();
-      const filteredGroups = (context.state.discoveredGroups || []).filter(
-        (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm)
-      );
-      console.log(`[GroupManager] \u041F\u043E\u0438\u0441\u043A "${query}": \u043D\u0430\u0439\u0434\u0435\u043D\u043E ${filteredGroups.length} \u0433\u0440\u0443\u043F\u043F`);
-      return filteredGroups;
-    }, "searchGroups"),
-    /**
-     * Получение списка участников группы
-     * @async
-     * @param {string} topic - Топик группы
-     * @returns {Promise<Array>} Список участников
-     */
-    getGroupMembers: /* @__PURE__ */ __name(async function(topic) {
-      if (!libp2p) {
-        return [];
-      }
-      try {
-        const subscribers = libp2p.services.pubsub.getSubscribers(topic);
-        return subscribers.map((peerId) => peerId.toString());
-      } catch (error) {
-        console.warn(`[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B ${topic}:`, error);
-        return [];
-      }
-    }, "getGroupMembers"),
-    /**
-     * Анонсирование создания новой группы
-     * @async
-     * @param {Object} group - Информация о группе
-     */
-    announceGroupCreation: /* @__PURE__ */ __name(async function(group) {
-      if (!libp2p) return;
-      try {
-        const announcement = {
-          type: "group_announcement",
-          group: {
-            id: group.id,
-            name: group.name,
-            topic: group.topic,
-            description: group.description,
-            createdAt: group.createdAt,
-            createdBy: group.createdBy
-          },
-          timestamp: Date.now()
-        };
-        const announcementTopic = "chat-group-announcements";
-        await libp2p.services.pubsub.publish(
-          announcementTopic,
-          new TextEncoder().encode(JSON.stringify(announcement))
-        );
-      } catch (error) {
-        console.warn("[GroupManager] \u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B:", error);
-      }
-    }, "announceGroupCreation"),
-    /**
-     * Форматирование названия группы
-     * @param {string} rawName - Сырое название
-     * @returns {string} Отформатированное название
-     */
-    formatGroupName: /* @__PURE__ */ __name(function(rawName) {
-      return rawName.replace(/[_-]/g, " ").replace(/\b\w/g, (l2) => l2.toUpperCase()).trim();
-    }, "formatGroupName"),
-    /**
-     * Генерация описания группы
-     * @param {string} groupName - Название группы
-     * @returns {string} Описание группы
-     */
-    generateGroupDescription: /* @__PURE__ */ __name(function(groupName) {
-      const descriptions = [
-        `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u044F: ${groupName}`,
-        `\u0421\u043E\u043E\u0431\u0449\u0435\u0441\u0442\u0432\u043E \u043F\u043E \u0438\u043D\u0442\u0435\u0440\u0435\u0441\u0430\u043C: ${groupName}`,
-        `\u0427\u0430\u0442 \u0433\u0440\u0443\u043F\u043F\u044B: ${groupName}`,
-        `\u041E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u0435 \u0442\u0435\u043C\u044B: ${groupName}`
-      ];
-      return descriptions[Math.floor(Math.random() * descriptions.length)];
-    }, "generateGroupDescription"),
-    /**
-     * Санитизация названия для топика
-     * @param {string} name - Исходное название
-     * @returns {string} Санитизированное название
-     */
-    sanitizeTopicName: /* @__PURE__ */ __name(function(name3) {
-      return name3.toLowerCase().replace(/[^a-z0-9а-яё]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
-    }, "sanitizeTopicName"),
-    /**
-     * Извлечение названия группы из топика
-     * @param {string} topic - Топик группы
-     * @returns {string} Название группы
-     */
-    extractGroupNameFromTopic: /* @__PURE__ */ __name(function(topic) {
-      if (topic.startsWith("chat-group-")) {
-        const parts = topic.replace("chat-group-", "").split("-");
-        return this.formatGroupName(parts[0]);
-      }
-      return this.formatGroupName(topic);
-    }, "extractGroupNameFromTopic"),
-    /**
-     * Очистка ресурсов
-     * @async
-     */
-    cleanup: /* @__PURE__ */ __name(async function() {
-      if (discoveredGroupsInterval) {
-        clearInterval(discoveredGroupsInterval);
-        discoveredGroupsInterval = null;
-      }
-      libp2p = null;
-      console.log("[GroupManager] \u0420\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
-    }, "cleanup")
-  };
-}
-__name(createActions3, "createActions");
-
-// public/components/group-manager/index.mjs
-var GroupManager = class extends BaseComponent {
-  static {
-    __name(this, "GroupManager");
-  }
-  constructor() {
-    super();
-    this._templateMethods = template_exports3;
-    this.state = {
-      groups: [],
-      discoveredGroups: [],
-      searchQuery: "",
-      joinedGroups: []
-    };
-  }
-  async _componentReady() {
-    this._controller = await controller3(this);
-    this._actions = await createActions3(this);
-    await this._controller.init();
-    return true;
-  }
-  async createGroup(groupName) {
-    const group = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: groupName,
-      topic: `chat-group-${groupName}-${Date.now()}`,
-      memberCount: 1,
-      createdAt: Date.now(),
-      isPublic: true
-    };
-    this.state.groups.push(group);
-    await this.renderPart({
-      partName: "renderMyGroups",
-      state: this.state,
-      selector: "#my-groups-list"
-    });
-    return group;
-  }
-  async discoverGroups() {
-    const mockDiscoveredGroups = [
-      {
-        id: "discovered-1",
-        name: "\u041E\u0431\u0449\u0438\u0439 \u0447\u0430\u0442",
-        topic: "chat-general",
-        memberCount: 5,
-        description: "\u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0439 \u0447\u0430\u0442 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F"
-      },
-      {
-        id: "discovered-2",
-        name: "\u0422\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0438",
-        topic: "chat-tech",
-        memberCount: 3,
-        description: "\u041E\u0431\u0441\u0443\u0436\u0434\u0435\u043D\u0438\u0435 \u0442\u0435\u0445\u043D\u043E\u043B\u043E\u0433\u0438\u0439"
-      }
-    ];
-    this.state.discoveredGroups = mockDiscoveredGroups;
-    await this.renderPart({
-      partName: "renderDiscoveredGroups",
-      state: this.state,
-      selector: "#discovered-groups-list"
-    });
-  }
-  async searchGroups(query) {
-    this.state.searchQuery = query;
-    await this.renderPart({
-      partName: "renderSearchResults",
-      state: this.state,
-      selector: "#search-results"
-    });
-  }
-  async joinGroup(group) {
-    if (!this.state.joinedGroups.find((g) => g.id === group.id)) {
-      this.state.joinedGroups.push({
-        ...group,
-        joinedAt: Date.now()
-      });
-    }
-    await this.renderPart({
-      partName: "renderJoinedGroups",
-      state: this.state,
-      selector: "#joined-groups-list"
-    });
-    return group;
-  }
-  async leaveGroup(groupId) {
-    this.state.joinedGroups = this.state.joinedGroups.filter((g) => g.id !== groupId);
-    await this.renderPart({
-      partName: "renderJoinedGroups",
-      state: this.state,
-      selector: "#joined-groups-list"
-    });
-  }
-  async _componentDisconnected() {
-    if (this._controller && this._controller.destroy) {
-      await this._controller.destroy();
-    }
-    this._templateMethods = null;
-  }
-};
-if (!customElements.get("group-manager")) {
-  customElements.define("group-manager", GroupManager);
-}
-
-// public/components/peer-connection/template/index.mjs
-var template_exports4 = {};
-__export(template_exports4, {
-  default: () => defaultTemplate4,
-  renderAddresses: () => renderAddresses,
-  renderAddressesList: () => renderAddressesList,
-  renderConnectedPeers: () => renderConnectedPeers,
-  renderConnectedPeersDetailed: () => renderConnectedPeersDetailed,
-  renderConnectionControls: () => renderConnectionControls,
-  renderPeersList: () => renderPeersList,
-  renderQuickActions: () => renderQuickActions2,
-  renderStatistics: () => renderStatistics2,
-  renderStatus: () => renderStatus2,
-  renderSystemStatus: () => renderSystemStatus
-});
-function defaultTemplate4({ state = {} } = {}) {
-  return `
-    <div class="peer-connection">
-        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->
-        <header class="connection-header">
-            <div class="header-main">
-                <h1 class="connection-title">
-                    <span class="title-icon">\u{1F310}</span>
-                    P2P \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435
-                </h1>
-                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">
-                    <span class="status-dot"></span>
-                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>
-                </div>
-            </div>
-            <div class="header-meta">
-                <div class="meta-item">
-                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>
-                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Peer ID:</span>
-                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->
-        <main class="connection-grid">
-            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
-            <section class="grid-card status-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F4CA}</span>
-                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderSystemStatus({ state })}
-                </div>
-            </section>
-
-            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->
-            <section class="grid-card control-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u26A1</span>
-                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderConnectionControls({ state })}
-                </div>
-            </section>
-
-            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->
-            <section class="grid-card peers-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F465}</span>
-                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B
-                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderPeersList({ state })}
-                </div>
-            </section>
-
-            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->
-            <section class="grid-card addresses-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F4CD}</span>
-                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F
-                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>
-                    </h3>
-                </div>
-                <div class="card-content">
-                     <div id="listening-addresses">
-                        ${renderAddressesList({ state })}
-                    </div>
-                </div>
-            </section>
-
-            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->
-            <section class="grid-card actions-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F680}</span>
-                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderQuickActions2({ state })}
-                </div>
-            </section>
-
-            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->
-            <section class="grid-card stats-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F4C8}</span>
-                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderStatistics2({ state })}
-                </div>
-            </section>
-
-            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->
-            <section class="grid-card connected-peers-section" style="display: none;">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F517}</span>
-                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F
-                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
-                    </h3>
-                </div>
-                <div class="card-content">
-                    <div id="connected-peers-list">
-                        ${renderConnectedPeersDetailed({ state })}
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->
-        <footer class="connection-footer">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>
-                    <span class="info-dot"></span>
-                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
-                </div>
-                <div class="footer-actions">
-                    <button class="footer-btn" id="refresh-all">
-                        <span class="btn-icon">\u{1F504}</span>
-                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C
-                    </button>
-                </div>
-            </div>
-        </footer>
-    </div>
-    `;
-}
-__name(defaultTemplate4, "defaultTemplate");
-function renderSystemStatus({ state = {} } = {}) {
-  return `
-    <div class="status-grid">
-        <div class="status-item">
-            <div class="status-icon ${state.connected ? "connected" : "disconnected"}">
-                ${state.connected ? "\u{1F7E2}" : "\u{1F534}"}
-            </div>
-            <div class="status-info">
-                <span class="status-label">\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435</span>
-                <span class="status-value">${state.connected ? "\u0410\u043A\u0442\u0438\u0432\u043D\u043E" : "\u041D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E"}</span>
-            </div>
-        </div>
-        <div class="status-item">
-            <div class="status-icon">
-                \u{1F310}
-            </div>
-            <div class="status-info">
-                <span class="status-label">\u0420\u0435\u0436\u0438\u043C</span>
-                <span class="status-value">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
-            </div>
-        </div>
-        <div class="status-item">
-            <div class="status-icon ${state.relayEnabled ? "enabled" : "disabled"}">
-                ${state.relayEnabled ? "\u{1F517}" : "\u26D3\uFE0F"}
-            </div>
-            <div class="status-info">
-                <span class="status-label">Relay</span>
-                <span class="status-value">${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
-            </div>
-        </div>
-        <div class="status-item">
-            <div class="status-icon">
-                \u23F1\uFE0F
-            </div>
-            <div class="status-info">
-                <span class="status-label">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B</span>
-                <span class="status-value">${state.uptime || "0:00"}</span>
-            </div>
-        </div>
-    </div>
-    `;
-}
-__name(renderSystemStatus, "renderSystemStatus");
-function renderConnectionControls({ state = {} } = {}) {
-  return `
-    <div class="controls-container">
-        <!-- \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u0440\u0435\u0436\u0438\u043C\u043E\u0432 -->
-        <div class="control-group">
-            <label class="control-label">\u0420\u0435\u0436\u0438\u043C \u0440\u0430\u0431\u043E\u0442\u044B</label>
-            <div class="mode-switcher">
-                <button class="mode-btn ${state.mode === "listener" ? "active" : ""}" id="listener-mode-btn">
-                    <span class="btn-icon">\u{1F4E1}</span>
-                    \u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C
-                </button>
-                <button class="mode-btn ${state.mode === "dialer" ? "active" : ""}" id="dialer-mode-btn">
-                    <span class="btn-icon">\u{1F517}</span>
-                    \u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440
-                </button>
-            </div>
-        </div>
-
-        <!-- \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 -->
-        <div class="control-group">
-            <label class="control-label">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043A \u043F\u0438\u0440\u0443</label>
-            <div class="connection-input-group">
-                <input 
-                    type="text" 
-                    id="peer-address-input" 
-                    class="connection-input"
-                    placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooW..."
-                    ${!state.connected ? "disabled" : ""}
-                >
-                <button 
-                    id="connect-peer-btn" 
-                    class="connect-btn"
-                    ${!state.connected ? "disabled" : ""}
-                >
-                    <span class="btn-icon">\u{1F50C}</span>
-                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C
-                </button>
-            </div>
-        </div>
-
-        <!-- \u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 Relay -->
-        <div class="control-group">
-            <label class="control-label">\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0441\u0435\u0442\u0438</label>
-            <div class="settings-group">
-                <label class="setting-toggle">
-                    <input 
-                        type="checkbox" 
-                        id="relay-toggle" 
-                        ${state.relayEnabled ? "checked" : ""}
-                        ${state.connected ? "disabled" : ""}
-                    >
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C Relay</span>
-                </label>
-            </div>
-        </div>
-    </div>
-    `;
-}
-__name(renderConnectionControls, "renderConnectionControls");
-function renderPeersList({ state = {} } = {}) {
-  const peers = state.connectedPeers || [];
-  if (peers.length === 0) {
-    return `
-        <div class="empty-state">
-            <div class="empty-icon">\u{1F465}</div>
-            <p class="empty-title">\u041D\u0435\u0442 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432</p>
-            <p class="empty-description">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0434\u0440\u0443\u0433\u0438\u043C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0430\u043C \u0441\u0435\u0442\u0438</p>
-        </div>
-        `;
-  }
-  return `
-    <div class="peers-container" id="connected-peers-list">
-        ${peers.map((peer, index) => `
-        <div class="peer-item" data-peer-id="${peer.id}">
-            <div class="peer-avatar">
-                ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
-            </div>
-            <div class="peer-info">
-                <div class="peer-name">\u041F\u0438\u0440 #${index + 1}</div>
-                <div class="peer-id">${peer.id.substring(0, 24)}...</div>
-                <div class="peer-meta">
-                    <span class="peer-connections">${peer.connections ? peer.connections.length : 1} \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</span>
-                </div>
-            </div>
-            <div class="peer-actions">
-                <button class="peer-action-btn disconnect" data-peer-id="${peer.id}">
-                    <span class="action-icon">\u274C</span>
-                </button>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
-}
-__name(renderPeersList, "renderPeersList");
-function renderConnectedPeersDetailed({ state = {} } = {}) {
-  const peers = state.connectedPeers || [];
-  if (peers.length === 0) {
-    return `
-        <div class="empty-state">
-            <div class="empty-icon">\u{1F50C}</div>
-            <p class="empty-title">\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</p>
-            <p class="empty-description">\u041F\u0438\u0440\u044B \u043F\u043E\u044F\u0432\u044F\u0442\u0441\u044F \u0437\u0434\u0435\u0441\u044C \u043F\u043E\u0441\u043B\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</p>
-        </div>
-        `;
-  }
-  return `
-    <div class="peers-detailed-container">
-        ${peers.map((peer, index) => `
-        <div class="peer-detailed-item" data-peer-id="${peer.id}">
-            <div class="peer-header">
-                <div class="peer-avatar-large">
-                    ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
-                </div>
-                <div class="peer-main-info">
-                    <div class="peer-name">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 #${index + 1}</div>
-                    <div class="peer-id-full">${peer.id}</div>
-                </div>
-                <div class="peer-status-indicator connected">
-                    <span class="status-dot"></span>
-                    <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D</span>
-                </div>
-            </div>
-            
-            <div class="peer-connections-info">
-                <div class="connections-header">
-                    <span class="connections-label">\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F:</span>
-                    <span class="connections-count">${peer.connections ? peer.connections.length : 1}</span>
-                </div>
-                
-                ${peer.connections ? peer.connections.map((conn) => `
-                <div class="connection-item">
-                    <div class="connection-protocol">
-                        <span class="protocol-icon">\u{1F517}</span>
-                        <span class="protocol-name">${getConnectionProtocol(conn.remoteAddr)}</span>
-                    </div>
-                    <div class="connection-address">${conn.remoteAddr}</div>
-                    <div class="connection-status ${conn.status}">
-                        <span class="status-badge">${conn.status}</span>
-                    </div>
-                </div>
-                `).join("") : `
-                <div class="connection-item">
-                    <div class="connection-protocol">
-                        <span class="protocol-icon">\u{1F310}</span>
-                        <span class="protocol-name">P2P</span>
-                    </div>
-                    <div class="connection-address">\u041F\u0440\u044F\u043C\u043E\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435</div>
-                    <div class="connection-status open">
-                        <span class="status-badge">active</span>
-                    </div>
-                </div>
-                `}
-            </div>
-            
-            <div class="peer-actions-detailed">
-                <button class="action-btn secondary disconnect-peer" data-peer-id="${peer.id}">
-                    <span class="btn-icon">\u{1F6AB}</span>
-                    \u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C
-                </button>
-                <button class="action-btn outline copy-peer-id" data-peer-id="${peer.id}">
-                    <span class="btn-icon">\u{1F4CB}</span>
-                    ID
-                </button>
-                <button class="action-btn outline peer-info" data-peer-id="${peer.id}">
-                    <span class="btn-icon">\u2139\uFE0F</span>
-                    \u0418\u043D\u0444\u043E
-                </button>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
-}
-__name(renderConnectedPeersDetailed, "renderConnectedPeersDetailed");
-function renderAddressesList({ state = {} } = {}) {
-  const addresses = state.listeningAddresses || [];
-  if (addresses.length === 0) {
-    return `
-        <div class="empty-state">
-            <div class="empty-icon">\u{1F4CD}</div>
-            <p class="empty-title">\u041D\u0435\u0442 \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F</p>
-            <p class="empty-description">\u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 P2P \u0443\u0437\u0435\u043B \u0434\u043B\u044F \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432</p>
-        </div>
-        `;
-  }
-  return `
-    <div class="addresses-container">
-        ${addresses.map((address, index) => `
-        <div class="address-item" data-address="${address}">
-            <div class="address-index">${index + 1}</div>
-            <div class="address-content">
-                <div class="address-protocol">
-                    ${getProtocolIcon(address)}
-                    ${getProtocolName(address)}
-                </div>
-                <div class="address-value">${address}</div>
-            </div>
-            <button class="address-action copy" data-address="${address}">
-                <span class="action-icon">\u{1F4CB}</span>
-            </button>
-        </div>
-        `).join("")}
-    </div>
-    `;
-}
-__name(renderAddressesList, "renderAddressesList");
-function renderQuickActions2({ state = {} } = {}) {
-  return `
-    <div class="actions-grid">
-        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>
-            <span class="btn-icon">\u{1F4CB}</span>
-            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>
-        </button>
-        
-        <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>
-            <span class="btn-icon">\u{1F310}</span>
-            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>
-        </button>
-        
-        <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>
-            <span class="btn-icon">\u{1F6AB}</span>
-            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>
-        </button>
-        
-        <button class="action-btn outline" id="restart-node">
-            <span class="btn-icon">\u{1F504}</span>
-            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>
-        </button>
-    </div>
-    `;
-}
-__name(renderQuickActions2, "renderQuickActions");
-function renderStatistics2({ state = {} } = {}) {
-  const peersCount = state.connectedPeers ? state.connectedPeers.length : 0;
-  const addressesCount = state.listeningAddresses ? state.listeningAddresses.length : 0;
-  const connectionCount = state.connectedPeers ? state.connectedPeers.reduce((total, peer) => total + (peer.connections ? peer.connections.length : 1), 0) : 0;
-  return `
-    <div class="stats-grid">
-        <div class="stat-item">
-            <div class="stat-value">${peersCount}</div>
-            <div class="stat-label">\u041F\u0438\u0440\u043E\u0432</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">${connectionCount}</div>
-            <div class="stat-label">\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">${addressesCount}</div>
-            <div class="stat-label">\u0410\u0434\u0440\u0435\u0441\u043E\u0432</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">${state.mode === "listener" ? "\u0412\u0445\u043E\u0434\u044F\u0449\u0438\u0435" : "\u0418\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435"}</div>
-            <div class="stat-label">\u0422\u0438\u043F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</div>
-        </div>
-    </div>
-    `;
-}
-__name(renderStatistics2, "renderStatistics");
-function renderAddresses({ state = {} } = {}) {
-  return renderAddressesList({ state });
-}
-__name(renderAddresses, "renderAddresses");
-function renderConnectedPeers({ state = {} } = {}) {
-  return renderConnectedPeersDetailed({ state });
-}
-__name(renderConnectedPeers, "renderConnectedPeers");
-function renderStatus2({ state = {} } = {}) {
-  if (!state.connected) {
-    return `
-        <div class="status-message disconnected">
-            <span class="status-icon">\u{1F534}</span>
-            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
-            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
-        </div>
-        `;
-  }
-  if (!state.currentGroup) {
-    return `
-        <div class="status-message info">
-            <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
-        </div>
-        `;
-  }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
-        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
-    </div>
-    `;
-}
-__name(renderStatus2, "renderStatus");
-function getProtocolIcon(address) {
-  if (address.includes("/ws")) return "\u{1F517}";
-  if (address.includes("/wss")) return "\u{1F512}";
-  if (address.includes("/webrtc")) return "\u{1F310}";
-  if (address.includes("/p2p-circuit")) return "\u{1F504}";
-  return "\u26A1";
-}
-__name(getProtocolIcon, "getProtocolIcon");
-function getProtocolName(address) {
-  if (address.includes("/ws")) return "WebSocket";
-  if (address.includes("/wss")) return "Secure WS";
-  if (address.includes("/webrtc")) return "WebRTC";
-  if (address.includes("/p2p-circuit")) return "Relay";
-  return "Unknown";
-}
-__name(getProtocolName, "getProtocolName");
-function getConnectionProtocol(address) {
-  if (address.includes("/ws")) return "WebSocket";
-  if (address.includes("/wss")) return "Secure WebSocket";
-  if (address.includes("/webrtc")) return "WebRTC";
-  if (address.includes("/p2p-circuit")) return "Circuit Relay";
-  if (address.includes("/tcp")) return "TCP";
-  return "Direct";
-}
-__name(getConnectionProtocol, "getConnectionProtocol");
-
-// public/components/peer-connection/controller/index.mjs
-var controller4 = /* @__PURE__ */ __name(async (context) => {
-  let eventListeners = [];
-  return {
-    /**
-     * Инициализирует контроллер компонента
-     * @async
-     */
-    async init() {
-      console.log("\u{1F527} PeerConnection controller initializing...");
-      const connectBtn = context.shadowRoot.querySelector("#connect-peer-btn");
-      const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
-      const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
-      const dialerBtn = context.shadowRoot.querySelector("#dialer-mode-btn");
-      console.log("\u{1F50D} Debug: button elements found", {
-        listenerBtn: !!listenerBtn,
-        dialerBtn: !!dialerBtn,
-        listenerBtnId: listenerBtn?.id,
-        dialerBtnId: dialerBtn?.id
-      });
-      if (listenerBtn) {
-        const listenerHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("\u{1F527} Listener mode button clicked");
-            await context.switchMode("listener");
-            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener:", error);
-            context.addError({
-              componentName: context.constructor.name,
-              source: "controller-listener",
-              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C \u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044F",
-              details: error
-            });
-          }
-        }, "listenerHandler");
-        listenerBtn.addEventListener("click", listenerHandler);
-        eventListeners.push({ element: listenerBtn, handler: listenerHandler });
-        console.log("\u2705 Listener button handler attached");
-      }
-      if (dialerBtn) {
-        const dialerHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("\u{1F527} Dialer mode button clicked");
-            await context.switchMode("dialer");
-            console.log("\u2705 \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer:", error);
-            context.addError({
-              componentName: context.constructor.name,
-              source: "controller-dialer",
-              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C \u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440\u0430",
-              details: error
-            });
-          }
-        }, "dialerHandler");
-        dialerBtn.addEventListener("click", dialerHandler);
-        eventListeners.push({ element: dialerBtn, handler: dialerHandler });
-        console.log("\u2705 Dialer button handler attached");
-      }
-      const modeSwitcher = context.shadowRoot.querySelector(".mode-switcher");
-      if (modeSwitcher) {
-        const modeDelegationHandler = /* @__PURE__ */ __name(async (event) => {
-          const button = event.target.closest(".mode-btn");
-          if (button) {
-            event.preventDefault();
-            event.stopPropagation();
-            const mode = button.id === "listener-mode-btn" ? "listener" : "dialer";
-            console.log("\u{1F527} Mode delegation handler triggered:", mode);
-            try {
-              await context.switchMode(mode);
-              console.log("\u2705 Mode switched via delegation:", mode);
-            } catch (error) {
-              console.error("\u274C Error in mode delegation:", error);
-            }
-          }
-        }, "modeDelegationHandler");
-        modeSwitcher.addEventListener("click", modeDelegationHandler);
-        eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
-        console.log("\u2705 Mode switcher delegation handler attached");
-      }
-      if (connectBtn && peerAddressInput) {
-        const connectHandler = /* @__PURE__ */ __name(async () => {
-          debugger;
-          const address = peerAddressInput.value.trim();
-          if (address) {
-            try {
-              console.log("\u{1F527} Connecting to peer:", address);
-              await context.connectToPeer(address);
-              peerAddressInput.value = "";
-              console.log(`\u2705 \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: ${address}`);
-            } catch (error) {
-              console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443:", error);
-              context.addError({
-                componentName: context.constructor.name,
-                source: "controller-connect",
-                message: `\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A ${address}`,
-                details: error
-              });
-            }
-          } else {
-            console.warn("\u26A0\uFE0F \u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
-          }
-        }, "connectHandler");
-        connectBtn.addEventListener("click", connectHandler);
-        eventListeners.push({ element: connectBtn, handler: connectHandler });
-        const enterHandler = /* @__PURE__ */ __name((event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            connectHandler();
-          }
-        }, "enterHandler");
-        peerAddressInput.addEventListener("keypress", enterHandler);
-        eventListeners.push({ element: peerAddressInput, handler: enterHandler });
-        console.log("\u2705 Peer connection handlers attached");
-      }
-      const refreshBtn = context.shadowRoot.querySelector("#refresh-peers-btn");
-      if (refreshBtn) {
-        const refreshHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("\u{1F527} Refreshing peer list...");
-            await context.updatePeerList();
-            console.log("\u2705 \u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432:", error);
-          }
-        }, "refreshHandler");
-        refreshBtn.addEventListener("click", refreshHandler);
-        eventListeners.push({ element: refreshBtn, handler: refreshHandler });
-        console.log("\u2705 Refresh peers handler attached");
-      }
-      const copyAddressesBtn = context.shadowRoot.querySelector("#copy-addresses-btn");
-      if (copyAddressesBtn) {
-        const copyHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("\u{1F527} Copying addresses...");
-            const addresses = await context.getRelayAddresses();
-            const textToCopy = addresses.join("\n");
-            await navigator.clipboard.writeText(textToCopy);
-            console.log("\u2705 \u0410\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
-            const originalText = copyAddressesBtn.textContent;
-            copyAddressesBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
-            copyAddressesBtn.style.background = "var(--success-gradient)";
-            setTimeout(() => {
-              copyAddressesBtn.textContent = originalText;
-              copyAddressesBtn.style.background = "";
-            }, 2e3);
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
-            context.addError({
-              componentName: context.constructor.name,
-              source: "controller-copy-addresses",
-              message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432",
-              details: error
-            });
-          }
-        }, "copyHandler");
-        copyAddressesBtn.addEventListener("click", copyHandler);
-        eventListeners.push({ element: copyAddressesBtn, handler: copyHandler });
-        console.log("\u2705 Copy addresses handler attached");
-      }
-      const relayToggle = context.shadowRoot.querySelector("#relay-toggle");
-      if (relayToggle) {
-        const relayHandler = /* @__PURE__ */ __name((event) => {
-          context.state.relayEnabled = event.target.checked;
-          console.log(`\u{1F527} Relay ${context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}`);
-          context.renderPart({
-            partName: "renderSystemStatus",
-            state: context.state,
-            selector: ".status-card .card-content"
-          }).catch(console.error);
-        }, "relayHandler");
-        relayToggle.addEventListener("change", relayHandler);
-        eventListeners.push({ element: relayToggle, handler: relayHandler });
-        console.log("\u2705 Relay toggle handler attached");
-      }
-      this.setupQuickActions(context, eventListeners);
-      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      console.log("\u{1F4CA} Total event listeners:", eventListeners.length);
-    },
-    /**
-     * Настраивает обработчики для быстрых действий
-     * @param {HTMLElement} context - Контекст компонента
-     * @param {Array} eventListeners - Массив обработчиков событий
-     */
-    setupQuickActions(context2, eventListeners2) {
-      const copyPeerIdBtn = context2.shadowRoot.querySelector("#copy-peer-id");
-      if (copyPeerIdBtn) {
-        const copyPeerHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            if (context2.state.peerId) {
-              await navigator.clipboard.writeText(context2.state.peerId);
-              console.log("\u2705 Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D:", context2.state.peerId);
-              copyPeerIdBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
-              setTimeout(() => {
-                copyPeerIdBtn.textContent = "\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID";
-              }, 2e3);
-            }
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID:", error);
-          }
-        }, "copyPeerHandler");
-        copyPeerIdBtn.addEventListener("click", copyPeerHandler);
-        eventListeners2.push({ element: copyPeerIdBtn, handler: copyPeerHandler });
-      }
-      const copyAllAddressesBtn = context2.shadowRoot.querySelector("#copy-addresses");
-      if (copyAllAddressesBtn) {
-        const copyAllAddressesHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            const addresses = context2.state.listeningAddresses || [];
-            if (addresses.length > 0) {
-              await navigator.clipboard.writeText(addresses.join("\n"));
-              console.log("\u2705 \u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B");
-              copyAllAddressesBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
-              setTimeout(() => {
-                copyAllAddressesBtn.textContent = "\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430";
-              }, 2e3);
-            }
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432:", error);
-          }
-        }, "copyAllAddressesHandler");
-        copyAllAddressesBtn.addEventListener("click", copyAllAddressesHandler);
-        eventListeners2.push({ element: copyAllAddressesBtn, handler: copyAllAddressesHandler });
-      }
-      const disconnectAllBtn = context2.shadowRoot.querySelector("#disconnect-all");
-      if (disconnectAllBtn) {
-        const disconnectAllHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("\u{1F527} Disconnecting all peers...");
-            console.log("\u2705 \u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432:", error);
-          }
-        }, "disconnectAllHandler");
-        disconnectAllBtn.addEventListener("click", disconnectAllHandler);
-        eventListeners2.push({ element: disconnectAllBtn, handler: disconnectAllHandler });
-      }
-      const restartNodeBtn = context2.shadowRoot.querySelector("#restart-node");
-      if (restartNodeBtn) {
-        const restartHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("=======================================", context2.state.mode);
-            console.log("\u{1F527} Restarting node...");
-            console.log("\u2705 \u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430:", error);
-          }
-        }, "restartHandler");
-        restartNodeBtn.addEventListener("click", restartHandler);
-        eventListeners2.push({ element: restartNodeBtn, handler: restartHandler });
-      }
-      const refreshAllBtn = context2.shadowRoot.querySelector("#refresh-all");
-      if (refreshAllBtn) {
-        const refreshAllHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            console.log("\u{1F527} Refreshing all data...");
-            await context2.updatePeerList();
-            console.log("\u2705 \u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
-          } catch (error) {
-            console.error("\u274C \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445:", error);
-          }
-        }, "refreshAllHandler");
-        refreshAllBtn.addEventListener("click", refreshAllHandler);
-        eventListeners2.push({ element: refreshAllBtn, handler: refreshAllHandler });
-      }
-      console.log("\u2705 Quick actions handlers attached");
-    },
-    /**
-     * Уничтожает контроллер и очищает ресурсы
-     * @async
-     */
-    async destroy() {
-      console.log("\u{1F527} PeerConnection controller destroying...");
-      eventListeners.forEach(({ element, handler }) => {
-        try {
-          element.removeEventListener("click", handler);
-          element.removeEventListener("input", handler);
-          element.removeEventListener("keypress", handler);
-          element.removeEventListener("change", handler);
-        } catch (error) {
-          console.warn("\u26A0\uFE0F Error removing event listener:", error);
-        }
-      });
-      console.log(`\u2705 Removed ${eventListeners.length} event listeners`);
-      eventListeners = [];
-      console.log("\u2705 [PeerConnection] \u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
-    }
-  };
-}, "controller");
-
 // public/components/peer-connection/actions/index.mjs
 async function createActions4(context) {
   let libp2p = null;
@@ -35302,9 +34885,9 @@ async function createActions4(context) {
      */
     async initializeLibp2p(mode = "listener") {
       try {
-        const serverPeerId2 = "12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
-        const PORT2 = 6835;
-        const RENDER_EXTERNAL_HOSTNAME2 = window.location.hostname;
+        const serverPeerId = "12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
+        const PORT = 6835;
+        const RENDER_EXTERNAL_HOSTNAME = window.location.hostname;
         const isLocalhost = window.location.hostname === "localhost";
         const config = {
           addresses: {
@@ -35377,6 +34960,7 @@ async function createActions4(context) {
       });
       libp2p.addEventListener("peer:discovery", (event) => {
         console.log("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440:", event.detail.id.toString());
+        setTimeout(() => self.updatePeerList(), 1e3);
       });
     },
     /**
@@ -35448,6 +35032,7 @@ async function createActions4(context) {
       console.log("\u{1F50D} updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D:", !!peersElement);
       if (peersElement && context.renderPart) {
         console.log("\u{1F3AF} updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
+        debugger;
         await context.renderPart({
           partName: "renderPeersList",
           state: context.state,
@@ -35467,7 +35052,7 @@ async function createActions4(context) {
         console.log("\u274C updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
       }
-      const addresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
+      const addresses = libp2p.getMultiaddrs().filter((ma) => WebRTC.matches(ma)).map((ma) => ma.toString());
       context.state.listeningAddresses = addresses;
       console.log("\u{1F4CB} updateAddressList: \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E:", addresses.length);
       const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
@@ -35687,6 +35272,7 @@ var PeerConnection = class extends BaseComponent {
       connectedPeers: [],
       relayEnabled: true
     };
+    this._lastPeersCount = 0;
   }
   async _componentReady() {
     console.log("\u{1F527} PeerConnection component ready");
@@ -35706,6 +35292,7 @@ var PeerConnection = class extends BaseComponent {
     this.state.connected = false;
     try {
       const libp2p = await this._actions.initializeLibp2p(mode);
+      this.node = libp2p;
       this.state.peerId = libp2p.peerId.toString();
       this.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
       this.state.connected = true;
@@ -35738,6 +35325,64 @@ var PeerConnection = class extends BaseComponent {
       throw error;
     }
   }
+  // Новый метод для получения ноды
+  getNode() {
+    return this.node;
+  }
+  // Новый метод для проверки доступности ноды
+  isNodeReady() {
+    return this.node !== null && this.state.connected;
+  }
+  /**
+   * Копирует текст в буфер обмена с визуальной обратной связью
+   * @param {string} text - Текст для копирования
+   * @param {string} successMessage - Сообщение об успехе
+   */
+  async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430") {
+    try {
+      await navigator.clipboard.writeText(text);
+      console.log("\u2705 Text copied to clipboard:", text);
+      await this.showModal({
+        title: "\u0423\u0441\u043F\u0435\u0445",
+        content: `<p>${successMessage}</p>`,
+        buttons: [{ text: "OK", type: "primary" }],
+        closeOnBackdropClick: true
+      });
+      return true;
+    } catch (error) {
+      console.error("\u274C Error copying to clipboard:", error);
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand("copy");
+        document.body.removeChild(textArea);
+        if (successful) {
+          await this.showModal({
+            title: "\u0423\u0441\u043F\u0435\u0445",
+            content: `<p>${successMessage}</p>`,
+            buttons: [{ text: "OK", type: "primary" }],
+            closeOnBackdropClick: true
+          });
+          return true;
+        }
+      } catch (fallbackError) {
+        console.error("\u274C Fallback copy also failed:", fallbackError);
+      }
+      await this.showModal({
+        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+        content: "<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0442\u0435\u043A\u0441\u0442 \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430</p>",
+        buttons: [{ text: "OK", type: "primary" }],
+        closeOnBackdropClick: true
+      });
+      return false;
+    }
+  }
   async connectToPeer(multiaddr2) {
     try {
       await this._actions.connectToPeer(multiaddr2);
@@ -35749,19 +35394,74 @@ var PeerConnection = class extends BaseComponent {
   }
   async updatePeerList() {
     if (this._actions.getConnectedPeers) {
+      const previousCount = this._lastPeersCount;
       this.state.connectedPeers = await this._actions.getConnectedPeers();
-      const peersElement = this.shadowRoot.querySelector("#connected-peers-list");
-      if (peersElement && this.renderPart) {
+      this._lastPeersCount = this.state.connectedPeers.length;
+      console.log("\u{1F465} Peer list updated:", {
+        previous: previousCount,
+        current: this._lastPeersCount,
+        peers: this.state.connectedPeers.map((p2) => p2.id)
+      });
+      await this.updatePeersCard();
+      const detailedSection = this.shadowRoot.querySelector(".connected-peers-section");
+      if (detailedSection && this.renderPart) {
         await this.renderPart({
-          partName: "renderPeersList",
+          partName: "renderConnectedPeersDetailed",
           state: this.state,
-          selector: "#connected-peers-list"
+          selector: ".connected-peers-section .card-content"
         });
-      } else {
-        console.log("\u26A0\uFE0F updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D, \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u043C \u043F\u043E\u043B\u043D\u044B\u0439 \u0440\u0435\u043D\u0434\u0435\u0440");
-        await this.fullRender(this.state);
       }
     }
+  }
+  /**
+   * Обновляет секцию с пирами
+   */
+  async updatePeersCard() {
+    const peersCard = this.shadowRoot.querySelector(".peers-card");
+    if (peersCard && this.renderPart) {
+      console.log("\u{1F504} Updating peers card section");
+      await this.renderPart({
+        partName: "renderPeersList",
+        state: this.state,
+        selector: ".peers-card .card-content"
+      });
+      setTimeout(() => {
+        this._setupCopyHandlers();
+      }, 100);
+    } else {
+      console.log("\u26A0\uFE0F Peers card not found, using full render");
+      await this.fullRender(this.state);
+    }
+  }
+  /**
+   * Устанавливает обработчики для кнопок копирования
+   */
+  _setupCopyHandlers() {
+    const copyButtons = this.shadowRoot.querySelectorAll(".address-action.copy");
+    copyButtons.forEach((button) => {
+      const handler = /* @__PURE__ */ __name(async (e2) => {
+        const addressItem = e2.target.closest(".address-item");
+        if (addressItem) {
+          const address = addressItem.getAttribute("data-address");
+          if (address) {
+            await this.copyToClipboard(address, "\u0410\u0434\u0440\u0435\u0441 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+          }
+        }
+      }, "handler");
+      button.replaceWith(button.cloneNode(true));
+      button.addEventListener("click", handler);
+    });
+    const peerCopyButtons = this.shadowRoot.querySelectorAll(".copy-peer-id");
+    peerCopyButtons.forEach((button) => {
+      const handler = /* @__PURE__ */ __name(async (e2) => {
+        const peerId = e2.target.getAttribute("data-peer-id");
+        if (peerId) {
+          await this.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
+        }
+      }, "handler");
+      button.replaceWith(button.cloneNode(true));
+      button.addEventListener("click", handler);
+    });
   }
   async switchMode(mode) {
     console.log("\u{1F527} switchMode called with:", mode);
@@ -35782,7 +35482,6 @@ var PeerConnection = class extends BaseComponent {
   async getRelayAddresses() {
     return "/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
   }
-  // Методы для отладки
   async manualUpdate() {
     console.log("\u{1F504} \u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
     if (this._actions && this._actions.manualUpdate) {
