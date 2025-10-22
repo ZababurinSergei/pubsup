@@ -2477,11 +2477,11 @@ function renderMessages({ state = {} } = {}) {
     <div class="messages-list">
         ${messages2.map((message2) => `
         <div class="message-item ${message2.type === "sent" ? "sent" : "received"}" data-message-id="${message2.id}">
-            <div class="message-avatar">
-                ${message2.type === "sent" ? "\u{1F464}" : "\u{1F465}"}
-            </div>
             <div class="message-content">
                 <div class="message-header">
+                    <div class="message-avatar">
+                        ${message2.type === "sent" ? "\u{1F464}" : "\u{1F465}"}
+                    </div>
                     <span class="message-sender">${message2.type === "sent" ? "\u0412\u044B" : message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</span>
                     <span class="message-time">${new Date(message2.timestamp).toLocaleTimeString("ru-RU")}</span>
                 </div>
@@ -16124,90 +16124,6 @@ var ChatManager = class extends BaseComponent {
     }
   }
   /**
-   * Настраивает обработчик входящих сообщений
-   */
-  async setupMessageHandler() {
-    if (!this.node) {
-      log5.error("Node not available for message handler setup");
-      return;
-    }
-    try {
-      await this.node.handle("/chat/1.0.0", async (stream, connection) => {
-        log5("Incoming chat stream established from: %s", connection.remotePeer?.toString());
-        try {
-          const lp = lpStream(stream);
-          const remotePeer = connection.remotePeer.toString();
-          const streamTimeout = setTimeout(() => {
-            log5("Stream timeout for peer: %s", remotePeer);
-            stream.close().catch(() => {
-            });
-          }, 3e4);
-          const readWithTimeout = /* @__PURE__ */ __name(async (timeout = 3e4) => {
-            return Promise.race([
-              lp.read(),
-              new Promise(
-                (_, reject) => setTimeout(() => reject(new Error("Stream read timeout")), timeout)
-              )
-            ]);
-          }, "readWithTimeout");
-          while (connection.timeline.close === void 0) {
-            try {
-              const message2 = await readWithTimeout();
-              if (!message2 || message2.length === 0) {
-                log5("Empty message received from %s, continuing...", remotePeer);
-                continue;
-              }
-              const messageText = toString2(message2.subarray());
-              log5("Received message via stream from %s: %s", remotePeer, messageText);
-              let messageData;
-              try {
-                messageData = JSON.parse(messageText);
-              } catch (e2) {
-                messageData = {
-                  text: messageText,
-                  type: "group_message",
-                  timestamp: Date.now()
-                };
-              }
-              await this.handleIncomingStreamMessage(messageData, remotePeer);
-            } catch (readError) {
-              if (readError.message === "Stream read timeout") {
-                log5("Stream read timeout from %s, continuing...", remotePeer);
-                continue;
-              }
-              if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed") || readError.message.includes("Unexpected EOF")) {
-                log5("Stream closed by peer %s: %o", remotePeer, readError);
-                break;
-              }
-              log5.error("Error reading from stream for peer %s: %o", remotePeer, readError);
-              break;
-            }
-          }
-          clearTimeout(streamTimeout);
-        } catch (error) {
-          if (error.code !== "ERR_STREAM_RESET" && !error.message.includes("Stream read timeout") && !error.message.includes("Unexpected EOF")) {
-            log5.error("Error in stream handler for peer %s: %o", connection.remotePeer?.toString(), error);
-          }
-        } finally {
-          try {
-            await stream.close();
-          } catch (closeError) {
-            log5.error("Error closing stream: %o", closeError);
-          }
-        }
-      });
-      log5("Chat message handler registered for protocol /chat/1.0.0");
-    } catch (error) {
-      log5.error("Error setting up message handler: %o", error);
-      this.addError({
-        componentName: this.constructor.name,
-        source: "setupMessageHandler",
-        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439",
-        details: error
-      });
-    }
-  }
-  /**
    * Обрабатывает входящие сообщения из стрима
    */
   async handleIncomingStreamMessage(messageData, peerId) {
@@ -16265,10 +16181,6 @@ var ChatManager = class extends BaseComponent {
       state: this.state,
       selector: "#messages-container"
     });
-    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-    if (chatInterface) {
-      await chatInterface.addMessage(message2);
-    }
   }
   async createGroup(groupName) {
     const group = {
@@ -16490,8 +16402,6 @@ var ChatManager = class extends BaseComponent {
       };
       const messageBytes = fromString2(JSON.stringify(messageData));
       await lp.write(messageBytes);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      await stream.close();
       log5("\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
       await this.addMessage({
         text: messageText,
@@ -16511,6 +16421,85 @@ var ChatManager = class extends BaseComponent {
         details: { peerId, messageText, error }
       });
       throw error;
+    }
+  }
+  /**
+   * Настраивает обработчик входящих сообщений
+   */
+  async setupMessageHandler() {
+    if (!this.node) {
+      log5.error("Node not available for message handler setup");
+      return;
+    }
+    try {
+      await this.node.handle("/chat/1.0.0", async (stream, connection) => {
+        log5("Incoming chat stream established from: %s", connection.remotePeer?.toString());
+        try {
+          const lp = lpStream(stream);
+          const remotePeer = connection.remotePeer.toString();
+          const readWithTimeout = /* @__PURE__ */ __name(async (timeout = 3e4) => {
+            return Promise.race([
+              lp.read(),
+              new Promise(
+                (_, reject) => setTimeout(() => reject(new Error("Stream read timeout")), timeout)
+              )
+            ]);
+          }, "readWithTimeout");
+          while (connection.timeline.close === void 0) {
+            try {
+              const message2 = await readWithTimeout();
+              if (!message2 || message2.length === 0) {
+                log5("Empty message received from %s, continuing...", remotePeer);
+                continue;
+              }
+              const messageText = toString2(message2.subarray());
+              log5("Received message via stream from %s: %s", remotePeer, messageText);
+              let messageData;
+              try {
+                messageData = JSON.parse(messageText);
+              } catch (e2) {
+                messageData = {
+                  text: messageText,
+                  type: "group_message",
+                  timestamp: Date.now()
+                };
+              }
+              await this.handleIncomingStreamMessage(messageData, remotePeer);
+            } catch (readError) {
+              if (readError.message === "Stream read timeout") {
+                log5("Stream read timeout from %s, continuing...", remotePeer);
+                continue;
+              }
+              if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed") || readError.message.includes("Unexpected EOF")) {
+                log5("Stream closed by peer %s: %o", remotePeer, readError);
+                break;
+              }
+              log5.error("Error reading from stream for peer %s: %o", remotePeer, readError);
+              break;
+            }
+          }
+          clearTimeout(streamTimeout);
+        } catch (error) {
+          if (error.code !== "ERR_STREAM_RESET" && !error.message.includes("Stream read timeout") && !error.message.includes("Unexpected EOF")) {
+            log5.error("Error in stream handler for peer %s: %o", connection.remotePeer?.toString(), error);
+          }
+        } finally {
+          try {
+            await stream.close();
+          } catch (closeError) {
+            log5.error("Error closing stream: %o", closeError);
+          }
+        }
+      });
+      log5("Chat message handler registered for protocol /chat/1.0.0");
+    } catch (error) {
+      log5.error("Error setting up message handler: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "setupMessageHandler",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439",
+        details: error
+      });
     }
   }
   /**
@@ -18070,6 +18059,33 @@ var ChatInterface = class extends BaseComponent {
       }
     } catch (error) {
       this._log.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044F \u0432\u0432\u043E\u0434\u0430: %o", error);
+    }
+  }
+  // В класс ChatInterface добавьте метод:
+  showNotification(message2) {
+    const log7 = this._log;
+    if (!("Notification" in window)) {
+      log7("Browser notifications not supported");
+      return;
+    }
+    if (Notification.permission === "granted") {
+      try {
+        new Notification("\u0427\u0430\u0442", {
+          body: message2,
+          icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+        });
+      } catch (error) {
+        log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F: %o", error);
+      }
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          new Notification("\u0427\u0430\u0442", {
+            body: message2,
+            icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+          });
+        }
+      });
     }
   }
   /**

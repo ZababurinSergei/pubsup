@@ -302,6 +302,36 @@ export class ChatInterface extends BaseComponent {
         }
     }
 
+    // В класс ChatInterface добавьте метод:
+    showNotification(message) {
+        const log = this._log;
+
+        if (!('Notification' in window)) {
+            log('Browser notifications not supported');
+            return;
+        }
+
+        if (Notification.permission === 'granted') {
+            try {
+                new Notification('Чат', {
+                    body: message,
+                    icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+                });
+            } catch (error) {
+                log.error('Ошибка создания уведомления: %o', error);
+            }
+        } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    new Notification('Чат', {
+                        body: message,
+                        icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+                    });
+                }
+            });
+        }
+    }
+
     /**
      * Получает placeholder для поля ввода
      */

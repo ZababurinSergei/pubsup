@@ -96,117 +96,6 @@ export class ChatManager extends BaseComponent {
         }
     }
 
-    /**
-     * Настраивает обработчик входящих сообщений
-     */
-    async setupMessageHandler() {
-        if (!this.node) {
-            log.error('Node not available for message handler setup');
-            return;
-        }
-
-        try {
-            // Обработчик для протокола чата
-            await this.node.handle('/chat/1.0.0', async (stream, connection) => {
-                log('Incoming chat stream established from: %s', connection.remotePeer?.toString());
-
-                try {
-                    const lp = lpStream(stream);
-                    const remotePeer = connection.remotePeer.toString();
-
-                    // Устанавливаем таймаут для неактивных стримов
-                    const streamTimeout = setTimeout(() => {
-                        log('Stream timeout for peer: %s', remotePeer);
-                        stream.close().catch(() => {});
-                    }, 30000); // 30 секунд
-
-                    const readWithTimeout = async (timeout = 30000) => {
-                        return Promise.race([
-                            lp.read(),
-                            new Promise((_, reject) =>
-                                setTimeout(() => reject(new Error('Stream read timeout')), timeout)
-                            )
-                        ]);
-                    };
-
-                    while (connection.timeline.close === undefined) {
-                        try {
-                            const message = await readWithTimeout();
-
-                            // Проверяем, что сообщение не пустое
-                            if (!message || message.length === 0) {
-                                log('Empty message received from %s, continuing...', remotePeer);
-                                continue;
-                            }
-
-                            const messageText = uint8ArrayToString(message.subarray());
-                            log('Received message via stream from %s: %s', remotePeer, messageText);
-
-                            let messageData;
-                            try {
-                                messageData = JSON.parse(messageText);
-                            } catch (e) {
-                                // Если не JSON, обрабатываем как обычное текстовое сообщение
-                                messageData = {
-                                    text: messageText,
-                                    type: 'group_message',
-                                    timestamp: Date.now()
-                                };
-                            }
-
-                            // Обрабатываем сообщение с передачей peerId
-                            await this.handleIncomingStreamMessage(messageData, remotePeer);
-
-                        } catch (readError) {
-                            if (readError.message === 'Stream read timeout') {
-                                log('Stream read timeout from %s, continuing...', remotePeer);
-                                continue;
-                            }
-
-                            // Если стрим закрыт или произошла ошибка чтения
-                            if (readError.code === 'ERR_STREAM_RESET' ||
-                                readError.message.includes('stream closed') ||
-                                readError.message.includes('Unexpected EOF')) {
-                                log('Stream closed by peer %s: %o', remotePeer, readError);
-                                break;
-                            }
-
-                            log.error('Error reading from stream for peer %s: %o', remotePeer, readError);
-                            break;
-                        }
-                    }
-
-                    // Очищаем таймаут
-                    clearTimeout(streamTimeout);
-
-                } catch (error) {
-                    if (error.code !== 'ERR_STREAM_RESET' &&
-                        !error.message.includes('Stream read timeout') &&
-                        !error.message.includes('Unexpected EOF')) {
-                        log.error('Error in stream handler for peer %s: %o', connection.remotePeer?.toString(), error);
-                    }
-                } finally {
-                    // Гарантированно закрываем стрим
-                    try {
-                        await stream.close();
-                    } catch (closeError) {
-                        log.error('Error closing stream: %o', closeError);
-                    }
-                }
-            });
-
-            log('Chat message handler registered for protocol /chat/1.0.0');
-
-        } catch (error) {
-            log.error('Error setting up message handler: %o', error);
-            this.addError({
-                componentName: this.constructor.name,
-                source: 'setupMessageHandler',
-                message: 'Ошибка настройки обработчика сообщений',
-                details: error
-            });
-        }
-    }
 
     /**
      * Обрабатывает входящие сообщения из стрима
@@ -280,10 +169,10 @@ export class ChatManager extends BaseComponent {
             selector: '#messages-container'
         });
 
-        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
-        if (chatInterface) {
-            await chatInterface.addMessage(message);
-        }
+        // const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+        // if (chatInterface) {
+        //     await chatInterface.addMessage(message);
+        // }
     }
 
     async createGroup(groupName) {
@@ -367,6 +256,7 @@ export class ChatManager extends BaseComponent {
                     continue; // Пропускаем себя
                 }
                 const ma = multiaddr(peer)
+
                 // Создаем стрим к пиру
                 const stream = await this.node.dialProtocol(ma, '/chat/1.0.0');
 
@@ -564,7 +454,6 @@ export class ChatManager extends BaseComponent {
 
             log('Attempting to dial: %s', targetAddress);
             const ma = multiaddr(targetAddress)
-
             // Создаем стрим к пиру
             const stream = await this.node.dialProtocol(ma, '/chat/1.0.0');
             const lp = lpStream(stream);
@@ -582,10 +471,10 @@ export class ChatManager extends BaseComponent {
             await lp.write(messageBytes);
 
             // Даем время на отправку перед закрытием
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // await new Promise(resolve => setTimeout(resolve, 100));
 
             // Закрываем стрим после отправки
-            await stream.close();
+            // await stream.close();
 
             log('Приватное сообщение отправлено пользователю: %s', peerId);
 
@@ -612,6 +501,119 @@ export class ChatManager extends BaseComponent {
             });
 
             throw error;
+        }
+    }
+
+    /**
+     * Настраивает обработчик входящих сообщений
+     */
+    async setupMessageHandler() {
+        if (!this.node) {
+            log.error('Node not available for message handler setup');
+            return;
+        }
+
+        try {
+            // Обработчик для протокола чата
+            await this.node.handle('/chat/1.0.0', async (stream, connection) => {
+                log('Incoming chat stream established from: %s', connection.remotePeer?.toString());
+
+                try {
+                    const lp = lpStream(stream);
+                    const remotePeer = connection.remotePeer.toString();
+
+                    // Устанавливаем таймаут для неактивных стримов
+                    // const streamTimeout = setTimeout(() => {
+                    //     log('Stream timeout for peer: %s', remotePeer);
+                    //     stream.close().catch(() => {});
+                    // }, 30000); // 30 секунд
+
+                    const readWithTimeout = async (timeout = 30000) => {
+                        return Promise.race([
+                            lp.read(),
+                            new Promise((_, reject) =>
+                                setTimeout(() => reject(new Error('Stream read timeout')), timeout)
+                            )
+                        ]);
+                    };
+
+                    // Используем connection.timeline вместо stream.stat.timeline
+                    while (connection.timeline.close === undefined) {
+                        try {
+                            const message = await readWithTimeout();
+
+                            // Проверяем, что сообщение не пустое
+                            if (!message || message.length === 0) {
+                                log('Empty message received from %s, continuing...', remotePeer);
+                                continue;
+                            }
+
+                            const messageText = uint8ArrayToString(message.subarray());
+                            log('Received message via stream from %s: %s', remotePeer, messageText);
+
+                            let messageData;
+                            try {
+                                messageData = JSON.parse(messageText);
+                            } catch (e) {
+                                // Если не JSON, обрабатываем как обычное текстовое сообщение
+                                messageData = {
+                                    text: messageText,
+                                    type: 'group_message',
+                                    timestamp: Date.now()
+                                };
+                            }
+
+                            // Обрабатываем сообщение с передачей peerId
+                            await this.handleIncomingStreamMessage(messageData, remotePeer);
+
+                        } catch (readError) {
+                            if (readError.message === 'Stream read timeout') {
+                                log('Stream read timeout from %s, continuing...', remotePeer);
+                                continue;
+                            }
+
+                            // Если стрим закрыт или произошла ошибка чтения
+                            if (readError.code === 'ERR_STREAM_RESET' ||
+                                readError.message.includes('stream closed') ||
+                                readError.message.includes('Unexpected EOF')) {
+                                log('Stream closed by peer %s: %o', remotePeer, readError);
+                                break;
+                            }
+
+                            log.error('Error reading from stream for peer %s: %o', remotePeer, readError);
+                            break;
+                        }
+                    }
+
+                    // Очищаем таймаут
+                    clearTimeout(streamTimeout);
+
+                } catch (error) {
+                    if (error.code !== 'ERR_STREAM_RESET' &&
+                        !error.message.includes('Stream read timeout') &&
+                        !error.message.includes('Unexpected EOF')) {
+                        log.error('Error in stream handler for peer %s: %o', connection.remotePeer?.toString(), error);
+                    }
+                } finally {
+                    // Гарантированно закрываем стрим
+                    try {
+                        await stream.close();
+                    } catch (closeError) {
+                        log.error('Error closing stream: %o', closeError);
+                    }
+                }
+            });
+
+            log('Chat message handler registered for protocol /chat/1.0.0');
+
+        } catch (error) {
+            log.error('Error setting up message handler: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'setupMessageHandler',
+                message: 'Ошибка настройки обработчика сообщений',
+                details: error
+            });
         }
     }
 
@@ -861,7 +863,7 @@ export class ChatManager extends BaseComponent {
                 });
             }
 
-            // Автоматически присоединяемся к созданной группе
+            // Автоматически присоединяемся к созданной группу
             await this.joinGroup(groupData.topic, groupData.name);
 
             // Обновляем UI списка групп

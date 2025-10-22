@@ -401,11 +401,11 @@ export function renderMessages({state = {}} = {}) {
     <div class="messages-list">
         ${messages.map(message => `
         <div class="message-item ${message.type === 'sent' ? 'sent' : 'received'}" data-message-id="${message.id}">
-            <div class="message-avatar">
-                ${message.type === 'sent' ? '👤' : '👥'}
-            </div>
             <div class="message-content">
                 <div class="message-header">
+                    <div class="message-avatar">
+                        ${message.type === 'sent' ? '👤' : '👥'}
+                    </div>
                     <span class="message-sender">${message.type === 'sent' ? 'Вы' : (message.from ? message.from.substring(0, 12) + '...' : 'Неизвестный')}</span>
                     <span class="message-time">${new Date(message.timestamp).toLocaleTimeString('ru-RU')}</span>
                 </div>
