@@ -59,29 +59,49 @@ export const controller = async (context) => {
             }
 
             // Обработчик отправки сообщения
-            const sendMessageBtn = context.shadowRoot.querySelector('#send-message');
-            const messageInput = context.shadowRoot.querySelector('#message-input');
+            const setupSendMessageHandler = () => {
+                const sendButton = context.shadowRoot.querySelector('#send-button');
+                const messageInput = context.shadowRoot.querySelector('#message-input');
 
-            if (sendMessageBtn && messageInput) {
-                const sendMessageHandler = async () => {
-                    if (messageInput.value.trim() && context.state.currentGroup) {
-                        await context._actions.sendMessage(context.state.currentGroup.topic, messageInput.value.trim());
-                        messageInput.value = '';
-                    }
-                };
+                if (sendButton && messageInput) {
+                    const sendHandler = async () => {
+                        const message = messageInput.value.trim();
+                        if (message && context.state.currentGroup) {
+                            try {
+                                await context.sendGroupMessage(message);
+                                messageInput.value = '';
+                                log('Сообщение отправлено через контроллер');
+                            } catch (error) {
+                                log.error('Ошибка отправки сообщения: %o', error);
+                                await context.showModal({
+                                    title: 'Ошибка отправки',
+                                    content: `<p>Не удалось отправить сообщение: ${error.message}</p>`,
+                                    buttons: [{ text: 'OK', type: 'primary' }]
+                                });
+                            }
+                        }
+                    };
 
-                sendMessageBtn.addEventListener('click', sendMessageHandler);
-                eventListeners.push({ element: sendMessageBtn, handler: sendMessageHandler });
+                    // Обработчик клика по кнопке
+                    sendButton.addEventListener('click', sendHandler);
+                    eventListeners.push({ element: sendButton, handler: sendHandler });
 
-                // Отправка по Enter
-                const enterHandler = (e) => {
-                    if (e.key === 'Enter') {
-                        sendMessageHandler();
-                    }
-                };
-                messageInput.addEventListener('keypress', enterHandler);
-                eventListeners.push({ element: messageInput, handler: enterHandler });
-            }
+                    // Обработчик Enter в поле ввода
+                    const enterHandler = (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendHandler();
+                        }
+                    };
+
+                    messageInput.addEventListener('keypress', enterHandler);
+                    eventListeners.push({ element: messageInput, handler: enterHandler });
+
+                    log('Обработчики отправки сообщения установлены');
+                } else {
+                    log('Элементы отправки сообщения не найдены');
+                }
+            };
 
             // Обработчики для присоединения к группам
             const joinGroupHandler = async (event) => {
@@ -251,6 +271,7 @@ export const controller = async (context) => {
                     if (mutation.type === 'childList') {
                         setupGroupHandlers();
                         setupGroupActionHandlers();
+                        setupSendMessageHandler(); // Переустановка обработчиков отправки
                     }
                 });
             });
@@ -268,9 +289,11 @@ export const controller = async (context) => {
             setTimeout(() => {
                 setupGroupHandlers();
                 setupGroupActionHandlers();
+                setupSendMessageHandler(); // Инициализация обработчиков отправки
             }, 100);
 
             // Автофокус на поле ввода сообщения
+            const messageInput = context.shadowRoot.querySelector('#message-input');
             if (messageInput) {
                 setTimeout(() => {
                     messageInput.focus();

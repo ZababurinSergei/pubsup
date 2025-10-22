@@ -2689,25 +2689,42 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         searchInput.addEventListener("input", searchHandler);
         eventListeners.push({ element: searchInput, handler: searchHandler });
       }
-      const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
-      const messageInput = context.shadowRoot.querySelector("#message-input");
-      if (sendMessageBtn && messageInput) {
-        const sendMessageHandler = /* @__PURE__ */ __name(async () => {
-          if (messageInput.value.trim() && context.state.currentGroup) {
-            await context._actions.sendMessage(context.state.currentGroup.topic, messageInput.value.trim());
-            messageInput.value = "";
-          }
-        }, "sendMessageHandler");
-        sendMessageBtn.addEventListener("click", sendMessageHandler);
-        eventListeners.push({ element: sendMessageBtn, handler: sendMessageHandler });
-        const enterHandler = /* @__PURE__ */ __name((e2) => {
-          if (e2.key === "Enter") {
-            sendMessageHandler();
-          }
-        }, "enterHandler");
-        messageInput.addEventListener("keypress", enterHandler);
-        eventListeners.push({ element: messageInput, handler: enterHandler });
-      }
+      const setupSendMessageHandler = /* @__PURE__ */ __name(() => {
+        const sendButton = context.shadowRoot.querySelector("#send-button");
+        const messageInput2 = context.shadowRoot.querySelector("#message-input");
+        if (sendButton && messageInput2) {
+          const sendHandler = /* @__PURE__ */ __name(async () => {
+            const message2 = messageInput2.value.trim();
+            if (message2 && context.state.currentGroup) {
+              try {
+                await context.sendGroupMessage(message2);
+                messageInput2.value = "";
+                log2("\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
+              } catch (error) {
+                log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+                await context.showModal({
+                  title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
+                  content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
+                  buttons: [{ text: "OK", type: "primary" }]
+                });
+              }
+            }
+          }, "sendHandler");
+          sendButton.addEventListener("click", sendHandler);
+          eventListeners.push({ element: sendButton, handler: sendHandler });
+          const enterHandler = /* @__PURE__ */ __name((e2) => {
+            if (e2.key === "Enter" && !e2.shiftKey) {
+              e2.preventDefault();
+              sendHandler();
+            }
+          }, "enterHandler");
+          messageInput2.addEventListener("keypress", enterHandler);
+          eventListeners.push({ element: messageInput2, handler: enterHandler });
+          log2("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+        } else {
+          log2("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B");
+        }
+      }, "setupSendMessageHandler");
       const joinGroupHandler = /* @__PURE__ */ __name(async (event) => {
         const groupElement = event.target.closest("[data-group-topic]");
         if (groupElement) {
@@ -2848,6 +2865,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
           if (mutation.type === "childList") {
             setupGroupHandlers();
             setupGroupActionHandlers();
+            setupSendMessageHandler();
           }
         });
       });
@@ -2859,7 +2877,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
       setTimeout(() => {
         setupGroupHandlers();
         setupGroupActionHandlers();
+        setupSendMessageHandler();
       }, 100);
+      const messageInput = context.shadowRoot.querySelector("#message-input");
       if (messageInput) {
         setTimeout(() => {
           messageInput.focus();
@@ -15904,6 +15924,7 @@ var ChatManager = class extends BaseComponent {
             mode: this.state.mode,
             connected: this.state.connected
           });
+          await this.setupMessageHandler();
           await this.fullRender(this.state);
           return;
         }
@@ -15919,6 +15940,88 @@ var ChatManager = class extends BaseComponent {
         source: "initializeFromPeerConnection",
         message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043B\u0443\u0447\u0438\u0442\u044C \u043D\u043E\u0434\u0443 \u0438\u0437 PeerConnection",
         details: error
+      });
+    }
+  }
+  /**
+   * Настраивает обработчик входящих сообщений
+   */
+  async setupMessageHandler() {
+    if (!this.node) {
+      log5.error("Node not available for message handler setup");
+      return;
+    }
+    try {
+      await this.node.handle("/chat/1.0.0", async (stream) => {
+        log5("Incoming chat stream established");
+        try {
+          const lp = lpStream(stream);
+          while (true) {
+            const message2 = await lp.read();
+            const messageText = toString2(message2.subarray());
+            log5("Received message via stream: %s", messageText);
+            let messageData;
+            try {
+              messageData = JSON.parse(messageText);
+            } catch (e2) {
+              messageData = {
+                text: messageText,
+                type: "group_message",
+                timestamp: Date.now()
+              };
+            }
+            await this.handleIncomingStreamMessage(messageData, stream.remotePeer.toString());
+          }
+        } catch (error) {
+          if (error.code !== "ERR_STREAM_RESET") {
+            log5.error("Error reading from stream: %o", error);
+          }
+          try {
+            await stream.close();
+          } catch (closeError) {
+            log5.error("Error closing stream: %o", closeError);
+          }
+        }
+      });
+      log5("Chat message handler registered for protocol /chat/1.0.0");
+    } catch (error) {
+      log5.error("Error setting up message handler: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "setupMessageHandler",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439",
+        details: error
+      });
+    }
+  }
+  /**
+   * Обрабатывает входящие сообщения из стрима
+   */
+  async handleIncomingStreamMessage(messageData, peerId) {
+    try {
+      log5("Processing incoming stream message from %s: %o", peerId, messageData);
+      if (messageData.type === "private_message") {
+        await this.handleIncomingPrivateMessage({
+          text: messageData.text,
+          from: peerId,
+          timestamp: messageData.timestamp,
+          isPrivate: true
+        });
+      } else {
+        await this.addMessage({
+          text: messageData.text,
+          from: peerId,
+          type: "received",
+          timestamp: messageData.timestamp || Date.now()
+        });
+      }
+    } catch (error) {
+      log5.error("Error handling incoming stream message: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "handleIncomingStreamMessage",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
+        details: { messageData, peerId, error }
       });
     }
   }
@@ -16010,7 +16113,9 @@ var ChatManager = class extends BaseComponent {
         if (peer.toString() === this.node.peerId.toString()) {
           continue;
         }
-        const stream = await this.node.dialProtocol(peer, "/chat/1.0.0");
+        const ma = multiaddr(peer);
+        console.log("@!!!!!!!!!!!!!!!!", ma);
+        const stream = await this.node.dialProtocol(ma, "/chat/1.0.0");
         const lp = lpStream(stream);
         this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
         this.streamToChat(lp, peer.toString(), topic);
@@ -16057,18 +16162,23 @@ var ChatManager = class extends BaseComponent {
         if (peer.toString() === this.node.peerId.toString()) {
           continue;
         }
-        const streamKey = `${topic}-${peer.toString()}`;
-        let streamData = this.activeStreams.get(streamKey);
-        if (!streamData) {
+        try {
           const stream = await this.node.dialProtocol(peer, "/chat/1.0.0");
           const lp = lpStream(stream);
-          streamData = { stream, lp, peer };
-          this.activeStreams.set(streamKey, streamData);
-          this.streamToChat(lp, peer.toString(), topic);
+          const messageData = {
+            type: "group_message",
+            text: messageText,
+            from: this.state.peerId,
+            timestamp: Date.now(),
+            topic
+          };
+          await lp.write(fromString2(JSON.stringify(messageData)));
+          await stream.close();
+          sent = true;
+          log5("Message sent via stream to %s", peer.toString());
+        } catch (error) {
+          log5.error("Error sending to peer %s: %o", peer.toString(), error);
         }
-        await streamData.lp.write(fromString2(messageText));
-        sent = true;
-        log5("Message sent via stream to %s", peer.toString());
       }
       if (this._actions && this._actions.sendMessage) {
         await this._actions.sendMessage(topic, messageText);
@@ -16092,7 +16202,8 @@ var ChatManager = class extends BaseComponent {
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430");
     }
     try {
-      const stream = await this.node.dialProtocol(peerId, "/chat/1.0.0");
+      const ma = multiaddr(peerId);
+      const stream = await this.node.dialProtocol(ma, "/chat/1.0.0");
       const lp = lpStream(stream);
       const messageData = {
         type: "private_message",
@@ -16340,7 +16451,35 @@ function defaultTemplate2({ state = {} } = {}) {
     <div class="chat-interface">
         <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->
         <header class="chat-header">
-            ${renderChatHeader({ state })}
+            <div class="header-content">
+                <div class="chat-info">
+                    <div class="chat-avatar">
+                        ${getChatAvatar(state.currentGroup)}
+                    </div>
+                    <div class="chat-details">
+                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "\u0427\u0430\u0442"}</h3>
+                        <div class="chat-status">
+                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
+                            <span class="status-text">${getStatusText(state)}</span>
+                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
+                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>
+                    </button>
+                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
+                        <span class="btn-icon">\u{1F50D}</span>
+                    </button>
+                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
+                        <span class="btn-icon">\u{1F465}</span>
+                    </button>
+                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
+                        <span class="btn-icon">\u2699\uFE0F</span>
+                    </button>
+                </div>
+            </div>
         </header>
 
         <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
@@ -16395,12 +16534,10 @@ function defaultTemplate2({ state = {} } = {}) {
                         class="message-input" 
                         placeholder="${getInputPlaceholder2(state)}"
                         rows="1"
-                        ${!state.connected || !state.currentGroup && !state.activeMember ? "disabled" : ""}
                     ></textarea>
                     <button 
                         id="send-button" 
                         class="send-button"
-                        ${!state.connected || !state.currentGroup && !state.activeMember ? "disabled" : ""}
                         title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"
                     >
                         <span class="send-icon">\u2708\uFE0F</span>
@@ -16415,56 +16552,6 @@ function defaultTemplate2({ state = {} } = {}) {
     `;
 }
 __name(defaultTemplate2, "defaultTemplate");
-function renderChatHeader({ state = {} } = {}) {
-  if (state.isPrivateChat && state.activeMember) {
-    return `
-        <div class="chat-info">
-            <div class="chat-avatar">
-                <span class="avatar-icon">\u{1F464}</span>
-            </div>
-            <div class="chat-details">
-                <h3 class="chat-name">${state.activeMember.name || "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C"}</h3>
-                <div class="chat-status">
-                    <span class="status-indicator connected"></span>
-                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>
-                </div>
-            </div>
-        </div>
-        `;
-  }
-  if (!state.currentGroup) {
-    return `
-        <div class="chat-info">
-            <div class="chat-avatar">
-                <span class="avatar-icon">\u{1F4AC}</span>
-            </div>
-            <div class="chat-details">
-                <h3 class="chat-name">\u0427\u0430\u0442</h3>
-                <div class="chat-status">
-                    <span class="status-indicator disconnected"></span>
-                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
-                </div>
-            </div>
-        </div>
-        `;
-  }
-  return `
-    <div class="chat-info">
-        <div class="chat-avatar">
-            ${getChatAvatar(state.currentGroup)}
-        </div>
-        <div class="chat-details">
-            <h3 class="chat-name">${state.currentGroup.name}</h3>
-            <div class="chat-status">
-                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
-                <span class="status-text">${getStatusText(state)}</span>
-                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
-            </div>
-        </div>
-    </div>
-    `;
-}
-__name(renderChatHeader, "renderChatHeader");
 function renderConnectionStatus({ state = {} } = {}) {
   if (!state.connected) {
     return `
@@ -16475,7 +16562,7 @@ function renderConnectionStatus({ state = {} } = {}) {
         </div>
         `;
   }
-  if (!state.currentGroup && !state.activeMember) {
+  if (!state.currentGroup) {
     return `
         <div class="status-message info">
             <span class="status-icon">\u2139\uFE0F</span>
@@ -16505,18 +16592,18 @@ function renderStatus({ state = {} } = {}) {
         </div>
         `;
   }
-  if (!state.currentGroup && !state.activeMember) {
+  if (!state.currentGroup) {
     return `
         <div class="status-message info">
             <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
         </div>
         `;
   }
   return `
     <div class="status-message connected">
         <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.activeMember ? state.activeMember.name : state.currentGroup.name}</span>
+        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.currentGroup.name}</span>
     </div>
     `;
 }
@@ -16540,23 +16627,26 @@ function renderMembersList({ state = {} } = {}) {
   }
   return `
     <div class="members-container">
-        ${allMembers.map((member) => `
-        <div class="member-item 
-                   ${member.isCurrentUser ? "current-user" : ""} 
-                   ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""}
-                   ${!member.isCurrentUser ? "clickable" : ""}" 
-             data-peer-id="${member.id}">
-            <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
-                ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
-            </div>
-            <div class="member-info">
-                <div class="member-name">${member.name || `\u041F\u0438\u0440 ${member.id.slice(0, 4)}${member.id.slice(-4)}`}</div>
-                <div class="member-status ${member.online ? "online" : "offline"}">
-                    ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
+        ${allMembers.map((member) => {
+    const displayName = member.isCurrentUser ? "\u0412\u044B" : member.name || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`;
+    return `
+            <div class="member-item 
+                       ${member.isCurrentUser ? "current-user" : ""} 
+                       ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""}
+                       ${!member.isCurrentUser ? "clickable" : ""}" 
+                 data-peer-id="${member.id}">
+                <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
+                    ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
+                </div>
+                <div class="member-info">
+                    <div class="member-name">${displayName}</div>
+                    <div class="member-status ${member.online ? "online" : "offline"}">
+                        ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
+                    </div>
                 </div>
             </div>
-        </div>
-        `).join("")}
+            `;
+  }).join("")}
     </div>
     `;
 }
@@ -16703,6 +16793,56 @@ function renderSearchResults({ state = {} } = {}) {
     `;
 }
 __name(renderSearchResults, "renderSearchResults");
+function renderChatHeader({ state = {} } = {}) {
+  if (state.isPrivateChat && state.activeMember) {
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F464}</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">${state.activeMember.name || "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C"}</h3>
+                <div class="chat-status">
+                    <span class="status-indicator connected"></span>
+                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>
+                </div>
+            </div>
+        </div>
+        `;
+  }
+  if (!state.currentGroup) {
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F4AC}</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">\u0427\u0430\u0442</h3>
+                <div class="chat-status">
+                    <span class="status-indicator disconnected"></span>
+                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
+                </div>
+            </div>
+        </div>
+        `;
+  }
+  return `
+    <div class="chat-info">
+        <div class="chat-avatar">
+            ${getChatAvatar(state.currentGroup)}
+        </div>
+        <div class="chat-details">
+            <h3 class="chat-name">${state.currentGroup.name}</h3>
+            <div class="chat-status">
+                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
+                <span class="status-text">${getStatusText(state)}</span>
+                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
+            </div>
+        </div>
+    </div>
+    `;
+}
+__name(renderChatHeader, "renderChatHeader");
 function getChatAvatar(group) {
   if (!group) return "\u{1F4AC}";
   return group.name ? group.name.charAt(0).toUpperCase() : "\u{1F4AC}";
@@ -16710,8 +16850,8 @@ function getChatAvatar(group) {
 __name(getChatAvatar, "getChatAvatar");
 function getStatusText(state) {
   if (!state.connected) return "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E";
-  if (!state.currentGroup && !state.activeMember) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442";
-  return state.currentGroup && state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432` : "\u0422\u043E\u043B\u044C\u043A\u043E \u0432\u044B";
+  if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443";
+  return state.currentGroup.memberCount > 1 ? `${state.currentGroup.memberCount} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432` : "\u0422\u043E\u043B\u044C\u043A\u043E \u0432\u044B";
 }
 __name(getStatusText, "getStatusText");
 function getInputPlaceholder2(state) {
@@ -16750,9 +16890,9 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
-      log7("\u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440\u0430");
+      log7("controller initializing");
       const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
-      const messageInput = context.shadowRoot.querySelector("#message-input");
+      let messageInput = context.shadowRoot.querySelector("#message-input");
       if (sendMessageBtn && messageInput) {
         const sendMessageHandler = /* @__PURE__ */ __name(async () => {
           if (messageInput.value.trim() && context.state.currentGroup) {
@@ -16824,9 +16964,58 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         toggleMembersBtn.addEventListener("click", toggleMembersHandler);
         eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
       }
+      const setupGroupActionHandlers = /* @__PURE__ */ __name(() => {
+        const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
+        joinButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const groupId = e2.target.dataset.groupId || e2.target.closest(".join-group-btn")?.dataset.groupId;
+            const groupTopic = e2.target.dataset.topic || e2.target.closest(".join-group-btn")?.dataset.topic;
+            if (groupId || groupTopic) {
+              const topic = groupTopic || groupId;
+              const group = context.state.discoveredGroups?.find((g) => g.id === topic) || context.state.groups?.find((g) => g.id === topic);
+              if (group) {
+                try {
+                  await context.joinGroup(group);
+                  log7("Successfully joined group: %s", group.name);
+                } catch (error) {
+                  log7.error("Error joining group: %o", error);
+                  await context.showModal({
+                    title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                    content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
+                    buttons: [{ text: "OK", type: "primary" }]
+                  });
+                }
+              }
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+        const leaveButtons = context.shadowRoot.querySelectorAll(".leave-group-btn");
+        leaveButtons.forEach((button) => {
+          const handler = /* @__PURE__ */ __name(async (e2) => {
+            const groupId = e2.target.dataset.groupId || e2.target.closest(".leave-group-btn")?.dataset.groupId;
+            if (groupId) {
+              try {
+                await context.leaveGroup(groupId);
+                log7("Successfully left group: %s", groupId);
+              } catch (error) {
+                log7.error("Error leaving group: %o", error);
+                await context.showModal({
+                  title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                  content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
+                  buttons: [{ text: "OK", type: "primary" }]
+                });
+              }
+            }
+          }, "handler");
+          button.addEventListener("click", handler);
+          eventListeners.push({ element: button, handler });
+        });
+      }, "setupGroupActionHandlers");
       const setupMemberClickHandlers = /* @__PURE__ */ __name(() => {
-        const memberItems = context.shadowRoot.querySelectorAll(".member-item");
-        memberItems.forEach((item) => {
+        const memberItems2 = context.shadowRoot.querySelectorAll(".member-item");
+        memberItems2.forEach((item) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
             if (e2.target.closest(".member-actions")) {
               return;
@@ -16835,7 +17024,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
             if (member && !member.isCurrentUser) {
               try {
-                log7("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name);
+                log7("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name || member.id);
                 await context.setActiveMember(member);
               } catch (error) {
                 log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0431\u043E\u0440\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
@@ -16849,6 +17038,8 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === "childList") {
+            console.log("-----------------------------------", mutation);
+            setupGroupActionHandlers();
             setupMemberClickHandlers();
           }
         });
@@ -16857,11 +17048,63 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         childList: true,
         subtree: true
       });
-      context._memberObserver = observer;
-      setTimeout(() => {
-        setupMemberClickHandlers();
-      }, 100);
-      log7("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
+      context._groupObserver = observer;
+      setupGroupActionHandlers();
+      setupMemberClickHandlers();
+      const setupSendButtonHandler = /* @__PURE__ */ __name(() => {
+        const sendButton2 = context.shadowRoot.querySelector("#send-button");
+        const messageInput2 = context.shadowRoot.querySelector("#message-input");
+        if (sendButton2 && messageInput2) {
+          const sendHandler = /* @__PURE__ */ __name(async () => {
+            const message2 = messageInput2.value.trim();
+            if (message2 && context.state.connected) {
+              try {
+                if (context.state.isPrivateChat && context.state.activeMember) {
+                  await context._actions.sendPrivateMessage(
+                    message2,
+                    context.state.activeMember.id
+                  );
+                } else if (context.state.currentGroup) {
+                  await context._actions.sendMessage(
+                    message2,
+                    context.state.currentGroup.topic
+                  );
+                }
+                messageInput2.value = "";
+              } catch (error) {
+                log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+                await context.showModal({
+                  title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
+                  content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
+                  buttons: [{ text: "OK", type: "primary" }]
+                });
+              }
+            }
+          }, "sendHandler");
+          sendButton2.addEventListener("click", sendHandler);
+          eventListeners.push({ element: sendButton2, handler: sendHandler });
+          const enterHandler = /* @__PURE__ */ __name((e2) => {
+            if (e2.key === "Enter" && !e2.shiftKey) {
+              e2.preventDefault();
+              sendHandler();
+            }
+          }, "enterHandler");
+          messageInput2.addEventListener("keypress", enterHandler);
+          eventListeners.push({ element: messageInput2, handler: enterHandler });
+          log7("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u0434\u043B\u044F \u043A\u043D\u043E\u043F\u043A\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+        } else {
+          log7("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B #send-button \u0438\u043B\u0438 #message-input \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B");
+        }
+      }, "setupSendButtonHandler");
+      setupSendButtonHandler();
+      log7("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log7("Total event listeners: %d", eventListeners.length);
+      const memberItems = context.shadowRoot.querySelectorAll(".member-item");
+      log7("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u043E\u0432 .member-item: %d", memberItems.length);
+      messageInput = context.shadowRoot.querySelector("#message-input");
+      log7("\u043F\u043E\u043B\u0435 \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %s", !!messageInput);
+      const sendButton = context.shadowRoot.querySelector("#send-button");
+      log7("\u043A\u043D\u043E\u043F\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 #send-button \u043D\u0430\u0439\u0434\u0435\u043D\u0430: %s", !!sendButton);
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
@@ -17282,6 +17525,7 @@ var ChatInterface = class extends BaseComponent {
     };
   }
   async _componentReady() {
+    this._log("\u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0433\u043E\u0442\u043E\u0432");
     this._controller = await controller2(this);
     this._actions = await createActions2(this);
     await this.fullRender(this.state);
@@ -17311,14 +17555,16 @@ var ChatInterface = class extends BaseComponent {
   }
   async setCurrentGroup(group) {
     this.state.currentGroup = group;
-    this.state.messages = [];
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
+    this.state.messages = [];
     this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group?.name);
+    await this.updateChatInput();
     await this.fullRender(this.state);
   }
   async updateConnectionStatus(connected) {
     this.state.connected = connected;
+    await this.updateChatInput();
     await this.renderPart({
       partName: "renderStatus",
       state: this.state,
@@ -17371,14 +17617,31 @@ var ChatInterface = class extends BaseComponent {
   async handlePeersUpdate(data) {
     try {
       this._log("\u{1F465} \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432: %o", data);
-      this.state.connectedPeers = data.peers || [];
+      this.state.connectedPeers = (data.peers || []).map((peer) => ({
+        id: peer.id,
+        name: this.generatePeerName(peer.id),
+        // Генерируем имя из ID
+        online: true,
+        connections: peer.connections || 1
+      }));
       this.state.totalPeers = data.totalPeers || 0;
       await this.updateConnectionStatusDisplay();
       await this.updateMembersList();
-      this._log("\u2705 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u044B");
+      this._log("\u2705 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u044B, \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432: %d", this.state.connectedPeers.length);
     } catch (error) {
       this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432: %o", error);
     }
+  }
+  /**
+   * Генерирует читаемое имя из Peer ID
+   * @param {string} peerId - ID пира
+   * @returns {string} Имя пользователя
+   */
+  generatePeerName(peerId) {
+    if (!peerId) return "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439";
+    const prefix = peerId.substring(0, 4);
+    const suffix = peerId.substring(peerId.length - 4);
+    return `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${prefix}_${suffix}`;
   }
   /**
    * Обрабатывает обновление статуса соединения
@@ -17433,26 +17696,28 @@ var ChatInterface = class extends BaseComponent {
       this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432: %o", error);
     }
   }
-  /**
-   * Установка активного пользователя для приватного чата
-   * @param {Object} member - Данные пользователя
-   */
   async setActiveMember(member) {
-    this.state.activeMember = member;
+    if (!member || !member.id) {
+      this._log.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
+      return;
+    }
+    const memberWithName = {
+      ...member,
+      name: member.name || this.generatePeerName(member.id)
+    };
+    this.state.activeMember = memberWithName;
     this.state.isPrivateChat = true;
     this.state.messages = [];
     await this.updateMembersList();
     await this.updateChatHeader();
+    await this.updateChatInput();
     await this.renderPart({
       partName: "renderMessages",
       state: this.state,
       selector: "#messages-list"
     });
-    this._log("\u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D: %s", member.name);
+    this._log("\u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D: %s", memberWithName.name);
   }
-  /**
-   * Обновляет заголовок чата
-   */
   async updateChatHeader() {
     try {
       const chatHeader = this.shadowRoot.querySelector(".chat-header");
@@ -17467,45 +17732,31 @@ var ChatInterface = class extends BaseComponent {
       this._log.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u0430 \u0447\u0430\u0442\u0430: %o", error);
     }
   }
-  /**
-   * Обработка входящего приватного сообщения
-   * @param {Object} messageData - Данные сообщения
-   */
-  async handleIncomingPrivateMessage(messageData) {
+  async updateChatInput() {
     try {
-      const isForActiveChat = this.state.isPrivateChat && this.state.activeMember && messageData.from === this.state.activeMember.id;
-      const shouldActivateChat = !this.state.isPrivateChat && messageData.isPrivate;
-      if (isForActiveChat || shouldActivateChat) {
-        this._log("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
-        if (shouldActivateChat) {
-          const senderMember = this.state.connectedPeers.find((p2) => p2.id === messageData.from);
-          if (senderMember) {
-            await this.setActiveMember(senderMember);
-          }
-        }
-        await this.addMessage({
-          text: messageData.text,
-          from: messageData.from,
-          to: this.state.peerId,
-          type: "received",
-          timestamp: messageData.timestamp || Date.now(),
-          isPrivate: true
-        });
-        if (document.hidden && this.state.activeMember) {
-          this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${this.state.activeMember.name}`);
-        }
-      } else if (messageData.isPrivate) {
-        this._log("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u043D\u0435 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430", messageData.from);
+      const messageInput = this.shadowRoot.querySelector("#message-input");
+      const sendButton = this.shadowRoot.querySelector("#send-button");
+      if (messageInput && sendButton) {
+        messageInput.placeholder = this.getInputPlaceholder(this.state);
+        const shouldBeDisabled = !this.state.connected || !this.state.currentGroup && !this.state.activeMember;
+        messageInput.disabled = shouldBeDisabled;
+        sendButton.disabled = shouldBeDisabled;
+        this._log("\u043F\u043E\u043B\u0435 \u0432\u0432\u043E\u0434\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u043E, disabled: %s", shouldBeDisabled);
       }
     } catch (error) {
-      this._log.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
-      this.addError({
-        componentName: this.constructor.name,
-        source: "handleIncomingPrivateMessage",
-        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F",
-        details: { messageData, error }
-      });
+      this._log.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044F \u0432\u0432\u043E\u0434\u0430: %o", error);
     }
+  }
+  /**
+   * Получает placeholder для поля ввода
+   */
+  getInputPlaceholder(state) {
+    if (!state.connected) return "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0441\u0435\u0442\u0438...";
+    if (state.isPrivateChat && state.activeMember) {
+      return `\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F ${state.activeMember.name}...`;
+    }
+    if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F...";
+    return "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...";
   }
   async _componentDisconnected() {
     if (this._controller && this._controller.destroy) {
@@ -36599,8 +36850,6 @@ var PeerConnection = class extends BaseComponent {
    */
   async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem) {
     try {
-      console.log("dddddddddddddddddddddddddddddddddddddd");
-      console.trace();
       await navigator.clipboard.writeText(text);
       log6("Text copied to clipboard: %s", text);
       addressItem.classList.add("copied");
@@ -36644,35 +36893,51 @@ var PeerConnection = class extends BaseComponent {
   }
   async connectToPeer(multiaddr2) {
     try {
+      log6("Connecting to peer: %s", multiaddr2);
       await this._actions.connectToPeer(multiaddr2);
+      await new Promise((resolve) => setTimeout(resolve, 1e3));
       await this.updatePeerList();
+      log6("Successfully connected to peer: %s", multiaddr2);
     } catch (error) {
       log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
+      const errorMessage = error.message || "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u0430\u044F \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F";
+      this.addError({
+        componentName: this.constructor.name,
+        source: "connectToPeer",
+        message: `\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043A ${multiaddr2}: ${errorMessage}`,
+        details: error
+      });
       throw error;
     }
   }
   async updatePeerList() {
-    if (this._actions.getConnectedPeers) {
-      const previousCount = this._lastPeersCount;
-      this.state.connectedPeers = await this._actions.getConnectedPeers();
-      this._lastPeersCount = this.state.connectedPeers.length;
-      log6("Peer list updated: %o", {
-        previous: previousCount,
-        current: this._lastPeersCount,
-        peers: this.state.connectedPeers.map((p2) => p2.id)
-      });
-      await this.updatePeersCard();
-      await this.sendPeersToChatInterface();
-      const detailedSection = this.shadowRoot.querySelector(".connected-peers-section");
-      if (detailedSection && this.renderPart) {
-        await this.renderPart({
-          partName: "renderConnectedPeersDetailed",
-          state: this.state,
-          selector: ".connected-peers-section .card-content"
+    try {
+      if (this._actions && this._actions.getConnectedPeers) {
+        const previousCount = this._lastPeersCount;
+        const peers = await this._actions.getConnectedPeers();
+        this.state.connectedPeers = Array.isArray(peers) ? peers : [];
+        this._lastPeersCount = this.state.connectedPeers.length;
+        log6("Peer list updated: %o", {
+          previous: previousCount,
+          current: this._lastPeersCount,
+          peers: this.state.connectedPeers.map((p2) => p2.id).filter(Boolean)
         });
+        await this.updatePeersCard();
+        try {
+          await this.sendPeersToChatInterface();
+        } catch (sendError) {
+          log6.error("Error sending peers to chat interface: %o", sendError);
+        }
+      } else {
+        log6.warn("getConnectedPeers action not available");
       }
+    } catch (error) {
+      log6.error("Error updating peer list: %o", error);
     }
   }
+  /**
+   * Передает данные о пирах в chat-interface
+   */
   /**
    * Передает данные о пирах в chat-interface
    */
@@ -36682,11 +36947,16 @@ var PeerConnection = class extends BaseComponent {
       if (chatInterface) {
         const peersData = {
           totalPeers: this.state.connectedPeers.length,
-          peers: this.state.connectedPeers.map((peer) => ({
-            id: peer.id,
-            connections: peer.connections ? peer.connections.length : 1,
-            status: "connected"
-          })),
+          peers: this.state.connectedPeers.map((peer) => {
+            const prefix = peer.id ? peer.id.substring(0, 6) : "unknown";
+            const suffix = peer.id ? peer.id.substring(peer.id.length - 4) : "????";
+            return {
+              id: peer.id || "unknown",
+              name: `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${prefix}...${suffix}`,
+              connections: peer.connections ? peer.connections.length : 1,
+              status: "connected"
+            };
+          }),
           connectionStatus: this.state.connected,
           timestamp: Date.now()
         };
@@ -36695,9 +36965,6 @@ var PeerConnection = class extends BaseComponent {
           data: peersData
         });
         log6("Peers data sent to chat-interface: %o", peersData);
-      } else {
-        log6("Chat interface not found, will retry...");
-        setTimeout(() => this.sendPeersToChatInterface(), 1e3);
       }
     } catch (error) {
       log6.error("Error sending peers to chat interface: %o", error);

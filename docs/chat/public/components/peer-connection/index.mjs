@@ -193,8 +193,6 @@ export class PeerConnection extends BaseComponent {
      */
     async copyToClipboard(text, successMessage = 'Текст скопирован в буфер обмена', addressItem) {
         try {
-            console.log('dddddddddddddddddddddddddddddddddddddd')
-            console.trace()
             await navigator.clipboard.writeText(text);
             log('Text copied to clipboard: %s', text);
 
@@ -248,44 +246,66 @@ export class PeerConnection extends BaseComponent {
 
     async connectToPeer(multiaddr) {
         try {
+            log('Connecting to peer: %s', multiaddr);
             await this._actions.connectToPeer(multiaddr);
+
+            // Добавляем задержку перед обновлением списка
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             await this.updatePeerList();
+            log('Successfully connected to peer: %s', multiaddr);
         } catch (error) {
             log.error('Ошибка подключения к пиру: %o', error);
+
+            // Более информативное сообщение об ошибке
+            const errorMessage = error.message || 'Неизвестная ошибка подключения';
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'connectToPeer',
+                message: `Не удалось подключиться к ${multiaddr}: ${errorMessage}`,
+                details: error
+            });
             throw error;
         }
     }
 
     async updatePeerList() {
-        if (this._actions.getConnectedPeers) {
-            const previousCount = this._lastPeersCount;
-            this.state.connectedPeers = await this._actions.getConnectedPeers();
-            this._lastPeersCount = this.state.connectedPeers.length;
+        try {
+            if (this._actions && this._actions.getConnectedPeers) {
+                const previousCount = this._lastPeersCount;
+                const peers = await this._actions.getConnectedPeers();
 
-            log('Peer list updated: %o', {
-                previous: previousCount,
-                current: this._lastPeersCount,
-                peers: this.state.connectedPeers.map(p => p.id)
-            });
+                // Добавляем проверку на валидность данных
+                this.state.connectedPeers = Array.isArray(peers) ? peers : [];
+                this._lastPeersCount = this.state.connectedPeers.length;
 
-            // Обновляем секцию peers-card
-            await this.updatePeersCard();
-
-            // Передаем данные в chat-interface
-            await this.sendPeersToChatInterface();
-
-            // Также обновляем детализированную секцию если она существует
-            const detailedSection = this.shadowRoot.querySelector('.connected-peers-section');
-            if (detailedSection && this.renderPart) {
-                await this.renderPart({
-                    partName: 'renderConnectedPeersDetailed',
-                    state: this.state,
-                    selector: '.connected-peers-section .card-content'
+                log('Peer list updated: %o', {
+                    previous: previousCount,
+                    current: this._lastPeersCount,
+                    peers: this.state.connectedPeers.map(p => p.id).filter(Boolean)
                 });
+
+                // Обновляем секцию peers-card
+                await this.updatePeersCard();
+
+                // Передаем данные в chat-interface с обработкой ошибок
+                try {
+                    await this.sendPeersToChatInterface();
+                } catch (sendError) {
+                    log.error('Error sending peers to chat interface: %o', sendError);
+                }
+
+            } else {
+                log.warn('getConnectedPeers action not available');
             }
+        } catch (error) {
+            log.error('Error updating peer list: %o', error);
         }
     }
 
+    /**
+     * Передает данные о пирах в chat-interface
+     */
     /**
      * Передает данные о пирах в chat-interface
      */
@@ -293,31 +313,33 @@ export class PeerConnection extends BaseComponent {
         try {
             const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
             if (chatInterface) {
-                // Формируем данные для передачи
+                // Формируем данные для передачи с именами
                 const peersData = {
                     totalPeers: this.state.connectedPeers.length,
-                    peers: this.state.connectedPeers.map(peer => ({
-                        id: peer.id,
-                        connections: peer.connections ? peer.connections.length : 1,
-                        status: 'connected'
-                    })),
+                    peers: this.state.connectedPeers.map(peer => {
+                        const prefix = peer.id ? peer.id.substring(0, 6) : 'unknown';
+                        const suffix = peer.id ? peer.id.substring(peer.id.length - 4) : '????';
+                        return {
+                            id: peer.id || 'unknown',
+                            name: `Пользователь ${prefix}...${suffix}`,
+                            connections: peer.connections ? peer.connections.length : 1,
+                            status: 'connected'
+                        };
+                    }),
                     connectionStatus: this.state.connected,
                     timestamp: Date.now()
                 };
 
-                // Отправляем сообщение в chat-interface
                 await chatInterface.postMessage({
                     type: 'PEERS_UPDATE',
                     data: peersData
                 });
 
+                // Используем log вместо this.log
                 log('Peers data sent to chat-interface: %o', peersData);
-            } else {
-                log('Chat interface not found, will retry...');
-                // Повторяем попытку через 1 секунду
-                setTimeout(() => this.sendPeersToChatInterface(), 1000);
             }
         } catch (error) {
+            // Используем log вместо this.log
             log.error('Error sending peers to chat interface: %o', error);
         }
     }

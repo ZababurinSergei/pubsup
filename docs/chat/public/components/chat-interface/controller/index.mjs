@@ -15,11 +15,11 @@ export const controller = async (context) => {
          * @async
          */
         async init() {
-            log('инициализация контроллера');
+            log('controller initializing');
 
             // Обработчик отправки сообщения
             const sendMessageBtn = context.shadowRoot.querySelector('#send-message');
-            const messageInput = context.shadowRoot.querySelector('#message-input');
+            let messageInput = context.shadowRoot.querySelector('#message-input');
 
             if (sendMessageBtn && messageInput) {
                 const sendMessageHandler = async () => {
@@ -106,6 +106,64 @@ export const controller = async (context) => {
                 eventListeners.push({ element: toggleMembersBtn, handler: toggleMembersHandler });
             }
 
+            // Обработчики для кнопок присоединения к группам
+            const setupGroupActionHandlers = () => {
+                // Обработчики для кнопок присоединения к группам
+                const joinButtons = context.shadowRoot.querySelectorAll('.join-group-btn');
+                joinButtons.forEach(button => {
+                    const handler = async (e) => {
+                        const groupId = e.target.dataset.groupId || e.target.closest('.join-group-btn')?.dataset.groupId;
+                        const groupTopic = e.target.dataset.topic || e.target.closest('.join-group-btn')?.dataset.topic;
+
+                        if (groupId || groupTopic) {
+                            const topic = groupTopic || groupId;
+                            const group = context.state.discoveredGroups?.find(g => g.id === topic) ||
+                                context.state.groups?.find(g => g.id === topic);
+
+                            if (group) {
+                                try {
+                                    await context.joinGroup(group);
+                                    log('Successfully joined group: %s', group.name);
+                                } catch (error) {
+                                    log.error('Error joining group: %o', error);
+                                    await context.showModal({
+                                        title: 'Ошибка',
+                                        content: `<p>Не удалось присоединиться к группе: ${error.message}</p>`,
+                                        buttons: [{ text: 'OK', type: 'primary' }]
+                                    });
+                                }
+                            }
+                        }
+                    };
+
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler: handler });
+                });
+
+                // Обработчики для кнопок выхода из групп
+                const leaveButtons = context.shadowRoot.querySelectorAll('.leave-group-btn');
+                leaveButtons.forEach(button => {
+                    const handler = async (e) => {
+                        const groupId = e.target.dataset.groupId || e.target.closest('.leave-group-btn')?.dataset.groupId;
+                        if (groupId) {
+                            try {
+                                await context.leaveGroup(groupId);
+                                log('Successfully left group: %s', groupId);
+                            } catch (error) {
+                                log.error('Error leaving group: %o', error);
+                                await context.showModal({
+                                    title: 'Ошибка',
+                                    content: `<p>Не удалось покинуть группу: ${error.message}</p>`,
+                                    buttons: [{ text: 'OK', type: 'primary' }]
+                                });
+                            }
+                        }
+                    };
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler: handler });
+                });
+            };
+
             // Обработчики кликов на участников для приватного чата
             const setupMemberClickHandlers = () => {
                 const memberItems = context.shadowRoot.querySelectorAll('.member-item');
@@ -122,7 +180,7 @@ export const controller = async (context) => {
 
                         if (member && !member.isCurrentUser) {
                             try {
-                                log('выбор пользователя для приватного чата: %s', member.name);
+                                log('выбор пользователя для приватного чата: %s', member.name || member.id);
                                 await context.setActiveMember(member);
                             } catch (error) {
                                 log.error('ошибка выбора пользователя: %o', error);
@@ -139,6 +197,8 @@ export const controller = async (context) => {
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'childList') {
+                        console.log('-----------------------------------', mutation)
+                        setupGroupActionHandlers();
                         setupMemberClickHandlers();
                     }
                 });
@@ -151,12 +211,76 @@ export const controller = async (context) => {
             });
 
             // Сохраняем observer для очистки
-            context._memberObserver = observer;
+            context._groupObserver = observer;
 
             // Инициализация обработчиков при первом рендере
-            setTimeout(() => {
+            // setTimeout(() => {
+                setupGroupActionHandlers();
                 setupMemberClickHandlers();
-            }, 100);
+            // }, 100);
+
+            // Обработчик для кнопки отправки сообщения #send-button
+            const setupSendButtonHandler = () => {
+                const sendButton = context.shadowRoot.querySelector('#send-button');
+                const messageInput = context.shadowRoot.querySelector('#message-input');
+                if (sendButton && messageInput) {
+                    const sendHandler = async () => {
+                        const message = messageInput.value.trim();
+                        if (message && context.state.connected) {
+                            try {
+                                if (context.state.isPrivateChat && context.state.activeMember) {
+                                    // Отправка приватного сообщения
+                                    await context._actions.sendPrivateMessage(
+                                        message,
+                                        context.state.activeMember.id
+                                    );
+                                } else if (context.state.currentGroup) {
+                                    // Отправка в группу
+                                    await context._actions.sendMessage(
+                                        message,
+                                        context.state.currentGroup.topic
+                                    );
+                                }
+
+                                // Очистка поля ввода после отправки
+                                messageInput.value = '';
+
+                            } catch (error) {
+                                log.error('Ошибка отправки сообщения: %o', error);
+                                await context.showModal({
+                                    title: 'Ошибка отправки',
+                                    content: `<p>Не удалось отправить сообщение: ${error.message}</p>`,
+                                    buttons: [{ text: 'OK', type: 'primary' }]
+                                });
+                            }
+                        }
+                    };
+
+                    // Обработчик клика по кнопке
+                    sendButton.addEventListener('click', sendHandler);
+                    eventListeners.push({ element: sendButton, handler: sendHandler });
+
+                    // Обработчик Enter в поле ввода
+                    const enterHandler = (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendHandler();
+                        }
+                    };
+
+                    messageInput.addEventListener('keypress', enterHandler);
+                    eventListeners.push({ element: messageInput, handler: enterHandler });
+
+                    log('Обработчики для кнопки отправки установлены');
+                } else {
+                    log('Элементы #send-button или #message-input не найдены');
+                }
+            };
+
+            // Инициализация обработчика кнопки отправки
+            // setTimeout(() => {
+                setupSendButtonHandler();
+            // }, 100);
 
             // Автофокус на поле ввода сообщения
             // if (messageInput) {
@@ -165,7 +289,18 @@ export const controller = async (context) => {
             //     }, 100);
             // }
 
-            log('контроллер инициализирован, обработчиков: %d', eventListeners.length);
+            log('контроллер инициализирован');
+            log('Total event listeners: %d', eventListeners.length);
+
+            // Отладочная информация о найденных элементах
+            const memberItems = context.shadowRoot.querySelectorAll('.member-item');
+            log('найдено элементов .member-item: %d', memberItems.length);
+
+            messageInput = context.shadowRoot.querySelector('#message-input');
+            log('поле ввода сообщения найдено: %s', !!messageInput);
+
+            const sendButton = context.shadowRoot.querySelector('#send-button');
+            log('кнопка отправки #send-button найдена: %s', !!sendButton);
         },
 
         /**

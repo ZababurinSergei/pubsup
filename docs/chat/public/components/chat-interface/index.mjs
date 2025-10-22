@@ -25,6 +25,8 @@ export class ChatInterface extends BaseComponent {
     }
 
     async _componentReady() {
+        this._log('компонент готов');
+
         this._controller = await controller(this);
         this._actions = await createActions(this);
         await this.fullRender(this.state)
@@ -62,15 +64,18 @@ export class ChatInterface extends BaseComponent {
 
     async setCurrentGroup(group) {
         this.state.currentGroup = group;
+        this.state.activeMember = null; // Сбрасываем активного пользователя
+        this.state.isPrivateChat = false; // Возвращаем в групповой режим
         this.state.messages = [];
-        this.state.activeMember = null;
-        this.state.isPrivateChat = false;
         this._log('установлена текущая группа: %s', group?.name);
+
+        await this.updateChatInput();
         await this.fullRender(this.state);
     }
 
     async updateConnectionStatus(connected) {
         this.state.connected = connected;
+        await this.updateChatInput();
         await this.renderPart({
             partName: 'renderStatus',
             state: this.state,
@@ -132,8 +137,14 @@ export class ChatInterface extends BaseComponent {
         try {
             this._log('👥 обработка обновления пиров: %o', data);
 
-            // Обновляем состояние с информацией о пирах
-            this.state.connectedPeers = data.peers || [];
+            // Формируем правильные данные участников
+            this.state.connectedPeers = (data.peers || []).map(peer => ({
+                id: peer.id,
+                name: this.generatePeerName(peer.id), // Генерируем имя из ID
+                online: true,
+                connections: peer.connections || 1
+            }));
+
             this.state.totalPeers = data.totalPeers || 0;
 
             // Обновляем отображение статуса подключения
@@ -142,11 +153,25 @@ export class ChatInterface extends BaseComponent {
             // Обновляем список участников если открыта панель
             await this.updateMembersList();
 
-            this._log('✅ данные пиров обработаны');
+            this._log('✅ данные пиров обработаны, участников: %d', this.state.connectedPeers.length);
 
         } catch (error) {
             this._log.error('❌ ошибка обработки обновления пиров: %o', error);
         }
+    }
+
+    /**
+     * Генерирует читаемое имя из Peer ID
+     * @param {string} peerId - ID пира
+     * @returns {string} Имя пользователя
+     */
+    generatePeerName(peerId) {
+        if (!peerId) return 'Неизвестный';
+
+        // Берем первые 6 и последние 4 символа ID
+        const prefix = peerId.substring(0, 4);
+        const suffix = peerId.substring(peerId.length - 4);
+        return `Пользователь ${prefix}_${suffix}`;
     }
 
     /**
@@ -211,29 +236,34 @@ export class ChatInterface extends BaseComponent {
         }
     }
 
-    /**
-     * Установка активного пользователя для приватного чата
-     * @param {Object} member - Данные пользователя
-     */
     async setActiveMember(member) {
-        this.state.activeMember = member;
+        if (!member || !member.id) {
+            this._log.error('неверные данные пользователя: %o', member);
+            return;
+        }
+
+        // Убедимся, что у участника есть имя
+        const memberWithName = {
+            ...member,
+            name: member.name || this.generatePeerName(member.id)
+        };
+
+        this.state.activeMember = memberWithName;
         this.state.isPrivateChat = true;
         this.state.messages = []; // Очищаем историю при смене чата
 
         await this.updateMembersList();
         await this.updateChatHeader();
+        await this.updateChatInput();
         await this.renderPart({
             partName: 'renderMessages',
             state: this.state,
             selector: '#messages-list'
         });
 
-        this._log('активный пользователь установлен: %s', member.name);
+        this._log('активный пользователь установлен: %s', memberWithName.name);
     }
 
-    /**
-     * Обновляет заголовок чата
-     */
     async updateChatHeader() {
         try {
             const chatHeader = this.shadowRoot.querySelector('.chat-header');
@@ -249,60 +279,39 @@ export class ChatInterface extends BaseComponent {
         }
     }
 
-    /**
-     * Обработка входящего приватного сообщения
-     * @param {Object} messageData - Данные сообщения
-     */
-    async handleIncomingPrivateMessage(messageData) {
+    async updateChatInput() {
         try {
-            // Проверяем, относится ли сообщение к текущему активному приватному чату
-            const isForActiveChat = this.state.isPrivateChat &&
-                this.state.activeMember &&
-                messageData.from === this.state.activeMember.id;
+            const messageInput = this.shadowRoot.querySelector('#message-input');
+            const sendButton = this.shadowRoot.querySelector('#send-button');
 
-            // Или если это новое сообщение и у нас нет активного чата
-            const shouldActivateChat = !this.state.isPrivateChat &&
-                messageData.isPrivate;
+            if (messageInput && sendButton) {
+                // Обновляем placeholder
+                messageInput.placeholder = this.getInputPlaceholder(this.state);
 
-            if (isForActiveChat || shouldActivateChat) {
-                this._log('обработка входящего приватного сообщения от: %s', messageData.from);
+                // Обновляем состояние disabled
+                const shouldBeDisabled = !this.state.connected ||
+                    (!this.state.currentGroup && !this.state.activeMember);
 
-                // Если это новое сообщение, активируем чат с отправителем
-                if (shouldActivateChat) {
-                    const senderMember = this.state.connectedPeers.find(p => p.id === messageData.from);
-                    if (senderMember) {
-                        await this.setActiveMember(senderMember);
-                    }
-                }
+                messageInput.disabled = shouldBeDisabled;
+                sendButton.disabled = shouldBeDisabled;
 
-                // Добавляем сообщение в историю
-                await this.addMessage({
-                    text: messageData.text,
-                    from: messageData.from,
-                    to: this.state.peerId,
-                    type: 'received',
-                    timestamp: messageData.timestamp || Date.now(),
-                    isPrivate: true
-                });
-
-                // Показываем уведомление если окно не активно
-                if (document.hidden && this.state.activeMember) {
-                    this.showNotification(`Приватное сообщение от ${this.state.activeMember.name}`);
-                }
-            } else if (messageData.isPrivate) {
-                // Сообщение не для активного чата - просто логируем
-                this._log('приватное сообщение от %s не для активного чата', messageData.from);
+                this._log('поле ввода обновлено, disabled: %s', shouldBeDisabled);
             }
-
         } catch (error) {
-            this._log.error('ошибка обработки входящего приватного сообщения: %o', error);
-            this.addError({
-                componentName: this.constructor.name,
-                source: 'handleIncomingPrivateMessage',
-                message: 'Ошибка обработки приватного сообщения',
-                details: { messageData, error }
-            });
+            this._log.error('ошибка обновления поля ввода: %o', error);
         }
+    }
+
+    /**
+     * Получает placeholder для поля ввода
+     */
+    getInputPlaceholder(state) {
+        if (!state.connected) return 'Подключитесь к сети...';
+        if (state.isPrivateChat && state.activeMember) {
+            return `Сообщение для ${state.activeMember.name}...`;
+        }
+        if (!state.currentGroup) return 'Выберите группу для общения...';
+        return 'Введите сообщение...';
     }
 
     async _componentDisconnected() {

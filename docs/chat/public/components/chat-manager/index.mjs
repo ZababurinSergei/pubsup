@@ -6,6 +6,7 @@ import { lpStream } from '@libp2p/utils';
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string';
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string';
 import { logger } from '@libp2p/logger';
+import {multiaddr} from "@multiformats/multiaddr";
 
 // Создаем логгер для компонента
 const log = logger('chat-manager');
@@ -69,6 +70,9 @@ export class ChatManager extends BaseComponent {
                         connected: this.state.connected
                     });
 
+                    // Добавляем обработчик входящих сообщений
+                    await this.setupMessageHandler();
+
                     await this.fullRender(this.state);
                     return;
                 }
@@ -87,6 +91,108 @@ export class ChatManager extends BaseComponent {
                 source: 'initializeFromPeerConnection',
                 message: 'Не удалось получить ноду из PeerConnection',
                 details: error
+            });
+        }
+    }
+
+    /**
+     * Настраивает обработчик входящих сообщений
+     */
+    async setupMessageHandler() {
+        if (!this.node) {
+            log.error('Node not available for message handler setup');
+            return;
+        }
+
+        try {
+            // Обработчик для протокола чата
+            await this.node.handle('/chat/1.0.0', async (stream) => {
+                log('Incoming chat stream established');
+
+                try {
+                    const lp = lpStream(stream);
+
+                    while (true) {
+                        const message = await lp.read();
+                        const messageText = uint8ArrayToString(message.subarray());
+
+                        log('Received message via stream: %s', messageText);
+
+                        // Парсим JSON если это приватное сообщение
+                        let messageData;
+                        try {
+                            messageData = JSON.parse(messageText);
+                        } catch (e) {
+                            // Если не JSON, обрабатываем как обычное текстовое сообщение
+                            messageData = {
+                                text: messageText,
+                                type: 'group_message',
+                                timestamp: Date.now()
+                            };
+                        }
+
+                        // Обрабатываем сообщение в зависимости от типа
+                        await this.handleIncomingStreamMessage(messageData, stream.remotePeer.toString());
+
+                    }
+                } catch (error) {
+                    if (error.code !== 'ERR_STREAM_RESET') {
+                        log.error('Error reading from stream: %o', error);
+                    }
+                    // Закрываем стрим при ошибке
+                    try {
+                        await stream.close();
+                    } catch (closeError) {
+                        log.error('Error closing stream: %o', closeError);
+                    }
+                }
+            });
+
+            log('Chat message handler registered for protocol /chat/1.0.0');
+
+        } catch (error) {
+            log.error('Error setting up message handler: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'setupMessageHandler',
+                message: 'Ошибка настройки обработчика сообщений',
+                details: error
+            });
+        }
+    }
+
+    /**
+     * Обрабатывает входящие сообщения из стрима
+     */
+    async handleIncomingStreamMessage(messageData, peerId) {
+        try {
+            log('Processing incoming stream message from %s: %o', peerId, messageData);
+
+            if (messageData.type === 'private_message') {
+                // Обработка приватного сообщения
+                await this.handleIncomingPrivateMessage({
+                    text: messageData.text,
+                    from: peerId,
+                    timestamp: messageData.timestamp,
+                    isPrivate: true
+                });
+            } else {
+                // Обработка группового сообщения
+                await this.addMessage({
+                    text: messageData.text,
+                    from: peerId,
+                    type: 'received',
+                    timestamp: messageData.timestamp || Date.now()
+                });
+            }
+
+        } catch (error) {
+            log.error('Error handling incoming stream message: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'handleIncomingStreamMessage',
+                message: 'Ошибка обработки входящего сообщения',
+                details: { messageData, peerId, error }
             });
         }
     }
@@ -205,9 +311,10 @@ export class ChatManager extends BaseComponent {
                 if (peer.toString() === this.node.peerId.toString()) {
                     continue; // Пропускаем себя
                 }
-
+                const ma = multiaddr(peer)
+                console.log('@!!!!!!!!!!!!!!!!', ma)
                 // Создаем стрим к пиру
-                const stream = await this.node.dialProtocol(peer, '/chat/1.0.0');
+                const stream = await this.node.dialProtocol(ma, '/chat/1.0.0');
 
                 // Создаем lpStream
                 const lp = lpStream(stream);
@@ -272,25 +379,28 @@ export class ChatManager extends BaseComponent {
                     continue;
                 }
 
-                const streamKey = `${topic}-${peer.toString()}`;
-                let streamData = this.activeStreams.get(streamKey);
-
-                // Если стрима нет, создаем его
-                if (!streamData) {
+                try {
                     const stream = await this.node.dialProtocol(peer, '/chat/1.0.0');
                     const lp = lpStream(stream);
-                    streamData = { stream, lp, peer };
-                    this.activeStreams.set(streamKey, streamData);
 
-                    // Запускаем чтение из нового стрима
-                    this.streamToChat(lp, peer.toString(), topic);
+                    // Отправляем как JSON для единообразия
+                    const messageData = {
+                        type: 'group_message',
+                        text: messageText,
+                        from: this.state.peerId,
+                        timestamp: Date.now(),
+                        topic: topic
+                    };
+
+                    await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
+                    await stream.close();
+
+                    sent = true;
+                    log('Message sent via stream to %s', peer.toString());
+
+                } catch (error) {
+                    log.error('Error sending to peer %s: %o', peer.toString(), error);
                 }
-
-                // Отправляем сообщение через lpStream
-                await streamData.lp.write(uint8ArrayFromString(messageText));
-                sent = true;
-
-                log('Message sent via stream to %s', peer.toString());
             }
 
             // Также отправляем через PubSub для широковещания
@@ -320,8 +430,9 @@ export class ChatManager extends BaseComponent {
         }
 
         try {
+            const ma = multiaddr(peerId)
             // Создаем стрим к пиру для приватного сообщения
-            const stream = await this.node.dialProtocol(peerId, '/chat/1.0.0');
+            const stream = await this.node.dialProtocol(ma, '/chat/1.0.0');
             const lp = lpStream(stream);
 
             // Отправляем сообщение в формате JSON
