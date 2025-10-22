@@ -1,13 +1,13 @@
-import { BaseComponent } from '../../base/base-component.mjs';
+import {BaseComponent} from '../../base/base-component.mjs';
 import * as template from './template/index.mjs';
-import { controller } from './controller/index.mjs';
-import { createActions } from './actions/index.mjs';
-import { lpStream } from '@libp2p/utils';
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string';
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string';
-import { logger } from '@libp2p/logger';
-import { multiaddr } from "@multiformats/multiaddr";
-import { WebRTC, WebSockets } from "@multiformats/multiaddr-matcher"
+import {controller} from './controller/index.mjs';
+import {createActions} from './actions/index.mjs';
+import {lpStream} from '@libp2p/utils';
+import {toString as uint8ArrayToString} from 'uint8arrays/to-string';
+import {fromString as uint8ArrayFromString} from 'uint8arrays/from-string';
+import {logger} from '@libp2p/logger';
+import {multiaddr} from "@multiformats/multiaddr";
+import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
 
 // Создаем логгер для компонента
 const log = logger('chat-manager');
@@ -136,7 +136,7 @@ export class ChatManager extends BaseComponent {
                 componentName: this.constructor.name,
                 source: 'handleIncomingStreamMessage',
                 message: 'Ошибка обработки входящего сообщения',
-                details: { messageData, peerId, error }
+                details: {messageData, peerId, error}
             });
         }
     }
@@ -264,7 +264,7 @@ export class ChatManager extends BaseComponent {
                 const lp = lpStream(stream);
 
                 // Сохраняем стрим
-                this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
+                this.activeStreams.set(`${topic}-${peer.toString()}`, {stream, lp, peer});
 
                 // Запускаем чтение из стрима
                 this.streamToChat(lp, peer.toString(), topic);
@@ -467,11 +467,24 @@ export class ChatManager extends BaseComponent {
                 isPrivate: true
             };
 
+            stream.addEventListener('close', () => {
+                console.log('Соединение закрыто');
+            });
+
+            stream.addEventListener('error', (error) => {
+                console.error('Ошибка:', error);
+            });
+
+            stream.addEventListener('end', () => {
+                console.log('Чтение завершено');
+            });
+
             const messageBytes = uint8ArrayFromString(JSON.stringify(messageData));
             await lp.write(messageBytes);
 
+
             // Даем время на отправку перед закрытием
-            // await new Promise(resolve => setTimeout(resolve, 100));
+            // await new Promise(resolve => setTimeout(resolve, 10000));
 
             // Закрываем стрим после отправки
             // await stream.close();
@@ -497,7 +510,7 @@ export class ChatManager extends BaseComponent {
                 componentName: this.constructor.name,
                 source: 'sendPrivateMessage',
                 message: 'Ошибка отправки приватного сообщения',
-                details: { peerId, messageText, error }
+                details: {peerId, messageText, error}
             });
 
             throw error;
@@ -537,10 +550,9 @@ export class ChatManager extends BaseComponent {
                         ]);
                     };
 
-                    // Используем connection.timeline вместо stream.stat.timeline
-                    while (connection.timeline.close === undefined) {
+                    while (true) {
                         try {
-                            const message = await readWithTimeout();
+                            const message = await lp.read();
 
                             // Проверяем, что сообщение не пустое
                             if (!message || message.length === 0) {
@@ -549,45 +561,39 @@ export class ChatManager extends BaseComponent {
                             }
 
                             const messageText = uint8ArrayToString(message.subarray());
-                            log('Received message via stream from %s: %s', remotePeer, messageText);
+                            log('Received length-prefixed message from %s: %s', remotePeer, messageText);
 
                             let messageData;
                             try {
                                 messageData = JSON.parse(messageText);
                             } catch (e) {
-                                // Если не JSON, обрабатываем как обычное текстовое сообщение
+                                log('Non-JSON message received, treating as plain text: %s', messageText);
                                 messageData = {
                                     text: messageText,
                                     type: 'group_message',
-                                    timestamp: Date.now()
+                                    timestamp: Date.now(),
+                                    raw: true
                                 };
                             }
 
-                            // Обрабатываем сообщение с передачей peerId
+                            console.log('Получено сообщение:', messageData);
                             await this.handleIncomingStreamMessage(messageData, remotePeer);
 
                         } catch (readError) {
                             if (readError.message === 'Stream read timeout') {
-                                log('Stream read timeout from %s, continuing...', remotePeer);
                                 continue;
                             }
-
-                            // Если стрим закрыт или произошла ошибка чтения
-                            if (readError.code === 'ERR_STREAM_RESET' ||
-                                readError.message.includes('stream closed') ||
-                                readError.message.includes('Unexpected EOF')) {
-                                log('Stream closed by peer %s: %o', remotePeer, readError);
+                            if (readError.code === 'ERR_STREAM_RESET' || readError.message.includes('stream closed')) {
                                 break;
                             }
-
-                            log.error('Error reading from stream for peer %s: %o', remotePeer, readError);
+                            log.error('Error reading from lpStream: %o', readError);
                             break;
+                        } finally {
+                            // Всегда закрываем стрим
+                            await stream.close().catch(() => {
+                            });
                         }
                     }
-
-                    // Очищаем таймаут
-                    clearTimeout(streamTimeout);
-
                 } catch (error) {
                     if (error.code !== 'ERR_STREAM_RESET' &&
                         !error.message.includes('Stream read timeout') &&
@@ -642,7 +648,7 @@ export class ChatManager extends BaseComponent {
                 isPrivate: true
             });
 
-            console.log('==========================',{
+            console.log('==========================', {
                 text: messageData.text,
                 from: messageData.from,
                 to: this.state.peerId,
@@ -664,7 +670,7 @@ export class ChatManager extends BaseComponent {
                 componentName: this.constructor.name,
                 source: 'handleIncomingPrivateMessage',
                 message: 'Ошибка обработки приватного сообщения',
-                details: { messageData, error }
+                details: {messageData, error}
             });
         }
     }
@@ -679,7 +685,7 @@ export class ChatManager extends BaseComponent {
 
         await this.renderPart({
             partName: 'renderGroupSearch',
-            state: { ...this.state, filteredGroups },
+            state: {...this.state, filteredGroups},
             selector: '#group-search-results'
         });
     }

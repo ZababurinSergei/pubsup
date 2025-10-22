@@ -16400,6 +16400,15 @@ var ChatManager = class extends BaseComponent {
         timestamp: Date.now(),
         isPrivate: true
       };
+      stream.addEventListener("close", () => {
+        console.log("\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0437\u0430\u043A\u0440\u044B\u0442\u043E");
+      });
+      stream.addEventListener("error", (error) => {
+        console.error("\u041E\u0448\u0438\u0431\u043A\u0430:", error);
+      });
+      stream.addEventListener("end", () => {
+        console.log("\u0427\u0442\u0435\u043D\u0438\u0435 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E");
+      });
       const messageBytes = fromString2(JSON.stringify(messageData));
       await lp.write(messageBytes);
       log5("\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
@@ -16445,40 +16454,43 @@ var ChatManager = class extends BaseComponent {
               )
             ]);
           }, "readWithTimeout");
-          while (connection.timeline.close === void 0) {
+          while (true) {
             try {
-              const message2 = await readWithTimeout();
+              const message2 = await lp.read();
               if (!message2 || message2.length === 0) {
                 log5("Empty message received from %s, continuing...", remotePeer);
                 continue;
               }
               const messageText = toString2(message2.subarray());
-              log5("Received message via stream from %s: %s", remotePeer, messageText);
+              log5("Received length-prefixed message from %s: %s", remotePeer, messageText);
               let messageData;
               try {
                 messageData = JSON.parse(messageText);
               } catch (e2) {
+                log5("Non-JSON message received, treating as plain text: %s", messageText);
                 messageData = {
                   text: messageText,
                   type: "group_message",
-                  timestamp: Date.now()
+                  timestamp: Date.now(),
+                  raw: true
                 };
               }
+              console.log("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435:", messageData);
               await this.handleIncomingStreamMessage(messageData, remotePeer);
             } catch (readError) {
               if (readError.message === "Stream read timeout") {
-                log5("Stream read timeout from %s, continuing...", remotePeer);
                 continue;
               }
-              if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed") || readError.message.includes("Unexpected EOF")) {
-                log5("Stream closed by peer %s: %o", remotePeer, readError);
+              if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed")) {
                 break;
               }
-              log5.error("Error reading from stream for peer %s: %o", remotePeer, readError);
+              log5.error("Error reading from lpStream: %o", readError);
               break;
+            } finally {
+              await stream.close().catch(() => {
+              });
             }
           }
-          clearTimeout(streamTimeout);
         } catch (error) {
           if (error.code !== "ERR_STREAM_RESET" && !error.message.includes("Stream read timeout") && !error.message.includes("Unexpected EOF")) {
             log5.error("Error in stream handler for peer %s: %o", connection.remotePeer?.toString(), error);
