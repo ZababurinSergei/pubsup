@@ -494,35 +494,198 @@ export async function createActions(context) {
             }
         },
 
+
+
+        /**
+         * Уведомляет все компоненты о готовности новой ноды
+         * @async
+         */
+        async notifyComponentsNodeReady() {
+            const log = logger('peer-connection:actions:notifyNodeReady');
+
+            try {
+                // Уведомляем ChatManager
+                const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                if (chatManager) {
+                    await chatManager.postMessage({
+                        type: 'NODE_RESTARTED',
+                        data: {
+                            peerId: context.state.peerId,
+                            mode: context.state.mode,
+                            timestamp: Date.now()
+                        }
+                    });
+                }
+
+                // Уведомляем GroupManager
+                const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                if (groupManager) {
+                    // GroupManager сам обнаружит новую ноду через свой механизм проверки
+                    log('GroupManager уведомлен о перезапуске ноды');
+                }
+
+                log('Все компоненты уведомлены о готовности новой ноды');
+            } catch (error) {
+                log.error('Ошибка уведомления компонентов: %o', error);
+            }
+        },
+
         /**
          * Останавливает Libp2p узел и очищает ресурсы
          * @async
          */
         async cleanup() {
+            const log = logger('peer-connection:actions:cleanup');
+
             try {
+                log('Начало очистки P2P системы...');
+
+                // 1. Останавливаем интервалы обновления
                 if (connectionInterval) {
                     clearInterval(connectionInterval);
                     connectionInterval = null;
+                    log('Остановлен интервал обновления пиров');
                 }
 
+                // 2. Уведомляем ChatManager о остановке
+                try {
+                    const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                    if (chatManager && chatManager._actions) {
+                        log('Уведомляем ChatManager об остановке...');
+                        await chatManager.postMessage({
+                            type: 'NODE_SHUTDOWN',
+                            data: {
+                                peerId: libp2p?.peerId?.toString(),
+                                timestamp: Date.now()
+                            }
+                        });
+                    }
+                } catch (error) {
+                    log.error('Ошибка уведомления ChatManager: %o', error);
+                }
+
+                // 3. Уведомляем GroupManager о остановке
+                try {
+                    const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                    if (groupManager) {
+                        log('Уведомляем GroupManager об остановке...');
+                        // Сбрасываем состояние групп
+                        groupManager.state.nodeReady = false;
+                        groupManager.state.groups = [];
+                        groupManager.state.discoveredGroups = [];
+                        groupManager.state.joinedGroups = [];
+
+                        // Обновляем UI
+                        if (groupManager.fullRender) {
+                            await groupManager.fullRender(groupManager.state);
+                        }
+                    }
+                } catch (error) {
+                    log.error('Ошибка уведомления GroupManager: %o', error);
+                }
+
+                // 4. Останавливаем Libp2p узел
                 if (libp2p) {
+                    log('Останавливаем Libp2p узел...');
                     await libp2p.stop();
                     libp2p = null;
                     log('Libp2p узел остановлен');
                 }
+
+                // 5. Очищаем состояние компонента
+                context.state.connected = false;
+                context.state.peerId = null;
+                context.state.listeningAddresses = [];
+                context.state.connectedPeers = [];
+                context.state.uptime = '0:00';
+                context.state.startTime = null;
+
+                log('Очистка P2P системы завершена');
+
             } catch (error) {
-                log.error('Ошибка очистки ресурсов: %o', error);
+                log.error('Критическая ошибка при очистке: %o', error);
+                context.addError({
+                    componentName: context.constructor.name,
+                    source: 'cleanup',
+                    message: 'Ошибка очистки P2P системы',
+                    details: error
+                });
+                // Продолжаем выполнение даже при ошибках
             }
         },
 
         /**
-         * Перезапускает узел с новыми настройки
+         * Перезапускает узел с новыми настройками
          * @async
          * @param {string} mode - Новый режим работы
          */
         async restart(mode) {
-            await self.cleanup();
-            return await self.initializeLibp2p(mode);
+            const log = logger('peer-connection:actions:restart');
+
+            try {
+                log('Начало перезапуска P2P системы в режиме: %s', mode);
+
+                // 1. Полная очистка текущего состояния
+                await this.cleanup();
+
+                // 2. Краткая пауза для завершения операций
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 3. Перезапуск ChatManager
+                try {
+                    const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                    if (chatManager) {
+                        log('Перезапускаем ChatManager...');
+
+                        // Сбрасываем состояние чата
+                        chatManager.state.messages = [];
+                        chatManager.state.currentGroup = null;
+                        chatManager.state.connected = false;
+
+                        // Переинициализируем из новой ноды
+                        await chatManager.initializeFromPeerConnection();
+
+                        log('ChatManager перезапущен');
+                    }
+                } catch (error) {
+                    log.error('Ошибка перезапуска ChatManager: %o', error);
+                }
+
+                // 4. Перезапуск GroupManager
+                try {
+                    const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                    if (groupManager) {
+                        log('Перезапускаем GroupManager...');
+
+                        // Сбрасываем состояние групп
+                        groupManager.state.groups = [];
+                        groupManager.state.discoveredGroups = [];
+                        groupManager.state.joinedGroups = [];
+                        groupManager.state.nodeReady = false;
+
+                        // Запускаем инициализацию заново
+                        await groupManager.startNodeInitialization();
+
+                        log('GroupManager перезапущен');
+                    }
+                } catch (error) {
+                    log.error('Ошибка перезапуска GroupManager: %o', error);
+                }
+
+                // 5. Инициализация новой ноды
+                log('Инициализируем новую Libp2p ноду...');
+                const newLibp2p = await this.initializeLibp2p(mode);
+
+                // 6. Уведомляем компоненты о готовности новой ноды
+                await this.notifyComponentsNodeReady();
+
+                log('Перезапуск P2P системы завершен успешно');
+                return newLibp2p;
+
+            } catch (error) {
+                log.error('Ошибка перезапуска P2P системы: %o', error);
+                throw error;
+            }
         },
 
         /**

@@ -197,7 +197,6 @@ export const controller = async (context) => {
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'childList') {
-                        console.log('-----------------------------------', mutation)
                         setupGroupActionHandlers();
                         setupMemberClickHandlers();
                     }

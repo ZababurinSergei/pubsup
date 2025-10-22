@@ -493,6 +493,7 @@ async function handleIncomingPrivateMessage(messageData) {
             this.state.activeMember &&
             messageData.from === this.state.activeMember.id;
 
+
         // Или если это новое сообщение и у нас нет активного чата
         const shouldActivateChat = !this.state.isPrivateChat &&
             messageData.isPrivate;
@@ -500,6 +501,7 @@ async function handleIncomingPrivateMessage(messageData) {
         if (isForActiveChat || shouldActivateChat) {
             log('обработка входящего приватного сообщения от: %s', messageData.from);
 
+            console.log('-------------------------------------------------------')
             // Если это новое сообщение, активируем чат с отправителем
             if (shouldActivateChat) {
                 const senderMember = this.state.connectedPeers.find(p => p.id === messageData.from);
@@ -518,6 +520,7 @@ async function handleIncomingPrivateMessage(messageData) {
                 isPrivate: true
             });
 
+            console.log('############## this.state.activeMember #######################################', this.state.activeMember)
             // Показываем уведомление если окно не активно
             if (document.hidden && this.state.activeMember) {
                 this.showNotification(`Приватное сообщение от ${this.state.activeMember.name}`);

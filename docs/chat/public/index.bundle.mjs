@@ -15873,6 +15873,186 @@ function trackedMap(config) {
 }
 __name(trackedMap, "trackedMap");
 
+// node_modules/@multiformats/multiaddr-matcher/dist/src/utils.js
+var code2 = /* @__PURE__ */ __name((code3) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      const component = vals[0];
+      if (component == null) {
+        return false;
+      }
+      if (component.code !== code3) {
+        return false;
+      }
+      if (component.value != null) {
+        return false;
+      }
+      return vals.slice(1);
+    }, "match")
+  };
+}, "code");
+var value = /* @__PURE__ */ __name((code3, value2) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      const component = vals[0];
+      if (component?.code !== code3) {
+        return false;
+      }
+      if (component.value == null) {
+        return false;
+      }
+      if (value2 != null && component.value !== value2) {
+        return false;
+      }
+      return vals.slice(1);
+    }, "match")
+  };
+}, "value");
+var not = /* @__PURE__ */ __name((matcher) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      const result = matcher.match(vals);
+      if (result === false) {
+        return vals;
+      }
+      return false;
+    }, "match")
+  };
+}, "not");
+var optional = /* @__PURE__ */ __name((matcher) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      const result = matcher.match(vals);
+      if (result === false) {
+        return vals;
+      }
+      return result;
+    }, "match")
+  };
+}, "optional");
+var or3 = /* @__PURE__ */ __name((...matchers) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      let matches;
+      for (const matcher of matchers) {
+        const result = matcher.match(vals);
+        if (result === false) {
+          continue;
+        }
+        if (matches == null || result.length < matches.length) {
+          matches = result;
+        }
+      }
+      if (matches == null) {
+        return false;
+      }
+      return matches;
+    }, "match")
+  };
+}, "or");
+var and = /* @__PURE__ */ __name((...matchers) => {
+  return {
+    match: /* @__PURE__ */ __name((vals) => {
+      for (const matcher of matchers) {
+        const result = matcher.match(vals);
+        if (result === false) {
+          return false;
+        }
+        vals = result;
+      }
+      return vals;
+    }, "match")
+  };
+}, "and");
+function fmt(...matchers) {
+  function match(ma) {
+    if (ma == null) {
+      return false;
+    }
+    let parts = ma.getComponents();
+    for (const matcher of matchers) {
+      const result = matcher.match(parts);
+      if (result === false) {
+        return false;
+      }
+      parts = result;
+    }
+    return parts;
+  }
+  __name(match, "match");
+  function matches(ma) {
+    const result = match(ma);
+    return result !== false;
+  }
+  __name(matches, "matches");
+  function exactMatch(ma) {
+    const result = match(ma);
+    if (result === false) {
+      return false;
+    }
+    return result.length === 0;
+  }
+  __name(exactMatch, "exactMatch");
+  return {
+    matchers,
+    matches,
+    exactMatch
+  };
+}
+__name(fmt, "fmt");
+
+// node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
+var _PEER_ID = value(CODE_P2P);
+var PEER_ID = fmt(_PEER_ID);
+var _DNS4 = value(CODE_DNS4);
+var _DNS6 = value(CODE_DNS6);
+var _DNSADDR = value(CODE_DNSADDR);
+var _DNS = value(CODE_DNS);
+var DNS4 = fmt(_DNS4, optional(value(CODE_P2P)));
+var DNS6 = fmt(_DNS6, optional(value(CODE_P2P)));
+var DNSADDR = fmt(_DNSADDR, optional(value(CODE_P2P)));
+var DNS = fmt(or3(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)));
+var _IP4 = and(value(CODE_IP4), optional(value(CODE_IPCIDR)));
+var _IP6 = and(optional(value(CODE_IP6ZONE)), value(CODE_IP6), optional(value(CODE_IPCIDR)));
+var _IP = or3(_IP4, _IP6);
+var _IP_OR_DOMAIN = or3(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
+var IP_OR_DOMAIN = fmt(or3(_IP, and(or3(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)))));
+var IP4 = fmt(_IP4);
+var IP6 = fmt(_IP6);
+var IP = fmt(_IP);
+var _TCP = and(_IP_OR_DOMAIN, value(CODE_TCP));
+var _UDP = and(_IP_OR_DOMAIN, value(CODE_UDP));
+var TCP = fmt(and(_TCP, optional(value(CODE_P2P))));
+var UDP = fmt(_UDP);
+var _QUIC = and(_UDP, code2(CODE_QUIC), optional(value(CODE_P2P)));
+var _QUIC_V1 = and(_UDP, code2(CODE_QUIC_V1), optional(value(CODE_P2P)));
+var QUIC_V0_OR_V1 = or3(_QUIC, _QUIC_V1);
+var QUIC = fmt(_QUIC);
+var QUIC_V1 = fmt(_QUIC_V1);
+var _WEB = or3(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUIC_V1);
+var _WebSockets = or3(and(_WEB, code2(CODE_WS), optional(value(CODE_P2P))));
+var WebSockets = fmt(_WebSockets);
+var _WebSocketsSecure = or3(and(_WEB, code2(CODE_WSS), optional(value(CODE_P2P))), and(_WEB, code2(CODE_TLS), optional(value(CODE_SNI)), code2(CODE_WS), optional(value(CODE_P2P))));
+var WebSocketsSecure = fmt(_WebSocketsSecure);
+var _WebRTCDirect = and(_UDP, code2(CODE_WEBRTC_DIRECT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
+var WebRTCDirect = fmt(_WebRTCDirect);
+var _WebTransport = and(_QUIC_V1, code2(CODE_WEBTRANSPORT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
+var WebTransport = fmt(_WebTransport);
+var _P2P = or3(_WebSockets, _WebSocketsSecure, and(_TCP, optional(value(CODE_P2P))), and(QUIC_V0_OR_V1, optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, optional(value(CODE_P2P))), _WebRTCDirect, _WebTransport, value(CODE_P2P));
+var P2P = fmt(_P2P);
+var _Circuit = and(optional(_P2P), code2(CODE_P2P_CIRCUIT), not(code2(CODE_WEBRTC)), optional(value(CODE_P2P)));
+var Circuit = fmt(_Circuit);
+var _WebRTC = or3(and(_P2P, code2(CODE_P2P_CIRCUIT), code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(_P2P, code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(code2(CODE_WEBRTC), optional(value(CODE_P2P))));
+var WebRTC = fmt(_WebRTC);
+var _HTTP = or3(and(_IP_OR_DOMAIN, value(CODE_TCP), code2(CODE_HTTP), optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, code2(CODE_HTTP), optional(value(CODE_P2P))));
+var HTTP = fmt(_HTTP);
+var _HTTPS = and(_IP_OR_DOMAIN, or3(and(value(CODE_TCP, "443"), code2(CODE_HTTP)), and(value(CODE_TCP), code2(CODE_HTTPS)), and(value(CODE_TCP), code2(CODE_TLS), code2(CODE_HTTP)), and(code2(CODE_TLS), code2(CODE_HTTP)), code2(CODE_TLS), code2(CODE_HTTPS)), optional(value(CODE_P2P)));
+var HTTPS = fmt(_HTTPS);
+var _Memory = or3(and(value(CODE_MEMORY), optional(value(CODE_P2P))));
+var Memory = fmt(_Memory);
+var _Unix = or3(and(value(CODE_UNIX), optional(value(CODE_P2P))));
+var Unix = fmt(_Unix);
+
 // public/components/chat-manager/index.mjs
 var log5 = logger("chat-manager");
 var ChatManager = class extends BaseComponent {
@@ -15952,30 +16132,63 @@ var ChatManager = class extends BaseComponent {
       return;
     }
     try {
-      await this.node.handle("/chat/1.0.0", async (stream) => {
-        log5("Incoming chat stream established");
+      await this.node.handle("/chat/1.0.0", async (stream, connection) => {
+        log5("Incoming chat stream established from: %s", connection.remotePeer?.toString());
         try {
           const lp = lpStream(stream);
-          while (true) {
-            const message2 = await lp.read();
-            const messageText = toString2(message2.subarray());
-            log5("Received message via stream: %s", messageText);
-            let messageData;
+          const remotePeer = connection.remotePeer.toString();
+          const streamTimeout = setTimeout(() => {
+            log5("Stream timeout for peer: %s", remotePeer);
+            stream.close().catch(() => {
+            });
+          }, 3e4);
+          const readWithTimeout = /* @__PURE__ */ __name(async (timeout = 3e4) => {
+            return Promise.race([
+              lp.read(),
+              new Promise(
+                (_, reject) => setTimeout(() => reject(new Error("Stream read timeout")), timeout)
+              )
+            ]);
+          }, "readWithTimeout");
+          while (connection.timeline.close === void 0) {
             try {
-              messageData = JSON.parse(messageText);
-            } catch (e2) {
-              messageData = {
-                text: messageText,
-                type: "group_message",
-                timestamp: Date.now()
-              };
+              const message2 = await readWithTimeout();
+              if (!message2 || message2.length === 0) {
+                log5("Empty message received from %s, continuing...", remotePeer);
+                continue;
+              }
+              const messageText = toString2(message2.subarray());
+              log5("Received message via stream from %s: %s", remotePeer, messageText);
+              let messageData;
+              try {
+                messageData = JSON.parse(messageText);
+              } catch (e2) {
+                messageData = {
+                  text: messageText,
+                  type: "group_message",
+                  timestamp: Date.now()
+                };
+              }
+              await this.handleIncomingStreamMessage(messageData, remotePeer);
+            } catch (readError) {
+              if (readError.message === "Stream read timeout") {
+                log5("Stream read timeout from %s, continuing...", remotePeer);
+                continue;
+              }
+              if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed") || readError.message.includes("Unexpected EOF")) {
+                log5("Stream closed by peer %s: %o", remotePeer, readError);
+                break;
+              }
+              log5.error("Error reading from stream for peer %s: %o", remotePeer, readError);
+              break;
             }
-            await this.handleIncomingStreamMessage(messageData, stream.remotePeer.toString());
           }
+          clearTimeout(streamTimeout);
         } catch (error) {
-          if (error.code !== "ERR_STREAM_RESET") {
-            log5.error("Error reading from stream: %o", error);
+          if (error.code !== "ERR_STREAM_RESET" && !error.message.includes("Stream read timeout") && !error.message.includes("Unexpected EOF")) {
+            log5.error("Error in stream handler for peer %s: %o", connection.remotePeer?.toString(), error);
           }
+        } finally {
           try {
             await stream.close();
           } catch (closeError) {
@@ -16000,17 +16213,22 @@ var ChatManager = class extends BaseComponent {
   async handleIncomingStreamMessage(messageData, peerId) {
     try {
       log5("Processing incoming stream message from %s: %o", peerId, messageData);
+      const actualPeerId = peerId || messageData.from;
+      if (!actualPeerId) {
+        log5.error("Cannot determine sender peer ID for message: %o", messageData);
+        return;
+      }
       if (messageData.type === "private_message") {
         await this.handleIncomingPrivateMessage({
           text: messageData.text,
-          from: peerId,
+          from: actualPeerId,
           timestamp: messageData.timestamp,
           isPrivate: true
         });
       } else {
         await this.addMessage({
           text: messageData.text,
-          from: peerId,
+          from: actualPeerId,
           type: "received",
           timestamp: messageData.timestamp || Date.now()
         });
@@ -16114,7 +16332,6 @@ var ChatManager = class extends BaseComponent {
           continue;
         }
         const ma = multiaddr(peer);
-        console.log("@!!!!!!!!!!!!!!!!", ma);
         const stream = await this.node.dialProtocol(ma, "/chat/1.0.0");
         const lp = lpStream(stream);
         this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
@@ -16132,18 +16349,37 @@ var ChatManager = class extends BaseComponent {
     try {
       while (true) {
         const message2 = await lp.read();
+        if (!message2 || message2.length === 0) {
+          log5("Empty message from %s, continuing...", peerId);
+          continue;
+        }
         const text = toString2(message2.subarray());
         log5("Message from %s in %s: %s", peerId, topic, text);
+        let messageData;
+        try {
+          messageData = JSON.parse(text);
+        } catch (e2) {
+          messageData = {
+            text,
+            type: "group_message",
+            timestamp: Date.now()
+          };
+        }
         await this.addMessage({
-          text,
+          text: messageData.text,
           topic,
           from: peerId,
           type: "received",
-          timestamp: Date.now()
+          timestamp: messageData.timestamp || Date.now(),
+          isPrivate: messageData.isPrivate || false
         });
       }
     } catch (error) {
-      log5.error("Error reading from stream for peer %s: %o", peerId, error);
+      if (error.message.includes("stream closed") || error.code === "ERR_STREAM_RESET" || error.message.includes("Unexpected EOF")) {
+        log5("Stream closed for peer %s: %s", peerId, error.message);
+      } else {
+        log5.error("Error reading from stream for peer %s: %o", peerId, error);
+      }
       this.activeStreams.delete(`${topic}-${peerId}`);
     }
   }
@@ -16190,19 +16426,59 @@ var ChatManager = class extends BaseComponent {
     }
   }
   /**
-   * Отправка приватного сообщения пользователю
-   * @async
-   * @param {string} peerId - ID получателя
-   * @param {string} messageText - Текст сообщения
-   * @returns {Promise<boolean>} Успешность отправки
+   * Получает список подключенных пиров с информацией о соединениях
+   * @returns {Promise<Array>} Массив подключенных пиров
    */
+  async getConnectedPeers(peerId) {
+    if (!this.node) return [];
+    const peers = await this.node.getPeers();
+    const peersWithConnections = [];
+    for (const peerId2 of peers) {
+      const connections = this.node.getConnections(peerId2);
+      if (connections.length > 0) {
+        peersWithConnections.push({
+          id: peerId2.toString(),
+          connections: connections.map((conn) => ({
+            id: conn.id,
+            remoteAddr: conn.remoteAddr ? conn.remoteAddr.toString() : null,
+            status: conn.status
+          }))
+        });
+      }
+    }
+    return peersWithConnections;
+  }
   async sendPrivateMessage(peerId, messageText) {
     if (!this.node || !this.state.connected) {
       log5.error("Node not available for private message");
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430");
     }
     try {
-      const ma = multiaddr(peerId);
+      const connectedPeers = await this.getConnectedPeers();
+      const targetPeer = connectedPeers.find((peer) => peer.id === peerId);
+      if (!targetPeer) {
+        throw new Error(`\u041F\u0438\u0440 ${peerId} \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0441\u0440\u0435\u0434\u0438 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445`);
+      }
+      let targetAddress = null;
+      if (targetPeer.connections && targetPeer.connections.length > 0) {
+        for (const connection of targetPeer.connections) {
+          if (connection.remoteAddr) {
+            try {
+              targetAddress = connection.remoteAddr;
+              log5("Using active connection address: %s", targetAddress);
+              break;
+            } catch (error) {
+              log5.warn("Error parsing connection address: %o", error);
+            }
+          }
+        }
+      }
+      if (!targetAddress) {
+        log5("No specific address found, using peer ID for dial: %s", peerId);
+        targetAddress = peerId;
+      }
+      log5("Attempting to dial: %s", targetAddress);
+      const ma = multiaddr(targetAddress);
       const stream = await this.node.dialProtocol(ma, "/chat/1.0.0");
       const lp = lpStream(stream);
       const messageData = {
@@ -16212,9 +16488,11 @@ var ChatManager = class extends BaseComponent {
         timestamp: Date.now(),
         isPrivate: true
       };
-      await lp.write(fromString2(JSON.stringify(messageData)));
+      const messageBytes = fromString2(JSON.stringify(messageData));
+      await lp.write(messageBytes);
+      await new Promise((resolve) => setTimeout(resolve, 100));
       await stream.close();
-      log5("Private message sent to user: %s", peerId);
+      log5("\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
       await this.addMessage({
         text: messageText,
         to: peerId,
@@ -16225,7 +16503,7 @@ var ChatManager = class extends BaseComponent {
       });
       return true;
     } catch (error) {
-      log5.error("Error sending private message: %o", error);
+      log5.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "sendPrivateMessage",
@@ -16243,7 +16521,19 @@ var ChatManager = class extends BaseComponent {
   async handleIncomingPrivateMessage(messageData) {
     try {
       log5("Incoming private message from: %s", messageData.from);
+      if (!messageData.text || !messageData.from) {
+        log5.error("Invalid private message data: %o", messageData);
+        return;
+      }
       await this.addMessage({
+        text: messageData.text,
+        from: messageData.from,
+        to: this.state.peerId,
+        type: "received",
+        timestamp: messageData.timestamp || Date.now(),
+        isPrivate: true
+      });
+      console.log("==========================", {
         text: messageData.text,
         from: messageData.from,
         to: this.state.peerId,
@@ -16321,9 +16611,43 @@ var ChatManager = class extends BaseComponent {
       (addr) => addr.includes("/p2p-circuit") || addr.includes("/webrtc")
     );
   }
+  // В классе ChatManager добавляем метод для обработки событий ноды
+  async handleNodeEvent(event) {
+    const log7 = logger("chat-manager:node-events");
+    try {
+      log7("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B: %s", event.type);
+      switch (event.type) {
+        case "NODE_SHUTDOWN":
+          this.state.connected = false;
+          this.state.peerId = null;
+          this.state.messages = [];
+          this.state.currentGroup = null;
+          this.node = null;
+          log7("\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 ChatManager \u0441\u0431\u0440\u043E\u0448\u0435\u043D\u043E \u043F\u043E\u0441\u043B\u0435 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u043D\u043E\u0434\u044B");
+          break;
+        case "NODE_RESTARTED":
+          await this.initializeFromPeerConnection();
+          log7("ChatManager \u043F\u0435\u0440\u0435\u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u043D\u043E\u0434\u044B");
+          break;
+      }
+      await this.fullRender(this.state);
+    } catch (error) {
+      log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "handleNodeEvent",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B",
+        details: error
+      });
+    }
+  }
   async postMessage(event) {
     try {
       log5("ChatManager received message: %s %o", event.type, event.data);
+      if (event.type === "NODE_SHUTDOWN" || event.type === "NODE_RESTARTED") {
+        await this.handleNodeEvent(event);
+        return;
+      }
       switch (event.type) {
         case "SWITCH_MODE":
           await this.switchMode(event.data.mode);
@@ -17038,7 +17362,6 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === "childList") {
-            console.log("-----------------------------------", mutation);
             setupGroupActionHandlers();
             setupMemberClickHandlers();
           }
@@ -17467,6 +17790,7 @@ async function handleIncomingPrivateMessage(messageData) {
     const shouldActivateChat = !this.state.isPrivateChat && messageData.isPrivate;
     if (isForActiveChat || shouldActivateChat) {
       log7("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
+      console.log("-------------------------------------------------------");
       if (shouldActivateChat) {
         const senderMember = this.state.connectedPeers.find((p2) => p2.id === messageData.from);
         if (senderMember) {
@@ -17481,6 +17805,7 @@ async function handleIncomingPrivateMessage(messageData) {
         timestamp: messageData.timestamp || Date.now(),
         isPrivate: true
       });
+      console.log("############## this.state.activeMember #######################################", this.state.activeMember);
       if (document.hidden && this.state.activeMember) {
         this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${this.state.activeMember.name}`);
       }
@@ -18987,6 +19312,16 @@ var GroupManager = class extends BaseComponent {
       }
     }, 2e3);
     await this.initializeFromPeerConnection();
+  }
+  // В GroupManager улучшаем обработку перезапуска
+  async handleNodeRestart() {
+    this.log("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u043D\u043E\u0434\u044B \u0432 GroupManager");
+    this.state.nodeReady = false;
+    this.state.groups = [];
+    this.state.discoveredGroups = [];
+    this.state.joinedGroups = [];
+    await this.startNodeInitialization();
+    this.log("GroupManager \u0433\u043E\u0442\u043E\u0432 \u043A \u0440\u0430\u0431\u043E\u0442\u0435 \u0441 \u043D\u043E\u0432\u043E\u0439 \u043D\u043E\u0434\u043E\u0439");
   }
   async initializeFromPeerConnection() {
     try {
@@ -23735,186 +24070,6 @@ var MemoryDatastore = class extends BaseDatastore {
     }
   }
 };
-
-// node_modules/@multiformats/multiaddr-matcher/dist/src/utils.js
-var code2 = /* @__PURE__ */ __name((code3) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      const component = vals[0];
-      if (component == null) {
-        return false;
-      }
-      if (component.code !== code3) {
-        return false;
-      }
-      if (component.value != null) {
-        return false;
-      }
-      return vals.slice(1);
-    }, "match")
-  };
-}, "code");
-var value = /* @__PURE__ */ __name((code3, value2) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      const component = vals[0];
-      if (component?.code !== code3) {
-        return false;
-      }
-      if (component.value == null) {
-        return false;
-      }
-      if (value2 != null && component.value !== value2) {
-        return false;
-      }
-      return vals.slice(1);
-    }, "match")
-  };
-}, "value");
-var not = /* @__PURE__ */ __name((matcher) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      const result = matcher.match(vals);
-      if (result === false) {
-        return vals;
-      }
-      return false;
-    }, "match")
-  };
-}, "not");
-var optional = /* @__PURE__ */ __name((matcher) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      const result = matcher.match(vals);
-      if (result === false) {
-        return vals;
-      }
-      return result;
-    }, "match")
-  };
-}, "optional");
-var or3 = /* @__PURE__ */ __name((...matchers) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      let matches;
-      for (const matcher of matchers) {
-        const result = matcher.match(vals);
-        if (result === false) {
-          continue;
-        }
-        if (matches == null || result.length < matches.length) {
-          matches = result;
-        }
-      }
-      if (matches == null) {
-        return false;
-      }
-      return matches;
-    }, "match")
-  };
-}, "or");
-var and = /* @__PURE__ */ __name((...matchers) => {
-  return {
-    match: /* @__PURE__ */ __name((vals) => {
-      for (const matcher of matchers) {
-        const result = matcher.match(vals);
-        if (result === false) {
-          return false;
-        }
-        vals = result;
-      }
-      return vals;
-    }, "match")
-  };
-}, "and");
-function fmt(...matchers) {
-  function match(ma) {
-    if (ma == null) {
-      return false;
-    }
-    let parts = ma.getComponents();
-    for (const matcher of matchers) {
-      const result = matcher.match(parts);
-      if (result === false) {
-        return false;
-      }
-      parts = result;
-    }
-    return parts;
-  }
-  __name(match, "match");
-  function matches(ma) {
-    const result = match(ma);
-    return result !== false;
-  }
-  __name(matches, "matches");
-  function exactMatch(ma) {
-    const result = match(ma);
-    if (result === false) {
-      return false;
-    }
-    return result.length === 0;
-  }
-  __name(exactMatch, "exactMatch");
-  return {
-    matchers,
-    matches,
-    exactMatch
-  };
-}
-__name(fmt, "fmt");
-
-// node_modules/@multiformats/multiaddr-matcher/dist/src/index.js
-var _PEER_ID = value(CODE_P2P);
-var PEER_ID = fmt(_PEER_ID);
-var _DNS4 = value(CODE_DNS4);
-var _DNS6 = value(CODE_DNS6);
-var _DNSADDR = value(CODE_DNSADDR);
-var _DNS = value(CODE_DNS);
-var DNS4 = fmt(_DNS4, optional(value(CODE_P2P)));
-var DNS6 = fmt(_DNS6, optional(value(CODE_P2P)));
-var DNSADDR = fmt(_DNSADDR, optional(value(CODE_P2P)));
-var DNS = fmt(or3(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)));
-var _IP4 = and(value(CODE_IP4), optional(value(CODE_IPCIDR)));
-var _IP6 = and(optional(value(CODE_IP6ZONE)), value(CODE_IP6), optional(value(CODE_IPCIDR)));
-var _IP = or3(_IP4, _IP6);
-var _IP_OR_DOMAIN = or3(_IP, _DNS, _DNS4, _DNS6, _DNSADDR);
-var IP_OR_DOMAIN = fmt(or3(_IP, and(or3(_DNS, _DNSADDR, _DNS4, _DNS6), optional(value(CODE_P2P)))));
-var IP4 = fmt(_IP4);
-var IP6 = fmt(_IP6);
-var IP = fmt(_IP);
-var _TCP = and(_IP_OR_DOMAIN, value(CODE_TCP));
-var _UDP = and(_IP_OR_DOMAIN, value(CODE_UDP));
-var TCP = fmt(and(_TCP, optional(value(CODE_P2P))));
-var UDP = fmt(_UDP);
-var _QUIC = and(_UDP, code2(CODE_QUIC), optional(value(CODE_P2P)));
-var _QUIC_V1 = and(_UDP, code2(CODE_QUIC_V1), optional(value(CODE_P2P)));
-var QUIC_V0_OR_V1 = or3(_QUIC, _QUIC_V1);
-var QUIC = fmt(_QUIC);
-var QUIC_V1 = fmt(_QUIC_V1);
-var _WEB = or3(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUIC_V1);
-var _WebSockets = or3(and(_WEB, code2(CODE_WS), optional(value(CODE_P2P))));
-var WebSockets = fmt(_WebSockets);
-var _WebSocketsSecure = or3(and(_WEB, code2(CODE_WSS), optional(value(CODE_P2P))), and(_WEB, code2(CODE_TLS), optional(value(CODE_SNI)), code2(CODE_WS), optional(value(CODE_P2P))));
-var WebSocketsSecure = fmt(_WebSocketsSecure);
-var _WebRTCDirect = and(_UDP, code2(CODE_WEBRTC_DIRECT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
-var WebRTCDirect = fmt(_WebRTCDirect);
-var _WebTransport = and(_QUIC_V1, code2(CODE_WEBTRANSPORT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
-var WebTransport = fmt(_WebTransport);
-var _P2P = or3(_WebSockets, _WebSocketsSecure, and(_TCP, optional(value(CODE_P2P))), and(QUIC_V0_OR_V1, optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, optional(value(CODE_P2P))), _WebRTCDirect, _WebTransport, value(CODE_P2P));
-var P2P = fmt(_P2P);
-var _Circuit = and(optional(_P2P), code2(CODE_P2P_CIRCUIT), not(code2(CODE_WEBRTC)), optional(value(CODE_P2P)));
-var Circuit = fmt(_Circuit);
-var _WebRTC = or3(and(_P2P, code2(CODE_P2P_CIRCUIT), code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(_P2P, code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(code2(CODE_WEBRTC), optional(value(CODE_P2P))));
-var WebRTC = fmt(_WebRTC);
-var _HTTP = or3(and(_IP_OR_DOMAIN, value(CODE_TCP), code2(CODE_HTTP), optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, code2(CODE_HTTP), optional(value(CODE_P2P))));
-var HTTP = fmt(_HTTP);
-var _HTTPS = and(_IP_OR_DOMAIN, or3(and(value(CODE_TCP, "443"), code2(CODE_HTTP)), and(value(CODE_TCP), code2(CODE_HTTPS)), and(value(CODE_TCP), code2(CODE_TLS), code2(CODE_HTTP)), and(code2(CODE_TLS), code2(CODE_HTTP)), code2(CODE_TLS), code2(CODE_HTTPS)), optional(value(CODE_P2P)));
-var HTTPS = fmt(_HTTPS);
-var _Memory = or3(and(value(CODE_MEMORY), optional(value(CODE_P2P))));
-var Memory = fmt(_Memory);
-var _Unix = or3(and(value(CODE_UNIX), optional(value(CODE_P2P))));
-var Unix = fmt(_Unix);
 
 // node_modules/libp2p/dist/src/address-manager/dns-mappings.js
 var MAX_DATE = 864e13;
@@ -36615,32 +36770,145 @@ async function createActions4(context) {
       }
     },
     /**
+     * Уведомляет все компоненты о готовности новой ноды
+     * @async
+     */
+    async notifyComponentsNodeReady() {
+      const log8 = logger("peer-connection:actions:notifyNodeReady");
+      try {
+        const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager) {
+          await chatManager.postMessage({
+            type: "NODE_RESTARTED",
+            data: {
+              peerId: context.state.peerId,
+              mode: context.state.mode,
+              timestamp: Date.now()
+            }
+          });
+        }
+        const groupManager = await context.getComponentAsync("group-manager", "group-manager");
+        if (groupManager) {
+          log8("GroupManager \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D \u043E \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0435 \u043D\u043E\u0434\u044B");
+        }
+        log8("\u0412\u0441\u0435 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u044B \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u044B \u043E \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u043D\u043E\u0432\u043E\u0439 \u043D\u043E\u0434\u044B");
+      } catch (error) {
+        log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432: %o", error);
+      }
+    },
+    /**
      * Останавливает Libp2p узел и очищает ресурсы
      * @async
      */
     async cleanup() {
+      const log8 = logger("peer-connection:actions:cleanup");
       try {
+        log8("\u041D\u0430\u0447\u0430\u043B\u043E \u043E\u0447\u0438\u0441\u0442\u043A\u0438 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B...");
         if (connectionInterval) {
           clearInterval(connectionInterval);
           connectionInterval = null;
+          log8("\u041E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0438\u043D\u0442\u0435\u0440\u0432\u0430\u043B \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432");
+        }
+        try {
+          const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+          if (chatManager && chatManager._actions) {
+            log8("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C ChatManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
+            await chatManager.postMessage({
+              type: "NODE_SHUTDOWN",
+              data: {
+                peerId: libp2p?.peerId?.toString(),
+                timestamp: Date.now()
+              }
+            });
+          }
+        } catch (error) {
+          log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F ChatManager: %o", error);
+        }
+        try {
+          const groupManager = await context.getComponentAsync("group-manager", "group-manager");
+          if (groupManager) {
+            log8("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C GroupManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
+            groupManager.state.nodeReady = false;
+            groupManager.state.groups = [];
+            groupManager.state.discoveredGroups = [];
+            groupManager.state.joinedGroups = [];
+            if (groupManager.fullRender) {
+              await groupManager.fullRender(groupManager.state);
+            }
+          }
+        } catch (error) {
+          log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F GroupManager: %o", error);
         }
         if (libp2p) {
+          log8("\u041E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C Libp2p \u0443\u0437\u0435\u043B...");
           await libp2p.stop();
           libp2p = null;
-          log7("Libp2p \u0443\u0437\u0435\u043B \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D");
+          log8("Libp2p \u0443\u0437\u0435\u043B \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D");
         }
+        context.state.connected = false;
+        context.state.peerId = null;
+        context.state.listeningAddresses = [];
+        context.state.connectedPeers = [];
+        context.state.uptime = "0:00";
+        context.state.startTime = null;
+        log8("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0430");
       } catch (error) {
-        log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0440\u0435\u0441\u0443\u0440\u0441\u043E\u0432: %o", error);
+        log8.error("\u041A\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0447\u0438\u0441\u0442\u043A\u0435: %o", error);
+        context.addError({
+          componentName: context.constructor.name,
+          source: "cleanup",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B",
+          details: error
+        });
       }
     },
     /**
-     * Перезапускает узел с новыми настройки
+     * Перезапускает узел с новыми настройками
      * @async
      * @param {string} mode - Новый режим работы
      */
     async restart(mode) {
-      await self.cleanup();
-      return await self.initializeLibp2p(mode);
+      const log8 = logger("peer-connection:actions:restart");
+      try {
+        log8("\u041D\u0430\u0447\u0430\u043B\u043E \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0432 \u0440\u0435\u0436\u0438\u043C\u0435: %s", mode);
+        await this.cleanup();
+        await new Promise((resolve) => setTimeout(resolve, 1e3));
+        try {
+          const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+          if (chatManager) {
+            log8("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C ChatManager...");
+            chatManager.state.messages = [];
+            chatManager.state.currentGroup = null;
+            chatManager.state.connected = false;
+            await chatManager.initializeFromPeerConnection();
+            log8("ChatManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+          }
+        } catch (error) {
+          log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 ChatManager: %o", error);
+        }
+        try {
+          const groupManager = await context.getComponentAsync("group-manager", "group-manager");
+          if (groupManager) {
+            log8("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C GroupManager...");
+            groupManager.state.groups = [];
+            groupManager.state.discoveredGroups = [];
+            groupManager.state.joinedGroups = [];
+            groupManager.state.nodeReady = false;
+            await groupManager.startNodeInitialization();
+            log8("GroupManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+          }
+        } catch (error) {
+          log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 GroupManager: %o", error);
+        }
+        log8("\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u043C \u043D\u043E\u0432\u0443\u044E Libp2p \u043D\u043E\u0434\u0443...");
+        const newLibp2p = await this.initializeLibp2p(mode);
+        await this.notifyComponentsNodeReady();
+        log8("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D \u0443\u0441\u043F\u0435\u0448\u043D\u043E");
+        return newLibp2p;
+      } catch (error) {
+        log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B: %o", error);
+        throw error;
+      }
     },
     /**
      * Проверяет статус подключения
@@ -36728,12 +36996,12 @@ var PeerConnection = class extends BaseComponent {
     log6("PeerConnection component ready");
     this._controller = await controller4(this);
     this._actions = await createActions4(this);
+    this.node = await this.initializeLibp2p(this.state.mode);
     log6("Controller and actions created: %o", {
       hasController: !!this._controller,
       hasActions: !!this._actions
     });
     await this._controller.init();
-    this.node = await this.initializeLibp2p(this.state.mode);
     return true;
   }
   async initializeLibp2p(mode = "listener") {

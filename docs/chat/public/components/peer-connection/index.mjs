@@ -32,15 +32,15 @@ export class PeerConnection extends BaseComponent {
         this._controller = await controller(this);
         this._actions = await createActions(this);
 
+        // Автоматически инициализируем начальный режим
+        this.node = await this.initializeLibp2p(this.state.mode);
+
         log('Controller and actions created: %o', {
             hasController: !!this._controller,
             hasActions: !!this._actions
         });
 
         await this._controller.init();
-
-        // Автоматически инициализируем начальный режим
-        this.node = await this.initializeLibp2p(this.state.mode);
 
         return true;
     }

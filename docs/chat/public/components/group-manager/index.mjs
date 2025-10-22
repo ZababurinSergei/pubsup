@@ -71,6 +71,22 @@ export class GroupManager extends BaseComponent {
         await this.initializeFromPeerConnection();
     }
 
+    // В GroupManager улучшаем обработку перезапуска
+    async handleNodeRestart() {
+        this.log('Обработка перезапуска ноды в GroupManager');
+
+        // Сбрасываем состояние
+        this.state.nodeReady = false;
+        this.state.groups = [];
+        this.state.discoveredGroups = [];
+        this.state.joinedGroups = [];
+
+        // Перезапускаем инициализацию
+        await this.startNodeInitialization();
+
+        this.log('GroupManager готов к работе с новой нодой');
+    }
+
     async initializeFromPeerConnection() {
         try {
             // Получаем компонент peer-connection
