@@ -12,28 +12,18 @@ import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
 // Создаем логгер для компонента
 const log = logger('chat-manager');
 
-function getInitialMode() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode');
-    if (mode === 'listener' || mode === 'dialer') {
-        return mode;
-    }
-    return 'listener'; // по умолчанию
-}
-
 export class ChatManager extends BaseComponent {
     constructor() {
         super();
-        const initialMode = getInitialMode();
         this._templateMethods = template;
         this.state = {
-            mode: initialMode,
+            mode: 'listener',
             connected: false,
             messages: [],
             currentGroup: null,
             groups: [],
-            discoveredGroups: [],
-            joinedGroups: [],
+            discoveredGroups: [], // ← добавлено
+            joinedGroups: [],     // ← добавлено
             searchQuery: '',
             peerId: null,
             listeningAddresses: [],
@@ -197,15 +187,27 @@ export class ChatManager extends BaseComponent {
             isPublic: true
         };
 
+        // Добавляем в "Мои группы"
         this.state.groups.push(group);
+
+        // Добавляем в "Обнаруженные группы" (включая себя)
+        if (!this.state.discoveredGroups) this.state.discoveredGroups = [];
+        this.state.discoveredGroups.unshift(group); // или push
 
         await this._actions.subscribeToGroup(group.topic);
 
-        // Обновляем ТОЛЬКО секцию "Мои группы"
+        // Обновляем "Мои группы"
         await this.renderPart({
             partName: 'renderMyGroups',
             state: this.state,
-            selector: '#my-groups-container'
+            selector: '#my-groups-container' // ← должен быть в шаблоне
+        });
+
+        // Обновляем "Обнаруженные группы"
+        await this.renderPart({
+            partName: 'renderDiscoveredGroups',
+            state: this.state,
+            selector: '#discovered-groups-container' // ← должен быть в шаблоне
         });
 
         const groupManager = await this.getComponentAsync('group-manager', 'main-group-manager');
@@ -240,14 +242,6 @@ export class ChatManager extends BaseComponent {
 
         // Начинаем слушать стрим для этой группы
         await this.setupGroupStream(topic);
-
-        // Обновляем секцию "Присоединенные"
-        this.state.joinedGroups = this.state.groups.filter(g => g.joinedAt);
-        await this.renderPart({
-            partName: 'renderJoinedGroups',
-            state: this.state,
-            selector: '#joined-groups-container'
-        });
 
         await this.fullRender(this.state);
 
@@ -801,7 +795,7 @@ export class ChatManager extends BaseComponent {
                 return;
             }
 
-            // Обработка GROUPS_DISCOVERED от group-manager
+            // Обработка обнаруженных групп от group-manager
             if (event.type === 'GROUPS_DISCOVERED') {
                 this.state.discoveredGroups = event.data.groups || [];
                 await this.renderPart({
@@ -891,7 +885,7 @@ export class ChatManager extends BaseComponent {
 
             // Обновляем UI списка групп
             await this.renderPart({
-                partName: 'renderMyGroups',
+                partName: 'renderGroups',
                 state: this.state,
                 selector: '#my-groups-container'
             });
