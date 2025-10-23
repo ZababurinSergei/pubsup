@@ -22,6 +22,7 @@ export class ChatManager extends BaseComponent {
             messages: [],
             currentGroup: null,
             groups: [],
+            discoveredGroups: [], // ← добавлено
             searchQuery: '',
             peerId: null,
             listeningAddresses: [],
@@ -770,6 +771,17 @@ export class ChatManager extends BaseComponent {
         }
     }
 
+    // 🔥 НОВОЕ: обработка GROUPS_DISCOVERED
+    async handleGroupsDiscovered(groups) {
+        this.state.discoveredGroups = groups || [];
+        await this.renderPart({
+            partName: 'renderDiscoveredGroups',
+            state: this.state,
+            selector: '#discovered-groups-container' // ← уникальный селектор
+        });
+        log('Обнаруженные группы получены и отображены: %d', groups?.length || 0);
+    }
+
     async postMessage(event) {
         try {
             log('ChatManager received message: %s %o', event.type, event.data);
@@ -777,6 +789,12 @@ export class ChatManager extends BaseComponent {
             // Добавляем обработку событий ноды
             if (event.type === 'NODE_SHUTDOWN' || event.type === 'NODE_RESTARTED') {
                 await this.handleNodeEvent(event);
+                return;
+            }
+
+            // 🔥 НОВОЕ: обработка GROUPS_DISCOVERED
+            if (event.type === 'GROUPS_DISCOVERED') {
+                await this.handleGroupsDiscovered(event.data.groups);
                 return;
             }
 

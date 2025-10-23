@@ -119,6 +119,15 @@ export async function createActions(context) {
 
             // Безопасное обновление UI
             await this.safeUpdateDiscoveredGroupsUI();
+
+            // 🔥 Уведомляем chat-manager о новых обнаруженных группах
+            const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+            if (chatManager) {
+                await chatManager.postMessage({
+                    type: 'GROUPS_DISCOVERED',
+                    data: { groups: context.state.discoveredGroups }
+                });
+            }
         },
 
         /**
@@ -161,7 +170,7 @@ export async function createActions(context) {
 
             // Обновляем список групп каждые 10 секунд
             // discoveredGroupsInterval = setInterval(async () => {
-                await this.discoverGroups();
+            await this.discoverGroups();
             // }, 10000);
 
             // Первоначальное обнаружение
@@ -316,6 +325,15 @@ export async function createActions(context) {
 
                 // Безопасное обновление UI вместо прямого вызова renderPart
                 await this.safeUpdateDiscoveredGroupsUI();
+
+                // 🔥 Уведомляем chat-manager после обновления
+                const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                if (chatManager) {
+                    await chatManager.postMessage({
+                        type: 'GROUPS_DISCOVERED',
+                        data: { groups: discoveredGroups }
+                    });
+                }
 
                 log('обнаружено групп: %d', discoveredGroups.length);
 
