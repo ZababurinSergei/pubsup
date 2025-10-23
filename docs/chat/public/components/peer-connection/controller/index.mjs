@@ -20,6 +20,18 @@ export const controller = async (context) => {
         async init() {
             log('controller initializing...');
 
+            // Открыть новую вкладку в режиме dialer
+            const openDialerBtn = context.shadowRoot.querySelector('#open-dialer-mode');
+            if (openDialerBtn) {
+                const openDialerHandler = () => {
+                    const url = new URL(window.location);
+                    url.searchParams.set('mode', 'dialer');
+                    window.open(url.toString(), '_blank');
+                };
+                openDialerBtn.addEventListener('click', openDialerHandler);
+                eventListeners.push({ element: openDialerBtn, handler: openDialerHandler });
+            }
+
             // Обработчики для копирования адресов
             const setupCopyHandlers = () => {
                 const copyButtons = context.shadowRoot.querySelectorAll('.address-action.copy');

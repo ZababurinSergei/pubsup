@@ -19370,454 +19370,51 @@ __export(template_exports4, {
   renderSystemStatus: () => renderSystemStatus
 });
 function defaultTemplate4({ state = {} } = {}) {
-  return `
-    <div class="peer-connection">
-        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->
-        <header class="connection-header">
-            <div class="header-main">
-                <h1 class="connection-title">
-                    <span class="title-icon">\u{1F310}</span>
-                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435
-                </h1>
-                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">
-                    <span class="status-dot"></span>
-                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>
-                </div>
-            </div>
-            <div class="header-meta">
-                <div class="meta-item">
-                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>
-                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Peer ID:</span>
-                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->
-        <main class="connection-grid">
-            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
-            <section class="grid-card status-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F4CA}</span>
-                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderSystemStatus({ state })}
-                </div>
-            </section>
-
-            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->
-            <section class="grid-card control-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u26A1</span>
-                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderConnectionControls({ state })}
-                </div>
-            </section>
-
-            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->
-            <section class="grid-card peers-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F465}</span>
-                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B
-                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderPeersList({ state })}
-                </div>
-            </section>
-
-            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->
-            <section class="grid-card addresses-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F4CD}</span>
-                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F
-                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>
-                    </h3>
-                </div>
-                <div class="card-content">
-                     <div id="listening-addresses">
-                        ${renderAddressesList({ state })}
-                    </div>
-                </div>
-            </section>
-
-            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->
-            <section class="grid-card actions-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F680}</span>
-                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderQuickActions3({ state })}
-                </div>
-            </section>
-
-            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->
-            <section class="grid-card stats-card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F4C8}</span>
-                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430
-                    </h3>
-                </div>
-                <div class="card-content">
-                    ${renderStatistics2({ state })}
-                </div>
-            </section>
-
-            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->
-            <section class="grid-card connected-peers-section" style="display: none;">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <span class="card-icon">\u{1F517}</span>
-                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F
-                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>
-                    </h3>
-                </div>
-                <div class="card-content">
-                    <div id="connected-peers-list">
-                        ${renderConnectedPeersDetailed({ state })}
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->
-        <footer class="connection-footer">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>
-                    <span class="info-dot"></span>
-                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
-                </div>
-                <div class="footer-actions">
-                    <button class="footer-btn" id="refresh-all">
-                        <span class="btn-icon">\u{1F504}</span>
-                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C
-                    </button>
-                </div>
-            </div>
-        </footer>
-    </div>
-    `;
+  return `    <div class="peer-connection">        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->        <header class="connection-header">            <div class="header-main">                <h1 class="connection-title">                    <span class="title-icon">\u{1F310}</span>                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435                </h1>                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">                    <span class="status-dot"></span>                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                </div>            </div>            <div class="header-meta">                <div class="meta-item">                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>                </div>                <div class="meta-item">                    <span class="meta-label">Peer ID:</span>                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>                </div>            </div>        </header>        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->        <main class="connection-grid">            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->            <section class="grid-card status-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CA}</span>                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B                    </h3>                </div>                <div class="card-content">                    ${renderSystemStatus({ state })}                </div>            </section>            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->            <section class="grid-card control-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u26A1</span>                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435                    </h3>                </div>                <div class="card-content">                    ${renderConnectionControls({ state })}                </div>            </section>            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->            <section class="grid-card peers-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F465}</span>                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    ${renderPeersList({ state })}                </div>            </section>            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->            <section class="grid-card addresses-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CD}</span>                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>                    </h3>                </div>                <div class="card-content">                     <div id="listening-addresses">                        ${renderAddressesList({ state })}                    </div>                </div>            </section>            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->            <section class="grid-card actions-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F680}</span>                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F                    </h3>                </div>                <div class="card-content">                    ${renderQuickActions3({ state })}                </div>            </section>            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->            <section class="grid-card stats-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4C8}</span>                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430                    </h3>                </div>                <div class="card-content">                    ${renderStatistics2({ state })}                </div>            </section>            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->            <section class="grid-card connected-peers-section" style="display: none;">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F517}</span>                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    <div id="connected-peers-list">                        ${renderConnectedPeersDetailed({ state })}                    </div>                </div>            </section>        </main>        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->        <footer class="connection-footer">            <div class="footer-content">                <div class="footer-info">                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>                    <span class="info-dot"></span>                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>                </div>                <div class="footer-actions">                    <button class="footer-btn" id="refresh-all">                        <span class="btn-icon">\u{1F504}</span>                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C                    </button>                </div>            </div>        </footer>    </div>    `;
 }
 __name(defaultTemplate4, "defaultTemplate");
 function renderSystemStatus({ state = {} } = {}) {
-  return `
-    <div class="status-grid">
-        <div class="status-item">
-            <div class="status-icon ${state.connected ? "connected" : "disconnected"}">
-                ${state.connected ? "\u{1F7E2}" : "\u{1F534}"}
-            </div>
-            <div class="status-info">
-                <span class="status-label">\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435</span>
-                <span class="status-value">${state.connected ? "\u0410\u043A\u0442\u0438\u0432\u043D\u043E" : "\u041D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E"}</span>
-            </div>
-        </div>
-        <div class="status-item">
-            <div class="status-icon">
-                \u{1F310}
-            </div>
-            <div class="status-info">
-                <span class="status-label">\u0420\u0435\u0436\u0438\u043C</span>
-                <span class="status-value">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>
-            </div>
-        </div>
-        <div class="status-item">
-            <div class="status-icon ${state.relayEnabled ? "enabled" : "disabled"}">
-                ${state.relayEnabled ? "\u{1F517}" : "\u26D3\uFE0F"}
-            </div>
-            <div class="status-info">
-                <span class="status-label">Relay</span>
-                <span class="status-value">${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>
-            </div>
-        </div>
-        <div class="status-item">
-            <div class="status-icon">
-                \u23F1\uFE0F
-            </div>
-            <div class="status-info">
-                <span class="status-label">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B</span>
-                <span class="status-value uptime-display">${state.uptime || "0:00"}</span>
-            </div>
-        </div>
-    </div>
-    `;
+  return `    <div class="status-grid">        <div class="status-item">            <div class="status-icon ${state.connected ? "connected" : "disconnected"}">                ${state.connected ? "\u{1F7E2}" : "\u{1F534}"}            </div>            <div class="status-info">                <span class="status-label">\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435</span>                <span class="status-value">${state.connected ? "\u0410\u043A\u0442\u0438\u0432\u043D\u043E" : "\u041D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E"}</span>            </div>        </div>        <div class="status-item">            <div class="status-icon">                \u{1F310}            </div>            <div class="status-info">                <span class="status-label">\u0420\u0435\u0436\u0438\u043C</span>                <span class="status-value">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>            </div>        </div>        <div class="status-item">            <div class="status-icon ${state.relayEnabled ? "enabled" : "disabled"}">                ${state.relayEnabled ? "\u{1F517}" : "\u26D3\uFE0F"}            </div>            <div class="status-info">                <span class="status-label">Relay</span>                <span class="status-value">${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>            </div>        </div>        <div class="status-item">            <div class="status-icon">                \u23F1\uFE0F            </div>            <div class="status-info">                <span class="status-label">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B</span>                <span class="status-value uptime-display">${state.uptime || "0:00"}</span>            </div>        </div>    </div>    `;
 }
 __name(renderSystemStatus, "renderSystemStatus");
 function renderConnectionControls({ state = {} } = {}) {
-  return `
-    <div class="controls-container">
-        <!-- \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u0440\u0435\u0436\u0438\u043C\u043E\u0432 -->
-        <div class="control-group">
-            <label class="control-label">\u0420\u0435\u0436\u0438\u043C \u0440\u0430\u0431\u043E\u0442\u044B</label>
-            <div class="mode-switcher">
-                <button class="mode-btn ${state.mode === "listener" ? "active" : ""}" id="listener-mode-btn">
-                    <span class="btn-icon">\u{1F4E1}</span>
-                    \u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C
-                </button>
-                <button class="mode-btn ${state.mode === "dialer" ? "active" : ""}" id="dialer-mode-btn">
-                    <span class="btn-icon">\u{1F517}</span>
-                    \u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440
-                </button>
-            </div>
-        </div>
-
-        <!-- \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 -->
-        <div class="control-group">
-            <label class="control-label">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043A \u043F\u0438\u0440\u0443</label>
-            <div class="connection-input-group">
-                <input 
-                    type="text" 
-                    id="peer-address-input" 
-                    class="connection-input"
-                    placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooW..."
-                    ${!state.connected ? "disabled" : ""}
-                >
-                <button 
-                    id="connect-peer-btn" 
-                    class="connect-btn"
-                    ${!state.connected ? "disabled" : ""}
-                >
-                    <span class="btn-icon">\u{1F50C}</span>
-                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C
-                </button>
-            </div>
-        </div>
-
-        <!-- \u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 Relay -->
-        <div class="control-group">
-            <label class="control-label">\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0441\u0435\u0442\u0438</label>
-            <div class="settings-group">
-                <label class="setting-toggle">
-                    <input 
-                        type="checkbox" 
-                        id="relay-toggle" 
-                        ${state.relayEnabled ? "checked" : ""}
-                        ${state.connected ? "disabled" : ""}
-                    >
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C Relay</span>
-                </label>
-            </div>
-        </div>
-    </div>
-    `;
+  return `    <div class="controls-container">        <!-- \u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u0440\u0435\u0436\u0438\u043C\u043E\u0432 -->        <div class="control-group">            <label class="control-label">\u0420\u0435\u0436\u0438\u043C \u0440\u0430\u0431\u043E\u0442\u044B</label>            <div class="mode-switcher">                <button class="mode-btn ${state.mode === "listener" ? "active" : ""}" id="listener-mode-btn">                    <span class="btn-icon">\u{1F4E1}</span>                    \u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C                </button>                <button class="mode-btn ${state.mode === "dialer" ? "active" : ""}" id="dialer-mode-btn">                    <span class="btn-icon">\u{1F517}</span>                    \u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440                </button>            </div>        </div>        <!-- \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 -->        <div class="control-group">            <label class="control-label">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F \u043A \u043F\u0438\u0440\u0443</label>            <div class="connection-input-group">                <input                     type="text"                     id="peer-address-input"                     class="connection-input"                    placeholder="/ip4/127.0.0.1/tcp/1234/ws/p2p/12D3KooW..."                    ${!state.connected ? "disabled" : ""}                >                <button                     id="connect-peer-btn"                     class="connect-btn"                    ${!state.connected ? "disabled" : ""}                >                    <span class="btn-icon">\u{1F50C}</span>                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C                </button>            </div>        </div>        <!-- \u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 Relay -->        <div class="control-group">            <label class="control-label">\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438 \u0441\u0435\u0442\u0438</label>            <div class="settings-group">                <label class="setting-toggle">                    <input                         type="checkbox"                         id="relay-toggle"                         ${state.relayEnabled ? "checked" : ""}                        ${state.connected ? "disabled" : ""}                    >                    <span class="toggle-slider"></span>                    <span class="toggle-label">\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C Relay</span>                </label>            </div>        </div>    </div>    `;
 }
 __name(renderConnectionControls, "renderConnectionControls");
 function renderPeersList({ state = {} } = {}) {
   const peers = state.connectedPeers || [];
   if (peers.length === 0) {
-    return `
-        <div class="empty-state">
-            <div class="empty-icon">\u{1F465}</div>
-            <p class="empty-title">\u041D\u0435\u0442 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432</p>
-            <p class="empty-description">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0434\u0440\u0443\u0433\u0438\u043C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0430\u043C \u0441\u0435\u0442\u0438</p>
-        </div>
-        `;
+    return `        <div class="empty-state">            <div class="empty-icon">\u{1F465}</div>            <p class="empty-title">\u041D\u0435\u0442 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432</p>            <p class="empty-description">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0434\u0440\u0443\u0433\u0438\u043C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0430\u043C \u0441\u0435\u0442\u0438</p>        </div>        `;
   }
-  return `
-    <div class="peers-container" id="connected-peers-list">
-        ${peers.map((peer, index) => `
-        <div class="peer-item" data-peer-id="${peer.id}">
-            <div class="peer-avatar">
-                ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
-            </div>
-            <div class="peer-info">
-                <div class="peer-name">\u041F\u0438\u0440 #${index + 1}</div>
-                <div class="peer-id">${peer.id.substring(0, 24)}...</div>
-                <div class="peer-meta">
-                    <span class="peer-connections">${peer.connections ? peer.connections.length : 1} \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</span>
-                </div>
-            </div>
-            <div class="peer-actions">
-                <button class="peer-action-btn disconnect" data-peer-id="${peer.id}">
-                    <span class="action-icon">\u274C</span>
-                </button>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
+  return `    <div class="peers-container" id="connected-peers-list">        ${peers.map((peer, index) => `        <div class="peer-item" data-peer-id="${peer.id}">            <div class="peer-avatar">                ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}            </div>            <div class="peer-info">                <div class="peer-name">\u041F\u0438\u0440 #${index + 1}</div>                <div class="peer-id">${peer.id.substring(0, 24)}...</div>                <div class="peer-meta">                    <span class="peer-connections">${peer.connections ? peer.connections.length : 1} \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</span>                </div>            </div>            <div class="peer-actions">                <button class="peer-action-btn disconnect" data-peer-id="${peer.id}">                    <span class="action-icon">\u274C</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderPeersList, "renderPeersList");
 function renderConnectedPeersDetailed({ state = {} } = {}) {
   const peers = state.connectedPeers || [];
   if (peers.length === 0) {
-    return `
-        <div class="empty-state">
-            <div class="empty-icon">\u{1F50C}</div>
-            <p class="empty-title">\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</p>
-            <p class="empty-description">\u041F\u0438\u0440\u044B \u043F\u043E\u044F\u0432\u044F\u0442\u0441\u044F \u0437\u0434\u0435\u0441\u044C \u043F\u043E\u0441\u043B\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</p>
-        </div>
-        `;
+    return `        <div class="empty-state">            <div class="empty-icon">\u{1F50C}</div>            <p class="empty-title">\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</p>            <p class="empty-description">\u041F\u0438\u0440\u044B \u043F\u043E\u044F\u0432\u044F\u0442\u0441\u044F \u0437\u0434\u0435\u0441\u044C \u043F\u043E\u0441\u043B\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</p>        </div>        `;
   }
-  return `
-    <div class="peers-detailed-container">
-        ${peers.map((peer, index) => `
-        <div class="peer-detailed-item" data-peer-id="${peer.id}">
-            <div class="peer-header">
-                <div class="peer-avatar-large">
-                    ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}
-                </div>
-                <div class="peer-main-info">
-                    <div class="peer-name">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 #${index + 1}</div>
-                    <div class="peer-id-full">${peer.id}</div>
-                </div>
-                <div class="peer-status-indicator connected">
-                    <span class="status-dot"></span>
-                    <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D</span>
-                </div>
-            </div>
-            
-            <div class="peer-connections-info">
-                <div class="connections-header">
-                    <span class="connections-label">\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F:</span>
-                    <span class="connections-count">${peer.connections ? peer.connections.length : 1}</span>
-                </div>
-                
-                ${peer.connections ? peer.connections.map((conn) => `
-                <div class="connection-item">
-                    <div class="connection-protocol">
-                        <span class="protocol-icon">\u{1F517}</span>
-                        <span class="protocol-name">${getConnectionProtocol(conn.remoteAddr)}</span>
-                    </div>
-                    <div class="connection-address">${conn.remoteAddr}</div>
-                    <div class="connection-status ${conn.status}">
-                        <span class="status-badge">${conn.status}</span>
-                    </div>
-                </div>
-                `).join("") : `
-                <div class="connection-item">
-                    <div class="connection-protocol">
-                        <span class="protocol-icon">\u{1F310}</span>
-                        <span class="protocol-name">P2P</span>
-                    </div>
-                    <div class="connection-address">\u041F\u0440\u044F\u043C\u043E\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435</div>
-                    <div class="connection-status open">
-                        <span class="status-badge">active</span>
-                    </div>
-                </div>
-                `}
-            </div>
-            
-            <div class="peer-actions-detailed">
-                <button class="action-btn secondary disconnect-peer" data-peer-id="${peer.id}">
-                    <span class="btn-icon">\u{1F6AB}</span>
-                    \u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C
-                </button>
-                <button class="action-btn outline copy-peer-id" data-peer-id="${peer.id}">
-                    <span class="btn-icon">\u{1F4CB}</span>
-                    ID
-                </button>
-                <button class="action-btn outline peer-info" data-peer-id="${peer.id}">
-                    <span class="btn-icon">\u2139\uFE0F</span>
-                    \u0418\u043D\u0444\u043E
-                </button>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
+  return `    <div class="peers-detailed-container">        ${peers.map((peer, index) => `        <div class="peer-detailed-item" data-peer-id="${peer.id}">            <div class="peer-header">                <div class="peer-avatar-large">                    ${peer.id ? peer.id.substring(2, 4).toUpperCase() : "??"}                </div>                <div class="peer-main-info">                    <div class="peer-name">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 #${index + 1}</div>                    <div class="peer-id-full">${peer.id}</div>                </div>                <div class="peer-status-indicator connected">                    <span class="status-dot"></span>                    <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D</span>                </div>            </div>                        <div class="peer-connections-info">                <div class="connections-header">                    <span class="connections-label">\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F:</span>                    <span class="connections-count">${peer.connections ? peer.connections.length : 1}</span>                </div>                                ${peer.connections ? peer.connections.map((conn) => `                <div class="connection-item">                    <div class="connection-protocol">                        <span class="protocol-icon">\u{1F517}</span>                        <span class="protocol-name">${getConnectionProtocol(conn.remoteAddr)}</span>                    </div>                    <div class="connection-address">${conn.remoteAddr}</div>                    <div class="connection-status ${conn.status}">                        <span class="status-badge">${conn.status}</span>                    </div>                </div>                `).join("") : `                <div class="connection-item">                    <div class="connection-protocol">                        <span class="protocol-icon">\u{1F310}</span>                        <span class="protocol-name">P2P</span>                    </div>                    <div class="connection-address">\u041F\u0440\u044F\u043C\u043E\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435</div>                    <div class="connection-status open">                        <span class="status-badge">active</span>                    </div>                </div>                `}            </div>                        <div class="peer-actions-detailed">                <button class="action-btn secondary disconnect-peer" data-peer-id="${peer.id}">                    <span class="btn-icon">\u{1F6AB}</span>                    \u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C                </button>                <button class="action-btn outline copy-peer-id" data-peer-id="${peer.id}">                    <span class="btn-icon">\u{1F4CB}</span>                    ID                </button>                <button class="action-btn outline peer-info" data-peer-id="${peer.id}">                    <span class="btn-icon">\u2139\uFE0F</span>                    \u0418\u043D\u0444\u043E                </button>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderConnectedPeersDetailed, "renderConnectedPeersDetailed");
 function renderAddressesList({ state = {} } = {}) {
   const addresses = state.listeningAddresses || [];
   if (addresses.length === 0) {
-    return `
-        <div class="empty-state">
-            <div class="empty-icon">\u{1F4CD}</div>
-            <p class="empty-title">\u041D\u0435\u0442 \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F</p>
-            <p class="empty-description">\u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 P2P \u0443\u0437\u0435\u043B \u0434\u043B\u044F \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432</p>
-        </div>
-        `;
+    return `        <div class="empty-state">            <div class="empty-icon">\u{1F4CD}</div>            <p class="empty-title">\u041D\u0435\u0442 \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F</p>            <p class="empty-description">\u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 P2P \u0443\u0437\u0435\u043B \u0434\u043B\u044F \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432</p>        </div>        `;
   }
-  return `
-    <div class="addresses-container">
-        ${addresses.map((address, index) => `
-        <div class="address-item" data-address="${address}">
-            <div class="address-index">${index + 1}</div>
-            <div class="address-content">
-                <div class="address-protocol">
-                    ${getProtocolIcon(address)}
-                    ${getProtocolName(address)}
-                </div>
-                <div class="address-value">${address}</div>
-            </div>
-            <button class="address-action copy" data-address="${address}">
-                <span class="action-icon">\u{1F4CB}</span>
-            </button>
-        </div>
-        `).join("")}
-    </div>
-    `;
+  return `    <div class="addresses-container">        ${addresses.map((address, index) => `        <div class="address-item" data-address="${address}">            <div class="address-index">${index + 1}</div>            <div class="address-content">                <div class="address-protocol">                    ${getProtocolIcon(address)}                    ${getProtocolName(address)}                </div>                <div class="address-value">${address}</div>            </div>            <button class="address-action copy" data-address="${address}">                <span class="action-icon">\u{1F4CB}</span>            </button>        </div>        `).join("")}    </div>    `;
 }
 __name(renderAddressesList, "renderAddressesList");
 function renderQuickActions3({ state = {} } = {}) {
-  return `
-    <div class="actions-grid">
-        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>
-            <span class="btn-icon">\u{1F4CB}</span>
-            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>
-        </button>
-        
-        <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>
-            <span class="btn-icon">\u{1F310}</span>
-            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>
-        </button>
-        
-        <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>
-            <span class="btn-icon">\u{1F6AB}</span>
-            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>
-        </button>
-        
-        <button class="action-btn outline" id="restart-node">
-            <span class="btn-icon">\u{1F504}</span>
-            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>
-        </button>
-    </div>
-    `;
+  return `    <div class="actions-grid">        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>            <span class="btn-icon">\u{1F4CB}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>        </button>                <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F310}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>        </button>                <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F6AB}</span>            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>        </button>                <button class="action-btn outline" id="restart-node">            <span class="btn-icon">\u{1F504}</span>            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>        </button>                <!-- \u041D\u041E\u0412\u0410\u042F \u041A\u041D\u041E\u041F\u041A\u0410 -->
+        <button class="action-btn outline" id="open-dialer-mode">            <span class="btn-icon">\u{1F517}</span>            <span class="btn-text">\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043A\u0430\u043A \u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440</span>        </button>    </div>    `;
 }
 __name(renderQuickActions3, "renderQuickActions");
 function renderStatistics2({ state = {} } = {}) {
   const peersCount = state.connectedPeers ? state.connectedPeers.length : 0;
   const addressesCount = state.listeningAddresses ? state.listeningAddresses.length : 0;
   const connectionCount = state.connectedPeers ? state.connectedPeers.reduce((total, peer) => total + (peer.connections ? peer.connections.length : 1), 0) : 0;
-  return `
-    <div class="stats-grid">
-        <div class="stat-item">
-            <div class="stat-value">${peersCount}</div>
-            <div class="stat-label">\u041F\u0438\u0440\u043E\u0432</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">${connectionCount}</div>
-            <div class="stat-label">\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">${addressesCount}</div>
-            <div class="stat-label">\u0410\u0434\u0440\u0435\u0441\u043E\u0432</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">${state.mode === "listener" ? "\u0412\u0445\u043E\u0434\u044F\u0449\u0438\u0435" : "\u0418\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435"}</div>
-            <div class="stat-label">\u0422\u0438\u043F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</div>
-        </div>
-    </div>
-    `;
+  return `    <div class="stats-grid">        <div class="stat-item">            <div class="stat-value">${peersCount}</div>            <div class="stat-label">\u041F\u0438\u0440\u043E\u0432</div>        </div>        <div class="stat-item">            <div class="stat-value">${connectionCount}</div>            <div class="stat-label">\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</div>        </div>        <div class="stat-item">            <div class="stat-value">${addressesCount}</div>            <div class="stat-label">\u0410\u0434\u0440\u0435\u0441\u043E\u0432</div>        </div>        <div class="stat-item">            <div class="stat-value">${state.mode === "listener" ? "\u0412\u0445\u043E\u0434\u044F\u0449\u0438\u0435" : "\u0418\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435"}</div>            <div class="stat-label">\u0422\u0438\u043F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</div>        </div>    </div>    `;
 }
 __name(renderStatistics2, "renderStatistics");
 function renderAddresses({ state = {} } = {}) {
@@ -19830,29 +19427,12 @@ function renderConnectedPeers({ state = {} } = {}) {
 __name(renderConnectedPeers, "renderConnectedPeers");
 function renderStatus2({ state = {} } = {}) {
   if (!state.connected) {
-    return `
-        <div class="status-message disconnected">
-            <span class="status-icon">\u{1F534}</span>
-            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
-            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
-        </div>
-        `;
+    return `        <div class="status-message disconnected">            <span class="status-icon">\u{1F534}</span>            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>        </div>        `;
   }
   if (!state.currentGroup) {
-    return `
-        <div class="status-message info">
-            <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
-        </div>
-        `;
+    return `        <div class="status-message info">            <span class="status-icon">\u2139\uFE0F</span>            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>        </div>        `;
   }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 "${state.currentGroup.name}"</span>
-        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>
-    </div>
-    `;
+  return `    <div class="status-message connected">        <span class="status-icon">\u{1F7E2}</span>        <span class="status-text">\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A \u0433\u0440\u0443\u043F\u043F\u0443 \\"${state.currentGroup.name}\\"</span>        <span class="peer-id">ID: ${state.peerId ? state.peerId.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u0435\u043D"}</span>    </div>    `;
 }
 __name(renderStatus2, "renderStatus");
 function getProtocolIcon(address) {
@@ -19892,6 +19472,16 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
      */
     async init() {
       log7("controller initializing...");
+      const openDialerBtn = context.shadowRoot.querySelector("#open-dialer-mode");
+      if (openDialerBtn) {
+        const openDialerHandler = /* @__PURE__ */ __name(() => {
+          const url = new URL(window.location);
+          url.searchParams.set("mode", "dialer");
+          window.open(url.toString(), "_blank");
+        }, "openDialerHandler");
+        openDialerBtn.addEventListener("click", openDialerHandler);
+        eventListeners.push({ element: openDialerBtn, handler: openDialerHandler });
+      }
       const setupCopyHandlers = /* @__PURE__ */ __name(() => {
         const copyButtons = context.shadowRoot.querySelectorAll(".address-action.copy");
         copyButtons.forEach((button) => {
@@ -36774,12 +36364,6 @@ var PeerConnection = class extends BaseComponent {
         peerAddressInput.value = "";
       }
       await this.sendConnectionStatusToChatInterface();
-      const url = new URL(window.location);
-      if (url.searchParams.has("mode")) {
-        url.searchParams.delete("mode");
-        window.history.replaceState({}, "", url.toString());
-        log6("URL parameter ?mode=... removed");
-      }
       return libp2p;
     } catch (error) {
       log6.error("Libp2p initialization failed: %o", error);
@@ -37078,6 +36662,12 @@ var PeerConnection = class extends BaseComponent {
       if (chatManager) await chatManager.postMessage(event);
       const groupManager = await this.getComponentAsync("group-manager", "group-manager");
       if (groupManager) await groupManager.postMessage(event);
+      const url = new URL(window.location);
+      if (url.searchParams.has("mode")) {
+        url.searchParams.delete("mode");
+        window.history.replaceState({}, "", url.toString());
+        log6("URL parameter ?mode=... removed");
+      }
       log6("Mode switch completed and components notified");
     } else {
       log6("Mode is already %s", mode);
