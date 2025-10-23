@@ -28,6 +28,16 @@ export default function defaultTemplate({state = {}} = {}) {
                     <span class=\"meta-label\">Peer ID:</span>\
                     <span class=\"meta-value peer-id\">${state.peerId ? state.peerId : 'Не доступен'}</span>\
                 </div>\
+                ${state.webRtcAddress ? `\
+                <div class=\"meta-item\">\
+                    <span class=\"meta-label\">WebRTC:</span>\
+                    <span 
+                        class=\"meta-value webRTC-address clickable\" 
+                        title=\"Кликните, чтобы скопировать\"
+                        data-address=\"${state.webRtcAddress}\"
+                    >${state.webRtcAddress}</span>\
+                </div>\
+                ` : ''}\
             </div>\
         </header>\
 \
@@ -448,12 +458,6 @@ export function renderQuickActions({state = {}} = {}) {
         <button class=\"action-btn outline\" id=\"restart-node\">\
             <span class=\"btn-icon\">🔄</span>\
             <span class=\"btn-text\">Перезапустить узел</span>\
-        </button>\
-        \
-        <!-- НОВАЯ КНОПКА -->
-        <button class=\"action-btn outline\" id=\"open-dialer-mode\">\
-            <span class=\"btn-icon\">🔗</span>\
-            <span class=\"btn-text\">Открыть как инициатор</span>\
         </button>\
     </div>\
     `;

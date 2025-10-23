@@ -3,31 +3,23 @@ import * as template from './template/index.mjs';
 import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
 import { logger } from '@libp2p/logger';
+import { multiaddr } from "@multiformats/multiaddr";
+import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
 
 // Создаем логгер для компонента
 const log = logger('peer-connection');
 
-function getInitialMode() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode');
-    if (mode === 'listener' || mode === 'dialer') {
-        return mode;
-    }
-    return 'listener'; // по умолчанию
-}
-
 export class PeerConnection extends BaseComponent {
     constructor() {
         super();
-        const initialMode = getInitialMode();
         this._templateMethods = template;
         this.node = null;
-
         this.state = {
-            mode: initialMode,
+            mode: globalThis.APP_INITIAL_MODE,
             connected: false,
             peerId: null,
             listeningAddresses: [],
+            webRtcAddress: null, // ← Добавлено
             connectedPeers: [],
             relayEnabled: true,
             startTime: null, // Время старта ноды
@@ -53,6 +45,25 @@ export class PeerConnection extends BaseComponent {
 
         await this._controller.init();
 
+        // Добавляем делегированный обработчик для копирования WebRTC-адреса
+        this.shadowRoot.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('webRTC-address')) {
+                const address = e.target.getAttribute('data-address');
+                if (address) {
+                    try {
+                        await navigator.clipboard.writeText(address);
+                        const original = e.target.textContent;
+                        e.target.textContent = 'Скопировано!';
+                        setTimeout(() => {
+                            e.target.textContent = original;
+                        }, 2000);
+                    } catch (err) {
+                        log.error('Не удалось скопировать WebRTC-адрес:', err);
+                    }
+                }
+            }
+        });
+
         return true;
     }
 
@@ -66,7 +77,16 @@ export class PeerConnection extends BaseComponent {
             const libp2p = await this._actions.initializeLibp2p(mode);
             this.node = libp2p; // Сохраняем ноду
             this.state.peerId = libp2p.peerId.toString();
-            this.state.listeningAddresses = libp2p.getMultiaddrs().map(ma => ma.toString());
+
+            // Получаем все адреса
+            const allAddresses = libp2p.getMultiaddrs().map(ma => ma.toString());
+            this.state.listeningAddresses = allAddresses;
+
+            // Фильтруем WebRTC-адреса
+            const webRtcAddresses = allAddresses.filter(addr => WebRTC.matches(multiaddr(addr)));
+            console.log('dddddddddddsssssssss', webRtcAddresses, allAddresses)
+            this.state.webRtcAddress = webRtcAddresses.length > 0 ? webRtcAddresses[0] : null;
+
             this.state.connected = true;
             this.state.startTime = Date.now(); // Записываем время старта
 
@@ -76,6 +96,7 @@ export class PeerConnection extends BaseComponent {
                 connected: this.state.connected,
                 peerId: this.state.peerId,
                 addresses: this.state.listeningAddresses,
+                webRtcAddress: this.state.webRtcAddress,
                 startTime: this.state.startTime
             });
 
@@ -317,6 +338,9 @@ export class PeerConnection extends BaseComponent {
     /**
      * Передает данные о пирах в chat-interface
      */
+    /**
+     * Передает данные о пирах в chat-interface
+     */
     async sendPeersToChatInterface() {
         try {
             const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
@@ -451,31 +475,7 @@ export class PeerConnection extends BaseComponent {
             log('Initializing Libp2p with new mode...');
             await this.initializeLibp2p(mode);
 
-            // 🔥 Уведомляем другие компоненты о новой ноде
-            const event = {
-                type: 'NODE_RESTARTED',
-                data: {
-                    peerId: this.state.peerId,
-                    mode: this.state.mode,
-                    timestamp: Date.now()
-                }
-            };
-
-            const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
-            if (chatManager) await chatManager.postMessage(event);
-
-            const groupManager = await this.getComponentAsync('group-manager', 'group-manager');
-            if (groupManager) await groupManager.postMessage(event);
-
-            const url = new URL(window.location);
-            if (url.searchParams.has('mode')) {
-                url.searchParams.delete('mode');
-                // Используем replaceState, чтобы не создавать запись в истории
-                window.history.replaceState({}, '', url.toString());
-                log('URL parameter ?mode=... removed');
-            }
-
-            log('Mode switch completed and components notified');
+            log('Mode switch completed');
         } else {
             log('Mode is already %s', mode);
         }

@@ -11,13 +11,12 @@ import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
 
 // Создаем логгер для компонента
 const log = logger('chat-manager');
-
 export class ChatManager extends BaseComponent {
     constructor() {
         super();
         this._templateMethods = template;
         this.state = {
-            mode: 'listener',
+            mode: globalThis.APP_INITIAL_MODE,
             connected: false,
             messages: [],
             currentGroup: null,

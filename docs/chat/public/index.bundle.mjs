@@ -15731,7 +15731,7 @@ var ChatManager = class extends BaseComponent {
     super();
     this._templateMethods = template_exports;
     this.state = {
-      mode: "listener",
+      mode: globalThis.APP_INITIAL_MODE,
       connected: false,
       messages: [],
       currentGroup: null,
@@ -19370,7 +19370,11 @@ __export(template_exports4, {
   renderSystemStatus: () => renderSystemStatus
 });
 function defaultTemplate4({ state = {} } = {}) {
-  return `    <div class="peer-connection">        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->        <header class="connection-header">            <div class="header-main">                <h1 class="connection-title">                    <span class="title-icon">\u{1F310}</span>                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435                </h1>                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">                    <span class="status-dot"></span>                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                </div>            </div>            <div class="header-meta">                <div class="meta-item">                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>                </div>                <div class="meta-item">                    <span class="meta-label">Peer ID:</span>                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>                </div>            </div>        </header>        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->        <main class="connection-grid">            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->            <section class="grid-card status-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CA}</span>                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B                    </h3>                </div>                <div class="card-content">                    ${renderSystemStatus({ state })}                </div>            </section>            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->            <section class="grid-card control-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u26A1</span>                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435                    </h3>                </div>                <div class="card-content">                    ${renderConnectionControls({ state })}                </div>            </section>            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->            <section class="grid-card peers-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F465}</span>                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    ${renderPeersList({ state })}                </div>            </section>            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->            <section class="grid-card addresses-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CD}</span>                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>                    </h3>                </div>                <div class="card-content">                     <div id="listening-addresses">                        ${renderAddressesList({ state })}                    </div>                </div>            </section>            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->            <section class="grid-card actions-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F680}</span>                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F                    </h3>                </div>                <div class="card-content">                    ${renderQuickActions3({ state })}                </div>            </section>            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->            <section class="grid-card stats-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4C8}</span>                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430                    </h3>                </div>                <div class="card-content">                    ${renderStatistics2({ state })}                </div>            </section>            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->            <section class="grid-card connected-peers-section" style="display: none;">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F517}</span>                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    <div id="connected-peers-list">                        ${renderConnectedPeersDetailed({ state })}                    </div>                </div>            </section>        </main>        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->        <footer class="connection-footer">            <div class="footer-content">                <div class="footer-info">                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>                    <span class="info-dot"></span>                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>                </div>                <div class="footer-actions">                    <button class="footer-btn" id="refresh-all">                        <span class="btn-icon">\u{1F504}</span>                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C                    </button>                </div>            </div>        </footer>    </div>    `;
+  return `    <div class="peer-connection">        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->        <header class="connection-header">            <div class="header-main">                <h1 class="connection-title">                    <span class="title-icon">\u{1F310}</span>                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435                </h1>                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">                    <span class="status-dot"></span>                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                </div>            </div>            <div class="header-meta">                <div class="meta-item">                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>                </div>                <div class="meta-item">                    <span class="meta-label">Peer ID:</span>                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>                </div>                ${state.webRtcAddress ? `                <div class="meta-item">                    <span class="meta-label">WebRTC:</span>                    <span 
+                        class="meta-value webRTC-address clickable" 
+                        title="\u041A\u043B\u0438\u043A\u043D\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C"
+                        data-address="${state.webRtcAddress}"
+                    >${state.webRtcAddress}</span>                </div>                ` : ""}            </div>        </header>        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->        <main class="connection-grid">            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->            <section class="grid-card status-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CA}</span>                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B                    </h3>                </div>                <div class="card-content">                    ${renderSystemStatus({ state })}                </div>            </section>            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->            <section class="grid-card control-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u26A1</span>                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435                    </h3>                </div>                <div class="card-content">                    ${renderConnectionControls({ state })}                </div>            </section>            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->            <section class="grid-card peers-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F465}</span>                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    ${renderPeersList({ state })}                </div>            </section>            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->            <section class="grid-card addresses-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CD}</span>                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>                    </h3>                </div>                <div class="card-content">                     <div id="listening-addresses">                        ${renderAddressesList({ state })}                    </div>                </div>            </section>            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->            <section class="grid-card actions-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F680}</span>                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F                    </h3>                </div>                <div class="card-content">                    ${renderQuickActions3({ state })}                </div>            </section>            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->            <section class="grid-card stats-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4C8}</span>                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430                    </h3>                </div>                <div class="card-content">                    ${renderStatistics2({ state })}                </div>            </section>            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->            <section class="grid-card connected-peers-section" style="display: none;">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F517}</span>                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    <div id="connected-peers-list">                        ${renderConnectedPeersDetailed({ state })}                    </div>                </div>            </section>        </main>        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->        <footer class="connection-footer">            <div class="footer-content">                <div class="footer-info">                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>                    <span class="info-dot"></span>                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>                </div>                <div class="footer-actions">                    <button class="footer-btn" id="refresh-all">                        <span class="btn-icon">\u{1F504}</span>                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C                    </button>                </div>            </div>        </footer>    </div>    `;
 }
 __name(defaultTemplate4, "defaultTemplate");
 function renderSystemStatus({ state = {} } = {}) {
@@ -19406,8 +19410,7 @@ function renderAddressesList({ state = {} } = {}) {
 }
 __name(renderAddressesList, "renderAddressesList");
 function renderQuickActions3({ state = {} } = {}) {
-  return `    <div class="actions-grid">        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>            <span class="btn-icon">\u{1F4CB}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>        </button>                <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F310}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>        </button>                <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F6AB}</span>            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>        </button>                <button class="action-btn outline" id="restart-node">            <span class="btn-icon">\u{1F504}</span>            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>        </button>                <!-- \u041D\u041E\u0412\u0410\u042F \u041A\u041D\u041E\u041F\u041A\u0410 -->
-        <button class="action-btn outline" id="open-dialer-mode">            <span class="btn-icon">\u{1F517}</span>            <span class="btn-text">\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043A\u0430\u043A \u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440</span>        </button>    </div>    `;
+  return `    <div class="actions-grid">        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>            <span class="btn-icon">\u{1F4CB}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>        </button>                <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F310}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>        </button>                <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F6AB}</span>            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>        </button>                <button class="action-btn outline" id="restart-node">            <span class="btn-icon">\u{1F504}</span>            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>        </button>    </div>    `;
 }
 __name(renderQuickActions3, "renderQuickActions");
 function renderStatistics2({ state = {} } = {}) {
@@ -36289,29 +36292,21 @@ __name(createActions4, "createActions");
 
 // public/components/peer-connection/index.mjs
 var log6 = logger("peer-connection");
-function getInitialMode() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const mode = urlParams.get("mode");
-  if (mode === "listener" || mode === "dialer") {
-    return mode;
-  }
-  return "listener";
-}
-__name(getInitialMode, "getInitialMode");
 var PeerConnection = class extends BaseComponent {
   static {
     __name(this, "PeerConnection");
   }
   constructor() {
     super();
-    const initialMode = getInitialMode();
     this._templateMethods = template_exports4;
     this.node = null;
     this.state = {
-      mode: initialMode,
+      mode: globalThis.APP_INITIAL_MODE,
       connected: false,
       peerId: null,
       listeningAddresses: [],
+      webRtcAddress: null,
+      // ← Добавлено
       connectedPeers: [],
       relayEnabled: true,
       startTime: null,
@@ -36332,6 +36327,23 @@ var PeerConnection = class extends BaseComponent {
       hasActions: !!this._actions
     });
     await this._controller.init();
+    this.shadowRoot.addEventListener("click", async (e2) => {
+      if (e2.target.classList.contains("webRTC-address")) {
+        const address = e2.target.getAttribute("data-address");
+        if (address) {
+          try {
+            await navigator.clipboard.writeText(address);
+            const original = e2.target.textContent;
+            e2.target.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
+            setTimeout(() => {
+              e2.target.textContent = original;
+            }, 2e3);
+          } catch (err) {
+            log6.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C WebRTC-\u0430\u0434\u0440\u0435\u0441:", err);
+          }
+        }
+      }
+    });
     return true;
   }
   async initializeLibp2p(mode = "listener") {
@@ -36342,7 +36354,11 @@ var PeerConnection = class extends BaseComponent {
       const libp2p = await this._actions.initializeLibp2p(mode);
       this.node = libp2p;
       this.state.peerId = libp2p.peerId.toString();
-      this.state.listeningAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
+      const allAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
+      this.state.listeningAddresses = allAddresses;
+      const webRtcAddresses = allAddresses.filter((addr) => WebRTC.matches(multiaddr(addr)));
+      console.log("dddddddddddsssssssss", webRtcAddresses, allAddresses);
+      this.state.webRtcAddress = webRtcAddresses.length > 0 ? webRtcAddresses[0] : null;
       this.state.connected = true;
       this.state.startTime = Date.now();
       log6("Libp2p initialized successfully");
@@ -36351,6 +36367,7 @@ var PeerConnection = class extends BaseComponent {
         connected: this.state.connected,
         peerId: this.state.peerId,
         addresses: this.state.listeningAddresses,
+        webRtcAddress: this.state.webRtcAddress,
         startTime: this.state.startTime
       });
       this.startUptimeCounter();
@@ -36536,6 +36553,9 @@ var PeerConnection = class extends BaseComponent {
   /**
    * Передает данные о пирах в chat-interface
    */
+  /**
+   * Передает данные о пирах в chat-interface
+   */
   async sendPeersToChatInterface() {
     try {
       const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
@@ -36650,25 +36670,7 @@ var PeerConnection = class extends BaseComponent {
       }
       log6("Initializing Libp2p with new mode...");
       await this.initializeLibp2p(mode);
-      const event = {
-        type: "NODE_RESTARTED",
-        data: {
-          peerId: this.state.peerId,
-          mode: this.state.mode,
-          timestamp: Date.now()
-        }
-      };
-      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager) await chatManager.postMessage(event);
-      const groupManager = await this.getComponentAsync("group-manager", "group-manager");
-      if (groupManager) await groupManager.postMessage(event);
-      const url = new URL(window.location);
-      if (url.searchParams.has("mode")) {
-        url.searchParams.delete("mode");
-        window.history.replaceState({}, "", url.toString());
-        log6("URL parameter ?mode=... removed");
-      }
-      log6("Mode switch completed and components notified");
+      log6("Mode switch completed");
     } else {
       log6("Mode is already %s", mode);
     }
