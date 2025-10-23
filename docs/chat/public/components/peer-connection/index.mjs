@@ -96,6 +96,14 @@ export class PeerConnection extends BaseComponent {
             // Отправляем начальный статус соединения
             await this.sendConnectionStatusToChatInterface();
 
+            const url = new URL(window.location);
+            if (url.searchParams.has('mode')) {
+                url.searchParams.delete('mode');
+                // Используем replaceState, чтобы не создавать запись в истории
+                window.history.replaceState({}, '', url.toString());
+                log('URL parameter ?mode=... removed');
+            }
+
             return libp2p;
         } catch (error) {
             log.error('Libp2p initialization failed: %o', error);

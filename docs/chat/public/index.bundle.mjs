@@ -37070,6 +37070,12 @@ var PeerConnection = class extends BaseComponent {
         peerAddressInput.value = "";
       }
       await this.sendConnectionStatusToChatInterface();
+      const url = new URL(window.location);
+      if (url.searchParams.has("mode")) {
+        url.searchParams.delete("mode");
+        window.history.replaceState({}, "", url.toString());
+        log6("URL parameter ?mode=... removed");
+      }
       return libp2p;
     } catch (error) {
       log6.error("Libp2p initialization failed: %o", error);
