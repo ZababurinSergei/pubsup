@@ -42,6 +42,25 @@ export const controller = async (context) => {
                     if (groupNameInput && groupNameInput.value.trim()) {
                         await context.createGroup(groupNameInput.value.trim());
                         groupNameInput.value = '';
+                    } else {
+                        // Показать модальное окно для ввода имени
+                        await context.showModal({
+                            title: 'Создание группы',
+                            content: '<input type="text" id="quick-group-name" placeholder="Название группы..." style="width:100%; padding:0.5rem;">',
+                            buttons: [
+                                { text: 'Отмена', type: 'secondary' },
+                                {
+                                    text: 'Создать',
+                                    type: 'primary',
+                                    action: async () => {
+                                        const input = document.getElementById('quick-group-name');
+                                        if (input?.value.trim()) {
+                                            await context.createGroup(input.value.trim());
+                                        }
+                                    }
+                                }
+                            ]
+                        });
                     }
                 };
                 createGroupBtn.addEventListener('click', createGroupHandler);
@@ -167,6 +186,105 @@ export const controller = async (context) => {
 
                 discoverGroupsBtn.addEventListener('click', discoverHandler);
                 eventListeners.push({ element: discoverGroupsBtn, handler: discoverHandler });
+            }
+
+            // === Обработчики для кнопок в секции "Быстрые действия" ===
+
+            // Создать группу
+            const quickCreateGroupBtn = context.shadowRoot.querySelector('#create-group');
+            if (quickCreateGroupBtn) {
+                const handler = async () => {
+                    const groupNameInput = context.shadowRoot.querySelector('#group-name');
+                    if (groupNameInput && groupNameInput.value.trim()) {
+                        await context.createGroup(groupNameInput.value.trim());
+                        groupNameInput.value = '';
+                    } else {
+                        // Показать модальное окно для ввода имени, как в group-manager
+                        await context.showModal({
+                            title: 'Создание группы',
+                            content: '<input type="text" id="quick-group-name" placeholder="Название группы..." style="width:100%; padding:0.5rem;">',
+                            buttons: [
+                                { text: 'Отмена', type: 'secondary' },
+                                {
+                                    text: 'Создать',
+                                    type: 'primary',
+                                    action: async () => {
+                                        const input = document.getElementById('quick-group-name');
+                                        if (input?.value.trim()) {
+                                            await context.createGroup(input.value.trim());
+                                        }
+                                    }
+                                }
+                            ]
+                        });
+                    }
+                };
+                quickCreateGroupBtn.addEventListener('click', handler);
+                eventListeners.push({ element: quickCreateGroupBtn, handler: handler });
+            }
+
+            // Обнаружить группы
+            const quickDiscoverBtn = context.shadowRoot.querySelector('#discover-groups');
+            if (quickDiscoverBtn) {
+                const handler = async () => {
+                    try {
+                        const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                        if (groupManager && groupManager.discoverGroups) {
+                            await groupManager.discoverGroups();
+                            await context.showModal({
+                                title: 'Поиск групп',
+                                content: '<p>Поиск запущен. Результаты появятся в списке обнаруженных групп.</p>',
+                                buttons: [{ text: 'OK', type: 'primary' }]
+                            });
+                        }
+                    } catch (error) {
+                        log.error('Ошибка поиска групп: %o', error);
+                        await context.showModal({
+                            title: 'Ошибка',
+                            content: `<p>${error.message}</p>`,
+                            buttons: [{ text: 'OK', type: 'primary' }]
+                        });
+                    }
+                };
+                quickDiscoverBtn.addEventListener('click', handler);
+                eventListeners.push({ element: quickDiscoverBtn, handler: handler });
+            }
+
+            // Копировать Peer ID
+            const copyPeerIdBtn = context.shadowRoot.querySelector('#copy-peer-id');
+            if (copyPeerIdBtn) {
+                const handler = async () => {
+                    if (context.state.peerId) {
+                        try {
+                            await navigator.clipboard.writeText(context.state.peerId);
+                            const original = copyPeerIdBtn.textContent;
+                            copyPeerIdBtn.textContent = 'Скопировано!';
+                            setTimeout(() => copyPeerIdBtn.textContent = original, 2000);
+                        } catch (err) {
+                            log.error('Не удалось скопировать Peer ID: %o', err);
+                        }
+                    }
+                };
+                copyPeerIdBtn.addEventListener('click', handler);
+                eventListeners.push({ element: copyPeerIdBtn, handler: handler });
+            }
+
+            // Перезапуск ноды
+            const restartNodeBtn = context.shadowRoot.querySelector('#restart-node');
+            if (restartNodeBtn) {
+                const handler = async () => {
+                    const peerConnection = await context.getComponentAsync('peer-connection', 'peer-connection');
+                    if (peerConnection && peerConnection.switchMode) {
+                        await peerConnection.switchMode(context.state.mode);
+                        await context.showModal({
+                            title: 'Перезапуск',
+                            content: '<p>Нода перезапущена в текущем режиме.</p>',
+                            buttons: [{ text: 'OK', type: 'primary' }]
+                        });
+                    }
+                };
+                restartNodeBtn.addEventListener('click', handler);
+                eventListeners.push({ element: restartNodeBtn, handler: handler });
             }
 
             // Обработчики для переключения между группами
