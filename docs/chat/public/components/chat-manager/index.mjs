@@ -535,21 +535,6 @@ export class ChatManager extends BaseComponent {
                     const lp = lpStream(stream);
                     const remotePeer = connection.remotePeer.toString();
 
-                    // Устанавливаем таймаут для неактивных стримов
-                    // const streamTimeout = setTimeout(() => {
-                    //     log('Stream timeout for peer: %s', remotePeer);
-                    //     stream.close().catch(() => {});
-                    // }, 30000); // 30 секунд
-
-                    const readWithTimeout = async (timeout = 30000) => {
-                        return Promise.race([
-                            lp.read(),
-                            new Promise((_, reject) =>
-                                setTimeout(() => reject(new Error('Stream read timeout')), timeout)
-                            )
-                        ]);
-                    };
-
                     while (true) {
                         try {
                             const message = await lp.read();

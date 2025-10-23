@@ -16446,14 +16446,6 @@ var ChatManager = class extends BaseComponent {
         try {
           const lp = lpStream(stream);
           const remotePeer = connection.remotePeer.toString();
-          const readWithTimeout = /* @__PURE__ */ __name(async (timeout = 3e4) => {
-            return Promise.race([
-              lp.read(),
-              new Promise(
-                (_, reject) => setTimeout(() => reject(new Error("Stream read timeout")), timeout)
-              )
-            ]);
-          }, "readWithTimeout");
           while (true) {
             try {
               const message2 = await lp.read();
@@ -17806,7 +17798,6 @@ async function handleIncomingPrivateMessage(messageData) {
         timestamp: messageData.timestamp || Date.now(),
         isPrivate: true
       });
-      console.log("############## this.state.activeMember #######################################", this.state.activeMember);
       if (document.hidden && this.state.activeMember) {
         this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${this.state.activeMember.name}`);
       }

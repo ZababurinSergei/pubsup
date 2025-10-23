@@ -520,7 +520,6 @@ async function handleIncomingPrivateMessage(messageData) {
                 isPrivate: true
             });
 
-            console.log('############## this.state.activeMember #######################################', this.state.activeMember)
             // Показываем уведомление если окно не активно
             if (document.hidden && this.state.activeMember) {
                 this.showNotification(`Приватное сообщение от ${this.state.activeMember.name}`);
