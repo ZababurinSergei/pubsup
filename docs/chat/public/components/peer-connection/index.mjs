@@ -306,9 +306,6 @@ export class PeerConnection extends BaseComponent {
     /**
      * Передает данные о пирах в chat-interface
      */
-    /**
-     * Передает данные о пирах в chat-interface
-     */
     async sendPeersToChatInterface() {
         try {
             const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
@@ -443,7 +440,23 @@ export class PeerConnection extends BaseComponent {
             log('Initializing Libp2p with new mode...');
             await this.initializeLibp2p(mode);
 
-            log('Mode switch completed');
+            // 🔥 Уведомляем другие компоненты о новой ноде
+            const event = {
+                type: 'NODE_RESTARTED',
+                data: {
+                    peerId: this.state.peerId,
+                    mode: this.state.mode,
+                    timestamp: Date.now()
+                }
+            };
+
+            const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+            if (chatManager) await chatManager.postMessage(event);
+
+            const groupManager = await this.getComponentAsync('group-manager', 'group-manager');
+            if (groupManager) await groupManager.postMessage(event);
+
+            log('Mode switch completed and components notified');
         } else {
             log('Mode is already %s', mode);
         }

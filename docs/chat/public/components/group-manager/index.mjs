@@ -31,14 +31,14 @@ export class GroupManager extends BaseComponent {
             hasActions: !!this._actions
         });
 
-        await this._controller.init();
-
         // Сначала рендерим компонент
         await this.fullRender(this.state);
-        await this._controller.init();
 
         // Запускаем инициализацию ноды
         await this.startNodeInitialization();
+
+        await this._controller.init();
+
         this.state._initialized = true;
 
         // Автоматический поиск групп при старте
@@ -69,6 +69,17 @@ export class GroupManager extends BaseComponent {
 
         // Первоначальная попытка
         await this.initializeFromPeerConnection();
+    }
+
+    // ✅ ДОБАВЛЕНО: обработка события перезапуска ноды
+    async postMessage(event) {
+        if (event.type === 'NODE_RESTARTED') {
+            await this.handleNodeRestart();
+            return;
+        }
+
+        // Остальные типы сообщений (если понадобятся в будущем)
+        this.log('Получено необработанное сообщение: %s', event.type);
     }
 
     // В GroupManager улучшаем обработку перезапуска

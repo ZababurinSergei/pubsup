@@ -19304,10 +19304,9 @@ var GroupManager = class extends BaseComponent {
       hasController: !!this._controller,
       hasActions: !!this._actions
     });
-    await this._controller.init();
     await this.fullRender(this.state);
-    await this._controller.init();
     await this.startNodeInitialization();
+    await this._controller.init();
     this.state._initialized = true;
     setTimeout(async () => {
       if (this.state.nodeReady) {
@@ -19331,6 +19330,14 @@ var GroupManager = class extends BaseComponent {
       }
     }, 2e3);
     await this.initializeFromPeerConnection();
+  }
+  // ✅ ДОБАВЛЕНО: обработка события перезапуска ноды
+  async postMessage(event) {
+    if (event.type === "NODE_RESTARTED") {
+      await this.handleNodeRestart();
+      return;
+    }
+    this.log("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043D\u0435\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s", event.type);
   }
   // В GroupManager улучшаем обработку перезапуска
   async handleNodeRestart() {
@@ -37225,9 +37232,6 @@ var PeerConnection = class extends BaseComponent {
   /**
    * Передает данные о пирах в chat-interface
    */
-  /**
-   * Передает данные о пирах в chat-interface
-   */
   async sendPeersToChatInterface() {
     try {
       const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
@@ -37342,7 +37346,19 @@ var PeerConnection = class extends BaseComponent {
       }
       log6("Initializing Libp2p with new mode...");
       await this.initializeLibp2p(mode);
-      log6("Mode switch completed");
+      const event = {
+        type: "NODE_RESTARTED",
+        data: {
+          peerId: this.state.peerId,
+          mode: this.state.mode,
+          timestamp: Date.now()
+        }
+      };
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager) await chatManager.postMessage(event);
+      const groupManager = await this.getComponentAsync("group-manager", "group-manager");
+      if (groupManager) await groupManager.postMessage(event);
+      log6("Mode switch completed and components notified");
     } else {
       log6("Mode is already %s", mode);
     }
