@@ -7,13 +7,24 @@ import { logger } from '@libp2p/logger';
 // Создаем логгер для компонента
 const log = logger('peer-connection');
 
+function getInitialMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    if (mode === 'listener' || mode === 'dialer') {
+        return mode;
+    }
+    return 'listener'; // по умолчанию
+}
+
 export class PeerConnection extends BaseComponent {
     constructor() {
         super();
+        const initialMode = getInitialMode();
         this._templateMethods = template;
         this.node = null;
+
         this.state = {
-            mode: 'listener',
+            mode: initialMode,
             connected: false,
             peerId: null,
             listeningAddresses: [],

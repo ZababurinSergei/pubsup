@@ -36995,16 +36995,26 @@ __name(createActions4, "createActions");
 
 // public/components/peer-connection/index.mjs
 var log6 = logger("peer-connection");
+function getInitialMode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const mode = urlParams.get("mode");
+  if (mode === "listener" || mode === "dialer") {
+    return mode;
+  }
+  return "listener";
+}
+__name(getInitialMode, "getInitialMode");
 var PeerConnection = class extends BaseComponent {
   static {
     __name(this, "PeerConnection");
   }
   constructor() {
     super();
+    const initialMode = getInitialMode();
     this._templateMethods = template_exports4;
     this.node = null;
     this.state = {
-      mode: "listener",
+      mode: initialMode,
       connected: false,
       peerId: null,
       listeningAddresses: [],
