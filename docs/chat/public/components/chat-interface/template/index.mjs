@@ -5,108 +5,108 @@
  * @returns {string} HTML строка
  */
 export default function defaultTemplate({state = {}} = {}) {
-    return `
-    <div class="chat-interface">
-        <!-- Заголовок чата -->
-        <header class="chat-header">
-            <div class="header-content">
-                <div class="chat-info">
-                    <div class="chat-avatar">
-                        ${getChatAvatar(state.currentGroup)}
-                    </div>
-                    <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : 'Чат'}</h3>
-                        <div class="chat-status">
-                            <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>
-                            <span class="status-text">${getStatusText(state)}</span>
-                            ${state.currentGroup ? `<span class="member-count">👥 ${state.currentGroup.memberCount || 1}</span>` : ''}
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="action-btn" id="clear-chat" title="Очистить чат">
-                        <span class="btn-icon">🗑️</span>
-                    </button>
-                    <button class="action-btn" id="search-messages" title="Поиск сообщений">
-                        <span class="btn-icon">🔍</span>
-                    </button>
-                    <button class="action-btn" id="toggle-members" title="Участники">
-                        <span class="btn-icon">👥</span>
-                    </button>
-                    <button class="action-btn" id="settings" title="Настройки">
-                        <span class="btn-icon">⚙️</span>
-                    </button>
-                </div>
-            </div>
-        </header>
+    return `\
+    <div class="chat-interface">\
+        <!-- Заголовок чата -->\
+        <header class="chat-header">\
+            <div class="header-content">\
+                <div class="chat-info">\
+                    <div class="chat-avatar">\
+                        ${getChatAvatar(state.currentGroup)}\
+                    </div>\
+                    <div class="chat-details">\
+                        <h3 class="chat-name">${getGroupName(state.currentGroup)}</h3>\
+                        <div class="chat-status">\
+                            <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>\
+                            <span class="status-text">${getStatusText(state)}</span>\
+                            ${state.currentGroup ? `<span class="member-count">👥 ${state.currentGroup.memberCount || 1}</span>` : ''}\
+                        </div>\
+                    </div>\
+                </div>\
+                <div class="chat-actions">\
+                    <button class="action-btn" id="clear-chat" title="Очистить чат">\
+                        <span class="btn-icon">🗑️</span>\
+                    </button>\
+                    <button class="action-btn" id="search-messages" title="Поиск сообщений">\
+                        <span class="btn-icon">🔍</span>\
+                    </button>\
+                    <button class="action-btn" id="toggle-members" title="Участники">\
+                        <span class="btn-icon">👥</span>\
+                    </button>\
+                    <button class="action-btn" id="settings" title="Настройки">\
+                        <span class="btn-icon">⚙️</span>\
+                    </button>\
+                </div>\
+            </div>\
+        </header>\
 
-        <!-- Статус подключения -->
-        <div class="connection-status" id="connection-status">
-            ${renderConnectionStatus({state})}
-        </div>
+        <!-- Статус подключения -->\
+        <div class="connection-status" id="connection-status">\
+            ${renderConnectionStatus({state})}\
+        </div>\
 
-        <!-- Основное содержимое -->
-        <main class="chat-main">
-            <!-- Боковая панель участников -->
-            <aside class="members-sidebar" id="members-panel">
-                <div class="sidebar-header">
-                    <h4>Участники</h4>
-                    <button class="close-sidebar" id="close-members">✕</button>
-                </div>
-                <div class="members-list">
-                    ${renderMembersList({state})}
-                </div>
-            </aside>
+        <!-- Основное содержимое -->\
+        <main class="chat-main">\
+            <!-- Боковая панель участников -->\
+            <aside class="members-sidebar" id="members-panel">\
+                <div class="sidebar-header">\
+                    <h4>Участники</h4>\
+                    <button class="close-sidebar" id="close-members">✕</button>\
+                </div>\
+                <div class="members-list">\
+                    ${renderMembersList({state})}\
+                </div>\
+            </aside>\
 
-            <!-- Основная область чата -->
-            <section class="chat-content">
-                <!-- Контейнер сообщений -->
-                <div class="messages-container">
-                    <div class="messages-list" id="messages-list">
-                        ${renderMessages({state})}
-                    </div>
-                </div>
+            <!-- Основная область чата -->\
+            <section class="chat-content">\
+                <!-- Контейнер сообщений -->\
+                <div class="messages-container">\
+                    <div class="messages-list" id="messages-list">\
+                        ${renderMessages({state})}\
+                    </div>\
+                </div>\
 
-                <!-- Индикатор набора сообщения -->
-                ${state.isTyping ? renderTypingIndicator({state}) : ''}
-            </section>
-        </main>
+                <!-- Индикатор набора сообщения -->\
+                ${state.isTyping ? renderTypingIndicator({state}) : ''}\
+            </section>\
+        </main>\
 
-        <!-- Панель ввода сообщения -->
-        <footer class="chat-input">
-            <div class="input-container">
-                <div class="input-actions">
-                    <button class="input-action-btn" id="attach-file" title="Прикрепить файл">
-                        <span class="btn-icon">📎</span>
-                    </button>
-                    <button class="input-action-btn" id="emoji-picker" title="Эмодзи">
-                        <span class="btn-icon">😊</span>
-                    </button>
-                    <button class="input-action-btn" id="format-text" title="Форматирование">
-                        <span class="btn-icon">𝐀</span>
-                    </button>
-                </div>
-                <div class="message-input-wrapper">
-                    <textarea 
-                        id="message-input" 
-                        class="message-input" 
-                        placeholder="${getInputPlaceholder(state)}"
-                        rows="1"
-                    ></textarea>
-                    <button 
-                        id="send-button" 
-                        class="send-button"
-                        title="Отправить сообщение"
-                    >
-                        <span class="send-icon">✈️</span>
-                    </button>
-                </div>
-            </div>
-        </footer>
+        <!-- Панель ввода сообщения -->\
+        <footer class="chat-input">\
+            <div class="input-container">\
+                <div class="input-actions">\
+                    <button class="input-action-btn" id="attach-file" title="Прикрепить файл">\
+                        <span class="btn-icon">📎</span>\
+                    </button>\
+                    <button class="input-action-btn" id="emoji-picker" title="Эмодзи">\
+                        <span class="btn-icon">😊</span>\
+                    </button>\
+                    <button class="input-action-btn" id="format-text" title="Форматирование">\
+                        <span class="btn-icon">𝐀</span>\
+                    </button>\
+                </div>\
+                <div class="message-input-wrapper">\
+                    <textarea \
+                        id="message-input" \
+                        class="message-input" \
+                        placeholder="${getInputPlaceholder(state)}"\
+                        rows="1"\
+                    ></textarea>\
+                    <button \
+                        id="send-button" \
+                        class="send-button"\
+                        title="Отправить сообщение"\
+                    >\
+                        <span class="send-icon">✈️</span>\
+                    </button>\
+                </div>\
+            </div>\
+        </footer>\
 
-        <!-- Оверлей поиска -->
-        ${state.showSearch ? renderSearchOverlay({state}) : ''}
-    </div>
+        <!-- Оверлей поиска -->\
+        ${state.showSearch ? renderSearchOverlay({state}) : ''}\
+    </div>\
     `;
 }
 
@@ -115,34 +115,34 @@ export default function defaultTemplate({state = {}} = {}) {
  */
 export function renderConnectionStatus({state = {}} = {}) {
     if (!state.connected) {
-        return `
-        <div class="status-message disconnected">
-            <span class="status-icon">🔴</span>
-            <span class="status-text">Не подключено к P2P сети</span>
-            <button class="status-action" id="reconnect">Переподключиться</button>
-        </div>
+        return `\
+        <div class="status-message disconnected">\
+            <span class="status-icon">🔴</span>\
+            <span class="status-text">Не подключено к P2P сети</span>\
+            <button class="status-action" id="reconnect">Переподключиться</button>\
+        </div>\
         `;
     }
 
     if (!state.currentGroup) {
-        return `
-        <div class="status-message info">
-            <span class="status-icon">ℹ️</span>
-            <span class="status-text">Выберите или создайте группу для начала общения</span>
-        </div>
+        return `\
+        <div class="status-message info">\
+            <span class="status-icon">ℹ️</span>\
+            <span class="status-text">Выберите или создайте группу для начала общения</span>\
+        </div>\
         `;
     }
 
-    return `
-    <div class="status-message connected">
-        <span class="status-icon">🟢</span>
-        <span class="status-text">
-            Подключено ${state.totalPeers ? `к ${state.totalPeers} пирам` : 'к сети'}
-            ${state.connectionMode ? `(${state.connectionMode === 'listener' ? 'слушатель' : 'инициатор'})` : ''}
-        </span>
-        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ''}
-        ${state.uptime ? `<span class="uptime">Время работы: ${state.uptime}</span>` : ''}
-    </div>
+    return `\
+    <div class="status-message connected">\
+        <span class="status-icon">🟢</span>\
+        <span class="status-text">\
+            Подключено ${state.totalPeers ? `к ${state.totalPeers} пирам` : 'к сети'}\
+            ${state.connectionMode ? `(${state.connectionMode === 'listener' ? 'слушатель' : 'инициатор'})` : ''}\
+        </span>\
+        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ''}\
+        ${state.uptime ? `<span class="uptime">Время работы: ${state.uptime}</span>` : ''}\
+    </div>\
     `;
 }
 
@@ -151,28 +151,28 @@ export function renderConnectionStatus({state = {}} = {}) {
  */
 export function renderStatus({state = {}} = {}) {
     if (!state.connected) {
-        return `
-        <div class="status-message disconnected">
-            <span class="status-icon">🔴</span>
-            <span class="status-text">Не подключено</span>
-        </div>
+        return `\
+        <div class="status-message disconnected">\
+            <span class="status-icon">🔴</span>\
+            <span class="status-text">Не подключено</span>\
+        </div>\
         `;
     }
 
     if (!state.currentGroup) {
-        return `
-        <div class="status-message info">
-            <span class="status-icon">ℹ️</span>
-            <span class="status-text">Выберите группу</span>
-        </div>
+        return `\
+        <div class="status-message info">\
+            <span class="status-icon">ℹ️</span>\
+            <span class="status-text">Выберите группу</span>\
+        </div>\
         `;
     }
 
-    return `
-    <div class="status-message connected">
-        <span class="status-icon">🟢</span>
-        <span class="status-text">В сети: ${state.currentGroup.name}</span>
-    </div>
+    return `\
+    <div class="status-message connected">\
+        <span class="status-icon">🟢</span>\
+        <span class="status-text">В сети: ${getGroupName(state.currentGroup)}</span>\
+    </div>\
     `;
 }
 
@@ -191,41 +191,41 @@ export function renderMembersList({state = {}} = {}) {
     const allMembers = currentUser ? [currentUser, ...members] : members;
 
     if (allMembers.length === 0) {
-        return `
-        <div class="empty-members">
-            <div class="empty-icon">👥</div>
-            <p class="empty-text">Нет участников в сети</p>
-        </div>
+        return `\
+        <div class="empty-members">\
+            <div class="empty-icon">👥</div>\
+            <p class="empty-text">Нет участников в сети</p>\
+        </div>\
         `;
     }
 
-    return `
-    <div class="members-container">
+    return `\
+    <div class="members-container">\
         ${allMembers.map(member => {
         // Для текущего пользователя показываем "Вы", для других - сгенерированное имя
         const displayName = member.isCurrentUser ?
             'Вы' :
-            (member.name || `Пользователь ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`);
+            (getPeerName(member) || `Пользователь ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`);
 
-        return `
-            <div class="member-item 
-                       ${member.isCurrentUser ? 'current-user' : ''} 
-                       ${state.isPrivateChat && state.activeMember?.id === member.id ? 'active' : ''}
-                       ${!member.isCurrentUser ? 'clickable' : ''}" 
-                 data-peer-id="${member.id}">
-                <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">
-                    ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}
-                </div>
-                <div class="member-info">
-                    <div class="member-name">${displayName}</div>
-                    <div class="member-status ${member.online ? 'online' : 'offline'}">
-                        ${member.isCurrentUser ? 'Вы' : (member.online ? 'В сети' : 'Не в сети')}
-                    </div>
-                </div>
-            </div>
+        return `\
+            <div class="member-item \
+                       ${member.isCurrentUser ? 'current-user' : ''} \
+                       ${state.isPrivateChat && state.activeMember?.id === member.id ? 'active' : ''}\
+                       ${!member.isCurrentUser ? 'clickable' : ''}" \
+                 data-peer-id="${member.id}">\
+                <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">\
+                    ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}\
+                </div>\
+                <div class="member-info">\
+                    <div class="member-name">${displayName}</div>\
+                    <div class="member-status ${member.online ? 'online' : 'offline'}">\
+                        ${member.isCurrentUser ? 'Вы' : (member.online ? 'В сети' : 'Не в сети')}\
+                    </div>\
+                </div>\
+            </div>\
             `;
-    }).join('')}
-    </div>
+    }).join('')}\
+    </div>\
     `;
 }
 
@@ -239,7 +239,7 @@ export function renderMessages({state = {}} = {}) {
         let emptyTitle, emptyDescription, showAction;
 
         if (state.isPrivateChat && state.activeMember) {
-            emptyTitle = `Начните общение с ${state.activeMember.name}`;
+            emptyTitle = `Начните общение с ${getPeerName(state.activeMember)}`;
             emptyDescription = 'Отправьте первое сообщение в приватный чат';
             showAction = false;
         } else if (!state.currentGroup) {
@@ -252,26 +252,26 @@ export function renderMessages({state = {}} = {}) {
             showAction = false;
         }
 
-        return `
-        <div class="empty-chat">
-            <div class="empty-content">
-                <div class="empty-icon">💬</div>
-                <h3 class="empty-title">${emptyTitle}</h3>
-                <p class="empty-description">${emptyDescription}</p>
-                ${showAction && !state.currentGroup ? `
-                <button class="empty-action" id="find-groups">
-                    Найти группы
-                </button>
-                ` : ''}
-            </div>
-        </div>
+        return `\
+        <div class="empty-chat">\
+            <div class="empty-content">\
+                <div class="empty-icon">💬</div>\
+                <h3 class="empty-title">${emptyTitle}</h3>\
+                <p class="empty-description">${emptyDescription}</p>\
+                ${showAction && !state.currentGroup ? `\
+                <button class="empty-action" id="find-groups">\
+                    Найти группы\
+                </button>\
+                ` : ''}\
+            </div>\
+        </div>\
         `;
     }
 
-    return `
-    <div class="messages-content">
-        ${messages.map(message => renderMessage({message})).join('')}
-    </div>
+    return `\
+    <div class="messages-content">\
+        ${messages.map(message => renderMessage({message})).join('')}\
+    </div>\
     `;
 }
 
@@ -285,20 +285,24 @@ export function renderMessage({message = {}} = {}) {
         minute: '2-digit'
     });
 
-    return `
-    <div class="message-item ${messageClass}" data-message-id="${message.id}">
-        <div class="message-bubble">
-            ${message.type === 'received' ? `
-            <div class="message-sender">${message.from ? message.from.substring(0, 12) + '...' : 'Неизвестный'}</div>
-            ` : ''}
-            <div class="message-content">${escapeHtml(message.text)}</div>
-            <div class="message-meta">
-                <span class="message-time">${time}</span>
-                ${message.status === 'sent' ? '<span class="message-status">✓</span>' : ''}
-                ${message.status === 'delivered' ? '<span class="message-status">✓✓</span>' : ''}
-            </div>
-        </div>
-    </div>
+    // Пометка топика, если сообщение из группы
+    const topicBadge = message.topic ?
+        `<span class="message-topic-badge">#${message.topic}</span>` : '';
+
+    return `\
+    <div class="message-item ${messageClass}" data-message-id="${message.id}" data-topic="${message.topic || ''}">\
+        <div class="message-bubble">\
+            ${message.type === 'received' ? `\
+            <div class="message-sender">${message.from ? message.from.substring(0, 12) + '...' : 'Неизвестный'}</div>\
+            ` : ''}\
+            <div class="message-content">${escapeHtml(message.text)}${topicBadge}</div>\
+            <div class="message-meta">\
+                <span class="message-time">${time}</span>\
+                ${message.status === 'sent' ? '<span class="message-status">✓</span>' : ''}\
+                ${message.status === 'delivered' ? '<span class="message-status">✓✓</span>' : ''}\
+            </div>\
+        </div>\
+    </div>\
     `;
 }
 
@@ -306,20 +310,20 @@ export function renderMessage({message = {}} = {}) {
  * Шаблон для индикатора набора сообщения
  */
 export function renderTypingIndicator({state = {}} = {}) {
-    return `
-    <div class="typing-indicator">
-        <div class="typing-avatar">
-            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : '??'}
-        </div>
-        <div class="typing-content">
-            <div class="typing-name">${state.typingUser?.name || 'Кто-то'} печатает</div>
-            <div class="typing-dots">
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-            </div>
-        </div>
-    </div>
+    return `\
+    <div class="typing-indicator">\
+        <div class="typing-avatar">\
+            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : '??'}\
+        </div>\
+        <div class="typing-content">\
+            <div class="typing-name">${getPeerName(state.typingUser) || 'Кто-то'} печатает</div>\
+            <div class="typing-dots">\
+                <span class="typing-dot"></span>\
+                <span class="typing-dot"></span>\
+                <span class="typing-dot"></span>\
+            </div>\
+        </div>\
+    </div>\
     `;
 }
 
@@ -327,30 +331,30 @@ export function renderTypingIndicator({state = {}} = {}) {
  * Шаблон для оверлея поиска
  */
 export function renderSearchOverlay({state = {}} = {}) {
-    return `
-    <div class="search-overlay" id="search-overlay">
-        <div class="search-header">
-            <h3>Поиск сообщений</h3>
-            <button class="close-search" id="close-search">✕</button>
-        </div>
-        <div class="search-content">
-            <div class="search-input-container">
-                <input 
-                    type="text" 
-                    id="search-messages-input" 
-                    class="search-input" 
-                    placeholder="Введите текст для поиска..."
-                    value="${state.searchQuery || ''}"
-                >
-                <button class="search-action" id="perform-search">
-                    <span class="btn-icon">🔍</span>
-                </button>
-            </div>
-            <div class="search-results" id="search-results">
-                ${renderSearchResults({state})}
-            </div>
-        </div>
-    </div>
+    return `\
+    <div class="search-overlay" id="search-overlay">\
+        <div class="search-header">\
+            <h3>Поиск сообщений</h3>\
+            <button class="close-search" id="close-search">✕</button>\
+        </div>\
+        <div class="search-content">\
+            <div class="search-input-container">\
+                <input \
+                    type="text" \
+                    id="search-messages-input" \
+                    class="search-input" \
+                    placeholder="Введите текст для поиска..."\
+                    value="${state.searchQuery || ''}"\
+                >\
+                <button class="search-action" id="perform-search">\
+                    <span class="btn-icon">🔍</span>\
+                </button>\
+            </div>\
+            <div class="search-results" id="search-results">\
+                ${renderSearchResults({state})}\
+            </div>\
+        </div>\
+    </div>\
     `;
 }
 
@@ -359,38 +363,38 @@ export function renderSearchOverlay({state = {}} = {}) {
  */
 export function renderSearchResults({state = {}} = {}) {
     if (!state.searchQuery) {
-        return `
-        <div class="search-empty">
-            <div class="empty-icon">🔍</div>
-            <p>Введите запрос для поиска сообщений</p>
-        </div>
+        return `\
+        <div class="search-empty">\
+            <div class="empty-icon">🔍</div>\
+            <p>Введите запрос для поиска сообщений</p>\
+        </div>\
         `;
     }
 
     const results = state.searchResults || [];
 
     if (results.length === 0) {
-        return `
-        <div class="search-empty">
-            <div class="empty-icon">😔</div>
-            <p>Сообщения не найдены</p>
-            <p class="empty-hint">Попробуйте изменить поисковый запрос</p>
-        </div>
+        return `\
+        <div class="search-empty">\
+            <div class="empty-icon">😔</div>\
+            <p>Сообщения не найдены</p>\
+            <p class="empty-hint">Попробуйте изменить поисковый запрос</p>\
+        </div>\
         `;
     }
 
-    return `
-    <div class="results-list">
-        ${results.map(result => `
-        <div class="search-result-item" data-message-id="${result.id}">
-            <div class="result-message">
-                <div class="result-sender">${result.from ? result.from.substring(0, 12) + '...' : 'Неизвестный'}</div>
-                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>
-                <div class="result-time">${new Date(result.timestamp).toLocaleString('ru-RU')}</div>
-            </div>
-        </div>
-        `).join('')}
-    </div>
+    return `\
+    <div class="results-list">\
+        ${results.map(result => `\
+        <div class="search-result-item" data-message-id="${result.id}">\
+            <div class="result-message">\
+                <div class="result-sender">${result.from ? result.from.substring(0, 12) + '...' : 'Неизвестный'}</div>\
+                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>\
+                <div class="result-time">${new Date(result.timestamp).toLocaleString('ru-RU')}</div>\
+            </div>\
+        </div>\
+        `).join('')}\
+    </div>\
     `;
 }
 
@@ -399,64 +403,80 @@ export function renderSearchResults({state = {}} = {}) {
  */
 export function renderChatHeader({state = {}} = {}) {
     if (state.isPrivateChat && state.activeMember) {
-        return `
-        <div class="chat-info">
-            <div class="chat-avatar">
-                <span class="avatar-icon">👤</span>
-            </div>
-            <div class="chat-details">
-                <h3 class="chat-name">${state.activeMember.name || 'Пользователь'}</h3>
-                <div class="chat-status">
-                    <span class="status-indicator connected"></span>
-                    <span class="status-text">Приватный чат</span>
-                </div>
-            </div>
-        </div>
+        return `\
+        <div class="chat-info">\
+            <div class="chat-avatar">\
+                <span class="avatar-icon">👤</span>\
+            </div>\
+            <div class="chat-details">\
+                <h3 class="chat-name">${getPeerName(state.activeMember)}</h3>\
+                <div class="chat-status">\
+                    <span class="status-indicator connected"></span>\
+                    <span class="status-text">Приватный чат</span>\
+                </div>\
+            </div>\
+        </div>\
         `;
     }
 
-    // Остальной код для группового чата...
     if (!state.currentGroup) {
-        return `
-        <div class="chat-info">
-            <div class="chat-avatar">
-                <span class="avatar-icon">💬</span>
-            </div>
-            <div class="chat-details">
-                <h3 class="chat-name">Чат</h3>
-                <div class="chat-status">
-                    <span class="status-indicator disconnected"></span>
-                    <span class="status-text">Выберите чат</span>
-                </div>
-            </div>
-        </div>
+        return `\
+        <div class="chat-info">\
+            <div class="chat-avatar">\
+                <span class="avatar-icon">💬</span>\
+            </div>\
+            <div class="chat-details">\
+                <h3 class="chat-name">Чат</h3>\
+                <div class="chat-status">\
+                    <span class="status-indicator disconnected"></span>\
+                    <span class="status-text">Выберите чат</span>\
+                </div>\
+            </div>\
+        </div>\
         `;
     }
 
-    // Существующий код для группового чата...
-    return `
-    <div class="chat-info">
-        <div class="chat-avatar">
-            ${getChatAvatar(state.currentGroup)}
-        </div>
-        <div class="chat-details">
-            <h3 class="chat-name">${state.currentGroup.name}</h3>
-            <div class="chat-status">
-                <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>
-                <span class="status-text">${getStatusText(state)}</span>
-                ${state.currentGroup ? `<span class="member-count">👥 ${state.currentGroup.memberCount || 1}</span>` : ''}
-            </div>
-        </div>
-    </div>
+    return `\
+    <div class="chat-info">\
+        <div class="chat-avatar">\
+            ${getChatAvatar(state.currentGroup)}\
+        </div>\
+        <div class="chat-details">\
+            <h3 class="chat-name">${getGroupName(state.currentGroup)}</h3>\
+            <div class="chat-status">\
+                <span class="status-indicator ${state.connected ? 'connected' : 'disconnected'}"></span>\
+                <span class="status-text">${getStatusText(state)}</span>\
+                ${state.currentGroup ? `<span class="member-count">👥 ${state.currentGroup.memberCount || 1}</span>` : ''}\
+            </div>\
+        </div>\
+    </div>\
     `;
 }
 
 /**
  * Вспомогательные функции
  */
+
+// Безопасное получение имени группы
+function getGroupName(group) {
+    if (!group) return 'Чат';
+    if (typeof group.name === 'string') return group.name;
+    if (typeof group.name === 'object' && typeof group.name.name === 'string') return group.name.name;
+    return 'Безымянная группа';
+}
+
+// Безопасное получение имени пира
+function getPeerName(peer) {
+    if (!peer) return 'Неизвестный';
+    if (typeof peer.name === 'string') return peer.name;
+    if (typeof peer.name === 'object' && typeof peer.name.name === 'string') return peer.name.name;
+    return null;
+}
+
+// Безопасное получение аватара группы
 function getChatAvatar(group) {
-    if (!group) return '💬';
-    return group.name ? group.name.charAt(0).toUpperCase() : '💬';
+    const name = getGroupName(group);
+    return name ? name.charAt(0).toUpperCase() : '💬';
 }
 
 function getStatusText(state) {
@@ -468,7 +488,7 @@ function getStatusText(state) {
 function getInputPlaceholder(state) {
     if (!state.connected) return 'Подключитесь к сети...';
     if (state.isPrivateChat && state.activeMember) {
-        return `Сообщение для ${state.activeMember.name}...`;
+        return `Сообщение для ${getPeerName(state.activeMember)}...`;
     }
     if (!state.currentGroup) return 'Выберите группу для общения...';
     return 'Введите сообщение...';
@@ -487,5 +507,5 @@ function highlightSearchText(text, query) {
 }
 
 function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return string.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
 }

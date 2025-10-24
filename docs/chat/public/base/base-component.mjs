@@ -24,15 +24,15 @@ export class BaseComponent extends HTMLElement {
             this.attachShadow({mode: 'open'});
         }
 
-        this._templateImported = false
+        this.#templateImported = false
         this.getComponentAsync = BaseComponent.getComponentAsync
         this.addError = BaseComponent.addError
         this.getErrors = BaseComponent.getErrors
         this.clearErrors = BaseComponent.clearErrors
         this.getComponent = BaseComponent.getComponent
         this.pendingRequests = BaseComponent.pendingRequests
-        this._isReady = false;
-        this._isQuantum = false;
+        this.#isReady = false;
+        this.#isQuantum = false;
         this.entropy = 1.0;
         this.qubits = 0;
         this.getTemplate = () => '<div>Шаблон не определен</div>';
@@ -40,6 +40,11 @@ export class BaseComponent extends HTMLElement {
         this._isLoading = false; // Флаг загрузки
         log(`Создан экземпляр ${this.constructor.name} с ID: ${this._id}`);
     }
+
+    // Приватные поля
+    #templateImported = false;
+    #isReady = false;
+    #isQuantum = false;
 
     /**
      * Добавляет ошибку в статическое хранилище ошибок.
@@ -220,45 +225,57 @@ export class BaseComponent extends HTMLElement {
         return 'yato-' + Math.random().toString(36).substr(2, 9);
     }
 
+    /**
+     * @private
+     */
     async connectedCallback() {
         try {
             log(`${this.constructor.name} подключается к DOM.`);
-            await this._initComponent(this.state);
-            this._isReady = true;
+            await this.#initComponent(this.state);
+            this.#isReady = true;
             log(`${this.constructor.name} готов.`);
         } catch (error) {
             log.error(`Ошибка в connectedCallback для ${this.constructor.name}:`, error);
-            await this._render({error: error.message});
+            await this.#render({error: error.message});
         }
     }
 
+    /**
+     * @private
+     */
     async disconnectedCallback() {
         log(`${this.constructor.name} отключен от DOM.`);
-        this._isReady = false;
+        this.#isReady = false;
         await this._componentDisconnected()
     }
 
+    /**
+     * @private
+     */
     async adoptedCallback() {
         log(`${this.constructor.name} перемещен в новый документ.`);
         await this._componentAdopted()
     }
 
+    /**
+     * @private
+     */
     async attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return;
-        if(this._templateImported) {
+        if(this.#templateImported) {
             await this._componentAttributeChanged(name, oldValue, newValue)
             log(`Атрибут ${name} изменился с '${oldValue}' на '${newValue}'.`);
         }
     }
 
-    async _initComponent(state) {
+    async #initComponent(state) {
         const type = this.dataset.type
 
         if (!exclusion.includes(this.tagName)) {
-            this._templateImported = true;
+            this.#templateImported = true;
 
             if(type !== "server") {
-                await this._loadComponentStyles();
+                await this.#loadComponentStyles();
                 await this.showSkeleton({
                     selector: '#connection-status',
                     replace: false
@@ -267,10 +284,10 @@ export class BaseComponent extends HTMLElement {
         }
 
         await this._componentReady();
-        await this._registerComponent();
+        await this.#registerComponent();
     }
 
-    async _loadComponentStyles() {
+    async #loadComponentStyles() {
         try {
             const componentTagName = this.constructor.tagName || this.tagName.toLowerCase();
             let cssPath = new URL(`../components/${componentTagName}/css/index.css`, import.meta.url)
@@ -492,7 +509,7 @@ export class BaseComponent extends HTMLElement {
     // В класс BaseComponent добавим метод fullRender
     async fullRender(state = {}) {
         try {
-            await this._render({
+            await this.#render({
                 state: state,
                 context: this
             });
@@ -561,9 +578,9 @@ export class BaseComponent extends HTMLElement {
 
             log(`Часть '${partName}' успешно отрендерена в '${selector}' методом '${method}'`);
 
-            await this._waitForDOMUpdate();
+            await this.#waitForDOMUpdate();
             // Обновляем обработчики событий для новой части
-            await this._setupEventListeners();
+            await this.#setupEventListeners();
 
             return true;
 
@@ -579,8 +596,114 @@ export class BaseComponent extends HTMLElement {
         }
     }
 
+    /**
+     * Универсальный метод для обновления содержимого элементов
+     * @param {Object} options - Параметры обновления
+     * @param {string} options.selector - CSS селектор целевого элемента
+     * @param {string|number|boolean} options.value - Значение для установки
+     * @param {string} [options.property='textContent'] - Свойство элемента для обновления:
+     *   - 'textContent' для текстового содержимого
+     *   - 'innerHTML' для HTML содержимого
+     *   - 'value' для input, textarea, select
+     *   - 'checked' для checkbox
+     *   - 'src' для изображений
+     *   - 'href' для ссылок
+     *   - 'className' для классов
+     *   - 'style' для стилей (передавать объект)
+     *   - любое другое свойство элемента
+     * @param {string} [options.action='set'] - Действие: 'set', 'append', 'prepend', 'toggle', 'add', 'remove'
+     * @returns {Promise<boolean>} Успешность операции
+     */
+    async updateElement({ selector, value, property = 'textContent', action = 'set' } = {}) {
+        try {
+            if (!selector) {
+                console.warn(`[Компонент] Не указан селектор для обновления элемента`);
+                return false;
+            }
 
-    async _render({partName = 'defaultTemplate', state = {},  selector = '*'} = {}) {
+            const targetElement = this.shadowRoot.querySelector(selector);
+            if (!targetElement) {
+                console.warn(`[Компонент] Элемент с селектором '${selector}' не найден`);
+                return false;
+            }
+
+            switch (action) {
+                case 'set':
+                    // Простая установка значения
+                    if (property === 'style' && typeof value === 'object') {
+                        // Для стилей - устанавливаем каждое свойство
+                        Object.assign(targetElement.style, value);
+                    } else if (property === 'className' && typeof value === 'string') {
+                        // Для классов - заменяем все классы
+                        targetElement.className = value;
+                    } else {
+                        targetElement[property] = value;
+                    }
+                    break;
+
+                case 'append':
+                    // Добавление в конец
+                    if (property === 'innerHTML' || property === 'textContent') {
+                        targetElement[property] += value;
+                    } else if (property === 'value') {
+                        targetElement.value += String(value);
+                    }
+                    break;
+
+                case 'prepend':
+                    // Добавление в начало
+                    if (property === 'innerHTML' || property === 'textContent') {
+                        targetElement[property] = value + targetElement[property];
+                    } else if (property === 'value') {
+                        targetElement.value = String(value) + targetElement.value;
+                    }
+                    break;
+
+                case 'toggle':
+                    // Переключение булевых свойств
+                    if (property === 'checked' || property === 'disabled' || property === 'hidden') {
+                        targetElement[property] = !targetElement[property];
+                    } else if (property === 'className') {
+                        // Переключение класса
+                        targetElement.classList.toggle(String(value));
+                    }
+                    break;
+
+                case 'add':
+                    // Добавление класса
+                    if (property === 'className') {
+                        targetElement.classList.add(String(value));
+                    }
+                    break;
+
+                case 'remove':
+                    // Удаление класса
+                    if (property === 'className') {
+                        targetElement.classList.remove(String(value));
+                    }
+                    break;
+
+                default:
+                    console.warn(`[Компонент] Неизвестное действие: ${action}`);
+                    return false;
+            }
+
+            console.log(`[Компонент] Элемент '${selector}' обновлен: ${property} = ${value} (действие: ${action})`);
+            return true;
+
+        } catch (error) {
+            console.error(`[Компонент] Ошибка обновления элемента '${selector}':`, error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'updateElement',
+                message: `Ошибка обновления элемента ${selector}`,
+                details: error
+            });
+            return false;
+        }
+    }
+
+    async #render({partName = 'defaultTemplate', state = {},  selector = '*'} = {}) {
         try {
             if(this._templateMethods) {
                 const storedState = this.state || {};
@@ -611,8 +734,8 @@ export class BaseComponent extends HTMLElement {
                     rootContainerExist.appendChild(rootContainer)
                 }
 
-                await this._waitForDOMUpdate();
-                await this._setupEventListeners();
+                await this.#waitForDOMUpdate();
+                await this.#setupEventListeners();
                 await this.hideSkeleton()
                 log(`${this.constructor.name} отрендерен с состоянием:`, mergedState);
             } else {
@@ -624,31 +747,7 @@ export class BaseComponent extends HTMLElement {
         }
     }
 
-    /**
-     * Очищает содержимое элемента по селектору
-     * @param {string} selector - CSS селектор
-     * @returns {Promise<boolean>} Успешность операции
-     */
-    async clearPart(selector) {
-        try {
-            const targetElement = this.shadowRoot.querySelector(selector);
-            if (!targetElement) {
-                log.error(`Элемент с селектором '${selector}' не найден для очистки`);
-                return false;
-            }
-
-            targetElement.innerHTML = '';
-            log(`Содержимое '${selector}' очищено`);
-            return true;
-
-        } catch (error) {
-            log.error(`Ошибка очистки части '${selector}':`, error);
-            return false;
-        }
-    }
-
-
-    async _waitForDOMUpdate(timeout = 100) {
+    async #waitForDOMUpdate(timeout = 100) {
         return new Promise(resolve => {
             const rafId = requestAnimationFrame(() => {
                 clearTimeout(timeoutId);
@@ -665,7 +764,7 @@ export class BaseComponent extends HTMLElement {
         });
     }
 
-    async _setupEventListeners() {
+    async #setupEventListeners() {
         if (this?._controller?.destroy) {
             this._controller.destroy()
         }
@@ -677,7 +776,7 @@ export class BaseComponent extends HTMLElement {
         log(`${this.constructor.name} настройка обработчиков событий (базовая реализация).`);
     }
 
-    async _registerComponent() {
+    async #registerComponent() {
         try {
             if (!this.id) {
                 log.error('ЯТО-ID1: Компонент желательно имеет ID для регистрации');

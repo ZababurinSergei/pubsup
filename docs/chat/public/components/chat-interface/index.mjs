@@ -63,11 +63,29 @@ export class ChatInterface extends BaseComponent {
     }
 
     async setCurrentGroup(group) {
-        this.state.currentGroup = group;
+        if (!group || !group.topic) {
+            this._log.error('Неверные данные группы:', group);
+            return;
+        }
+
+        // Нормализуем имя группы как строку
+        const safeName = typeof group.name === 'string'
+            ? group.name
+            : (typeof group.name === 'object' && group.name?.name
+                ? group.name.name
+                : 'Безымянная группа');
+
+        const safeGroup = {
+            ...group,
+            name: safeName,
+            topic: typeof group.topic === 'string' ? group.topic : ''
+        };
+
+        this.state.currentGroup = safeGroup;
         this.state.activeMember = null; // Сбрасываем активного пользователя
         this.state.isPrivateChat = false; // Возвращаем в групповой режим
         this.state.messages = [];
-        this._log('установлена текущая группа: %s', group?.name);
+        this._log('установлена текущая группа: %s', safeGroup.name);
 
         await this.updateChatInput();
         await this.fullRender(this.state);
@@ -140,7 +158,7 @@ export class ChatInterface extends BaseComponent {
             // Формируем правильные данные участников
             this.state.connectedPeers = (data.peers || []).map(peer => ({
                 id: peer.id,
-                name: this.generatePeerName(peer.id), // Генерируем имя из ID
+                name: peer.name || this.generatePeerName(peer.id), // Используем переданное имя или генерируем
                 online: true,
                 connections: peer.connections || 1
             }));

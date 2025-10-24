@@ -99,11 +99,14 @@ async function sendMessage(message, topic) {
             return;
         }
 
-        // Получаем менеджер чата для отправки сообщения
+        // Отправляем через chat-manager
         const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
-        if (chatManager && chatManager._actions) {
+        if (chatManager) {
             log('отправка сообщения в группу: %s', topic);
-            await chatManager._actions.sendMessage(topic, message);
+            await chatManager.postMessage({
+                type: 'SEND_MESSAGE',
+                data: { message, topic }
+            });
 
             // Очищаем поле ввода после отправки
             const messageInput = this.shadowRoot.querySelector('#message-input');
@@ -161,7 +164,10 @@ async function handleIncomingMessage(messageData) {
 
             // Показываем уведомление, если окно не активно
             if (document.hidden) {
-                this.showNotification(`Новое сообщение в ${this.state.currentGroup.name}`);
+                const groupName = typeof this.state.currentGroup.name === 'string'
+                    ? this.state.currentGroup.name
+                    : 'Группа';
+                this.showNotification(`Новое сообщение в ${groupName}`);
             }
         } else if (!this.state.currentGroup && messageData.type === 'received') {
             // Сообщение из группы, к которой не подключены в данный момент
@@ -237,7 +243,11 @@ async function setActiveGroup(group) {
             throw new Error('Неверные данные группы');
         }
 
-        log('установка активной группы: %s (%s)', group.name, group.topic);
+        // Нормализуем имя группы как строку
+        const safeName = typeof group.name === 'string' ? group.name : 'Безымянная группа';
+        const safeGroup = { ...group, name: safeName };
+
+        log('установка активной группы: %s (%s)', safeName, group.topic);
 
         // Сбрасываем приватный чат при выборе группы
         this.state.activeMember = null;
@@ -250,7 +260,7 @@ async function setActiveGroup(group) {
         });
 
         // Устанавливаем новую группу
-        await this.setCurrentGroup(group);
+        await this.setCurrentGroup(safeGroup);
 
         // Обновляем статус подключения
         await this.updateConnectionStatus(true);
@@ -258,7 +268,7 @@ async function setActiveGroup(group) {
         // Скрываем индикатор загрузки
         await this.hideSkeleton();
 
-        log('переключение на группу завершено: %s (%s)', group.name, group.topic);
+        log('переключение на группу завершено: %s (%s)', safeName, group.topic);
 
     } catch (error) {
         log.error('ошибка установки активной группы: %o', error);
@@ -305,7 +315,7 @@ async function searchMessages(query) {
         // Фильтруем сообщения по запросу
         const filteredMessages = this.state.messages.filter(message =>
             message.text.toLowerCase().includes(query.toLowerCase()) ||
-            message.from.toLowerCase().includes(query.toLowerCase())
+            (message.from && message.from.toLowerCase().includes(query.toLowerCase()))
         );
 
         // Временно сохраняем оригинальные сообщения
@@ -358,7 +368,7 @@ async function setActiveMember(member) {
     try {
         if (!member || !member.id) {
             log.error('неверные данные пользователя: %o', member);
-            throw new Error('Неверные данные пользователя');
+            return;
         }
 
         // Не выбираем себя
@@ -367,10 +377,14 @@ async function setActiveMember(member) {
             return;
         }
 
-        log('установка активного пользователя: %s (%s)', member.name, member.id);
+        // Гарантируем наличие имени
+        const displayName = member.name || this.generatePeerName(member.id);
+        const memberWithName = { ...member, name: displayName };
+
+        log('установка активного пользователя: %s (%s)', displayName, member.id);
 
         // Обновляем состояние
-        this.state.activeMember = member;
+        this.state.activeMember = memberWithName;
         this.state.isPrivateChat = true;
 
         // Обновляем UI списка участников
@@ -389,7 +403,7 @@ async function setActiveMember(member) {
             selector: '#messages-list'
         });
 
-        log('приватный чат установлен с пользователем: %s', member.name);
+        log('приватный чат установлен с пользователем: %s', displayName);
 
     } catch (error) {
         log.error('ошибка установки активного пользователя: %o', error);
@@ -433,11 +447,14 @@ async function sendPrivateMessage(message, peerId) {
             return;
         }
 
-        // Получаем chat-manager для отправки приватного сообщения
+        // Отправляем через chat-manager
         const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
-        if (chatManager && chatManager.sendPrivateMessage) {
+        if (chatManager) {
             log('отправка приватного сообщения пользователю: %s', peerId);
-            await chatManager.sendPrivateMessage(peerId, message);
+            await chatManager.postMessage({
+                type: 'SEND_PRIVATE_MESSAGE',
+                data: { peerId, message }
+            });
 
             // Добавляем сообщение в локальную историю как отправленное
             await this.addMessage({
@@ -493,7 +510,6 @@ async function handleIncomingPrivateMessage(messageData) {
             this.state.activeMember &&
             messageData.from === this.state.activeMember.id;
 
-
         // Или если это новое сообщение и у нас нет активного чата
         const shouldActivateChat = !this.state.isPrivateChat &&
             messageData.isPrivate;
@@ -501,7 +517,6 @@ async function handleIncomingPrivateMessage(messageData) {
         if (isForActiveChat || shouldActivateChat) {
             log('обработка входящего приватного сообщения от: %s', messageData.from);
 
-            console.log('-------------------------------------------------------')
             // Если это новое сообщение, активируем чат с отправителем
             if (shouldActivateChat) {
                 const senderMember = this.state.connectedPeers.find(p => p.id === messageData.from);
@@ -522,7 +537,8 @@ async function handleIncomingPrivateMessage(messageData) {
 
             // Показываем уведомление если окно не активно
             if (document.hidden && this.state.activeMember) {
-                this.showNotification(`Приватное сообщение от ${this.state.activeMember.name}`);
+                const senderName = this.state.activeMember.name || 'Пользователь';
+                this.showNotification(`Приватное сообщение от ${senderName}`);
             }
         } else if (messageData.isPrivate) {
             // Сообщение не для активного чата - просто логируем

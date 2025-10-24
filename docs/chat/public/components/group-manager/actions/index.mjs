@@ -11,6 +11,24 @@ export async function createActions(context) {
     const GROUPS_ANNOUNCEMENT_TOPIC = 'chat-groups-announcements';
     const log = logger('group-manager:actions');
 
+    /**
+     * Нормализует имя группы: гарантирует, что это строка.
+     * @param {*} name - Любое значение
+     * @returns {string}
+     */
+    function normalizeGroupName(name) {
+        if (typeof name === 'string' && name.trim()) {
+            return name.trim();
+        }
+        if (typeof name === 'object' && name !== null && typeof name.name === 'string') {
+            return name.name.trim();
+        }
+        if (typeof name === 'object' && name !== null && typeof name.topic === 'string') {
+            return extractGroupNameFromTopic(name.topic);
+        }
+        return 'Безымянная группа';
+    }
+
     return {
         /**
          * Инициализация Libp2p для работы с группами
@@ -27,7 +45,6 @@ export async function createActions(context) {
             this.startGroupDiscovery();
 
             log('libp2p инициализирован для управления группами');
-
         },
 
         /**
@@ -75,6 +92,9 @@ export async function createActions(context) {
                 if (announcement.type === 'GROUP_CREATED' || announcement.type === 'GROUP_UPDATED') {
                     const groupInfo = announcement.data;
 
+                    // Нормализуем имя группы
+                    groupInfo.name = normalizeGroupName(groupInfo.name);
+
                     // Обновляем список обнаруженных групп
                     await this.updateDiscoveredGroups(groupInfo);
 
@@ -94,6 +114,9 @@ export async function createActions(context) {
             if (!context.state.discoveredGroups) {
                 context.state.discoveredGroups = [];
             }
+
+            // Нормализуем имя
+            groupInfo.name = normalizeGroupName(groupInfo.name);
 
             // Проверяем, нет ли уже такой группы
             const existingIndex = context.state.discoveredGroups.findIndex(g => g.id === groupInfo.id);
@@ -253,6 +276,8 @@ export async function createActions(context) {
                     const discoveredGroups = request.data.groups || [];
 
                     for (const group of discoveredGroups) {
+                        // Нормализуем имя перед обработкой
+                        group.name = normalizeGroupName(group.name);
                         await this.updateDiscoveredGroups(group);
                     }
 
@@ -303,10 +328,13 @@ export async function createActions(context) {
                             groupName = topic.replace('chat-groups-', '').split('-')[0];
                         }
 
+                        // Гарантируем строку
+                        groupName = normalizeGroupName(groupName);
+
                         // Получаем дополнительную информацию о группе
                         let groupInfo = {
                             id: topic,
-                            name: this.formatGroupName(groupName),
+                            name: groupName,
                             topic: topic,
                             memberCount: memberCount,
                             description: this.generateGroupDescription(groupName),
@@ -361,15 +389,18 @@ export async function createActions(context) {
             }
 
             try {
+                // Нормализуем имя
+                const safeGroupName = normalizeGroupName(groupName);
+
                 // Создаем уникальный топик для группы
-                const topic = `chat-group-${this.sanitizeTopicName(groupName)}-${Date.now()}`;
+                const topic = `chat-group-${this.sanitizeTopicName(safeGroupName)}-${Date.now()}`;
 
                 const group = {
                     id: topic,
-                    name: groupName,
+                    name: safeGroupName,
                     topic: topic,
                     memberCount: 1,
-                    description: options.description || `Группа для общения: ${groupName}`,
+                    description: options.description || `Группа для общения: ${safeGroupName}`,
                     isPublic: options.isPublic !== false,
                     createdAt: Date.now(),
                     createdBy: libp2p.peerId.toString(),
@@ -391,7 +422,7 @@ export async function createActions(context) {
                 }
                 context.state.groups.push(group);
 
-                log('создана группа: %s (%s)', groupName, topic);
+                log('создана группа: %s (%s)', safeGroupName, topic);
 
                 // Безопасное обновление UI
                 await this.safeUpdateMyGroupsUI();
@@ -463,7 +494,7 @@ export async function createActions(context) {
                     type: 'GROUP_CREATED',
                     data: {
                         id: group.id,
-                        name: group.name,
+                        name: group.name, // уже строка
                         topic: group.topic,
                         description: group.description,
                         memberCount: group.memberCount,
@@ -524,6 +555,9 @@ export async function createActions(context) {
                     joinedAt: Date.now(),
                     isPublic: true
                 };
+
+                // Гарантируем, что имя — строка
+                group.name = normalizeGroupName(group.name);
 
                 // Добавляем в список присоединенных групп
                 if (!context.state.joinedGroups) {

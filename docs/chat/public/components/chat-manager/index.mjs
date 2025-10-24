@@ -97,7 +97,6 @@ export class ChatManager extends BaseComponent {
         }
     }
 
-
     /**
      * Обрабатывает входящие сообщения из стрима
      */
@@ -179,8 +178,8 @@ export class ChatManager extends BaseComponent {
     async createGroup(groupName) {
         const group = {
             id: Math.random().toString(36).substr(2, 9),
-            name: groupName,
-            topic: `chat-group-${groupName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`,
+            name: String(groupName).trim() || 'Безымянная группа',
+            topic: `chat-group-${String(groupName).replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`,
             peers: [],
             createdAt: Date.now(),
             isPublic: true
@@ -225,8 +224,8 @@ export class ChatManager extends BaseComponent {
         if (!existingGroup) {
             const group = {
                 id: Math.random().toString(36).substr(2, 9),
-                name: groupName || topic,
-                topic: topic,
+                name: typeof groupName === 'string' ? groupName.trim() : (typeof topic === 'string' ? topic : 'Безымянная группа'),
+                topic: typeof topic === 'string' ? topic : '',
                 peers: [],
                 joinedAt: Date.now()
             };
@@ -496,13 +495,6 @@ export class ChatManager extends BaseComponent {
             const messageBytes = uint8ArrayFromString(JSON.stringify(messageData));
             await lp.write(messageBytes);
 
-
-            // Даем время на отправку перед закрытием
-            // await new Promise(resolve => setTimeout(resolve, 10000));
-
-            // Закрываем стрим после отправки
-            // await stream.close();
-
             log('Приватное сообщение отправлено пользователю: %s', peerId);
 
             // Добавляем сообщение в локальную историю как отправленное
@@ -692,7 +684,7 @@ export class ChatManager extends BaseComponent {
     async sendGroupMessage(messageText) {
         if (this.state.currentGroup && this.state.currentGroup.topic) {
             // Используем стрим для отправки сообщения
-            await this.sendMessageViaStream(this.state.currentGroup.topic, messageText);
+            // await this.sendMessageViaStream(this.state.currentGroup.topic, messageText);
 
             // Также добавляем сообщение локально как отправленное
             await this.addMessage({
@@ -796,7 +788,10 @@ export class ChatManager extends BaseComponent {
 
             // Обработка обнаруженных групп от group-manager
             if (event.type === 'GROUPS_DISCOVERED') {
-                this.state.discoveredGroups = event.data.groups || [];
+                this.state.discoveredGroups = (event.data.groups || []).map(g => ({
+                    ...g,
+                    name: typeof g.name === 'string' ? g.name : 'Безымянная группа'
+                }));
                 await this.renderPart({
                     partName: 'renderDiscoveredGroups',
                     state: this.state,
@@ -813,7 +808,10 @@ export class ChatManager extends BaseComponent {
                     await this.createGroup(event.data.groupName);
                     break;
                 case 'JOIN_GROUP':
-                    await this.joinGroup(event.data.topic, event.data.groupName);
+                    // Нормализуем данные
+                    const topic = typeof event.data.topic === 'string' ? event.data.topic : '';
+                    const groupName = typeof event.data.groupName === 'string' ? event.data.groupName : null;
+                    await this.joinGroup(topic, groupName);
                     break;
                 case 'SEND_MESSAGE':
                     await this.sendGroupMessage(event.data.message);
@@ -871,16 +869,22 @@ export class ChatManager extends BaseComponent {
         try {
             log('Handling GROUP_CREATED in ChatManager: %o', groupData);
 
+            // Нормализуем данные группы
+            const safeGroup = {
+                ...groupData,
+                id: groupData.id || groupData.topic || Math.random().toString(36).substr(2, 9),
+                name: typeof groupData.name === 'string' ? groupData.name.trim() : 'Безымянная группа',
+                topic: typeof groupData.topic === 'string' ? groupData.topic : '',
+                joinedAt: Date.now()
+            };
+
             // Добавляем группу в список групп
-            if (!this.state.groups.find(g => g.id === groupData.id)) {
-                this.state.groups.push({
-                    ...groupData,
-                    joinedAt: Date.now()
-                });
+            if (!this.state.groups.find(g => g.id === safeGroup.id)) {
+                this.state.groups.push(safeGroup);
             }
 
             // Автоматически присоединяемся к созданной группу
-            await this.joinGroup(groupData.topic, groupData.name);
+            await this.joinGroup(safeGroup.topic, safeGroup.name);
 
             // Обновляем UI списка групп
             await this.renderPart({

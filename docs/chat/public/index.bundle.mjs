@@ -1466,15 +1466,15 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     if (!this.shadowRoot) {
       this.attachShadow({ mode: "open" });
     }
-    this._templateImported = false;
+    this.#templateImported = false;
     this.getComponentAsync = _BaseComponent.getComponentAsync;
     this.addError = _BaseComponent.addError;
     this.getErrors = _BaseComponent.getErrors;
     this.clearErrors = _BaseComponent.clearErrors;
     this.getComponent = _BaseComponent.getComponent;
     this.pendingRequests = _BaseComponent.pendingRequests;
-    this._isReady = false;
-    this._isQuantum = false;
+    this.#isReady = false;
+    this.#isQuantum = false;
     this.entropy = 1;
     this.qubits = 0;
     this.getTemplate = () => "<div>\u0428\u0430\u0431\u043B\u043E\u043D \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0435\u043D</div>";
@@ -1482,6 +1482,10 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     this._isLoading = false;
     log(`\u0421\u043E\u0437\u0434\u0430\u043D \u044D\u043A\u0437\u0435\u043C\u043F\u043B\u044F\u0440 ${this.constructor.name} \u0441 ID: ${this._id}`);
   }
+  // Приватные поля
+  #templateImported = false;
+  #isReady = false;
+  #isQuantum = false;
   /**
    * Добавляет ошибку в статическое хранилище ошибок.
    * @param {Object} errorData - Данные об ошибке.
@@ -1618,39 +1622,51 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
   static generateId() {
     return "yato-" + Math.random().toString(36).substr(2, 9);
   }
+  /**
+   * @private
+   */
   async connectedCallback() {
     try {
       log(`${this.constructor.name} \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u0442\u0441\u044F \u043A DOM.`);
-      await this._initComponent(this.state);
-      this._isReady = true;
+      await this.#initComponent(this.state);
+      this.#isReady = true;
       log(`${this.constructor.name} \u0433\u043E\u0442\u043E\u0432.`);
     } catch (error) {
       log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 connectedCallback \u0434\u043B\u044F ${this.constructor.name}:`, error);
-      await this._render({ error: error.message });
+      await this.#render({ error: error.message });
     }
   }
+  /**
+   * @private
+   */
   async disconnectedCallback() {
     log(`${this.constructor.name} \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043E\u0442 DOM.`);
-    this._isReady = false;
+    this.#isReady = false;
     await this._componentDisconnected();
   }
+  /**
+   * @private
+   */
   async adoptedCallback() {
     log(`${this.constructor.name} \u043F\u0435\u0440\u0435\u043C\u0435\u0449\u0435\u043D \u0432 \u043D\u043E\u0432\u044B\u0439 \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442.`);
     await this._componentAdopted();
   }
+  /**
+   * @private
+   */
   async attributeChangedCallback(name3, oldValue, newValue) {
     if (oldValue === newValue) return;
-    if (this._templateImported) {
+    if (this.#templateImported) {
       await this._componentAttributeChanged(name3, oldValue, newValue);
       log(`\u0410\u0442\u0440\u0438\u0431\u0443\u0442 ${name3} \u0438\u0437\u043C\u0435\u043D\u0438\u043B\u0441\u044F \u0441 '${oldValue}' \u043D\u0430 '${newValue}'.`);
     }
   }
-  async _initComponent(state) {
+  async #initComponent(state) {
     const type = this.dataset.type;
     if (!exclusion.includes(this.tagName)) {
-      this._templateImported = true;
+      this.#templateImported = true;
       if (type !== "server") {
-        await this._loadComponentStyles();
+        await this.#loadComponentStyles();
         await this.showSkeleton({
           selector: "#connection-status",
           replace: false
@@ -1658,9 +1674,9 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       }
     }
     await this._componentReady();
-    await this._registerComponent();
+    await this.#registerComponent();
   }
-  async _loadComponentStyles() {
+  async #loadComponentStyles() {
     try {
       const componentTagName = this.constructor.tagName || this.tagName.toLowerCase();
       let cssPath = new URL(`../components/${componentTagName}/css/index.css`, import.meta.url);
@@ -1863,7 +1879,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
   // В класс BaseComponent добавим метод fullRender
   async fullRender(state = {}) {
     try {
-      await this._render({
+      await this.#render({
         state,
         context: this
       });
@@ -1923,8 +1939,8 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
           return false;
       }
       log(`\u0427\u0430\u0441\u0442\u044C '${partName}' \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D\u0430 \u0432 '${selector}' \u043C\u0435\u0442\u043E\u0434\u043E\u043C '${method}'`);
-      await this._waitForDOMUpdate();
-      await this._setupEventListeners();
+      await this.#waitForDOMUpdate();
+      await this.#setupEventListeners();
       return true;
     } catch (error) {
       log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}':`, error);
@@ -1937,7 +1953,94 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       return false;
     }
   }
-  async _render({ partName = "defaultTemplate", state = {}, selector = "*" } = {}) {
+  /**
+   * Универсальный метод для обновления содержимого элементов
+   * @param {Object} options - Параметры обновления
+   * @param {string} options.selector - CSS селектор целевого элемента
+   * @param {string|number|boolean} options.value - Значение для установки
+   * @param {string} [options.property='textContent'] - Свойство элемента для обновления:
+   *   - 'textContent' для текстового содержимого
+   *   - 'innerHTML' для HTML содержимого
+   *   - 'value' для input, textarea, select
+   *   - 'checked' для checkbox
+   *   - 'src' для изображений
+   *   - 'href' для ссылок
+   *   - 'className' для классов
+   *   - 'style' для стилей (передавать объект)
+   *   - любое другое свойство элемента
+   * @param {string} [options.action='set'] - Действие: 'set', 'append', 'prepend', 'toggle', 'add', 'remove'
+   * @returns {Promise<boolean>} Успешность операции
+   */
+  async updateElement({ selector, value: value2, property = "textContent", action = "set" } = {}) {
+    try {
+      if (!selector) {
+        console.warn(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] \u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440 \u0434\u043B\u044F \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430`);
+        return false;
+      }
+      const targetElement = this.shadowRoot.querySelector(selector);
+      if (!targetElement) {
+        console.warn(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] \u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D`);
+        return false;
+      }
+      switch (action) {
+        case "set":
+          if (property === "style" && typeof value2 === "object") {
+            Object.assign(targetElement.style, value2);
+          } else if (property === "className" && typeof value2 === "string") {
+            targetElement.className = value2;
+          } else {
+            targetElement[property] = value2;
+          }
+          break;
+        case "append":
+          if (property === "innerHTML" || property === "textContent") {
+            targetElement[property] += value2;
+          } else if (property === "value") {
+            targetElement.value += String(value2);
+          }
+          break;
+        case "prepend":
+          if (property === "innerHTML" || property === "textContent") {
+            targetElement[property] = value2 + targetElement[property];
+          } else if (property === "value") {
+            targetElement.value = String(value2) + targetElement.value;
+          }
+          break;
+        case "toggle":
+          if (property === "checked" || property === "disabled" || property === "hidden") {
+            targetElement[property] = !targetElement[property];
+          } else if (property === "className") {
+            targetElement.classList.toggle(String(value2));
+          }
+          break;
+        case "add":
+          if (property === "className") {
+            targetElement.classList.add(String(value2));
+          }
+          break;
+        case "remove":
+          if (property === "className") {
+            targetElement.classList.remove(String(value2));
+          }
+          break;
+        default:
+          console.warn(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] \u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u043E\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435: ${action}`);
+          return false;
+      }
+      console.log(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] \u042D\u043B\u0435\u043C\u0435\u043D\u0442 '${selector}' \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D: ${property} = ${value2} (\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435: ${action})`);
+      return true;
+    } catch (error) {
+      console.error(`[\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442] \u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430 '${selector}':`, error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "updateElement",
+        message: `\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430 ${selector}`,
+        details: error
+      });
+      return false;
+    }
+  }
+  async #render({ partName = "defaultTemplate", state = {}, selector = "*" } = {}) {
     try {
       if (this._templateMethods) {
         const storedState = this.state || {};
@@ -1962,8 +2065,8 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
           rootContainerExist.innerHTML = "";
           rootContainerExist.appendChild(rootContainer);
         }
-        await this._waitForDOMUpdate();
-        await this._setupEventListeners();
+        await this.#waitForDOMUpdate();
+        await this.#setupEventListeners();
         await this.hideSkeleton();
         log(`${this.constructor.name} \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D \u0441 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435\u043C:`, mergedState);
       } else {
@@ -1974,27 +2077,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       this.shadowRoot.innerHTML = `<p style="color:red;">\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430: ${error.message}</p>`;
     }
   }
-  /**
-   * Очищает содержимое элемента по селектору
-   * @param {string} selector - CSS селектор
-   * @returns {Promise<boolean>} Успешность операции
-   */
-  async clearPart(selector) {
-    try {
-      const targetElement = this.shadowRoot.querySelector(selector);
-      if (!targetElement) {
-        log.error(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u043E\u0447\u0438\u0441\u0442\u043A\u0438`);
-        return false;
-      }
-      targetElement.innerHTML = "";
-      log(`\u0421\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 '${selector}' \u043E\u0447\u0438\u0449\u0435\u043D\u043E`);
-      return true;
-    } catch (error) {
-      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0447\u0430\u0441\u0442\u0438 '${selector}':`, error);
-      return false;
-    }
-  }
-  async _waitForDOMUpdate(timeout = 100) {
+  async #waitForDOMUpdate(timeout = 100) {
     return new Promise((resolve) => {
       const rafId = requestAnimationFrame(() => {
         clearTimeout(timeoutId);
@@ -2010,7 +2093,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       };
     });
   }
-  async _setupEventListeners() {
+  async #setupEventListeners() {
     if (this?._controller?.destroy) {
       this._controller.destroy();
     }
@@ -2019,7 +2102,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     }
     log(`${this.constructor.name} \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432 \u0441\u043E\u0431\u044B\u0442\u0438\u0439 (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
   }
-  async _registerComponent() {
+  async #registerComponent() {
     try {
       if (!this.id) {
         log.error("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0436\u0435\u043B\u0430\u0442\u0435\u043B\u044C\u043D\u043E \u0438\u043C\u0435\u0435\u0442 ID \u0434\u043B\u044F \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438");
@@ -2118,12 +2201,35 @@ function defaultTemplate({ state = {} } = {}) {
         <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->        <footer class="manager-footer">            <div class="footer-content">                <div class="footer-info">                    <span class="info-text">Peer ID: ${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>                    <span class="info-divider">\u2022</span>                    <span class="info-text">\u0420\u0435\u0436\u0438\u043C: ${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>                    <span class="info-divider">\u2022</span>                    <span class="info-text">Relay: ${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>                </div>                <div class="container-button">                    <div class="footer-actions">                        <button class="footer-btn" id="refresh-all">                            <span class="btn-icon">\u{1F504}</span>                            \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C                        </button>                    </div>                    <div class="input-actions">                        <button class="action-btn" id="clear-messages" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F">                            <span class="btn-icon">\u{1F5D1}\uFE0F</span>                        </button>                        <button class="action-btn" id="export-chat" title="\u042D\u043A\u0441\u043F\u043E\u0440\u0442 \u0447\u0430\u0442\u0430">                            <span class="btn-icon">\u{1F4E4}</span>                        </button>                    </div>                </div>            </div>        </footer>    </div>    `;
 }
 __name(defaultTemplate, "defaultTemplate");
+function getGroupName(group) {
+  if (!group) return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F";
+  if (typeof group.name === "string") return group.name;
+  if (typeof group.name === "object" && group.name?.name) return group.name.name;
+  if (typeof group.name === "object" && group.name?.topic) return extractGroupNameFromTopic2(group.name.topic);
+  if (group.topic) return extractGroupNameFromTopic2(group.topic);
+  return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F";
+}
+__name(getGroupName, "getGroupName");
+function getGroupInitial(group) {
+  const name3 = getGroupName(group);
+  return name3.charAt(0).toUpperCase();
+}
+__name(getGroupInitial, "getGroupInitial");
+function extractGroupNameFromTopic2(topic) {
+  if (!topic) return "\u0413\u0440\u0443\u043F\u043F\u0430";
+  if (topic.startsWith("chat-group-")) {
+    const parts = topic.replace("chat-group-", "").split("-");
+    return parts[0].replace(/[_-]/g, " ").replace(/\b\w/g, (l2) => l2.toUpperCase());
+  }
+  return topic;
+}
+__name(extractGroupNameFromTopic2, "extractGroupNameFromTopic");
 function renderMyGroups({ state = {} } = {}) {
   const groups = state.groups || [];
   if (groups.length === 0) {
     return `        <div class="empty-state">            <div class="empty-icon">\u{1F3E0}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F</p>            <button class="empty-action" id="create-first-group">                \u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443            </button>        </div>        `;
   }
-  return `    <div class="groups-list" id="my-groups-list">        ${groups.map((group, index) => `        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}" data-group-topic="${group.topic}">            <div class="group-avatar">                <span class="avatar-icon">\u{1F4AC}</span>            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(group.name)}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>                    <span class="meta-item">${formatDate(group.createdAt)}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn join" data-group-id="${group.id}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">                    <span class="btn-icon">\u27A1\uFE0F</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
+  return `    <div class="groups-list" id="my-groups-list">        ${groups.map((group, index) => `        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}" data-group-topic="${group.topic}">            <div class="group-avatar">                ${getGroupInitial(group)}            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(getGroupName(group))}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>                    <span class="meta-item">${formatDate(group.createdAt)}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn join" data-group-id="${group.id}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">                    <span class="btn-icon">\u27A1\uFE0F</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderMyGroups, "renderMyGroups");
 function renderDiscoveredGroups({ state = {} } = {}) {
@@ -2131,7 +2237,7 @@ function renderDiscoveredGroups({ state = {} } = {}) {
   if (groups.length === 0) {
     return `        <div class="empty-state">            <div class="empty-icon">\u{1F310}</div>            <p class="empty-text">\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>            <button class="empty-action" id="discover-groups">                \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C            </button>        </div>        `;
   }
-  return `    <div class="groups-list" id="discovered-groups-list">        ${groups.map((group) => `        <div class="group-item discovered" data-group-id="${group.id}" data-topic="${group.topic}">            <div class="group-avatar">                <span class="avatar-icon">\u{1F50D}</span>            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(group.name)}</div>                <div class="group-description">${group.description || "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442"}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 0}</span>                    <span class="meta-item">${group.isPublic ? "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F" : "\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u0430\u044F"}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn join" data-group-id="${group.id}" data-topic="${group.topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">                    <span class="btn-icon">\u2795</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
+  return `    <div class="groups-list" id="discovered-groups-list">        ${groups.map((group) => `        <div class="group-item discovered" data-group-id="${group.id}" data-topic="${group.topic}">            <div class="group-avatar">                ${getGroupInitial(group)}            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(getGroupName(group))}</div>                <div class="group-description">${group.description || "\u041E\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442"}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 0}</span>                    <span class="meta-item">${group.isPublic ? "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F" : "\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u0430\u044F"}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn join" data-group-id="${group.id}" data-topic="${group.topic}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">                    <span class="btn-icon">\u2795</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderDiscoveredGroups, "renderDiscoveredGroups");
 function renderJoinedGroups({ state = {} } = {}) {
@@ -2139,14 +2245,14 @@ function renderJoinedGroups({ state = {} } = {}) {
   if (groups.length === 0) {
     return `        <div class="empty-state">            <div class="empty-icon">\u{1F465}</div>            <p class="empty-text">\u041D\u0435 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u044B \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C</p>        </div>        `;
   }
-  return `    <div class="groups-list" id="joined-groups-list">        ${groups.map((group) => `        <div class="group-item joined ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}">            <div class="group-avatar">                <span class="avatar-icon">\u{1F91D}</span>            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(group.name)}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>                    <span class="meta-item">${formatDate(group.joinedAt)}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn leave" data-group-id="${group.id}" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">                    <span class="btn-icon">\u{1F6AA}</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
+  return `    <div class="groups-list" id="joined-groups-list">        ${groups.map((group) => `        <div class="group-item joined ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}">            <div class="group-avatar">                ${getGroupInitial(group)}            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(getGroupName(group))}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>                    <span class="meta-item">${formatDate(group.joinedAt)}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn leave" data-group-id="${group.id}" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">                    <span class="btn-icon">\u{1F6AA}</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderJoinedGroups, "renderJoinedGroups");
 function renderActiveChatHeader({ state = {} } = {}) {
   if (!state.currentGroup) {
     return `        <div class="chat-info">            <div class="chat-avatar">                <span class="avatar-icon">\u{1F4AC}</span>            </div>            <div class="chat-details">                <h2 class="chat-name">\u0427\u0430\u0442</h2>                <p class="chat-description">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>            </div>        </div>        `;
   }
-  return `    <div class="chat-info">        <div class="chat-avatar">            <span class="avatar-icon">\u{1F4AC}</span>        </div>        <div class="chat-details">            <h2 class="chat-name">${state.currentGroup.name}</h2>            <div class="chat-meta">                <span class="meta-item">\u{1F465} ${state.currentGroup.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</span>                <span class="meta-item">\u{1F517} ${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                <span class="meta-item topic">\u0422\u043E\u043F\u0438\u043A: ${state.currentGroup.topic}</span>            </div>        </div>        <div class="chat-actions">            <button class="chat-action-btn" id="copy-topic" title="\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0442\u043E\u043F\u0438\u043A">                <span class="btn-icon">\u{1F4CB}</span>            </button>            <button class="chat-action-btn" id="leave-chat" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0447\u0430\u0442">                <span class="btn-icon">\u{1F6AA}</span>            </button>        </div>    </div>    `;
+  return `    <div class="chat-info">        <div class="chat-avatar">            ${getGroupInitial(state.currentGroup)}        </div>        <div class="chat-details">            <h2 class="chat-name">${escapeHtml(getGroupName(state.currentGroup))}</h2>            <div class="chat-meta">                <span class="meta-item">\u{1F465} ${state.currentGroup.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</span>                <span class="meta-item">\u{1F517} ${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                <span class="meta-item topic">\u0422\u043E\u043F\u0438\u043A: ${state.currentGroup.topic}</span>            </div>        </div>        <div class="chat-actions">            <button class="chat-action-btn" id="copy-topic" title="\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0442\u043E\u043F\u0438\u043A">                <span class="btn-icon">\u{1F4CB}</span>            </button>            <button class="chat-action-btn" id="leave-chat" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0447\u0430\u0442">                <span class="btn-icon">\u{1F6AA}</span>            </button>        </div>    </div>    `;
 }
 __name(renderActiveChatHeader, "renderActiveChatHeader");
 function renderMessages({ state = {} } = {}) {
@@ -2187,7 +2293,7 @@ function renderGroups({ state = {} } = {}) {
   if (groups.length === 0) {
     return `        <div class="empty-state">            <div class="empty-icon">\u{1F3E0}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F</p>            <button class="empty-action" id="create-first-group">                \u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443            </button>        </div>        `;
   }
-  return `    <div class="groups-list" id="my-groups-list">        ${groups.map((group, index) => `        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}" data-group-topic="${group.topic}">            <div class="group-avatar">                <span class="avatar-icon">\u{1F4AC}</span>            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(group.name)}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>                    <span class="meta-item">${formatDate(group.createdAt)}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn join" data-group-id="${group.id}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">                    <span class="btn-icon">\u27A1\uFE0F</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
+  return `    <div class="groups-list" id="my-groups-list">        ${groups.map((group, index) => `        <div class="group-item ${state.currentGroup?.id === group.id ? "active" : ""}" data-group-id="${group.id}" data-group-topic="${group.topic}">            <div class="group-avatar">                ${getGroupInitial(group)}            </div>            <div class="group-info">                <div class="group-name">${escapeHtml(getGroupName(group))}</div>                <div class="group-meta">                    <span class="meta-item">\u{1F465} ${group.memberCount || 1}</span>                    <span class="meta-item">${formatDate(group.createdAt)}</span>                </div>            </div>            <div class="group-actions">                <button class="group-action-btn join" data-group-id="${group.id}" title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">                    <span class="btn-icon">\u27A1\uFE0F</span>                </button>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderGroups, "renderGroups");
 function formatDate(timestamp) {
@@ -2202,6 +2308,7 @@ function formatDate(timestamp) {
 }
 __name(formatDate, "formatDate");
 function escapeHtml(text) {
+  if (!text) return "";
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
@@ -2456,23 +2563,80 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             }
             const groupId = e2.currentTarget.getAttribute("data-group-id");
             const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
-            if (groupId || groupTopic) {
-              const topic = groupTopic || groupId;
-              const group = context.state.groups.find((g) => g.id === topic || g.topic === topic);
-              if (group) {
-                try {
-                  await context.joinGroup(group);
-                  log2("Switched to group: %s", group.name);
-                } catch (error) {
-                  log2.error("Error switching group: %o", error);
-                  context.addError({
-                    componentName: context.constructor.name,
-                    source: "group-switch",
-                    message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B",
-                    details: error
-                  });
-                }
+            if (!groupId && !groupTopic) {
+              log2.warn("\u041A\u043B\u0438\u043A \u043F\u043E \u0433\u0440\u0443\u043F\u043F\u0435 \u0431\u0435\u0437 data-group-id \u0438\u043B\u0438 data-group-topic");
+              return;
+            }
+            const topic = groupTopic || groupId;
+            const group = context.state.groups.find((g) => g.id === topic || g.topic === topic) || context.state.discoveredGroups.find((g) => g.id === topic || g.topic === topic) || context.state.joinedGroups.find((g) => g.id === topic || g.topic === topic);
+            if (!group) {
+              log2.warn("\u0413\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443/ID:", topic);
+              return;
+            }
+            const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
+            if (isSubscribed) {
+              try {
+                context.state.currentGroup = group;
+                await context.fullRender(context.state);
+                log2("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
+              } catch (error) {
+                log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+                context.addError({
+                  componentName: context.constructor.name,
+                  source: "group-activate",
+                  message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443",
+                  details: error
+                });
               }
+            } else {
+              await context.showModal({
+                title: `\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 "${group.name}"?`,
+                content: `<p>\u0412\u044B \u043D\u0435 \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u044B \u043D\u0430 \u044D\u0442\u0443 \u0433\u0440\u0443\u043F\u043F\u0443. \u0425\u043E\u0442\u0438\u0442\u0435 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u0438 \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F?</p>`,
+                buttons: [
+                  {
+                    text: "\u041E\u0442\u043C\u0435\u043D\u0430",
+                    type: "secondary",
+                    action: /* @__PURE__ */ __name(() => log2("\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
+                  },
+                  {
+                    text: "\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F",
+                    type: "primary",
+                    action: /* @__PURE__ */ __name(async () => {
+                      try {
+                        const success = await context._actions.subscribeToGroup(group.topic);
+                        if (success) {
+                          if (!context.state.groups.find((g) => g.topic === group.topic)) {
+                            context.state.groups.push({ ...group, joinedAt: Date.now() });
+                          }
+                          context.state.currentGroup = group;
+                          await context.fullRender(context.state);
+                          const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+                          if (chatInterface) {
+                            await chatInterface.setCurrentGroup(group);
+                          }
+                          log2("\u0423\u0441\u043F\u0435\u0448\u043D\u0430\u044F \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %s", group.name);
+                        } else {
+                          throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0442\u043E\u043F\u0438\u043A");
+                        }
+                      } catch (error) {
+                        log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: %o", error);
+                        context.addError({
+                          componentName: context.constructor.name,
+                          source: "group-subscribe",
+                          message: `\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435 "${group.name}"`,
+                          details: error
+                        });
+                        await context.showModal({
+                          title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                          content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
+                          buttons: [{ text: "OK", type: "primary" }]
+                        });
+                      }
+                    }, "action")
+                  }
+                ],
+                closeOnBackdropClick: true
+              });
             }
           }, "handler");
           item.addEventListener("click", handler);
@@ -15857,8 +16021,8 @@ var ChatManager = class extends BaseComponent {
   async createGroup(groupName) {
     const group = {
       id: Math.random().toString(36).substr(2, 9),
-      name: groupName,
-      topic: `chat-group-${groupName.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}`,
+      name: String(groupName).trim() || "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430",
+      topic: `chat-group-${String(groupName).replace(/\s+/g, "-").toLowerCase()}-${Date.now()}`,
       peers: [],
       createdAt: Date.now(),
       isPublic: true
@@ -15891,8 +16055,8 @@ var ChatManager = class extends BaseComponent {
     if (!existingGroup) {
       const group = {
         id: Math.random().toString(36).substr(2, 9),
-        name: groupName || topic,
-        topic,
+        name: typeof groupName === "string" ? groupName.trim() : typeof topic === "string" ? topic : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430",
+        topic: typeof topic === "string" ? topic : "",
         peers: [],
         joinedAt: Date.now()
       };
@@ -16243,7 +16407,6 @@ var ChatManager = class extends BaseComponent {
   }
   async sendGroupMessage(messageText) {
     if (this.state.currentGroup && this.state.currentGroup.topic) {
-      await this.sendMessageViaStream(this.state.currentGroup.topic, messageText);
       await this.addMessage({
         text: messageText,
         topic: this.state.currentGroup.topic,
@@ -16323,7 +16486,10 @@ var ChatManager = class extends BaseComponent {
         return;
       }
       if (event.type === "GROUPS_DISCOVERED") {
-        this.state.discoveredGroups = event.data.groups || [];
+        this.state.discoveredGroups = (event.data.groups || []).map((g) => ({
+          ...g,
+          name: typeof g.name === "string" ? g.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430"
+        }));
         await this.renderPart({
           partName: "renderDiscoveredGroups",
           state: this.state,
@@ -16339,7 +16505,9 @@ var ChatManager = class extends BaseComponent {
           await this.createGroup(event.data.groupName);
           break;
         case "JOIN_GROUP":
-          await this.joinGroup(event.data.topic, event.data.groupName);
+          const topic = typeof event.data.topic === "string" ? event.data.topic : "";
+          const groupName = typeof event.data.groupName === "string" ? event.data.groupName : null;
+          await this.joinGroup(topic, groupName);
           break;
         case "SEND_MESSAGE":
           await this.sendGroupMessage(event.data.message);
@@ -16392,13 +16560,17 @@ var ChatManager = class extends BaseComponent {
   async handleGroupCreated(groupData) {
     try {
       log5("Handling GROUP_CREATED in ChatManager: %o", groupData);
-      if (!this.state.groups.find((g) => g.id === groupData.id)) {
-        this.state.groups.push({
-          ...groupData,
-          joinedAt: Date.now()
-        });
+      const safeGroup = {
+        ...groupData,
+        id: groupData.id || groupData.topic || Math.random().toString(36).substr(2, 9),
+        name: typeof groupData.name === "string" ? groupData.name.trim() : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430",
+        topic: typeof groupData.topic === "string" ? groupData.topic : "",
+        joinedAt: Date.now()
+      };
+      if (!this.state.groups.find((g) => g.id === safeGroup.id)) {
+        this.state.groups.push(safeGroup);
       }
-      await this.joinGroup(groupData.topic, groupData.name);
+      await this.joinGroup(safeGroup.topic, safeGroup.name);
       await this.renderPart({
         partName: "renderGroups",
         state: this.state,
@@ -16454,165 +16626,33 @@ __export(template_exports2, {
   renderTypingIndicator: () => renderTypingIndicator
 });
 function defaultTemplate2({ state = {} } = {}) {
-  return `
-    <div class="chat-interface">
-        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->
-        <header class="chat-header">
-            <div class="header-content">
-                <div class="chat-info">
-                    <div class="chat-avatar">
-                        ${getChatAvatar(state.currentGroup)}
-                    </div>
-                    <div class="chat-details">
-                        <h3 class="chat-name">${state.currentGroup ? state.currentGroup.name : "\u0427\u0430\u0442"}</h3>
-                        <div class="chat-status">
-                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
-                            <span class="status-text">${getStatusText(state)}</span>
-                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
-                        </div>
-                    </div>
-                </div>
-                <div class="chat-actions">
-                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
-                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>
-                    </button>
-                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
-                        <span class="btn-icon">\u{1F50D}</span>
-                    </button>
-                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
-                        <span class="btn-icon">\u{1F465}</span>
-                    </button>
-                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
-                        <span class="btn-icon">\u2699\uFE0F</span>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
-        <div class="connection-status" id="connection-status">
-            ${renderConnectionStatus({ state })}
-        </div>
-
-        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->
-        <main class="chat-main">
-            <!-- \u0411\u043E\u043A\u043E\u0432\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 -->
-            <aside class="members-sidebar" id="members-panel">
-                <div class="sidebar-header">
-                    <h4>\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438</h4>
-                    <button class="close-sidebar" id="close-members">\u2715</button>
-                </div>
-                <div class="members-list">
-                    ${renderMembersList({ state })}
-                </div>
-            </aside>
-
-            <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0447\u0430\u0442\u0430 -->
-            <section class="chat-content">
-                <!-- \u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 -->
-                <div class="messages-container">
-                    <div class="messages-list" id="messages-list">
-                        ${renderMessages2({ state })}
-                    </div>
-                </div>
-
-                <!-- \u0418\u043D\u0434\u0438\u043A\u0430\u0442\u043E\u0440 \u043D\u0430\u0431\u043E\u0440\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
-                ${state.isTyping ? renderTypingIndicator({ state }) : ""}
-            </section>
-        </main>
-
-        <!-- \u041F\u0430\u043D\u0435\u043B\u044C \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
-        <footer class="chat-input">
-            <div class="input-container">
-                <div class="input-actions">
-                    <button class="input-action-btn" id="attach-file" title="\u041F\u0440\u0438\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u0444\u0430\u0439\u043B">
-                        <span class="btn-icon">\u{1F4CE}</span>
-                    </button>
-                    <button class="input-action-btn" id="emoji-picker" title="\u042D\u043C\u043E\u0434\u0437\u0438">
-                        <span class="btn-icon">\u{1F60A}</span>
-                    </button>
-                    <button class="input-action-btn" id="format-text" title="\u0424\u043E\u0440\u043C\u0430\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435">
-                        <span class="btn-icon">\u{1D400}</span>
-                    </button>
-                </div>
-                <div class="message-input-wrapper">
-                    <textarea 
-                        id="message-input" 
-                        class="message-input" 
-                        placeholder="${getInputPlaceholder2(state)}"
-                        rows="1"
-                    ></textarea>
-                    <button 
-                        id="send-button" 
-                        class="send-button"
-                        title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"
-                    >
-                        <span class="send-icon">\u2708\uFE0F</span>
-                    </button>
-                </div>
-            </div>
-        </footer>
-
-        <!-- \u041E\u0432\u0435\u0440\u043B\u0435\u0439 \u043F\u043E\u0438\u0441\u043A\u0430 -->
-        ${state.showSearch ? renderSearchOverlay({ state }) : ""}
-    </div>
-    `;
+  return `    <div class="chat-interface">        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->        <header class="chat-header">            <div class="header-content">                <div class="chat-info">                    <div class="chat-avatar">                        ${getChatAvatar(state.currentGroup)}                    </div>                    <div class="chat-details">                        <h3 class="chat-name">${getGroupName2(state.currentGroup)}</h3>                        <div class="chat-status">                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>                            <span class="status-text">${getStatusText(state)}</span>                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}                        </div>                    </div>                </div>                <div class="chat-actions">                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>                    </button>                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">                        <span class="btn-icon">\u{1F50D}</span>                    </button>                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">                        <span class="btn-icon">\u{1F465}</span>                    </button>                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">                        <span class="btn-icon">\u2699\uFE0F</span>                    </button>                </div>            </div>        </header>
+        <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->        <div class="connection-status" id="connection-status">            ${renderConnectionStatus({ state })}        </div>
+        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->        <main class="chat-main">            <!-- \u0411\u043E\u043A\u043E\u0432\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 -->            <aside class="members-sidebar" id="members-panel">                <div class="sidebar-header">                    <h4>\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438</h4>                    <button class="close-sidebar" id="close-members">\u2715</button>                </div>                <div class="members-list">                    ${renderMembersList({ state })}                </div>            </aside>
+            <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0447\u0430\u0442\u0430 -->            <section class="chat-content">                <!-- \u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 -->                <div class="messages-container">                    <div class="messages-list" id="messages-list">                        ${renderMessages2({ state })}                    </div>                </div>
+                <!-- \u0418\u043D\u0434\u0438\u043A\u0430\u0442\u043E\u0440 \u043D\u0430\u0431\u043E\u0440\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->                ${state.isTyping ? renderTypingIndicator({ state }) : ""}            </section>        </main>
+        <!-- \u041F\u0430\u043D\u0435\u043B\u044C \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->        <footer class="chat-input">            <div class="input-container">                <div class="input-actions">                    <button class="input-action-btn" id="attach-file" title="\u041F\u0440\u0438\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u0444\u0430\u0439\u043B">                        <span class="btn-icon">\u{1F4CE}</span>                    </button>                    <button class="input-action-btn" id="emoji-picker" title="\u042D\u043C\u043E\u0434\u0437\u0438">                        <span class="btn-icon">\u{1F60A}</span>                    </button>                    <button class="input-action-btn" id="format-text" title="\u0424\u043E\u0440\u043C\u0430\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435">                        <span class="btn-icon">\u{1D400}</span>                    </button>                </div>                <div class="message-input-wrapper">                    <textarea                         id="message-input"                         class="message-input"                         placeholder="${getInputPlaceholder2(state)}"                        rows="1"                    ></textarea>                    <button                         id="send-button"                         class="send-button"                        title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"                    >                        <span class="send-icon">\u2708\uFE0F</span>                    </button>                </div>            </div>        </footer>
+        <!-- \u041E\u0432\u0435\u0440\u043B\u0435\u0439 \u043F\u043E\u0438\u0441\u043A\u0430 -->        ${state.showSearch ? renderSearchOverlay({ state }) : ""}    </div>    `;
 }
 __name(defaultTemplate2, "defaultTemplate");
 function renderConnectionStatus({ state = {} } = {}) {
   if (!state.connected) {
-    return `
-        <div class="status-message disconnected">
-            <span class="status-icon">\u{1F534}</span>
-            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
-            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
-        </div>
-        `;
+    return `        <div class="status-message disconnected">            <span class="status-icon">\u{1F534}</span>            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>        </div>        `;
   }
   if (!state.currentGroup) {
-    return `
-        <div class="status-message info">
-            <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
-        </div>
-        `;
+    return `        <div class="status-message info">            <span class="status-icon">\u2139\uFE0F</span>            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>        </div>        `;
   }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">
-            \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}
-            ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}
-        </span>
-        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}
-        ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}
-    </div>
-    `;
+  return `    <div class="status-message connected">        <span class="status-icon">\u{1F7E2}</span>        <span class="status-text">            \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}            ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}        </span>        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}        ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}    </div>    `;
 }
 __name(renderConnectionStatus, "renderConnectionStatus");
 function renderStatus({ state = {} } = {}) {
   if (!state.connected) {
-    return `
-        <div class="status-message disconnected">
-            <span class="status-icon">\u{1F534}</span>
-            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>
-        </div>
-        `;
+    return `        <div class="status-message disconnected">            <span class="status-icon">\u{1F534}</span>            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>        </div>        `;
   }
   if (!state.currentGroup) {
-    return `
-        <div class="status-message info">
-            <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
-        </div>
-        `;
+    return `        <div class="status-message info">            <span class="status-icon">\u2139\uFE0F</span>            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>        </div>        `;
   }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${state.currentGroup.name}</span>
-    </div>
-    `;
+  return `    <div class="status-message connected">        <span class="status-icon">\u{1F7E2}</span>        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${getGroupName2(state.currentGroup)}</span>    </div>    `;
 }
 __name(renderStatus, "renderStatus");
 function renderMembersList({ state = {} } = {}) {
@@ -16625,37 +16665,12 @@ function renderMembersList({ state = {} } = {}) {
   } : null;
   const allMembers = currentUser ? [currentUser, ...members] : members;
   if (allMembers.length === 0) {
-    return `
-        <div class="empty-members">
-            <div class="empty-icon">\u{1F465}</div>
-            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0432 \u0441\u0435\u0442\u0438</p>
-        </div>
-        `;
+    return `        <div class="empty-members">            <div class="empty-icon">\u{1F465}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0432 \u0441\u0435\u0442\u0438</p>        </div>        `;
   }
-  return `
-    <div class="members-container">
-        ${allMembers.map((member) => {
-    const displayName = member.isCurrentUser ? "\u0412\u044B" : member.name || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`;
-    return `
-            <div class="member-item 
-                       ${member.isCurrentUser ? "current-user" : ""} 
-                       ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""}
-                       ${!member.isCurrentUser ? "clickable" : ""}" 
-                 data-peer-id="${member.id}">
-                <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
-                    ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
-                </div>
-                <div class="member-info">
-                    <div class="member-name">${displayName}</div>
-                    <div class="member-status ${member.online ? "online" : "offline"}">
-                        ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
-                    </div>
-                </div>
-            </div>
-            `;
-  }).join("")}
-    </div>
-    `;
+  return `    <div class="members-container">        ${allMembers.map((member) => {
+    const displayName = member.isCurrentUser ? "\u0412\u044B" : getPeerName(member) || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`;
+    return `            <div class="member-item                        ${member.isCurrentUser ? "current-user" : ""}                        ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""}                       ${!member.isCurrentUser ? "clickable" : ""}"                  data-peer-id="${member.id}">                <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">                    ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}                </div>                <div class="member-info">                    <div class="member-name">${displayName}</div>                    <div class="member-status ${member.online ? "online" : "offline"}">                        ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}                    </div>                </div>            </div>            `;
+  }).join("")}    </div>    `;
 }
 __name(renderMembersList, "renderMembersList");
 function renderMessages2({ state = {} } = {}) {
@@ -16663,7 +16678,7 @@ function renderMessages2({ state = {} } = {}) {
   if (messages2.length === 0) {
     let emptyTitle, emptyDescription, showAction;
     if (state.isPrivateChat && state.activeMember) {
-      emptyTitle = `\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0441 ${state.activeMember.name}`;
+      emptyTitle = `\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0441 ${getPeerName(state.activeMember)}`;
       emptyDescription = "\u041E\u0442\u043F\u0440\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442";
       showAction = false;
     } else if (!state.currentGroup) {
@@ -16675,26 +16690,9 @@ function renderMessages2({ state = {} } = {}) {
       emptyDescription = "\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435";
       showAction = false;
     }
-    return `
-        <div class="empty-chat">
-            <div class="empty-content">
-                <div class="empty-icon">\u{1F4AC}</div>
-                <h3 class="empty-title">${emptyTitle}</h3>
-                <p class="empty-description">${emptyDescription}</p>
-                ${showAction && !state.currentGroup ? `
-                <button class="empty-action" id="find-groups">
-                    \u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B
-                </button>
-                ` : ""}
-            </div>
-        </div>
-        `;
+    return `        <div class="empty-chat">            <div class="empty-content">                <div class="empty-icon">\u{1F4AC}</div>                <h3 class="empty-title">${emptyTitle}</h3>                <p class="empty-description">${emptyDescription}</p>                ${showAction && !state.currentGroup ? `                <button class="empty-action" id="find-groups">                    \u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B                </button>                ` : ""}            </div>        </div>        `;
   }
-  return `
-    <div class="messages-content">
-        ${messages2.map((message2) => renderMessage({ message: message2 })).join("")}
-    </div>
-    `;
+  return `    <div class="messages-content">        ${messages2.map((message2) => renderMessage({ message: message2 })).join("")}    </div>    `;
 }
 __name(renderMessages2, "renderMessages");
 function renderMessage({ message: message2 = {} } = {}) {
@@ -16703,156 +16701,56 @@ function renderMessage({ message: message2 = {} } = {}) {
     hour: "2-digit",
     minute: "2-digit"
   });
-  return `
-    <div class="message-item ${messageClass}" data-message-id="${message2.id}">
-        <div class="message-bubble">
-            ${message2.type === "received" ? `
-            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
-            ` : ""}
-            <div class="message-content">${escapeHtml2(message2.text)}</div>
-            <div class="message-meta">
-                <span class="message-time">${time}</span>
-                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}
-                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}
-            </div>
-        </div>
-    </div>
-    `;
+  const topicBadge = message2.topic ? `<span class="message-topic-badge">#${message2.topic}</span>` : "";
+  return `    <div class="message-item ${messageClass}" data-message-id="${message2.id}" data-topic="${message2.topic || ""}">        <div class="message-bubble">            ${message2.type === "received" ? `            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>            ` : ""}            <div class="message-content">${escapeHtml2(message2.text)}${topicBadge}</div>            <div class="message-meta">                <span class="message-time">${time}</span>                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}            </div>        </div>    </div>    `;
 }
 __name(renderMessage, "renderMessage");
 function renderTypingIndicator({ state = {} } = {}) {
-  return `
-    <div class="typing-indicator">
-        <div class="typing-avatar">
-            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : "??"}
-        </div>
-        <div class="typing-content">
-            <div class="typing-name">${state.typingUser?.name || "\u041A\u0442\u043E-\u0442\u043E"} \u043F\u0435\u0447\u0430\u0442\u0430\u0435\u0442</div>
-            <div class="typing-dots">
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-                <span class="typing-dot"></span>
-            </div>
-        </div>
-    </div>
-    `;
+  return `    <div class="typing-indicator">        <div class="typing-avatar">            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : "??"}        </div>        <div class="typing-content">            <div class="typing-name">${getPeerName(state.typingUser) || "\u041A\u0442\u043E-\u0442\u043E"} \u043F\u0435\u0447\u0430\u0442\u0430\u0435\u0442</div>            <div class="typing-dots">                <span class="typing-dot"></span>                <span class="typing-dot"></span>                <span class="typing-dot"></span>            </div>        </div>    </div>    `;
 }
 __name(renderTypingIndicator, "renderTypingIndicator");
 function renderSearchOverlay({ state = {} } = {}) {
-  return `
-    <div class="search-overlay" id="search-overlay">
-        <div class="search-header">
-            <h3>\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
-            <button class="close-search" id="close-search">\u2715</button>
-        </div>
-        <div class="search-content">
-            <div class="search-input-container">
-                <input 
-                    type="text" 
-                    id="search-messages-input" 
-                    class="search-input" 
-                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430..."
-                    value="${state.searchQuery || ""}"
-                >
-                <button class="search-action" id="perform-search">
-                    <span class="btn-icon">\u{1F50D}</span>
-                </button>
-            </div>
-            <div class="search-results" id="search-results">
-                ${renderSearchResults({ state })}
-            </div>
-        </div>
-    </div>
-    `;
+  return `    <div class="search-overlay" id="search-overlay">        <div class="search-header">            <h3>\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>            <button class="close-search" id="close-search">\u2715</button>        </div>        <div class="search-content">            <div class="search-input-container">                <input                     type="text"                     id="search-messages-input"                     class="search-input"                     placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430..."                    value="${state.searchQuery || ""}"                >                <button class="search-action" id="perform-search">                    <span class="btn-icon">\u{1F50D}</span>                </button>            </div>            <div class="search-results" id="search-results">                ${renderSearchResults({ state })}            </div>        </div>    </div>    `;
 }
 __name(renderSearchOverlay, "renderSearchOverlay");
 function renderSearchResults({ state = {} } = {}) {
   if (!state.searchQuery) {
-    return `
-        <div class="search-empty">
-            <div class="empty-icon">\u{1F50D}</div>
-            <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</p>
-        </div>
-        `;
+    return `        <div class="search-empty">            <div class="empty-icon">\u{1F50D}</div>            <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</p>        </div>        `;
   }
   const results = state.searchResults || [];
   if (results.length === 0) {
-    return `
-        <div class="search-empty">
-            <div class="empty-icon">\u{1F614}</div>
-            <p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>
-            <p class="empty-hint">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441</p>
-        </div>
-        `;
+    return `        <div class="search-empty">            <div class="empty-icon">\u{1F614}</div>            <p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>            <p class="empty-hint">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441</p>        </div>        `;
   }
-  return `
-    <div class="results-list">
-        ${results.map((result) => `
-        <div class="search-result-item" data-message-id="${result.id}">
-            <div class="result-message">
-                <div class="result-sender">${result.from ? result.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
-                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>
-                <div class="result-time">${new Date(result.timestamp).toLocaleString("ru-RU")}</div>
-            </div>
-        </div>
-        `).join("")}
-    </div>
-    `;
+  return `    <div class="results-list">        ${results.map((result) => `        <div class="search-result-item" data-message-id="${result.id}">            <div class="result-message">                <div class="result-sender">${result.from ? result.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>                <div class="result-time">${new Date(result.timestamp).toLocaleString("ru-RU")}</div>            </div>        </div>        `).join("")}    </div>    `;
 }
 __name(renderSearchResults, "renderSearchResults");
 function renderChatHeader({ state = {} } = {}) {
   if (state.isPrivateChat && state.activeMember) {
-    return `
-        <div class="chat-info">
-            <div class="chat-avatar">
-                <span class="avatar-icon">\u{1F464}</span>
-            </div>
-            <div class="chat-details">
-                <h3 class="chat-name">${state.activeMember.name || "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C"}</h3>
-                <div class="chat-status">
-                    <span class="status-indicator connected"></span>
-                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>
-                </div>
-            </div>
-        </div>
-        `;
+    return `        <div class="chat-info">            <div class="chat-avatar">                <span class="avatar-icon">\u{1F464}</span>            </div>            <div class="chat-details">                <h3 class="chat-name">${getPeerName(state.activeMember)}</h3>                <div class="chat-status">                    <span class="status-indicator connected"></span>                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>                </div>            </div>        </div>        `;
   }
   if (!state.currentGroup) {
-    return `
-        <div class="chat-info">
-            <div class="chat-avatar">
-                <span class="avatar-icon">\u{1F4AC}</span>
-            </div>
-            <div class="chat-details">
-                <h3 class="chat-name">\u0427\u0430\u0442</h3>
-                <div class="chat-status">
-                    <span class="status-indicator disconnected"></span>
-                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
-                </div>
-            </div>
-        </div>
-        `;
+    return `        <div class="chat-info">            <div class="chat-avatar">                <span class="avatar-icon">\u{1F4AC}</span>            </div>            <div class="chat-details">                <h3 class="chat-name">\u0427\u0430\u0442</h3>                <div class="chat-status">                    <span class="status-indicator disconnected"></span>                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>                </div>            </div>        </div>        `;
   }
-  return `
-    <div class="chat-info">
-        <div class="chat-avatar">
-            ${getChatAvatar(state.currentGroup)}
-        </div>
-        <div class="chat-details">
-            <h3 class="chat-name">${state.currentGroup.name}</h3>
-            <div class="chat-status">
-                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
-                <span class="status-text">${getStatusText(state)}</span>
-                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
-            </div>
-        </div>
-    </div>
-    `;
+  return `    <div class="chat-info">        <div class="chat-avatar">            ${getChatAvatar(state.currentGroup)}        </div>        <div class="chat-details">            <h3 class="chat-name">${getGroupName2(state.currentGroup)}</h3>            <div class="chat-status">                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>                <span class="status-text">${getStatusText(state)}</span>                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}            </div>        </div>    </div>    `;
 }
 __name(renderChatHeader, "renderChatHeader");
+function getGroupName2(group) {
+  if (!group) return "\u0427\u0430\u0442";
+  if (typeof group.name === "string") return group.name;
+  if (typeof group.name === "object" && typeof group.name.name === "string") return group.name.name;
+  return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+}
+__name(getGroupName2, "getGroupName");
+function getPeerName(peer) {
+  if (!peer) return "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439";
+  if (typeof peer.name === "string") return peer.name;
+  if (typeof peer.name === "object" && typeof peer.name.name === "string") return peer.name.name;
+  return null;
+}
+__name(getPeerName, "getPeerName");
 function getChatAvatar(group) {
-  if (!group) return "\u{1F4AC}";
-  return group.name ? group.name.charAt(0).toUpperCase() : "\u{1F4AC}";
+  const name3 = getGroupName2(group);
+  return name3 ? name3.charAt(0).toUpperCase() : "\u{1F4AC}";
 }
 __name(getChatAvatar, "getChatAvatar");
 function getStatusText(state) {
@@ -16864,7 +16762,7 @@ __name(getStatusText, "getStatusText");
 function getInputPlaceholder2(state) {
   if (!state.connected) return "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0435\u0441\u044C \u043A \u0441\u0435\u0442\u0438...";
   if (state.isPrivateChat && state.activeMember) {
-    return `\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F ${state.activeMember.name}...`;
+    return `\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F ${getPeerName(state.activeMember)}...`;
   }
   if (!state.currentGroup) return "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F...";
   return "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435...";
@@ -16883,7 +16781,7 @@ function highlightSearchText(text, query) {
 }
 __name(highlightSearchText, "highlightSearchText");
 function escapeRegex(string2) {
-  return string2.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return string2.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
 }
 __name(escapeRegex, "escapeRegex");
 
@@ -16891,6 +16789,7 @@ __name(escapeRegex, "escapeRegex");
 var controller2 = /* @__PURE__ */ __name(async (context) => {
   const log7 = logger("chat-interface:controller");
   let eventListeners = [];
+  let mentionMenu = null;
   return {
     /**
      * Инициализирует контроллер компонента ChatInterface
@@ -16964,7 +16863,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           if (membersPanel) {
             const isVisible = membersPanel.style.display !== "none";
             membersPanel.style.display = isVisible ? "none" : "block";
-            toggleMembersBtn.textContent = isVisible ? "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432" : "\u0421\u043A\u0440\u044B\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432";
+            toggleMembersBtn.textContent = isVisible ? "\u0421\u043A\u0440\u044B\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432" : "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432";
             log7("\u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u0438 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0430: %s", isVisible ? "\u0441\u043A\u0440\u044B\u0442\u0430" : "\u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430");
           }
         }, "toggleMembersHandler");
@@ -17042,6 +16941,98 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           eventListeners.push({ element: item, handler });
         });
       }, "setupMemberClickHandlers");
+      const messagesList = context.shadowRoot.querySelector("#messages-list");
+      if (messagesList) {
+        const messageClickHandler = /* @__PURE__ */ __name(async (e2) => {
+          const messageEl = e2.target.closest(".message-item");
+          if (messageEl) {
+            const topic = messageEl.dataset.topic;
+            if (topic && !context.state.isPrivateChat) {
+              const group = context.state.discoveredGroups?.find((g) => g.topic === topic) || context.state.groups?.find((g) => g.topic === topic);
+              if (group) {
+                await context.setActiveGroup(group);
+              }
+            }
+          }
+        }, "messageClickHandler");
+        messagesList.addEventListener("click", messageClickHandler);
+        eventListeners.push({ element: messagesList, handler: messageClickHandler });
+      }
+      const messageInputField = context.shadowRoot.querySelector("#message-input");
+      if (messageInputField) {
+        const inputHandler = /* @__PURE__ */ __name((e2) => {
+          const cursorPos = e2.target.selectionStart;
+          const text = e2.target.value.substring(0, cursorPos);
+          const lastAt = text.lastIndexOf("@");
+          if (lastAt === -1 || lastAt < text.lastIndexOf(" ")) {
+            hideMentionMenu();
+            return;
+          }
+          const query = text.substring(lastAt + 1).trim();
+          showMentionMenu(query, cursorPos, messageInputField);
+        }, "inputHandler");
+        messageInputField.addEventListener("input", inputHandler);
+        eventListeners.push({ element: messageInputField, handler: inputHandler });
+      }
+      const globalClickHandler = /* @__PURE__ */ __name((e2) => {
+        if (!e2.target.closest("#mention-menu") && !e2.target.closest("#message-input")) {
+          hideMentionMenu();
+        }
+      }, "globalClickHandler");
+      document.addEventListener("click", globalClickHandler);
+      eventListeners.push({ element: document, handler: globalClickHandler });
+      function showMentionMenu(query, cursorPos, inputEl) {
+        const rect = inputEl.getBoundingClientRect();
+        const members = context.getGroupMembers().filter(
+          (m2) => m2.name.toLowerCase().includes(query.toLowerCase())
+        );
+        if (members.length === 0) {
+          hideMentionMenu();
+          return;
+        }
+        mentionMenu = document.createElement("div");
+        mentionMenu.id = "mention-menu";
+        mentionMenu.style.cssText = `
+                    position: absolute;
+                    top: ${rect.bottom + window.scrollY}px;
+                    left: ${rect.left + window.scrollX}px;
+                    background: #1e293b;
+                    border: 1px solid #4b5563;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                `;
+        mentionMenu.innerHTML = members.map((m2) => `
+                    <div data-peer-id="${m2.id}" style="
+                        padding: 8px 12px;
+                        cursor: pointer;
+                    " onmouseenter="this.style.backgroundColor='#334155'" 
+                    onmouseleave="this.style.backgroundColor='transparent'">
+                        ${m2.name}
+                    </div>
+                `).join("");
+        document.body.appendChild(mentionMenu);
+        mentionMenu.querySelectorAll("div").forEach((item) => {
+          item.addEventListener("click", () => {
+            const name3 = item.textContent;
+            const currentValue = inputEl.value;
+            const newValue = currentValue.substring(0, cursorPos - query.length - 1) + name3 + " ";
+            inputEl.value = newValue;
+            hideMentionMenu();
+            inputEl.focus();
+          });
+        });
+      }
+      __name(showMentionMenu, "showMentionMenu");
+      function hideMentionMenu() {
+        if (mentionMenu) {
+          mentionMenu.remove();
+          mentionMenu = null;
+        }
+      }
+      __name(hideMentionMenu, "hideMentionMenu");
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === "childList") {
@@ -17118,8 +17109,13 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
      */
     async destroy() {
       eventListeners.forEach(({ element, handler }) => {
-        element.removeEventListener("click", handler);
-        element.removeEventListener("keypress", handler);
+        if (element === document) {
+          element.removeEventListener("click", handler);
+        } else {
+          element.removeEventListener("click", handler);
+          element.removeEventListener("keypress", handler);
+          element.removeEventListener("input", handler);
+        }
       });
       log7("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D, \u0443\u0434\u0430\u043B\u0435\u043D\u043E \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
       eventListeners = [];
@@ -17205,9 +17201,12 @@ async function sendMessage(message2, topic) {
       return;
     }
     const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager && chatManager._actions) {
+    if (chatManager) {
       log7("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0432 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
-      await chatManager._actions.sendMessage(topic, message2);
+      await chatManager.postMessage({
+        type: "SEND_MESSAGE",
+        data: { message: message2, topic }
+      });
       const messageInput = this.shadowRoot.querySelector("#message-input");
       if (messageInput) {
         messageInput.value = "";
@@ -17246,7 +17245,8 @@ async function handleIncomingMessage(messageData) {
         topic: messageData.topic
       });
       if (document.hidden) {
-        this.showNotification(`\u041D\u043E\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 ${this.state.currentGroup.name}`);
+        const groupName = typeof this.state.currentGroup.name === "string" ? this.state.currentGroup.name : "\u0413\u0440\u0443\u043F\u043F\u0430";
+        this.showNotification(`\u041D\u043E\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 ${groupName}`);
       }
     } else if (!this.state.currentGroup && messageData.type === "received") {
       log7("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u043D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B %s: %s", messageData.topic, messageData.text);
@@ -17303,17 +17303,19 @@ async function setActiveGroup(group) {
       log7.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B: %o", group);
       throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B");
     }
-    log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s (%s)", group.name, group.topic);
+    const safeName = typeof group.name === "string" ? group.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+    const safeGroup = { ...group, name: safeName };
+    log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s (%s)", safeName, group.topic);
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
     await this.showSkeleton({
       selector: "#messages-list",
       replace: true
     });
-    await this.setCurrentGroup(group);
+    await this.setCurrentGroup(safeGroup);
     await this.updateConnectionStatus(true);
     await this.hideSkeleton();
-    log7("\u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E: %s (%s)", group.name, group.topic);
+    log7("\u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E: %s (%s)", safeName, group.topic);
   } catch (error) {
     log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
     await this.hideSkeleton();
@@ -17345,7 +17347,7 @@ async function searchMessages(query) {
       return;
     }
     const filteredMessages = this.state.messages.filter(
-      (message2) => message2.text.toLowerCase().includes(query.toLowerCase()) || message2.from.toLowerCase().includes(query.toLowerCase())
+      (message2) => message2.text.toLowerCase().includes(query.toLowerCase()) || message2.from && message2.from.toLowerCase().includes(query.toLowerCase())
     );
     const originalMessages = [...this.state.messages];
     this.state.messages = filteredMessages;
@@ -17379,14 +17381,16 @@ async function setActiveMember(member) {
   try {
     if (!member || !member.id) {
       log7.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
-      throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F");
+      return;
     }
     if (member.isCurrentUser) {
       log7("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
       return;
     }
-    log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", member.name, member.id);
-    this.state.activeMember = member;
+    const displayName = member.name || this.generatePeerName(member.id);
+    const memberWithName = { ...member, name: displayName };
+    log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
+    this.state.activeMember = memberWithName;
     this.state.isPrivateChat = true;
     await this.updateMembersList();
     await this.updateChatHeader();
@@ -17396,7 +17400,7 @@ async function setActiveMember(member) {
       state: this.state,
       selector: "#messages-list"
     });
-    log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", member.name);
+    log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", displayName);
   } catch (error) {
     log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
     this.addError({
@@ -17430,9 +17434,12 @@ async function sendPrivateMessage(message2, peerId) {
       return;
     }
     const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager && chatManager.sendPrivateMessage) {
+    if (chatManager) {
       log7("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
-      await chatManager.sendPrivateMessage(peerId, message2);
+      await chatManager.postMessage({
+        type: "SEND_PRIVATE_MESSAGE",
+        data: { peerId, message: message2 }
+      });
       await this.addMessage({
         text: message2,
         from: this.state.peerId,
@@ -17473,7 +17480,6 @@ async function handleIncomingPrivateMessage(messageData) {
     const shouldActivateChat = !this.state.isPrivateChat && messageData.isPrivate;
     if (isForActiveChat || shouldActivateChat) {
       log7("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
-      console.log("-------------------------------------------------------");
       if (shouldActivateChat) {
         const senderMember = this.state.connectedPeers.find((p2) => p2.id === messageData.from);
         if (senderMember) {
@@ -17489,7 +17495,8 @@ async function handleIncomingPrivateMessage(messageData) {
         isPrivate: true
       });
       if (document.hidden && this.state.activeMember) {
-        this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${this.state.activeMember.name}`);
+        const senderName = this.state.activeMember.name || "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C";
+        this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${senderName}`);
       }
     } else if (messageData.isPrivate) {
       log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u043D\u0435 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430", messageData.from);
@@ -17561,11 +17568,21 @@ var ChatInterface = class extends BaseComponent {
     this._log("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u043E: %s", message2.text?.substring(0, 50));
   }
   async setCurrentGroup(group) {
-    this.state.currentGroup = group;
+    if (!group || !group.topic) {
+      this._log.error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:", group);
+      return;
+    }
+    const safeName = typeof group.name === "string" ? group.name : typeof group.name === "object" && group.name?.name ? group.name.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+    const safeGroup = {
+      ...group,
+      name: safeName,
+      topic: typeof group.topic === "string" ? group.topic : ""
+    };
+    this.state.currentGroup = safeGroup;
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
     this.state.messages = [];
-    this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group?.name);
+    this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", safeGroup.name);
     await this.updateChatInput();
     await this.fullRender(this.state);
   }
@@ -17626,8 +17643,8 @@ var ChatInterface = class extends BaseComponent {
       this._log("\u{1F465} \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432: %o", data);
       this.state.connectedPeers = (data.peers || []).map((peer) => ({
         id: peer.id,
-        name: this.generatePeerName(peer.id),
-        // Генерируем имя из ID
+        name: peer.name || this.generatePeerName(peer.id),
+        // Используем переданное имя или генерируем
         online: true,
         connections: peer.connections || 1
       }));
@@ -17901,7 +17918,7 @@ function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = 
         <main class="manager-main">
             <div class="content-grid">
                 ${renderMyGroups2({ groups, nodeReady })}
-                ${renderDiscoveredGroups2({ discoveredGroups, nodeReady })}
+                ${renderDiscoveredGroups2({ discoveredGroups, nodeReady, state: { discoveredGroups, nodeReady } })}
                 ${renderJoinedGroups2({ joinedGroups, nodeReady })}
                 ${renderQuickActions2({ state: { nodeReady } })}
                 ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady }) : ""}
@@ -17932,7 +17949,6 @@ __name(renderMyGroups2, "renderMyGroups");
 function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false, state = {} } = {}) {
   discoveredGroups = state.discoveredGroups || [];
   nodeReady = state.nodeReady;
-  console.log("ddddddddddddddd", discoveredGroups);
   return `
         <section class="section-card" id="discovered-groups-list">
             <div class="card-header">
@@ -17971,7 +17987,7 @@ __name(renderJoinedGroups2, "renderJoinedGroups");
 function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = {}) {
   const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
   const filteredGroups = allGroups.filter(
-    (group) => group.name?.toLowerCase().includes(searchQuery.toLowerCase()) || group.topic?.toLowerCase().includes(searchQuery.toLowerCase())
+    (group) => typeof group.name === "string" && group.name.toLowerCase().includes(searchQuery.toLowerCase()) || typeof group.topic === "string" && group.topic.toLowerCase().includes(searchQuery.toLowerCase())
   );
   return `
         <section class="section-card">
@@ -18029,11 +18045,12 @@ function renderGroupsList(groups, type, nodeReady = false) {
 }
 __name(renderGroupsList, "renderGroupsList");
 function renderGroupItem(group, type, nodeReady = false) {
-  const { id, name: name3, topic, memberCount = 1, description } = group;
+  const name3 = typeof group.name === "string" ? group.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F";
+  const { id, topic, memberCount = 1 } = group;
   return `
         <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
             <div class="group-avatar">
-                ${name3 ? name3.charAt(0).toUpperCase() : "G"}
+                ${getFirstChar(name3)}
             </div>
             <div class="group-info">
                 <div class="group-name">${escapeHtml3(name3)}</div>
@@ -18141,12 +18158,17 @@ function getGroupTypeLabel(type) {
 }
 __name(getGroupTypeLabel, "getGroupTypeLabel");
 function escapeHtml3(text) {
-  if (!text) return "";
+  if (typeof text !== "string") return "";
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
 __name(escapeHtml3, "escapeHtml");
+function getFirstChar(str) {
+  if (typeof str !== "string" || !str) return "G";
+  return str.charAt(0).toUpperCase();
+}
+__name(getFirstChar, "getFirstChar");
 
 // public/components/group-manager/controller/index.mjs
 var controller3 = /* @__PURE__ */ __name(async (context) => {
@@ -18167,16 +18189,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
           if (!context.state.nodeReady) {
             await context.showModal({
               title: "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
-              content: `
-                                <div style="padding: 1rem 0;">
-                                    <p>P2P \u0441\u0435\u0442\u044C \u0435\u0449\u0435 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u0440\u0430\u0431\u043E\u0442\u0435.</p>
-                                    <p>\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.</p>
-                                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1); 
-                                                border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);">
-                                        <strong>\u0421\u0442\u0430\u0442\u0443\u0441:</strong> \u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 \u0441\u0435\u0442\u0438...
-                                    </div>
-                                </div>
-                            `,
+              content: `                                <div style="padding: 1rem 0;">                                    <p>P2P \u0441\u0435\u0442\u044C \u0435\u0449\u0435 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u0440\u0430\u0431\u043E\u0442\u0435.</p>                                    <p>\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.</p>                                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1);                                                 border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);">                                        <strong>\u0421\u0442\u0430\u0442\u0443\u0441:</strong> \u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 \u0441\u0435\u0442\u0438...                                    </div>                                </div>                            `,
               buttons: [
                 {
                   text: "\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441",
@@ -18195,24 +18208,7 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
           }
           await context.showModal({
             title: "\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u043D\u043E\u0432\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B",
-            content: `
-                            <div style="padding: 1rem 0;">
-                                <label for="group-name-input" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                                    \u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="group-name-input" 
-                                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."
-                                    style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
-                                           border-radius: 8px; background: rgba(255,255,255,0.05); 
-                                           color: var(--cosmic-primary); font-size: 1rem;"
-                                >
-                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
-                                    \u0413\u0440\u0443\u043F\u043F\u0430 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0438 \u0441\u0442\u0430\u043D\u0435\u0442 \u0432\u0438\u0434\u0438\u043C\u043E\u0439 \u0434\u043B\u044F \u0434\u0440\u0443\u0433\u0438\u0445 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0435\u0442\u0438.
-                                </div>
-                            </div>
-                        `,
+            content: `                            <div style="padding: 1rem 0;">                                <label for="group-name-input" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">                                    \u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:                                </label>                                <input                                     type="text"                                     id="group-name-input"                                     placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."                                    style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2);                                            border-radius: 8px; background: rgba(255,255,255,0.05);                                            color: var(--cosmic-primary); font-size: 1rem;"                                >                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">                                    \u0413\u0440\u0443\u043F\u043F\u0430 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0438 \u0441\u0442\u0430\u043D\u0435\u0442 \u0432\u0438\u0434\u0438\u043C\u043E\u0439 \u0434\u043B\u044F \u0434\u0440\u0443\u0433\u0438\u0445 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0435\u0442\u0438.                                </div>                            </div>                        `,
             buttons: [
               {
                 text: "\u041E\u0442\u043C\u0435\u043D\u0430",
@@ -18238,6 +18234,13 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                       const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
                       if (chatManager) {
                         await chatManager.postMessage({
+                          type: "GROUP_CREATED",
+                          data: group
+                        });
+                      }
+                      const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+                      if (chatInterface) {
+                        await chatInterface.postMessage({
                           type: "GROUP_CREATED",
                           data: group
                         });
@@ -18338,6 +18341,13 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                       data: group
                     });
                   }
+                  const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+                  if (chatInterface) {
+                    await chatInterface.postMessage({
+                      type: "JOIN_GROUP",
+                      data: group
+                    });
+                  }
                 } catch (error) {
                   log7.error("error joining group: %o", error);
                   await context.showModal({
@@ -18426,6 +18436,19 @@ async function createActions3(context) {
   let discoveredGroupsInterval = null;
   const GROUPS_ANNOUNCEMENT_TOPIC = "chat-groups-announcements";
   const log7 = logger("group-manager:actions");
+  function normalizeGroupName(name3) {
+    if (typeof name3 === "string" && name3.trim()) {
+      return name3.trim();
+    }
+    if (typeof name3 === "object" && name3 !== null && typeof name3.name === "string") {
+      return name3.name.trim();
+    }
+    if (typeof name3 === "object" && name3 !== null && typeof name3.topic === "string") {
+      return extractGroupNameFromTopic(name3.topic);
+    }
+    return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+  }
+  __name(normalizeGroupName, "normalizeGroupName");
   return {
     /**
      * Инициализация Libp2p для работы с группами
@@ -18474,6 +18497,7 @@ async function createActions3(context) {
         const announcement = JSON.parse(new TextDecoder().decode(message2.data));
         if (announcement.type === "GROUP_CREATED" || announcement.type === "GROUP_UPDATED") {
           const groupInfo = announcement.data;
+          groupInfo.name = normalizeGroupName(groupInfo.name);
           await this.updateDiscoveredGroups(groupInfo);
           log7("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
         }
@@ -18490,6 +18514,7 @@ async function createActions3(context) {
       if (!context.state.discoveredGroups) {
         context.state.discoveredGroups = [];
       }
+      groupInfo.name = normalizeGroupName(groupInfo.name);
       const existingIndex = context.state.discoveredGroups.findIndex((g) => g.id === groupInfo.id);
       if (existingIndex >= 0) {
         context.state.discoveredGroups[existingIndex] = {
@@ -18605,6 +18630,7 @@ async function createActions3(context) {
         if (request.type === "GROUPS_DISCOVERY_RESPONSE") {
           const discoveredGroups = request.data.groups || [];
           for (const group of discoveredGroups) {
+            group.name = normalizeGroupName(group.name);
             await this.updateDiscoveredGroups(group);
           }
           log7("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
@@ -18641,9 +18667,10 @@ async function createActions3(context) {
             } else if (topic.startsWith("chat-groups-")) {
               groupName = topic.replace("chat-groups-", "").split("-")[0];
             }
+            groupName = normalizeGroupName(groupName);
             let groupInfo = {
               id: topic,
-              name: this.formatGroupName(groupName),
+              name: groupName,
               topic,
               memberCount,
               description: this.generateGroupDescription(groupName),
@@ -18687,13 +18714,14 @@ async function createActions3(context) {
         throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
       }
       try {
-        const topic = `chat-group-${this.sanitizeTopicName(groupName)}-${Date.now()}`;
+        const safeGroupName = normalizeGroupName(groupName);
+        const topic = `chat-group-${this.sanitizeTopicName(safeGroupName)}-${Date.now()}`;
         const group = {
           id: topic,
-          name: groupName,
+          name: safeGroupName,
           topic,
           memberCount: 1,
-          description: options.description || `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${groupName}`,
+          description: options.description || `\u0413\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F: ${safeGroupName}`,
           isPublic: options.isPublic !== false,
           createdAt: Date.now(),
           createdBy: libp2p.peerId.toString(),
@@ -18707,7 +18735,7 @@ async function createActions3(context) {
           context.state.groups = [];
         }
         context.state.groups.push(group);
-        log7("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", groupName, topic);
+        log7("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", safeGroupName, topic);
         await this.safeUpdateMyGroupsUI();
         return group;
       } catch (error) {
@@ -18767,6 +18795,7 @@ async function createActions3(context) {
           data: {
             id: group.id,
             name: group.name,
+            // уже строка
             topic: group.topic,
             description: group.description,
             memberCount: group.memberCount,
@@ -18817,6 +18846,7 @@ async function createActions3(context) {
           joinedAt: Date.now(),
           isPublic: true
         };
+        group.name = normalizeGroupName(group.name);
         if (!context.state.joinedGroups) {
           context.state.joinedGroups = [];
         }
@@ -19324,9 +19354,9 @@ var GroupManager = class extends BaseComponent {
           data: group
         });
       }
-      const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
-      if (peerConnection) {
-        await peerConnection.postMessage({
+      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+      if (chatInterface) {
+        await chatInterface.postMessage({
           type: "GROUP_CREATED",
           data: group
         });

@@ -8,6 +8,7 @@ import { logger } from '@libp2p/logger';
 export const controller = async (context) => {
     const log = logger('chat-interface:controller');
     let eventListeners = [];
+    let mentionMenu = null;
 
     return {
         /**
@@ -97,7 +98,7 @@ export const controller = async (context) => {
                     if (membersPanel) {
                         const isVisible = membersPanel.style.display !== 'none';
                         membersPanel.style.display = isVisible ? 'none' : 'block';
-                        toggleMembersBtn.textContent = isVisible ? 'Показать участников' : 'Скрыть участников';
+                        toggleMembersBtn.textContent = isVisible ? 'Скрыть участников' : 'Показать участников';
                         log('видимость панели участников изменена: %s', isVisible ? 'скрыта' : 'показана');
                     }
                 };
@@ -193,6 +194,115 @@ export const controller = async (context) => {
                 });
             };
 
+            // === НОВОЕ: обработчик клика по сообщению для активации топика ===
+            const messagesList = context.shadowRoot.querySelector('#messages-list');
+            if (messagesList) {
+                const messageClickHandler = async (e) => {
+                    const messageEl = e.target.closest('.message-item');
+                    if (messageEl) {
+                        const topic = messageEl.dataset.topic;
+                        if (topic && !context.state.isPrivateChat) {
+                            const group = context.state.discoveredGroups?.find(g => g.topic === topic) ||
+                                context.state.groups?.find(g => g.topic === topic);
+
+                            if (group) {
+                                await context.setActiveGroup(group);
+                            }
+                        }
+                    }
+                };
+                messagesList.addEventListener('click', messageClickHandler);
+                eventListeners.push({ element: messagesList, handler: messageClickHandler });
+            }
+
+            // === НОВОЕ: обработчик ввода @ для показа участников ===
+            const messageInputField = context.shadowRoot.querySelector('#message-input');
+            if (messageInputField) {
+                const inputHandler = (e) => {
+                    const cursorPos = e.target.selectionStart;
+                    const text = e.target.value.substring(0, cursorPos);
+                    const lastAt = text.lastIndexOf('@');
+
+                    if (lastAt === -1 || lastAt < text.lastIndexOf(' ')) {
+                        hideMentionMenu();
+                        return;
+                    }
+
+                    const query = text.substring(lastAt + 1).trim();
+                    showMentionMenu(query, cursorPos, messageInputField);
+                };
+
+                messageInputField.addEventListener('input', inputHandler);
+                eventListeners.push({ element: messageInputField, handler: inputHandler });
+            }
+
+            // Скрытие меню упоминаний при клике вне его
+            const globalClickHandler = (e) => {
+                if (!e.target.closest('#mention-menu') && !e.target.closest('#message-input')) {
+                    hideMentionMenu();
+                }
+            };
+            document.addEventListener('click', globalClickHandler);
+            eventListeners.push({ element: document, handler: globalClickHandler });
+
+            // Функция показа меню упоминаний
+            function showMentionMenu(query, cursorPos, inputEl) {
+                const rect = inputEl.getBoundingClientRect();
+                const members = context.getGroupMembers().filter(m =>
+                    m.name.toLowerCase().includes(query.toLowerCase())
+                );
+
+                if (members.length === 0) {
+                    hideMentionMenu();
+                    return;
+                }
+
+                mentionMenu = document.createElement('div');
+                mentionMenu.id = 'mention-menu';
+                mentionMenu.style.cssText = `
+                    position: absolute;
+                    top: ${rect.bottom + window.scrollY}px;
+                    left: ${rect.left + window.scrollX}px;
+                    background: #1e293b;
+                    border: 1px solid #4b5563;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                `;
+
+                mentionMenu.innerHTML = members.map(m => `
+                    <div data-peer-id="${m.id}" style="
+                        padding: 8px 12px;
+                        cursor: pointer;
+                    " onmouseenter="this.style.backgroundColor='#334155'" 
+                    onmouseleave="this.style.backgroundColor='transparent'">
+                        ${m.name}
+                    </div>
+                `).join('');
+
+                document.body.appendChild(mentionMenu);
+
+                mentionMenu.querySelectorAll('div').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const name = item.textContent;
+                        const currentValue = inputEl.value;
+                        const newValue = currentValue.substring(0, cursorPos - query.length - 1) + name + ' ';
+                        inputEl.value = newValue;
+                        hideMentionMenu();
+                        inputEl.focus();
+                    });
+                });
+            }
+
+            function hideMentionMenu() {
+                if (mentionMenu) {
+                    mentionMenu.remove();
+                    mentionMenu = null;
+                }
+            }
+
             // Наблюдатель за изменениями DOM для динамических кнопок
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
@@ -213,10 +323,8 @@ export const controller = async (context) => {
             context._groupObserver = observer;
 
             // Инициализация обработчиков при первом рендере
-            // setTimeout(() => {
-                setupGroupActionHandlers();
-                setupMemberClickHandlers();
-            // }, 100);
+            setupGroupActionHandlers();
+            setupMemberClickHandlers();
 
             // Обработчик для кнопки отправки сообщения #send-button
             const setupSendButtonHandler = () => {
@@ -277,16 +385,7 @@ export const controller = async (context) => {
             };
 
             // Инициализация обработчика кнопки отправки
-            // setTimeout(() => {
-                setupSendButtonHandler();
-            // }, 100);
-
-            // Автофокус на поле ввода сообщения
-            // if (messageInput) {
-            //     setTimeout(() => {
-            //         messageInput.focus();
-            //     }, 100);
-            // }
+            setupSendButtonHandler();
 
             log('контроллер инициализирован');
             log('Total event listeners: %d', eventListeners.length);
@@ -309,8 +408,13 @@ export const controller = async (context) => {
         async destroy() {
             // Очистка всех обработчиков событий
             eventListeners.forEach(({ element, handler }) => {
-                element.removeEventListener('click', handler);
-                element.removeEventListener('keypress', handler);
+                if (element === document) {
+                    element.removeEventListener('click', handler);
+                } else {
+                    element.removeEventListener('click', handler);
+                    element.removeEventListener('keypress', handler);
+                    element.removeEventListener('input', handler);
+                }
             });
 
             log('контроллер уничтожен, удалено обработчиков: %d', eventListeners.length);

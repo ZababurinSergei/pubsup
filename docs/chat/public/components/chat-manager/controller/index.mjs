@@ -300,23 +300,99 @@ export const controller = async (context) => {
                         const groupId = e.currentTarget.getAttribute('data-group-id');
                         const groupTopic = e.currentTarget.getAttribute('data-group-topic');
 
-                        if (groupId || groupTopic) {
-                            const topic = groupTopic || groupId;
-                            const group = context.state.groups.find(g => g.id === topic || g.topic === topic);
-                            if (group) {
-                                try {
-                                    await context.joinGroup(group);
-                                    log('Switched to group: %s', group.name);
-                                } catch (error) {
-                                    log.error('Error switching group: %o', error);
-                                    context.addError({
-                                        componentName: context.constructor.name,
-                                        source: 'group-switch',
-                                        message: 'Ошибка переключения группы',
-                                        details: error
-                                    });
-                                }
+                        if (!groupId && !groupTopic) {
+                            log.warn('Клик по группе без data-group-id или data-group-topic');
+                            return;
+                        }
+
+                        const topic = groupTopic || groupId;
+
+                        // Ищем группу в любом из списков
+                        const group =
+                            context.state.groups.find(g => g.id === topic || g.topic === topic) ||
+                            context.state.discoveredGroups.find(g => g.id === topic || g.topic === topic) ||
+                            context.state.joinedGroups.find(g => g.id === topic || g.topic === topic);
+
+                        if (!group) {
+                            log.warn('Группа не найдена по топику/ID:', topic);
+                            return;
+                        }
+
+                        // Проверяем, подписан ли пользователь на топик
+                        const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
+
+                        if (isSubscribed) {
+                            // Уже подписан — просто активируем
+                            try {
+                                context.state.currentGroup = group;
+                                await context.fullRender(context.state);
+                                log('Группа активирована: %s', group.name);
+                            } catch (error) {
+                                log.error('Ошибка активации группы: %o', error);
+                                context.addError({
+                                    componentName: context.constructor.name,
+                                    source: 'group-activate',
+                                    message: 'Не удалось активировать группу',
+                                    details: error
+                                });
                             }
+                        } else {
+                            // Не подписан — спрашиваем
+                            await context.showModal({
+                                title: `Подписаться на группу "${group.name}"?`,
+                                content: `<p>Вы не подписаны на эту группу. Хотите присоединиться и получать сообщения?</p>`,
+                                buttons: [
+                                    {
+                                        text: 'Отмена',
+                                        type: 'secondary',
+                                        action: () => log('Подписка отменена')
+                                    },
+                                    {
+                                        text: 'Подписаться',
+                                        type: 'primary',
+                                        action: async () => {
+                                            try {
+                                                // Подписываемся через actions
+                                                const success = await context._actions.subscribeToGroup(group.topic);
+                                                if (success) {
+                                                    // Добавляем в "мои" или "присоединённые", если ещё не там
+                                                    if (!context.state.groups.find(g => g.topic === group.topic)) {
+                                                        context.state.groups.push({ ...group, joinedAt: Date.now() });
+                                                    }
+
+                                                    // Активируем группу
+                                                    context.state.currentGroup = group;
+                                                    await context.fullRender(context.state);
+
+                                                    // Уведомляем chat-interface
+                                                    const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                                                    if (chatInterface) {
+                                                        await chatInterface.setCurrentGroup(group);
+                                                    }
+
+                                                    log('Успешная подписка и активация группы: %s', group.name);
+                                                } else {
+                                                    throw new Error('Не удалось подписаться на топик');
+                                                }
+                                            } catch (error) {
+                                                log.error('Ошибка при подписке на группу: %o', error);
+                                                context.addError({
+                                                    componentName: context.constructor.name,
+                                                    source: 'group-subscribe',
+                                                    message: `Не удалось присоединиться к группе "${group.name}"`,
+                                                    details: error
+                                                });
+                                                await context.showModal({
+                                                    title: 'Ошибка',
+                                                    content: `<p>Не удалось присоединиться к группе: ${error.message}</p>`,
+                                                    buttons: [{ text: 'OK', type: 'primary' }]
+                                                });
+                                            }
+                                        }
+                                    }
+                                ],
+                                closeOnBackdropClick: true
+                            });
                         }
                     };
 

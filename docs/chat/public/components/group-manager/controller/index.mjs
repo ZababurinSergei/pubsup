@@ -28,15 +28,15 @@ export const controller = async (context) => {
                     if (!context.state.nodeReady) {
                         await context.showModal({
                             title: 'Сеть не готова',
-                            content: `
-                                <div style="padding: 1rem 0;">
-                                    <p>P2P сеть еще не готова к работе.</p>
-                                    <p>Пожалуйста, подождите немного и попробуйте снова.</p>
-                                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1); 
-                                                border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);">
-                                        <strong>Статус:</strong> Ожидание инициализации сети...
-                                    </div>
-                                </div>
+                            content: `\
+                                <div style=\"padding: 1rem 0;\">\
+                                    <p>P2P сеть еще не готова к работе.</p>\
+                                    <p>Пожалуйста, подождите немного и попробуйте снова.</p>\
+                                    <div style=\"margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1); \
+                                                border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);\">\
+                                        <strong>Статус:</strong> Ожидание инициализации сети...\
+                                    </div>\
+                                </div>\
                             `,
                             buttons: [
                                 {
@@ -58,23 +58,23 @@ export const controller = async (context) => {
                     // Показываем модальное окно для ввода названия группы
                     await context.showModal({
                         title: 'Создание новой группы',
-                        content: `
-                            <div style="padding: 1rem 0;">
-                                <label for="group-name-input" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
-                                    Название группы:
-                                </label>
-                                <input 
-                                    type="text" 
-                                    id="group-name-input" 
-                                    placeholder="Введите название группы..."
-                                    style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); 
-                                           border-radius: 8px; background: rgba(255,255,255,0.05); 
-                                           color: var(--cosmic-primary); font-size: 1rem;"
-                                >
-                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">
-                                    Группа будет создана и станет видимой для других участников сети.
-                                </div>
-                            </div>
+                        content: `\
+                            <div style=\"padding: 1rem 0;\">\
+                                <label for=\"group-name-input\" style=\"display: block; margin-bottom: 0.5rem; font-weight: 600;\">\
+                                    Название группы:\
+                                </label>\
+                                <input \
+                                    type=\"text\" \
+                                    id=\"group-name-input\" \
+                                    placeholder=\"Введите название группы...\"\
+                                    style=\"width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); \
+                                           border-radius: 8px; background: rgba(255,255,255,0.05); \
+                                           color: var(--cosmic-primary); font-size: 1rem;\"\
+                                >\
+                                <div style=\"margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);\">\
+                                    Группа будет создана и станет видимой для других участников сети.\
+                                </div>\
+                            </div>\
                         `,
                         buttons: [
                             {
@@ -103,10 +103,18 @@ export const controller = async (context) => {
                                                 await context.fullRender(context.state);
                                             }
 
-                                            // Уведомляем chat-manager о создании группы
+                                            // Уведомляем chat-manager и chat-interface о создании группы
                                             const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
                                             if (chatManager) {
                                                 await chatManager.postMessage({
+                                                    type: 'GROUP_CREATED',
+                                                    data: group
+                                                });
+                                            }
+
+                                            const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                                            if (chatInterface) {
+                                                await chatInterface.postMessage({
                                                     type: 'GROUP_CREATED',
                                                     data: group
                                                 });
@@ -225,10 +233,18 @@ export const controller = async (context) => {
                                     await context.joinGroup(group);
                                     log('successfully joined group: %s', group.name);
 
-                                    // Уведомляем chat-manager о присоединении к группе
+                                    // Уведомляем chat-manager и chat-interface о присоединении к группе
                                     const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
                                     if (chatManager) {
                                         await chatManager.postMessage({
+                                            type: 'JOIN_GROUP',
+                                            data: group
+                                        });
+                                    }
+
+                                    const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                                    if (chatInterface) {
+                                        await chatInterface.postMessage({
                                             type: 'JOIN_GROUP',
                                             data: group
                                         });

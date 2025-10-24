@@ -453,10 +453,10 @@ export class GroupManager extends BaseComponent {
                 });
             }
 
-            // Уведомляем peer-connection если нужно
-            const peerConnection = await this.getComponentAsync('peer-connection', 'peer-connection');
-            if (peerConnection) {
-                await peerConnection.postMessage({
+            // Уведомляем chat-interface напрямую
+            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+            if (chatInterface) {
+                await chatInterface.postMessage({
                     type: 'GROUP_CREATED',
                     data: group
                 });

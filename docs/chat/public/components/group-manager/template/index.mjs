@@ -97,7 +97,7 @@ export function renderMainContent({ groups = [], discoveredGroups = [], joinedGr
         <main class="manager-main">
             <div class="content-grid">
                 ${renderMyGroups({ groups, nodeReady })}
-                ${renderDiscoveredGroups({ discoveredGroups, nodeReady })}
+                ${renderDiscoveredGroups({ discoveredGroups, nodeReady, state: { discoveredGroups, nodeReady } })}
                 ${renderJoinedGroups({ joinedGroups, nodeReady })}
                 ${renderQuickActions({ state: { nodeReady } })}
                 ${searchQuery ? renderSearchResults({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady }) : ''}
@@ -132,10 +132,9 @@ export function renderMyGroups({ groups = [], nodeReady = false } = {}) {
  * Обнаруженные группы
  */
 export function renderDiscoveredGroups({ discoveredGroups = [], nodeReady = false, state = {}} = {}) {
-    discoveredGroups = state.discoveredGroups || []
-    nodeReady = state.nodeReady
+    discoveredGroups = state.discoveredGroups || [];
+    nodeReady = state.nodeReady;
 
-    console.log('ddddddddddddddd', discoveredGroups)
     return `
         <section class="section-card" id="discovered-groups-list">
             <div class="card-header">
@@ -180,8 +179,8 @@ export function renderJoinedGroups({ joinedGroups = [], nodeReady = false } = {}
 export function renderSearchResults({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = '', nodeReady = false } = {}) {
     const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
     const filteredGroups = allGroups.filter(group =>
-        group.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        group.topic?.toLowerCase().includes(searchQuery.toLowerCase())
+        (typeof group.name === 'string' && group.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (typeof group.topic === 'string' && group.topic.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     return `
@@ -246,15 +245,16 @@ function renderGroupsList(groups, type, nodeReady = false) {
 }
 
 /**
- * Элемент группы
+ * Элемент группы — с защитой от group.name как объекта
  */
 function renderGroupItem(group, type, nodeReady = false) {
-    const { id, name, topic, memberCount = 1, description } = group;
+    const name = typeof group.name === 'string' ? group.name : 'Безымянная';
+    const { id, topic, memberCount = 1 } = group;
 
     return `
         <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
             <div class="group-avatar">
-                ${name ? name.charAt(0).toUpperCase() : 'G'}
+                ${getFirstChar(name)}
             </div>
             <div class="group-info">
                 <div class="group-name">${escapeHtml(name)}</div>
@@ -373,8 +373,16 @@ function getGroupTypeLabel(type) {
 }
 
 function escapeHtml(text) {
-    if (!text) return '';
+    if (typeof text !== 'string') return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Безопасное получение первого символа для аватара
+ */
+function getFirstChar(str) {
+    if (typeof str !== 'string' || !str) return 'G';
+    return str.charAt(0).toUpperCase();
 }
