@@ -2592,6 +2592,90 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         refreshMembersBtn.addEventListener("click", handler);
         eventListeners.push({ element: refreshMembersBtn, handler });
       }
+      async function activateGroup(group) {
+        if (!group || !group.topic) {
+          log2.error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:", group);
+          return;
+        }
+        const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
+        if (isSubscribed) {
+          try {
+            context.state.currentGroup = group;
+            await context.renderPart({
+              partName: "renderMyGroups",
+              state: context.state,
+              selector: "#my-groups-container"
+            });
+            log2("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
+            const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+            if (chatInterface) {
+              await chatInterface.setCurrentGroup(group);
+            }
+          } catch (error) {
+            log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+            context.addError({
+              componentName: context.constructor.name,
+              source: "group-activate",
+              message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443",
+              details: error
+            });
+          }
+        } else {
+          await context.showModal({
+            title: `\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 "${group.name}"?`,
+            content: `<p>\u0412\u044B \u043D\u0435 \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u044B \u043D\u0430 \u044D\u0442\u0443 \u0433\u0440\u0443\u043F\u043F\u0443. \u0425\u043E\u0442\u0438\u0442\u0435 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u0438 \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F?</p>`,
+            buttons: [
+              {
+                text: "\u041E\u0442\u043C\u0435\u043D\u0430",
+                type: "secondary",
+                action: /* @__PURE__ */ __name(() => log2("\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
+              },
+              {
+                text: "\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F",
+                type: "primary",
+                action: /* @__PURE__ */ __name(async () => {
+                  try {
+                    const success = await context._actions.subscribeToGroup(group.topic);
+                    if (success) {
+                      if (!context.state.groups.find((g) => g.topic === group.topic)) {
+                        context.state.groups.push({ ...group, joinedAt: Date.now() });
+                      }
+                      context.state.currentGroup = group;
+                      await context.renderPart({
+                        partName: "renderMyGroups",
+                        state: context.state,
+                        selector: "#my-groups-container"
+                      });
+                      const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+                      if (chatInterface) {
+                        await chatInterface.setCurrentGroup(group);
+                      }
+                      log2("\u0423\u0441\u043F\u0435\u0448\u043D\u0430\u044F \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %s", group.name);
+                    } else {
+                      throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0442\u043E\u043F\u0438\u043A");
+                    }
+                  } catch (error) {
+                    log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: %o", error);
+                    context.addError({
+                      componentName: context.constructor.name,
+                      source: "group-subscribe",
+                      message: `\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435 "${group.name}"`,
+                      details: error
+                    });
+                    await context.showModal({
+                      title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                      content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
+                      buttons: [{ text: "OK", type: "primary" }]
+                    });
+                  }
+                }, "action")
+              }
+            ],
+            closeOnBackdropClick: true
+          });
+        }
+      }
+      __name(activateGroup, "activateGroup");
       const setupGroupHandlers = /* @__PURE__ */ __name(() => {
         const groupItems = context.shadowRoot.querySelectorAll(".group-item");
         groupItems.forEach((item) => {
@@ -2611,71 +2695,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               log2.warn("\u0413\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443/ID:", topic);
               return;
             }
-            const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
-            if (isSubscribed) {
-              try {
-                context.state.currentGroup = group;
-                await context.fullRender(context.state);
-                log2("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
-              } catch (error) {
-                log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
-                context.addError({
-                  componentName: context.constructor.name,
-                  source: "group-activate",
-                  message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443",
-                  details: error
-                });
-              }
-            } else {
-              await context.showModal({
-                title: `\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 "${group.name}"?`,
-                content: `<p>\u0412\u044B \u043D\u0435 \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u044B \u043D\u0430 \u044D\u0442\u0443 \u0433\u0440\u0443\u043F\u043F\u0443. \u0425\u043E\u0442\u0438\u0442\u0435 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u0438 \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F?</p>`,
-                buttons: [
-                  {
-                    text: "\u041E\u0442\u043C\u0435\u043D\u0430",
-                    type: "secondary",
-                    action: /* @__PURE__ */ __name(() => log2("\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
-                  },
-                  {
-                    text: "\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F",
-                    type: "primary",
-                    action: /* @__PURE__ */ __name(async () => {
-                      try {
-                        const success = await context._actions.subscribeToGroup(group.topic);
-                        if (success) {
-                          if (!context.state.groups.find((g) => g.topic === group.topic)) {
-                            context.state.groups.push({ ...group, joinedAt: Date.now() });
-                          }
-                          context.state.currentGroup = group;
-                          await context.fullRender(context.state);
-                          const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
-                          if (chatInterface) {
-                            await chatInterface.setCurrentGroup(group);
-                          }
-                          log2("\u0423\u0441\u043F\u0435\u0448\u043D\u0430\u044F \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %s", group.name);
-                        } else {
-                          throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0442\u043E\u043F\u0438\u043A");
-                        }
-                      } catch (error) {
-                        log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: %o", error);
-                        context.addError({
-                          componentName: context.constructor.name,
-                          source: "group-subscribe",
-                          message: `\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435 "${group.name}"`,
-                          details: error
-                        });
-                        await context.showModal({
-                          title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-                          content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
-                          buttons: [{ text: "OK", type: "primary" }]
-                        });
-                      }
-                    }, "action")
-                  }
-                ],
-                closeOnBackdropClick: true
-              });
-            }
+            await activateGroup(group);
           }, "handler");
           item.addEventListener("click", handler);
           eventListeners.push({ element: item, handler });
@@ -2803,12 +2823,15 @@ async function createActions(context) {
               if (context.state.currentGroup?.topic === topic) {
                 const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
                 if (chatInterface) {
-                  await chatInterface.handleIncomingMessage({
-                    text,
-                    topic,
-                    from: messageFrom,
-                    type: messageType,
-                    timestamp: Date.now()
+                  await chatInterface.postMessage({
+                    type: "INCOMING_MESSAGE",
+                    data: {
+                      text,
+                      topic,
+                      from: messageFrom,
+                      type: messageType,
+                      timestamp: Date.now()
+                    }
                   });
                 }
               }
@@ -16186,24 +16209,7 @@ var ChatManager = class extends BaseComponent {
       createdAt: Date.now(),
       isPublic: true
     };
-    this.state.groups.push(group);
-    if (!this.state.discoveredGroups) this.state.discoveredGroups = [];
-    this.state.discoveredGroups.unshift(group);
-    await this._actions.subscribeToGroup(group.topic);
-    await this.announceGroupCreation(group);
-    await this.renderPart({
-      partName: "renderMyGroups",
-      state: this.state,
-      selector: "#my-groups-container"
-      // ← должен быть в шаблоне
-    });
-    await this.renderPart({
-      partName: "renderDiscoveredGroups",
-      state: this.state,
-      selector: "#discovered-groups-container"
-      // ← должен быть в шаблоне
-    });
-    const groupManager = await this.getComponentAsync("group-manager", "main-group-manager");
+    const groupManager = await this.getComponentAsync("group-manager", "group-manager");
     if (groupManager) {
       await groupManager.createGroup(groupName);
     }
@@ -16551,7 +16557,7 @@ var ChatManager = class extends BaseComponent {
       });
       const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
       if (chatInterface && chatInterface._actions && chatInterface._actions.handleIncomingPrivateMessage) {
-        await chatInterface._actions.handleIncomingPrivateMessage(messageData);
+        await chatInterface.postMessage({ type: "INCOMING_PRIVATE_MESSAGE", data: messageData });
       }
       log5("Private message processed from: %s", messageData.from);
     } catch (error) {
@@ -17827,10 +17833,10 @@ var ChatInterface = class extends BaseComponent {
           await this.handleConnectionStatusUpdate(event.data);
           break;
         case "INCOMING_MESSAGE":
-          await this.handleIncomingMessage(event.data);
+          await this._actions.handleIncomingMessage(event.data);
           break;
         case "INCOMING_PRIVATE_MESSAGE":
-          await this.handleIncomingPrivateMessage(event.data);
+          await this._actions.handleIncomingPrivateMessage(event.data);
           break;
         default:
           this._log.error("\u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);

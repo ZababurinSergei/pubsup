@@ -278,31 +278,29 @@ export class ChatManager extends BaseComponent {
         };
 
         // Добавляем в "Мои группы"
-        this.state.groups.push(group);
+        // this.state.groups.push(group);
 
         // Добавляем в "Обнаруженные группы" (включая себя)
-        if (!this.state.discoveredGroups) this.state.discoveredGroups = [];
-        this.state.discoveredGroups.unshift(group); // или push
-
-        await this._actions.subscribeToGroup(group.topic);
-
-        await this.announceGroupCreation(group);
+        // if (!this.state.discoveredGroups) this.state.discoveredGroups = [];
+        // this.state.discoveredGroups.unshift(group); // или push
+        // await this._actions.subscribeToGroup(group.topic);
+        // await this.announceGroupCreation(group);
 
         // Обновляем "Мои группы"
-        await this.renderPart({
-            partName: 'renderMyGroups',
-            state: this.state,
-            selector: '#my-groups-container' // ← должен быть в шаблоне
-        });
+        // await this.renderPart({
+        //     partName: 'renderMyGroups',
+        //     state: this.state,
+        //     selector: '#my-groups-container' // ← должен быть в шаблоне
+        // });
 
         // Обновляем "Обнаруженные группы"
-        await this.renderPart({
-            partName: 'renderDiscoveredGroups',
-            state: this.state,
-            selector: '#discovered-groups-container' // ← должен быть в шаблоне
-        });
+        // await this.renderPart({
+        //     partName: 'renderDiscoveredGroups',
+        //     state: this.state,
+        //     selector: '#discovered-groups-container' // ← должен быть в шаблоне
+        // });
 
-        const groupManager = await this.getComponentAsync('group-manager', 'main-group-manager');
+        const groupManager = await this.getComponentAsync('group-manager', 'group-manager');
         if (groupManager) {
             await groupManager.createGroup(groupName);
         }
@@ -756,7 +754,8 @@ export class ChatManager extends BaseComponent {
             // Передаем сообщение в chat-interface для отображения
             const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
             if (chatInterface && chatInterface._actions && chatInterface._actions.handleIncomingPrivateMessage) {
-                await chatInterface._actions.handleIncomingPrivateMessage(messageData);
+                await chatInterface.postMessage({ type: 'INCOMING_PRIVATE_MESSAGE', data: messageData });
+                // await chatInterface._actions.handleIncomingPrivateMessage(messageData);
             }
 
             log('Private message processed from: %s', messageData.from);

@@ -127,11 +127,11 @@ export class ChatInterface extends BaseComponent {
                     break;
 
                 case 'INCOMING_MESSAGE':
-                    await this.handleIncomingMessage(event.data);
+                    await this._actions.handleIncomingMessage(event.data);
                     break;
 
                 case 'INCOMING_PRIVATE_MESSAGE':
-                    await this.handleIncomingPrivateMessage(event.data);
+                    await this._actions.handleIncomingPrivateMessage(event.data);
                     break;
 
                 default:

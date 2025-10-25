@@ -44,12 +44,15 @@ export async function createActions(context) {
                             if (context.state.currentGroup?.topic === topic) {
                                 const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
                                 if (chatInterface) {
-                                    await chatInterface.handleIncomingMessage({
-                                        text,
-                                        topic,
-                                        from: messageFrom,
-                                        type: messageType,
-                                        timestamp: Date.now()
+                                    await chatInterface.postMessage({
+                                        type: 'INCOMING_MESSAGE',
+                                        data: {
+                                            text,
+                                            topic,
+                                            from: messageFrom,
+                                            type: messageType,
+                                            timestamp: Date.now()
+                                        }
                                     });
                                 }
                             }
