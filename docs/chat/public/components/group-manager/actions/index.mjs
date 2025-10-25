@@ -72,6 +72,8 @@ export async function createActions(context) {
                         } catch (error) {
                             log.error('ошибка обработки сообщения: %o', error);
                         }
+                    } else {
+
                     }
                 });
 

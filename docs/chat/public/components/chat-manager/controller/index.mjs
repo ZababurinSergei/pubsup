@@ -87,6 +87,7 @@ export const controller = async (context) => {
                         const message = messageInput.value.trim();
                         if (message && context.state.currentGroup) {
                             try {
+                                console.log('sendHandler -> sendGroupMessage')
                                 await context.sendGroupMessage(message);
                                 messageInput.value = '';
                                 log('Сообщение отправлено через контроллер');
@@ -287,6 +288,15 @@ export const controller = async (context) => {
                 eventListeners.push({ element: restartNodeBtn, handler: handler });
             }
 
+            // Обработчик обновления участников группы
+            const refreshMembersBtn = context.shadowRoot.querySelector('#refresh-group-members');
+            if (refreshMembersBtn) {
+                const handler = async () => {
+                    await context.refreshGroupMembers();
+                };
+                refreshMembersBtn.addEventListener('click', handler);
+                eventListeners.push({ element: refreshMembersBtn, handler });
+            }
             // Обработчики для переключения между группами
             const setupGroupHandlers = () => {
                 const groupItems = context.shadowRoot.querySelectorAll('.group-item');
@@ -463,9 +473,10 @@ export const controller = async (context) => {
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.type === 'childList') {
-                        setupGroupHandlers();
-                        setupGroupActionHandlers();
-                        setupSendMessageHandler(); // Переустановка обработчиков отправки
+                        if(mutation.target.id === 'discovered-groups-container') {
+                            // setupGroupHandlers();
+                            // setupGroupActionHandlers();
+                        }
                     }
                 });
             });
@@ -479,12 +490,9 @@ export const controller = async (context) => {
             // Сохраняем observer для очистки
             context._groupObserver = observer;
 
-            // Инициализация обработчиков при первом рендере
-            setTimeout(() => {
                 setupGroupHandlers();
                 setupGroupActionHandlers();
-                setupSendMessageHandler(); // Инициализация обработчиков отправки
-            }, 100);
+                setupSendMessageHandler();
 
             // Автофокус на поле ввода сообщения
             const messageInput = context.shadowRoot.querySelector('#message-input');

@@ -1,5 +1,4 @@
 import { logger } from '@libp2p/logger';
-
 const log = logger('chat-manager:actions');
 
 /**
@@ -8,7 +7,64 @@ const log = logger('chat-manager:actions');
  * @returns {Promise<Object>} Объект с методами действий
  */
 export async function createActions(context) {
+    let isGlobalHandlerRegistered = false;
+
     return {
+        async registerGlobalMessageHandler() {
+            if (!context.node || isGlobalHandlerRegistered) return;
+
+            try {
+                context.node.services.pubsub.addEventListener('message', async (event) => {
+                    const { topic, data, from } = event.detail;
+
+                    // Игнорируем служебный топик анонсов
+                    if (topic === 'chat-groups-announcements') return;
+
+                    // Обрабатываем только публичные чат-топики
+                    if (topic.startsWith('chat-group-')) {
+                        try {
+                            const text = new TextDecoder().decode(data);
+                            log('Получено сообщение из топика %s: %s', topic, text);
+
+                            // Определяем, является ли сообщение нашим
+                            const isOwnMessage = from && context.node.peerId && from.toString() === context.node.peerId.toString();
+                            const messageType = isOwnMessage ? 'sent' : 'received';
+                            const messageFrom = isOwnMessage ? context.state.peerId : from.toString(); // или from.toString(), если нужно
+
+                            // Сохраняем в историю топика
+                            await context.addMessageToTopicHistory({
+                                text,
+                                topic,
+                                from: messageFrom,
+                                type: messageType,
+                                timestamp: Date.now()
+                            });
+
+                            // Если этот топик сейчас активен — обновляем интерфейс
+                            if (context.state.currentGroup?.topic === topic) {
+                                const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                                if (chatInterface) {
+                                    await chatInterface.handleIncomingMessage({
+                                        text,
+                                        topic,
+                                        from: messageFrom,
+                                        type: messageType,
+                                        timestamp: Date.now()
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            log.error('Ошибка обработки сообщения из топика %s: %o', topic, error);
+                        }
+                    }
+                });
+
+                isGlobalHandlerRegistered = true;
+                log('Глобальный обработчик PubSub-сообщений зарегистрирован');
+            } catch (error) {
+                log.error('Не удалось зарегистрировать глобальный обработчик: %o', error);
+            }
+        },
         /**
          * Подписывается на группу
          * @async

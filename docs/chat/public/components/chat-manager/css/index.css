@@ -1081,3 +1081,68 @@ textarea:focus-visible {
     flex-direction: row;
     gap: 8px;
 }
+
+/* Участники группы — обновлённые стили */
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    transition: var(--transition);
+    position: relative;
+    cursor: pointer;
+}
+
+.member-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* Аватар — теперь круглый */
+.member-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%; /* Круглая форма */
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: var(--transition);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для текущего пользователя */
+.member-avatar.current-user {
+    background: var(--success-gradient);
+    border: 2px solid rgba(0, 176, 155, 0.5);
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--cosmic-text-primary);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-status {
+    font-size: 0.75rem;
+    color: var(--cosmic-text-tertiary);
+}
+
+.member-status.online {
+    color: #00b09b;
+}

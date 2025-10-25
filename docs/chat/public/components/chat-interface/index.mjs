@@ -3,6 +3,7 @@ import * as template from './template/index.mjs';
 import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
 import { logger } from '@libp2p/logger';
+import { generatePeerName } from '../utils/index.mjs'
 
 export class ChatInterface extends BaseComponent {
     constructor() {
@@ -158,7 +159,7 @@ export class ChatInterface extends BaseComponent {
             // Формируем правильные данные участников
             this.state.connectedPeers = (data.peers || []).map(peer => ({
                 id: peer.id,
-                name: peer.name || this.generatePeerName(peer.id), // Используем переданное имя или генерируем
+                name: peer.name || generatePeerName(peer.id), // Используем переданное имя или генерируем
                 online: true,
                 connections: peer.connections || 1
             }));
@@ -176,20 +177,6 @@ export class ChatInterface extends BaseComponent {
         } catch (error) {
             this._log.error('❌ ошибка обработки обновления пиров: %o', error);
         }
-    }
-
-    /**
-     * Генерирует читаемое имя из Peer ID
-     * @param {string} peerId - ID пира
-     * @returns {string} Имя пользователя
-     */
-    generatePeerName(peerId) {
-        if (!peerId) return 'Неизвестный';
-
-        // Берем первые 6 и последние 4 символа ID
-        const prefix = peerId.substring(0, 4);
-        const suffix = peerId.substring(peerId.length - 4);
-        return `Пользователь ${prefix}_${suffix}`;
     }
 
     /**
@@ -263,7 +250,7 @@ export class ChatInterface extends BaseComponent {
         // Убедимся, что у участника есть имя
         const memberWithName = {
             ...member,
-            name: member.name || this.generatePeerName(member.id)
+            name: member.name || generatePeerName(member.id)
         };
 
         this.state.activeMember = memberWithName;
@@ -361,7 +348,6 @@ export class ChatInterface extends BaseComponent {
         if (!state.currentGroup) return 'Выберите группу для общения...';
         return 'Введите сообщение...';
     }
-
     async _componentDisconnected() {
         if (this._controller && this._controller.destroy) {
             await this._controller.destroy();

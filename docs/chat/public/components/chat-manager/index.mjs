@@ -8,6 +8,8 @@ import {fromString as uint8ArrayFromString} from 'uint8arrays/from-string';
 import {logger} from '@libp2p/logger';
 import {multiaddr} from "@multiformats/multiaddr";
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
+import {generatePeerName} from "../utils/index.mjs";
+const GROUPS_ANNOUNCEMENT_TOPIC = 'chat-groups-announcements';
 
 // Создаем логгер для компонента
 const log = logger('chat-manager');
@@ -62,6 +64,7 @@ export class ChatManager extends BaseComponent {
             while (attempts < maxAttempts) {
                 if (peerConnection.isNodeReady && peerConnection.isNodeReady()) {
                     this.node = peerConnection.getNode();
+                    await this._actions.registerGlobalMessageHandler();
                     this.state.connected = true;
                     this.state.peerId = this.node.peerId.toString();
                     this.state.mode = peerConnection.state.mode;
@@ -121,6 +124,12 @@ export class ChatManager extends BaseComponent {
                     isPrivate: true
                 });
             } else {
+                console.log('----------- !!!!! ---------',this, {
+                    text: messageData.text,
+                    from: actualPeerId,
+                    type: 'received',
+                    timestamp: messageData.timestamp || Date.now()
+                })
                 // Обработка группового сообщения
                 await this.addMessage({
                     text: messageData.text,
@@ -157,6 +166,7 @@ export class ChatManager extends BaseComponent {
     }
 
     async addMessage(message) {
+        console.log('----------------- addMessage --------------------------', message)
         this.state.messages.push({
             ...message,
             timestamp: Date.now(),
@@ -173,6 +183,88 @@ export class ChatManager extends BaseComponent {
         // if (chatInterface) {
         //     await chatInterface.addMessage(message);
         // }
+    }
+
+    /**
+     * Анонсирует создание группы в служебном топике
+     * @async
+     * @param {Object} group - Информация о группе
+     */
+    async announceGroupCreation(group) {
+        if (!this.node?.services?.pubsub) {
+            log.error('Невозможно анонсировать группу: PubSub не доступен');
+            return false;
+        }
+
+        try {
+            const announcement = {
+                type: 'GROUP_CREATED',
+                data: {
+                    id: group.id,
+                    name: group.name,
+                    topic: group.topic,
+                    description: `Группа для общения: ${group.name}`,
+                    memberCount: 1,
+                    createdAt: group.createdAt,
+                    createdBy: this.state.peerId,
+                    isPublic: group.isPublic
+                },
+                timestamp: Date.now(),
+                peerId: this.state.peerId
+            };
+
+            await this.node.services.pubsub.publish(
+                GROUPS_ANNOUNCEMENT_TOPIC,
+                new TextEncoder().encode(JSON.stringify(announcement))
+            );
+
+            log('Анонс группы опубликован в топике %s: %s', GROUPS_ANNOUNCEMENT_TOPIC, group.name);
+            return true;
+        } catch (error) {
+            log.error('Ошибка анонса группы: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'announceGroupCreation',
+                message: 'Не удалось анонсировать группу',
+                details: error
+            });
+            return false;
+        }
+    }
+
+    /**
+     * Сохраняет сообщение в историю по топику
+     * @param {Object} message
+     */
+    async addMessageToTopicHistory(message) {
+        if (!this.state.topicHistories) {
+            this.state.topicHistories = {};
+        }
+
+        const { topic } = message;
+        if (!this.state.topicHistories[topic]) {
+            this.state.topicHistories[topic] = [];
+        }
+
+        // Ограничиваем историю (например, 100 сообщений)
+        this.state.topicHistories[topic].push({
+            ...message,
+            id: Math.random().toString(36).substr(2, 9)
+        });
+
+        if (this.state.topicHistories[topic].length > 100) {
+            this.state.topicHistories[topic] = this.state.topicHistories[topic].slice(-100);
+        }
+
+        // Если топик активен — обновляем текущие сообщения
+        if (this.state.currentGroup?.topic === topic) {
+            this.state.messages = [...this.state.topicHistories[topic]];
+            await this.renderPart({
+                partName: 'renderMessages',
+                state: this.state,
+                selector: '#messages-container'
+            });
+        }
     }
 
     async createGroup(groupName) {
@@ -193,6 +285,8 @@ export class ChatManager extends BaseComponent {
         this.state.discoveredGroups.unshift(group); // или push
 
         await this._actions.subscribeToGroup(group.topic);
+
+        await this.announceGroupCreation(group);
 
         // Обновляем "Мои группы"
         await this.renderPart({
@@ -240,8 +334,20 @@ export class ChatManager extends BaseComponent {
 
         // Начинаем слушать стрим для этой группы
         await this.setupGroupStream(topic);
+        await this.updateGroupMembers(topic)
 
-        await this.fullRender(this.state);
+        if (this.state.topicHistories?.[topic]) {
+            this.state.messages = [...this.state.topicHistories[topic]];
+        } else {
+            this.state.messages = [];
+        }
+
+        await this.renderPart({
+            partName: 'renderMessages',
+            state: this.state,
+            selector: '#messages-container'
+        });
+
 
         const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
         if (chatInterface) {
@@ -280,7 +386,7 @@ export class ChatManager extends BaseComponent {
                 this.activeStreams.set(`${topic}-${peer.toString()}`, {stream, lp, peer});
 
                 // Запускаем чтение из стрима
-                this.streamToChat(lp, peer.toString(), topic);
+                await this.streamToChat(lp, peer.toString(), topic);
 
                 log('Stream setup for peer %s in topic %s', peer.toString(), topic);
             }
@@ -681,19 +787,80 @@ export class ChatManager extends BaseComponent {
         });
     }
 
+    /**
+     * Обновляет список участников текущей группы
+     */
+    async refreshGroupMembers() {
+        if (!this.state.currentGroup?.topic) {
+            log.error('Нет активной группы для обновления участников');
+            return;
+        }
+
+        const topic = this.state.currentGroup.topic;
+        const peers = this.node?.services?.pubsub?.getSubscribers(topic) || new Set();
+
+        this.state.currentGroupMembers = Array.from(peers).map(id => ({
+            id: id.toString(),
+            name: generatePeerName(id.toString()),
+            online: true
+        }));
+
+        await this.renderPart({
+            partName: 'renderGroupMembers',
+            state: this.state,
+            selector: '#group-members-list'
+        });
+
+        log('Участники группы обновлены: %d', peers.size);
+    }
+
+    async updateGroupMembers(topic) {
+        if (!this.node?.services?.pubsub) return [];
+
+        try {
+            const peerIds = this.node.services.pubsub.getSubscribers(topic);
+            const members = Array.from(peerIds).map(id => ({
+                id: id.toString(),
+                name: this.generatePeerName(id.toString()),
+                online: true
+            }));
+
+            // Сохраняем в состоянии
+            this.state.currentGroupMembers = members;
+
+            // Обновляем UI
+            await this.renderPart({
+                partName: 'renderGroupMembers',
+                state: this.state,
+                selector: '#group-members-list'
+            });
+
+            return members;
+        } catch (error) {
+            this._log.error('Ошибка получения участников группы %s: %o', topic, error);
+            return [];
+        }
+    }
+
     async sendGroupMessage(messageText) {
         if (this.state.currentGroup && this.state.currentGroup.topic) {
             // Используем стрим для отправки сообщения
-            // await this.sendMessageViaStream(this.state.currentGroup.topic, messageText);
+            const topic = this.state.currentGroup.topic;
+
+            // 1. Отправляем сообщение в топик через PubSub
+            const sent = await this._actions.sendMessage(topic, messageText);
+            if (!sent) {
+                throw new Error('Не удалось отправить сообщение в группу');
+            }
 
             // Также добавляем сообщение локально как отправленное
-            await this.addMessage({
-                text: messageText,
-                topic: this.state.currentGroup.topic,
-                from: this.state.peerId,
-                type: 'sent',
-                timestamp: Date.now()
-            });
+            // await this.addMessage({
+            //     text: messageText,
+            //     topic: this.state.currentGroup.topic,
+            //     from: this.state.peerId,
+            //     type: 'sent',
+            //     timestamp: Date.now()
+            // });
         }
     }
 

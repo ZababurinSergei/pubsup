@@ -1,3 +1,5 @@
+import {generatePeerName} from '../../utils/index.mjs'
+
 /**
  * Основной шаблон компонента ChatManager
  * @param {Object} params
@@ -87,14 +89,17 @@ export default function defaultTemplate({state = {}} = {}) {
                 </div>\
 
                 <div class=\"sidebar-section\">\
-                    <div class=\"section-header\">\
-                        <h3 class=\"section-title\">\
-                            <span class=\"section-icon\">👥</span>\
-                            Присоединенные\
-                        </h3>\
-                    </div>\
-                    <div class=\"section-content\" id=\"joined-groups-container\">\
-                        ${renderJoinedGroups({state})}\
+                   <div class="section-header">
+                        <h3 class="section-title">
+                            <span class="section-icon">👥</span>
+                            Участники группы
+                        </h3>
+                        <button class="section-action" id="refresh-group-members" title="Обновить участников">
+                           <span class="btn-icon">🔄</span>
+                        </button>
+                    </div>
+                    <div class=\"section-content\" id=\"group-members-list\">\
+                        ${renderGroupMembers({state})}\
                     </div>\
                 </div>\
             </aside>\
@@ -411,6 +416,34 @@ export function renderActiveChatHeader({state = {}} = {}) {
     `;
 }
 
+export function renderGroupMembers({ state = {} } = {}) {
+    const members = state.currentGroupMembers || [];
+
+    if (members.length === 0) {
+        return `\
+        <div class="empty-state">\
+            <div class="empty-icon">👥</div>\
+            <p class="empty-text">Нет участников</p>\
+        </div>\
+        `;
+    }
+
+
+    return `\
+    <div class="members-list">\
+        ${members.map(member => `\
+        <div class="member-item" data-peer-id="${member.id}">\
+            <div class="member-avatar">${member.name.charAt(0)}</div>\
+            <div class="member-info">\
+                <div class="member-name">${escapeHtml(member.name)}</div>\
+                <div class="member-status online">В сети</div>\
+            </div>\
+        </div>\
+        `).join('')}\
+    </div>\
+    `;
+}
+
 /**
  * Шаблон для сообщений
  */
@@ -438,7 +471,7 @@ export function renderMessages({state = {}} = {}) {
                     <div class=\"message-avatar\">\
                         ${message.type === 'sent' ? '👤' : '👥'}\
                     </div>\
-                    <span class=\"message-sender\">${message.type === 'sent' ? 'Вы' : (message.from ? message.from.substring(0, 12) + '...' : 'Неизвестный')}</span>\
+                    <span class=\"message-sender\">${message.type === 'sent' ? 'Вы' : (message.from ? generatePeerName(message.from) : 'Неизвестный')}</span>\
                     <span class=\"message-time\">${new Date(message.timestamp).toLocaleTimeString('ru-RU')}</span>\
                 </div>\
                 <div class=\"message-text\">${escapeHtml(message.text)}</div>\
