@@ -967,6 +967,25 @@ export class ChatManager extends BaseComponent {
             }
 
             switch (event.type) {
+                case 'UPDATE_CHAT_HEADER':
+                    // Синхронизируем состояние с chat-interface, если нужно
+                    if (event.data?.isPrivateChat && event.data.activeMember) {
+                        this.state.isPrivateChat = true;
+                        this.state.activeMember = event.data.activeMember;
+                        this.state.currentGroup = null; // сбрасываем группу
+                    } else if (event.data?.currentGroup) {
+                        this.state.isPrivateChat = false;
+                        this.state.activeMember = null;
+                        this.state.currentGroup = event.data.currentGroup;
+                    }
+
+                    // Обновляем заголовок
+                    await this.renderPart({
+                        partName: 'renderActiveChatHeader',
+                        state: this.state,
+                        selector: '.chat-header'
+                    });
+                    break;
                 case 'SWITCH_MODE':
                     await this.switchMode(event.data.mode);
                     break;

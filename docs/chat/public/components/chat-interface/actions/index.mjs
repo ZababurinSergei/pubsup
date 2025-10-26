@@ -393,6 +393,18 @@ async function setActiveMember(member) {
         // Обновляем заголовок чата
         await this.updateChatHeader();
 
+        // ✅ Уведомляем chat-manager об активации приватного чата
+        const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+        if (chatManager) {
+            await chatManager.postMessage({
+                type: 'UPDATE_CHAT_HEADER',
+                data: {
+                    isPrivateChat: true,
+                    activeMember: memberWithName
+                }
+            });
+        }
+
         // Очищаем историю сообщений для приватного чата
         this.state.messages = [];
 

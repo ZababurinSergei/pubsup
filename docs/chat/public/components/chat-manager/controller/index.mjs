@@ -321,6 +321,13 @@ export const controller = async (context) => {
                             state: context.state,
                             selector: '#my-groups-container'
                         });
+
+                        await context.renderPart({
+                            partName: 'renderActiveChatHeader',
+                            state: context.state,
+                            selector: '.chat-header'
+                        });
+
                         log('Группа активирована: %s', group.name);
 
                         // Уведомляем chat-interface
@@ -367,6 +374,12 @@ export const controller = async (context) => {
                                                 partName: 'renderMyGroups',
                                                 state: context.state,
                                                 selector: '#my-groups-container'
+                                            });
+
+                                            await context.renderPart({
+                                                partName: 'renderActiveChatHeader',
+                                                state: context.state,
+                                                selector: '.chat-header'
                                             });
 
                                             // Уведомляем chat-interface

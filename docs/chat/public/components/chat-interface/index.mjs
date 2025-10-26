@@ -88,6 +88,14 @@ export class ChatInterface extends BaseComponent {
         this.state.messages = [];
         this._log('установлена текущая группа: %s', safeGroup.name);
 
+        const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+        if (chatManager) {
+            await chatManager.postMessage({
+                type: 'UPDATE_CHAT_HEADER',
+                data: { currentGroup: safeGroup }
+            });
+        }
+
         await this.updateChatInput();
         await this.fullRender(this.state);
     }
@@ -291,32 +299,105 @@ export class ChatInterface extends BaseComponent {
         }
     }
 
+    // async setActiveMember(member) {
+    //     if (!member || !member.id) {
+    //         this._log.error('неверные данные пользователя: %o', member);
+    //         return;
+    //     }
+    //
+    //     debugger
+    //     // Убедимся, что у участника есть имя
+    //     const memberWithName = {
+    //         ...member,
+    //         name: member.name || generatePeerName(member.id)
+    //     };
+    //
+    //     this.state.activeMember = memberWithName;
+    //     this.state.isPrivateChat = true;
+    //     this.state.messages = []; // Очищаем историю при смене чата
+    //
+    //     await this.updateMembersList();
+    //     await this.updateChatHeader();
+    //     await this.updateChatInput();
+    //     await this.renderPart({
+    //         partName: 'renderMessages',
+    //         state: this.state,
+    //         selector: '#messages-list'
+    //     });
+    //
+    //     this._log('активный пользователь установлен: %s', memberWithName.name);
+    // }
+
+    /**
+     * Установка активного пользователя для приватного чата
+     * @async
+     * @param {Object} member - Данные пользователя
+     * @this {HTMLElement} Контекст компонента
+     */
     async setActiveMember(member) {
-        if (!member || !member.id) {
-            this._log.error('неверные данные пользователя: %o', member);
-            return;
+        const log = logger('chat-interface:actions:setActiveMember');
+
+        try {
+            if (!member || !member.id) {
+                log.error('неверные данные пользователя: %o', member);
+                return;
+            }
+
+            // Не выбираем себя
+            if (member.isCurrentUser) {
+                log('попытка выбрать себя - игнорируем');
+                return;
+            }
+
+            // Гарантируем наличие имени
+            const displayName = member.name || this.generatePeerName(member.id);
+            const memberWithName = { ...member, name: displayName };
+
+            log('установка активного пользователя: %s (%s)', displayName, member.id);
+
+            // Обновляем состояние
+            this.state.activeMember = memberWithName;
+            this.state.isPrivateChat = true;
+
+            // Обновляем UI списка участников
+            await this.updateMembersList();
+
+            // Обновляем заголовок чата
+            await this.updateChatHeader();
+
+            // ✅ Уведомляем chat-manager об активации приватного чата
+            const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+            if (chatManager) {
+                await chatManager.postMessage({
+                    type: 'UPDATE_CHAT_HEADER',
+                    data: {
+                        isPrivateChat: true,
+                        activeMember: memberWithName
+                    }
+                });
+            }
+
+            // Очищаем историю сообщений для приватного чата
+            this.state.messages = [];
+
+            // Рендерим пустой чат
+            await this.renderPart({
+                partName: 'renderMessages',
+                state: this.state,
+                selector: '#messages-list'
+            });
+
+            log('приватный чат установлен с пользователем: %s', displayName);
+
+        } catch (error) {
+            log.error('ошибка установки активного пользователя: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'setActiveMember',
+                message: 'Ошибка установки приватного чата',
+                details: { member, error }
+            });
         }
-
-        // Убедимся, что у участника есть имя
-        const memberWithName = {
-            ...member,
-            name: member.name || generatePeerName(member.id)
-        };
-
-        this.state.activeMember = memberWithName;
-        this.state.isPrivateChat = true;
-        this.state.messages = []; // Очищаем историю при смене чата
-
-        await this.updateMembersList();
-        await this.updateChatHeader();
-        await this.updateChatInput();
-        await this.renderPart({
-            partName: 'renderMessages',
-            state: this.state,
-            selector: '#messages-list'
-        });
-
-        this._log('активный пользователь установлен: %s', memberWithName.name);
     }
 
     async updateChatHeader() {

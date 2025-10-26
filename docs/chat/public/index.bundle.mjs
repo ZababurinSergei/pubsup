@@ -2270,10 +2270,65 @@ function renderJoinedGroups({ state = {} } = {}) {
 }
 __name(renderJoinedGroups, "renderJoinedGroups");
 function renderActiveChatHeader({ state = {} } = {}) {
-  if (!state.currentGroup) {
-    return `        <div class="chat-info">            <div class="chat-avatar">                <span class="avatar-icon">\u{1F4AC}</span>            </div>            <div class="chat-details">                <h2 class="chat-name">\u0427\u0430\u0442</h2>                <p class="chat-description">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>            </div>        </div>        `;
+  console.log("-------------------------------------", state);
+  if (state.isPrivateChat && state.activeMember) {
+    const displayName = typeof state.activeMember.name === "string" ? state.activeMember.name : state.activeMember.id ? state.activeMember.id.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439";
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                \u{1F464}
+            </div>
+            <div class="chat-details">
+                <h2 class="chat-name">${escapeHtml(displayName)}</h2>
+                <div class="chat-meta">
+                    <span class="meta-item">\u{1F512} \u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>
+                    <span class="meta-item topic">ID: ${state.activeMember.id.substring(0, 12)}...</span>
+                </div>
+            </div>
+            <div class="chat-actions">
+                <button class="chat-action-btn" id="copy-peer-id" title="\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C ID \u043F\u0438\u0440\u0430">
+                    <span class="btn-icon">\u{1F4CB}</span>
+                </button>
+            </div>
+        </div>
+        `;
   }
-  return `    <div class="chat-info">        <div class="chat-avatar">            ${getGroupInitial(state.currentGroup)}        </div>        <div class="chat-details">            <h2 class="chat-name">${escapeHtml(getGroupName(state.currentGroup))}</h2>            <div class="chat-meta">                <span class="meta-item">\u{1F465} ${state.currentGroup.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</span>                <span class="meta-item">\u{1F517} ${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                <span class="meta-item topic">\u0422\u043E\u043F\u0438\u043A: ${state.currentGroup.topic}</span>            </div>        </div>        <div class="chat-actions">            <button class="chat-action-btn" id="copy-topic" title="\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0442\u043E\u043F\u0438\u043A">                <span class="btn-icon">\u{1F4CB}</span>            </button>            <button class="chat-action-btn" id="leave-chat" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0447\u0430\u0442">                <span class="btn-icon">\u{1F6AA}</span>            </button>        </div>    </div>    `;
+  if (!state.currentGroup) {
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F4AC}</span>
+            </div>
+            <div class="chat-details">
+                <h2 class="chat-name">\u0427\u0430\u0442</h2>
+                <p class="chat-description">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>
+            </div>
+        </div>
+        `;
+  }
+  return `
+    <div class="chat-info">
+        <div class="chat-avatar">
+            ${getGroupInitial(state.currentGroup)}
+        </div>
+        <div class="chat-details">
+            <h2 class="chat-name">${escapeHtml(getGroupName(state.currentGroup))}</h2>
+            <div class="chat-meta">
+                <span class="meta-item">\u{1F465} ${state.currentGroup.memberCount || 1} \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432</span>
+                <span class="meta-item">\u{1F517} ${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>
+                <span class="meta-item topic">\u0422\u043E\u043F\u0438\u043A: ${state.currentGroup.topic}</span>
+            </div>
+        </div>
+        <div class="chat-actions">
+            <button class="chat-action-btn" id="copy-topic" title="\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0442\u043E\u043F\u0438\u043A">
+                <span class="btn-icon">\u{1F4CB}</span>
+            </button>
+            <button class="chat-action-btn" id="leave-chat" title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0447\u0430\u0442">
+                <span class="btn-icon">\u{1F6AA}</span>
+            </button>
+        </div>
+    </div>
+    `;
 }
 __name(renderActiveChatHeader, "renderActiveChatHeader");
 function renderGroupMembers({ state = {} } = {}) {
@@ -2606,6 +2661,11 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               state: context.state,
               selector: "#my-groups-container"
             });
+            await context.renderPart({
+              partName: "renderActiveChatHeader",
+              state: context.state,
+              selector: ".chat-header"
+            });
             log2("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
             const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
             if (chatInterface) {
@@ -2645,6 +2705,11 @@ var controller = /* @__PURE__ */ __name(async (context) => {
                         partName: "renderMyGroups",
                         state: context.state,
                         selector: "#my-groups-container"
+                      });
+                      await context.renderPart({
+                        partName: "renderActiveChatHeader",
+                        state: context.state,
+                        selector: ".chat-header"
                       });
                       const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
                       if (chatInterface) {
@@ -16715,6 +16780,22 @@ var ChatManager = class extends BaseComponent {
         return;
       }
       switch (event.type) {
+        case "UPDATE_CHAT_HEADER":
+          if (event.data?.isPrivateChat && event.data.activeMember) {
+            this.state.isPrivateChat = true;
+            this.state.activeMember = event.data.activeMember;
+            this.state.currentGroup = null;
+          } else if (event.data?.currentGroup) {
+            this.state.isPrivateChat = false;
+            this.state.activeMember = null;
+            this.state.currentGroup = event.data.currentGroup;
+          }
+          await this.renderPart({
+            partName: "renderActiveChatHeader",
+            state: this.state,
+            selector: ".chat-header"
+          });
+          break;
         case "SWITCH_MODE":
           await this.switchMode(event.data.mode);
           break;
@@ -17611,6 +17692,16 @@ async function setActiveMember(member) {
     this.state.isPrivateChat = true;
     await this.updateMembersList();
     await this.updateChatHeader();
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
+      await chatManager.postMessage({
+        type: "UPDATE_CHAT_HEADER",
+        data: {
+          isPrivateChat: true,
+          activeMember: memberWithName
+        }
+      });
+    }
     this.state.messages = [];
     await this.renderPart({
       partName: "renderMessages",
@@ -17800,6 +17891,13 @@ var ChatInterface = class extends BaseComponent {
     this.state.isPrivateChat = false;
     this.state.messages = [];
     this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", safeGroup.name);
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
+      await chatManager.postMessage({
+        type: "UPDATE_CHAT_HEADER",
+        data: { currentGroup: safeGroup }
+      });
+    }
     await this.updateChatInput();
     await this.fullRender(this.state);
   }
@@ -17960,27 +18058,84 @@ var ChatInterface = class extends BaseComponent {
       this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432: %o", error);
     }
   }
+  // async setActiveMember(member) {
+  //     if (!member || !member.id) {
+  //         this._log.error('неверные данные пользователя: %o', member);
+  //         return;
+  //     }
+  //
+  //     debugger
+  //     // Убедимся, что у участника есть имя
+  //     const memberWithName = {
+  //         ...member,
+  //         name: member.name || generatePeerName(member.id)
+  //     };
+  //
+  //     this.state.activeMember = memberWithName;
+  //     this.state.isPrivateChat = true;
+  //     this.state.messages = []; // Очищаем историю при смене чата
+  //
+  //     await this.updateMembersList();
+  //     await this.updateChatHeader();
+  //     await this.updateChatInput();
+  //     await this.renderPart({
+  //         partName: 'renderMessages',
+  //         state: this.state,
+  //         selector: '#messages-list'
+  //     });
+  //
+  //     this._log('активный пользователь установлен: %s', memberWithName.name);
+  // }
+  /**
+   * Установка активного пользователя для приватного чата
+   * @async
+   * @param {Object} member - Данные пользователя
+   * @this {HTMLElement} Контекст компонента
+   */
   async setActiveMember(member) {
-    if (!member || !member.id) {
-      this._log.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
-      return;
+    const log7 = logger("chat-interface:actions:setActiveMember");
+    try {
+      if (!member || !member.id) {
+        log7.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
+        return;
+      }
+      if (member.isCurrentUser) {
+        log7("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
+        return;
+      }
+      const displayName = member.name || this.generatePeerName(member.id);
+      const memberWithName = { ...member, name: displayName };
+      log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
+      this.state.activeMember = memberWithName;
+      this.state.isPrivateChat = true;
+      await this.updateMembersList();
+      await this.updateChatHeader();
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager) {
+        await chatManager.postMessage({
+          type: "UPDATE_CHAT_HEADER",
+          data: {
+            isPrivateChat: true,
+            activeMember: memberWithName
+          }
+        });
+      }
+      this.state.messages = [];
+      await this.renderPart({
+        partName: "renderMessages",
+        state: this.state,
+        selector: "#messages-list"
+      });
+      log7("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", displayName);
+    } catch (error) {
+      log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "setActiveMember",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430",
+        details: { member, error }
+      });
     }
-    const memberWithName = {
-      ...member,
-      name: member.name || generatePeerName(member.id)
-    };
-    this.state.activeMember = memberWithName;
-    this.state.isPrivateChat = true;
-    this.state.messages = [];
-    await this.updateMembersList();
-    await this.updateChatHeader();
-    await this.updateChatInput();
-    await this.renderPart({
-      partName: "renderMessages",
-      state: this.state,
-      selector: "#messages-list"
-    });
-    this._log("\u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0439 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D: %s", memberWithName.name);
   }
   async updateChatHeader() {
     try {

@@ -374,45 +374,75 @@ export function renderJoinedGroups({state = {}} = {}) {
 }
 
 /**
- * Шаблон для заголовка активного чата
+ * Шаблон для заголовка активного чата (группа или приватный пир)
  */
 export function renderActiveChatHeader({state = {}} = {}) {
-    if (!state.currentGroup) {
-        return `\
-        <div class=\"chat-info\">\
-            <div class=\"chat-avatar\">\
-                <span class=\"avatar-icon\">💬</span>\
-            </div>\
-            <div class=\"chat-details\">\
-                <h2 class=\"chat-name\">Чат</h2>\
-                <p class=\"chat-description\">Выберите группу для начала общения</p>\
-            </div>\
-        </div>\
+    console.log('-------------------------------------', state)
+    // Приватный чат
+    if (state.isPrivateChat && state.activeMember) {
+        const displayName = typeof state.activeMember.name === 'string'
+            ? state.activeMember.name
+            : (state.activeMember.id ? state.activeMember.id.substring(0, 12) + '...' : 'Неизвестный');
+
+        return `
+        <div class=\"chat-info\">
+            <div class=\"chat-avatar\">
+                👤
+            </div>
+            <div class=\"chat-details\">
+                <h2 class=\"chat-name\">${escapeHtml(displayName)}</h2>
+                <div class=\"chat-meta\">
+                    <span class=\"meta-item\">🔒 Приватный чат</span>
+                    <span class=\"meta-item topic\">ID: ${state.activeMember.id.substring(0, 12)}...</span>
+                </div>
+            </div>
+            <div class=\"chat-actions\">
+                <button class=\"chat-action-btn\" id=\"copy-peer-id\" title=\"Копировать ID пира\">
+                    <span class=\"btn-icon\">📋</span>
+                </button>
+            </div>
+        </div>
         `;
     }
 
-    return `\
-    <div class=\"chat-info\">\
-        <div class=\"chat-avatar\">\
-            ${getGroupInitial(state.currentGroup)}\
-        </div>\
-        <div class=\"chat-details\">\
-            <h2 class=\"chat-name\">${escapeHtml(getGroupName(state.currentGroup))}</h2>\
-            <div class=\"chat-meta\">\
-                <span class=\"meta-item\">👥 ${state.currentGroup.memberCount || 1} участников</span>\
-                <span class=\"meta-item\">🔗 ${state.connected ? 'Подключено' : 'Не подключено'}</span>\
-                <span class=\"meta-item topic\">Топик: ${state.currentGroup.topic}</span>\
-            </div>\
-        </div>\
-        <div class=\"chat-actions\">\
-            <button class=\"chat-action-btn\" id=\"copy-topic\" title=\"Копировать топик\">\
-                <span class=\"btn-icon\">📋</span>\
-            </button>\
-            <button class=\"chat-action-btn\" id=\"leave-chat\" title=\"Покинуть чат\">\
-                <span class=\"btn-icon\">🚪</span>\
-            </button>\
-        </div>\
-    </div>\
+    // Групповой чат
+    if (!state.currentGroup) {
+        return `
+        <div class=\"chat-info\">
+            <div class=\"chat-avatar\">
+                <span class=\"avatar-icon\">💬</span>
+            </div>
+            <div class=\"chat-details\">
+                <h2 class=\"chat-name\">Чат</h2>
+                <p class=\"chat-description\">Выберите группу для начала общения</p>
+            </div>
+        </div>
+        `;
+    }
+
+    // Группа
+    return `
+    <div class=\"chat-info\">
+        <div class=\"chat-avatar\">
+            ${getGroupInitial(state.currentGroup)}
+        </div>
+        <div class=\"chat-details\">
+            <h2 class=\"chat-name\">${escapeHtml(getGroupName(state.currentGroup))}</h2>
+            <div class=\"chat-meta\">
+                <span class=\"meta-item\">👥 ${state.currentGroup.memberCount || 1} участников</span>
+                <span class=\"meta-item\">🔗 ${state.connected ? 'Подключено' : 'Не подключено'}</span>
+                <span class=\"meta-item topic\">Топик: ${state.currentGroup.topic}</span>
+            </div>
+        </div>
+        <div class=\"chat-actions\">
+            <button class=\"chat-action-btn\" id=\"copy-topic\" title=\"Копировать топик\">
+                <span class=\"btn-icon\">📋</span>
+            </button>
+            <button class=\"chat-action-btn\" id=\"leave-chat\" title=\"Покинуть чат\">
+                <span class=\"btn-icon\">🚪</span>
+            </button>
+        </div>
+    </div>
     `;
 }
 
