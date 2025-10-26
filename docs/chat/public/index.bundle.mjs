@@ -17822,6 +17822,32 @@ var ChatInterface = class extends BaseComponent {
     });
     this._log("\u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
   }
+  /**
+   * Обрабатывает создание новой группы
+   * @param {Object} groupData - Данные созданной группы
+   */
+  async handleGroupCreated(groupData) {
+    try {
+      this._log("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u0430 \u043D\u043E\u0432\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %o", groupData);
+      const safeName = typeof groupData.name === "string" ? groupData.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+      const safeGroup = {
+        ...groupData,
+        name: safeName,
+        topic: typeof groupData.topic === "string" ? groupData.topic : ""
+      };
+      if (safeGroup.createdBy === this.state.peerId && !this.state.currentGroup) {
+        await this.setCurrentGroup(safeGroup);
+      }
+    } catch (error) {
+      this._log.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 GROUP_CREATED: %o", error);
+      this.addError({
+        componentName: this.constructor.name,
+        source: "handleGroupCreated",
+        message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0435 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B",
+        details: error
+      });
+    }
+  }
   async postMessage(event) {
     try {
       this._log("\u{1F4E8} \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s %o", event.type, event.data);
@@ -17833,10 +17859,18 @@ var ChatInterface = class extends BaseComponent {
           await this.handleConnectionStatusUpdate(event.data);
           break;
         case "INCOMING_MESSAGE":
-          await this._actions.handleIncomingMessage(event.data);
+          const { topic } = event.data;
+          if (this.state.currentGroup?.topic === topic) {
+            await this._actions.handleIncomingMessage(event.data);
+          }
           break;
         case "INCOMING_PRIVATE_MESSAGE":
-          await this._actions.handleIncomingPrivateMessage(event.data);
+          if (this.state.isPrivateChat && this.state.activeMember?.id === event.data.from) {
+            await this._actions.handleIncomingPrivateMessage(event.data);
+          }
+          break;
+        case "GROUP_CREATED":
+          await this.handleGroupCreated(event.data);
           break;
         default:
           this._log.error("\u043D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);

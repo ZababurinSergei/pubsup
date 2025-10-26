@@ -113,6 +113,46 @@ export class ChatInterface extends BaseComponent {
         this._log('история сообщений очищена');
     }
 
+    /**
+     * Обрабатывает создание новой группы
+     * @param {Object} groupData - Данные созданной группы
+     */
+    async handleGroupCreated(groupData) {
+        try {
+            this._log('Получена новая группа: %o', groupData);
+
+            // Нормализуем имя группы как строку
+            const safeName = typeof groupData.name === 'string'
+                ? groupData.name
+                : 'Безымянная группа';
+
+            const safeGroup = {
+                ...groupData,
+                name: safeName,
+                topic: typeof groupData.topic === 'string' ? groupData.topic : ''
+            };
+
+            // Если текущая группа ещё не выбрана — можно автоматически активировать
+            // (опционально, по вашему UX-решению)
+            // Например, если это ваша собственная группа:
+            if (safeGroup.createdBy === this.state.peerId && !this.state.currentGroup) {
+                await this.setCurrentGroup(safeGroup);
+            }
+
+            // Можно также обновить список групп в UI, если он отображается
+            // (в chat-interface он не отображается, но если вы добавите — будет работать)
+
+        } catch (error) {
+            this._log.error('Ошибка обработки GROUP_CREATED: %o', error);
+            this.addError({
+                componentName: this.constructor.name,
+                source: 'handleGroupCreated',
+                message: 'Ошибка при обработке созданной группы',
+                details: error
+            });
+        }
+    }
+
     async postMessage(event) {
         try {
             this._log('📨 получено сообщение: %s %o', event.type, event.data);
@@ -127,13 +167,23 @@ export class ChatInterface extends BaseComponent {
                     break;
 
                 case 'INCOMING_MESSAGE':
-                    await this._actions.handleIncomingMessage(event.data);
+                    const { topic } = event.data;
+                    // Отображаем только если это текущая группа
+                    if (this.state.currentGroup?.topic === topic) {
+                        await this._actions.handleIncomingMessage(event.data);
+                    }
+                    // await this._actions.handleIncomingMessage(event.data);
                     break;
 
                 case 'INCOMING_PRIVATE_MESSAGE':
-                    await this._actions.handleIncomingPrivateMessage(event.data);
+                    if (this.state.isPrivateChat && this.state.activeMember?.id === event.data.from) {
+                        await this._actions.handleIncomingPrivateMessage(event.data);
+                    }
+                    // await this._actions.handleIncomingPrivateMessage(event.data);
                     break;
-
+                case 'GROUP_CREATED':
+                    await this.handleGroupCreated(event.data);
+                    break;
                 default:
                     this._log.error('неизвестный тип сообщения: %s', event.type);
             }
