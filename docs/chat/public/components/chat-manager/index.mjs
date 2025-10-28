@@ -8,7 +8,7 @@ import {fromString as uint8ArrayFromString} from 'uint8arrays/from-string';
 import {logger} from '@libp2p/logger';
 import {multiaddr} from "@multiformats/multiaddr";
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
-import {generatePeerName} from "../utils/index.mjs";
+import {generatePeerName, generateMessageId} from "../utils/index.mjs";
 const GROUPS_ANNOUNCEMENT_TOPIC = 'chat-groups-announcements';
 
 // Создаем логгер для компонента
@@ -28,7 +28,10 @@ export class ChatManager extends BaseComponent {
             searchQuery: '',
             peerId: null,
             listeningAddresses: [],
-            connectedPeers: []
+            connectedPeers: [],
+            topicHistories: {},      // { "chat-group-xyz": [message1, message2, ...] }
+            privateHistories: {},     // { "peerId123": [message1, message2, ...] }
+            unreadCounts: {}
         };
         this.node = null;
         this.activeStreams = new Map(); // Для хранения активных стримов
@@ -107,7 +110,6 @@ export class ChatManager extends BaseComponent {
         try {
             log('Processing incoming stream message from %s: %o', peerId, messageData);
 
-            // Если peerId не передан, пытаемся получить из messageData
             const actualPeerId = peerId || messageData.from;
 
             if (!actualPeerId) {
@@ -116,7 +118,6 @@ export class ChatManager extends BaseComponent {
             }
 
             if (messageData.type === 'private_message') {
-                // Обработка приватного сообщения
                 await this.handleIncomingPrivateMessage({
                     text: messageData.text,
                     from: actualPeerId,
@@ -124,18 +125,11 @@ export class ChatManager extends BaseComponent {
                     isPrivate: true
                 });
             } else {
-                console.log('----------- !!!!! ---------',this, {
-                    text: messageData.text,
-                    from: actualPeerId,
-                    type: 'received',
-                    timestamp: messageData.timestamp || Date.now()
-                })
-                // Обработка группового сообщения
                 await this.addMessage({
                     text: messageData.text,
                     from: actualPeerId,
                     type: 'received',
-                    timestamp: messageData.timestamp || Date.now()
+                    timestamp: messageData.timestamp
                 });
             }
 
@@ -166,23 +160,19 @@ export class ChatManager extends BaseComponent {
     }
 
     async addMessage(message) {
-        console.log('----------------- addMessage --------------------------', message)
         this.state.messages.push({
             ...message,
-            timestamp: Date.now(),
-            id: Math.random().toString(36).substr(2, 9)
+            timestamp: message.timestamp,
+            id: generateMessageId(message.text, message.timestamp)
         });
+
+        console.log('----------------- addMessage --------------------------', this.state.messages)
 
         await this.renderPart({
             partName: 'renderMessages',
             state: this.state,
             selector: '#messages-container'
         });
-
-        // const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
-        // if (chatInterface) {
-        //     await chatInterface.addMessage(message);
-        // }
     }
 
     /**
@@ -232,38 +222,42 @@ export class ChatManager extends BaseComponent {
         }
     }
 
-    /**
-     * Сохраняет сообщение в историю по топику
-     * @param {Object} message
-     */
-    async addMessageToTopicHistory(message) {
-        if (!this.state.topicHistories) {
-            this.state.topicHistories = {};
-        }
+    // В chat-manager/index.mjs
 
-        const { topic } = message;
+    async addMessageToTopicHistory(message) {
+        const { topic, text, timestamp = Date.now() } = message;
         if (!this.state.topicHistories[topic]) {
             this.state.topicHistories[topic] = [];
         }
 
-        // Ограничиваем историю (например, 100 сообщений)
-        this.state.topicHistories[topic].push({
-            ...message,
-            id: Math.random().toString(36).substr(2, 9)
-        });
+        const id = generateMessageId(text, timestamp);
+        // Проверка на дубликат (опционально, но рекомендуется)
+        const exists = this.state.topicHistories[topic].some(m => m.id === id);
+        if (!exists) {
+            this.state.topicHistories[topic].push({ ...message, id, timestamp });
+            this.trimHistory(this.state.topicHistories[topic]);
+        }
+    }
 
-        if (this.state.topicHistories[topic].length > 100) {
-            this.state.topicHistories[topic] = this.state.topicHistories[topic].slice(-100);
+    async addMessageToPrivateHistory(message) {
+        const { text, timestamp = Date.now() } = message;
+        const peerId = message.from === this.state.peerId ? message.to : message.from;
+
+        if (!this.state.privateHistories[peerId]) {
+            this.state.privateHistories[peerId] = [];
         }
 
-        // Если топик активен — обновляем текущие сообщения
-        if (this.state.currentGroup?.topic === topic) {
-            this.state.messages = [...this.state.topicHistories[topic]];
-            await this.renderPart({
-                partName: 'renderMessages',
-                state: this.state,
-                selector: '#messages-container'
-            });
+        const id = generateMessageId(text, timestamp);
+        const exists = this.state.privateHistories[peerId].some(m => m.id === id);
+        if (!exists) {
+            this.state.privateHistories[peerId].push({ ...message, id, timestamp });
+            this.trimHistory(this.state.privateHistories[peerId]);
+        }
+    }
+
+    trimHistory(arr, limit = 100) {
+        if (arr.length > limit) {
+            arr.splice(0, arr.length - limit);
         }
     }
 
@@ -638,6 +632,7 @@ export class ChatManager extends BaseComponent {
 
         try {
             // Обработчик для протокола чата
+            // Обработчик для протокола чата
             await this.node.handle('/chat/1.0.0', async (stream, connection) => {
                 log('Incoming chat stream established from: %s', connection.remotePeer?.toString());
 
@@ -649,7 +644,6 @@ export class ChatManager extends BaseComponent {
                         try {
                             const message = await lp.read();
 
-                            // Проверяем, что сообщение не пустое
                             if (!message || message.length === 0) {
                                 log('Empty message received from %s, continuing...', remotePeer);
                                 continue;
@@ -671,8 +665,55 @@ export class ChatManager extends BaseComponent {
                                 };
                             }
 
-                            console.log('Получено сообщение:', messageData);
-                            await this.handleIncomingStreamMessage(messageData, remotePeer);
+                            // === ОБНОВЛЕНО: обработка приватных сообщений с учётом активности чата ===
+                            if (messageData.type === 'private_message') {
+                                // Сохраняем ВСЕ приватные сообщения
+                                await this.addMessageToPrivateHistory({
+                                    text: messageData.text,
+                                    from: remotePeer,
+                                    to: this.state.peerId,
+                                    type: 'received',
+                                    timestamp: messageData.timestamp || Date.now(),
+                                    isPrivate: true
+                                });
+
+                                // Получаем chat-interface для проверки активности
+                                const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+
+                                let isActiveChat = false;
+                                if (chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer) {
+                                    isActiveChat = true;
+                                }
+
+                                if(isActiveChat) {
+                                    if (chatInterface) {
+                                        await chatInterface.postMessage({
+                                            type: 'INCOMING_PRIVATE_MESSAGE',
+                                            data: {
+                                                text: messageData.text,
+                                                from: remotePeer,
+                                                timestamp: messageData.timestamp,
+                                                isPrivate: true
+                                            }
+                                        });
+                                    }
+                                } else {
+                                    // Если чат НЕ активен — увеличиваем unreadCounts
+                                    if (!isActiveChat) {
+                                        if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                                        this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+
+                                        if (chatInterface && chatInterface.updateMembersList) {
+                                            await chatInterface.updateMembersList({
+                                                unreadCounts: this.state.unreadCounts
+                                            });
+                                        }
+                                    }
+                                }
+                            } else {
+                                // Групповое сообщение — обрабатываем как раньше
+                                await this.handleIncomingStreamMessage(messageData, remotePeer);
+                            }
 
                         } catch (readError) {
                             if (readError.message === 'Stream read timeout') {
@@ -683,10 +724,6 @@ export class ChatManager extends BaseComponent {
                             }
                             log.error('Error reading from lpStream: %o', readError);
                             break;
-                        } finally {
-                            // Всегда закрываем стрим
-                            await stream.close().catch(() => {
-                            });
                         }
                     }
                 } catch (error) {
@@ -696,7 +733,6 @@ export class ChatManager extends BaseComponent {
                         log.error('Error in stream handler for peer %s: %o', connection.remotePeer?.toString(), error);
                     }
                 } finally {
-                    // Гарантированно закрываем стрим
                     try {
                         await stream.close();
                     } catch (closeError) {

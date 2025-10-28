@@ -377,7 +377,6 @@ export function renderJoinedGroups({state = {}} = {}) {
  * Шаблон для заголовка активного чата (группа или приватный пир)
  */
 export function renderActiveChatHeader({state = {}} = {}) {
-    console.log('-------------------------------------', state)
     // Приватный чат
     if (state.isPrivateChat && state.activeMember) {
         const displayName = typeof state.activeMember.name === 'string'

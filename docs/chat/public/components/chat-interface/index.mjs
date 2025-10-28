@@ -37,17 +37,44 @@ export class ChatInterface extends BaseComponent {
     }
 
     async addMessage(message) {
+        // Добавляем сообщение в локальный UI-стек
         this.state.messages.push({
             ...message,
-            timestamp: Date.now(),
+            timestamp: message.timestamp || Date.now(),
             id: Math.random().toString(36).substr(2, 9)
         });
 
-        // Сохраняем только последние 100 сообщений
+        // Ограничиваем историю последними 100 сообщениями
         if (this.state.messages.length > 100) {
             this.state.messages = this.state.messages.slice(-100);
         }
 
+        // === Сохраняем в долговременную историю ===
+        const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+        if (chatManager) {
+            if (message.isPrivate && message.from === this.state.peerId) {
+                // Приватное сообщение
+                await chatManager.addMessageToPrivateHistory({
+                    text: message.text,
+                    from: message.from,
+                    to: message.to,
+                    type: 'sent',
+                    timestamp: message.timestamp || Date.now(),
+                    isPrivate: true
+                });
+            } else if (message.topic) {
+                // Групповое сообщение
+                await chatManager.addMessageToTopicHistory({
+                    text: message.text,
+                    topic: message.topic,
+                    from: message.from,
+                    type: message.type || (message.from === this.state.peerId ? 'sent' : 'received'),
+                    timestamp: message.timestamp || Date.now()
+                });
+            }
+        }
+
+        // Обновляем UI
         await this.renderPart({
             partName: 'renderMessages',
             state: this.state,
@@ -283,13 +310,13 @@ export class ChatInterface extends BaseComponent {
     /**
      * Обновляет список участников в боковой панели
      */
-    async updateMembersList() {
+    async updateMembersList(props = {}) {
         try {
             const membersPanel = this.shadowRoot.querySelector('#members-panel');
             if (membersPanel && this.renderPart) {
                 await this.renderPart({
                     partName: 'renderMembersList',
-                    state: this.state,
+                    state: Object.assign(this.state, props),
                     selector: '.members-list'
                 });
                 this._log.trace('список участников обновлен');
@@ -359,9 +386,6 @@ export class ChatInterface extends BaseComponent {
             this.state.activeMember = memberWithName;
             this.state.isPrivateChat = true;
 
-            // Обновляем UI списка участников
-            await this.updateMembersList();
-
             // Обновляем заголовок чата
             await this.updateChatHeader();
 
@@ -375,12 +399,24 @@ export class ChatInterface extends BaseComponent {
                         activeMember: memberWithName
                     }
                 });
+
+                // ✅ Загружаем историю приватного чата из chat-manager
+                const peerId = member.id;
+                const history = chatManager.state.privateHistories?.[peerId] || [];
+                this.state.messages = [...history]; // Копируем, чтобы избежать мутаций
+            } else {
+                // Если chat-manager недоступен — оставляем пустую историю
+                this.state.messages = [];
             }
 
-            // Очищаем историю сообщений для приватного чата
-            this.state.messages = [];
+            if (this.state.unreadCounts?.[member.id]) {
+                delete this.state.unreadCounts[member.id];
+            }
 
-            // Рендерим пустой чат
+            // Обновляем UI списка участников
+            await this.updateMembersList();
+
+            // Рендерим чат с загруженной историей
             await this.renderPart({
                 partName: 'renderMessages',
                 state: this.state,

@@ -237,6 +237,7 @@ async function clearChatHistory() {
 async function setActiveGroup(group) {
     const log = logger('chat-interface:actions:setActiveGroup');
 
+    debugger
     try {
         if (!group || !group.topic) {
             log.error('неверные данные группы: %o', group);
@@ -258,6 +259,10 @@ async function setActiveGroup(group) {
             selector: '#messages-list',
             replace: true
         });
+
+        const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+        const history = chatManager?.state.topicHistories[group.topic] || [];
+        this.state.messages = [...history];
 
         // Устанавливаем новую группу
         await this.setCurrentGroup(safeGroup);
@@ -365,6 +370,7 @@ async function searchMessages(query) {
 async function setActiveMember(member) {
     const log = logger('chat-interface:actions:setActiveMember');
 
+    debugger
     try {
         if (!member || !member.id) {
             log.error('неверные данные пользователя: %o', member);
@@ -396,6 +402,9 @@ async function setActiveMember(member) {
         // ✅ Уведомляем chat-manager об активации приватного чата
         const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
         if (chatManager) {
+            const history = chatManager?.state.privateHistories[member.id] || [];
+            this.state.messages = [...history];
+
             await chatManager.postMessage({
                 type: 'UPDATE_CHAT_HEADER',
                 data: {
@@ -404,9 +413,6 @@ async function setActiveMember(member) {
                 }
             });
         }
-
-        // Очищаем историю сообщений для приватного чата
-        this.state.messages = [];
 
         // Рендерим пустой чат
         await this.renderPart({

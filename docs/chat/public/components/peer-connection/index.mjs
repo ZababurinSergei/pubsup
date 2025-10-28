@@ -84,7 +84,6 @@ export class PeerConnection extends BaseComponent {
 
             // Фильтруем WebRTC-адреса
             const webRtcAddresses = allAddresses.filter(addr => WebRTC.matches(multiaddr(addr)));
-            console.log('dddddddddddsssssssss', webRtcAddresses, allAddresses)
             this.state.webRtcAddress = webRtcAddresses.length > 0 ? webRtcAddresses[0] : null;
 
             this.state.connected = true;

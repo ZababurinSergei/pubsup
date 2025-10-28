@@ -202,28 +202,30 @@ export function renderMembersList({state = {}} = {}) {
     return `\
     <div class="members-container">\
         ${allMembers.map(member => {
+        const unreadCount = state.unreadCounts?.[member.id] || 0;
+        const showUnread = !member.isCurrentUser && unreadCount > 0;
+        
         // Для текущего пользователя показываем "Вы", для других - сгенерированное имя
         const displayName = member.isCurrentUser ?
             'Вы' :
             (getPeerName(member) || `Пользователь ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`);
 
         return `\
-            <div class="member-item \
-                       ${member.isCurrentUser ? 'current-user' : ''} \
-                       ${state.isPrivateChat && state.activeMember?.id === member.id ? 'active' : ''}\
-                       ${!member.isCurrentUser ? 'clickable' : ''}" \
-                 data-peer-id="${member.id}">\
-                <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">\
-                    ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}\
-                </div>\
-                <div class="member-info">\
-                    <div class="member-name">${displayName}</div>\
-                    <div class="member-status ${member.online ? 'online' : 'offline'}">\
-                        ${member.isCurrentUser ? 'Вы' : (member.online ? 'В сети' : 'Не в сети')}\
-                    </div>\
-                </div>\
-            </div>\
-            `;
+                <div class="member-item ${member.isCurrentUser ? 'current-user' : ''} ${state.isPrivateChat && state.activeMember?.id === member.id ? 'active' : ''} clickable" data-peer-id="${member.id}">
+                    <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">
+                        ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}
+                    </div>
+                    <div class="member-info">
+                        <div class="member-name">${displayName}</div>
+                        <div class="member-status ${member.online ? 'online' : 'offline'}">
+                            ${member.isCurrentUser ? 'Вы' : (member.online ? 'В сети' : 'Не в сети')}
+                        </div>
+                    </div>
+                    ${showUnread ? `
+                    <div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>
+                    ` : ''}
+                </div>
+                `;
     }).join('')}\
     </div>\
     `;

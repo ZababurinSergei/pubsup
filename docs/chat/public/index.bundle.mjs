@@ -2190,6 +2190,7 @@ __export(template_exports, {
 });
 
 // public/components/utils/index.mjs
+import { sha256 } from "https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/+esm";
 function generatePeerName(peerId) {
   if (!peerId) return "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439";
   const prefix = peerId.substring(0, 4);
@@ -2197,6 +2198,12 @@ function generatePeerName(peerId) {
   return `${prefix}_${suffix}`;
 }
 __name(generatePeerName, "generatePeerName");
+function generateMessageId(text, timestamp) {
+  const ts = typeof timestamp === "number" ? timestamp : Date.now();
+  const input = `${text}|${ts}`;
+  return sha256(input).substring(0, 16);
+}
+__name(generateMessageId, "generateMessageId");
 
 // public/components/chat-manager/template/index.mjs
 function defaultTemplate({ state = {} } = {}) {
@@ -2270,7 +2277,6 @@ function renderJoinedGroups({ state = {} } = {}) {
 }
 __name(renderJoinedGroups, "renderJoinedGroups");
 function renderActiveChatHeader({ state = {} } = {}) {
-  console.log("-------------------------------------", state);
   if (state.isPrivateChat && state.activeMember) {
     const displayName = typeof state.activeMember.name === "string" ? state.activeMember.name : state.activeMember.id ? state.activeMember.id.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439";
     return `
@@ -5017,7 +5023,7 @@ var textDecoder = new TextDecoder();
 // node_modules/multiformats/dist/src/hashes/sha2-browser.js
 var sha2_browser_exports = {};
 __export(sha2_browser_exports, {
-  sha256: () => sha256,
+  sha256: () => sha2562,
   sha512: () => sha512
 });
 
@@ -5079,7 +5085,7 @@ function sha(name3) {
   return async (data) => new Uint8Array(await crypto.subtle.digest(name3, data));
 }
 __name(sha, "sha");
-var sha256 = from3({
+var sha2562 = from3({
   name: "sha2-256",
   code: 18,
   encode: sha("SHA-256")
@@ -6256,7 +6262,7 @@ var _SHA512 = class extends SHA2_64B {
     super(64);
   }
 };
-var sha2562 = /* @__PURE__ */ createHasher(
+var sha2563 = /* @__PURE__ */ createHasher(
   () => new _SHA256(),
   /* @__PURE__ */ oidNist(1)
 );
@@ -9616,7 +9622,7 @@ __name(pkixToRSAPublicKey, "pkixToRSAPublicKey");
 function pkixMessageToRSAPublicKey(message2, bytes, digest2) {
   const jwk = pkixMessageToJwk(message2);
   if (digest2 == null) {
-    const hash = sha2562(PublicKey.encode({
+    const hash = sha2563(PublicKey.encode({
       Type: KeyType.RSA,
       Data: bytes
     }));
@@ -9630,7 +9636,7 @@ function jwkToRSAPrivateKey(jwk) {
     throw new InvalidParametersError("Key size is too large");
   }
   const keys = jwkToJWKKeyPair(jwk);
-  const hash = sha2562(PublicKey.encode({
+  const hash = sha2563(PublicKey.encode({
     Type: KeyType.RSA,
     Data: jwkToPkix(keys.publicKey)
   }));
@@ -9643,7 +9649,7 @@ async function generateRSAKeyPair(bits) {
     throw new InvalidParametersError("Key size is too large");
   }
   const keys = await generateRSAKey(bits);
-  const hash = sha2562(PublicKey.encode({
+  const hash = sha2563(PublicKey.encode({
     Type: KeyType.RSA,
     Data: jwkToPkix(keys.publicKey)
   }));
@@ -10762,11 +10768,11 @@ var Pointk1 = /* @__PURE__ */ weierstrass(secp256k1_CURVE, {
   Fp: Fpk1,
   endo: secp256k1_ENDO
 });
-var secp256k1 = /* @__PURE__ */ ecdsa(Pointk1, sha2562);
+var secp256k1 = /* @__PURE__ */ ecdsa(Pointk1, sha2563);
 
 // node_modules/@libp2p/crypto/dist/src/keys/secp256k1/index.browser.js
 function hashAndSign4(key, msg, options) {
-  const p2 = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
+  const p2 = sha2562.digest(msg instanceof Uint8Array ? msg : msg.subarray());
   if (isPromise(p2)) {
     return p2.then(({ digest: digest2 }) => {
       options?.signal?.throwIfAborted();
@@ -10792,7 +10798,7 @@ function hashAndSign4(key, msg, options) {
 }
 __name(hashAndSign4, "hashAndSign");
 function hashAndVerify4(key, sig, msg, options) {
-  const p2 = sha256.digest(msg instanceof Uint8Array ? msg : msg.subarray());
+  const p2 = sha2562.digest(msg instanceof Uint8Array ? msg : msg.subarray());
   if (isPromise(p2)) {
     return p2.then(({ digest: digest2 }) => {
       options?.signal?.throwIfAborted();
@@ -16075,7 +16081,12 @@ var ChatManager = class extends BaseComponent {
       searchQuery: "",
       peerId: null,
       listeningAddresses: [],
-      connectedPeers: []
+      connectedPeers: [],
+      topicHistories: {},
+      // { "chat-group-xyz": [message1, message2, ...] }
+      privateHistories: {},
+      // { "peerId123": [message1, message2, ...] }
+      unreadCounts: {}
     };
     this.node = null;
     this.activeStreams = /* @__PURE__ */ new Map();
@@ -16147,17 +16158,11 @@ var ChatManager = class extends BaseComponent {
           isPrivate: true
         });
       } else {
-        console.log("----------- !!!!! ---------", this, {
-          text: messageData.text,
-          from: actualPeerId,
-          type: "received",
-          timestamp: messageData.timestamp || Date.now()
-        });
         await this.addMessage({
           text: messageData.text,
           from: actualPeerId,
           type: "received",
-          timestamp: messageData.timestamp || Date.now()
+          timestamp: messageData.timestamp
         });
       }
     } catch (error) {
@@ -16182,12 +16187,12 @@ var ChatManager = class extends BaseComponent {
     }
   }
   async addMessage(message2) {
-    console.log("----------------- addMessage --------------------------", message2);
     this.state.messages.push({
       ...message2,
-      timestamp: Date.now(),
-      id: Math.random().toString(36).substr(2, 9)
+      timestamp: message2.timestamp,
+      id: generateMessageId(message2.text, message2.timestamp)
     });
+    console.log("----------------- addMessage --------------------------", this.state.messages);
     await this.renderPart({
       partName: "renderMessages",
       state: this.state,
@@ -16237,32 +16242,35 @@ var ChatManager = class extends BaseComponent {
       return false;
     }
   }
-  /**
-   * Сохраняет сообщение в историю по топику
-   * @param {Object} message
-   */
+  // В chat-manager/index.mjs
   async addMessageToTopicHistory(message2) {
-    if (!this.state.topicHistories) {
-      this.state.topicHistories = {};
-    }
-    const { topic } = message2;
+    const { topic, text, timestamp = Date.now() } = message2;
     if (!this.state.topicHistories[topic]) {
       this.state.topicHistories[topic] = [];
     }
-    this.state.topicHistories[topic].push({
-      ...message2,
-      id: Math.random().toString(36).substr(2, 9)
-    });
-    if (this.state.topicHistories[topic].length > 100) {
-      this.state.topicHistories[topic] = this.state.topicHistories[topic].slice(-100);
+    const id = generateMessageId(text, timestamp);
+    const exists = this.state.topicHistories[topic].some((m2) => m2.id === id);
+    if (!exists) {
+      this.state.topicHistories[topic].push({ ...message2, id, timestamp });
+      this.trimHistory(this.state.topicHistories[topic]);
     }
-    if (this.state.currentGroup?.topic === topic) {
-      this.state.messages = [...this.state.topicHistories[topic]];
-      await this.renderPart({
-        partName: "renderMessages",
-        state: this.state,
-        selector: "#messages-container"
-      });
+  }
+  async addMessageToPrivateHistory(message2) {
+    const { text, timestamp = Date.now() } = message2;
+    const peerId = message2.from === this.state.peerId ? message2.to : message2.from;
+    if (!this.state.privateHistories[peerId]) {
+      this.state.privateHistories[peerId] = [];
+    }
+    const id = generateMessageId(text, timestamp);
+    const exists = this.state.privateHistories[peerId].some((m2) => m2.id === id);
+    if (!exists) {
+      this.state.privateHistories[peerId].push({ ...message2, id, timestamp });
+      this.trimHistory(this.state.privateHistories[peerId]);
+    }
+  }
+  trimHistory(arr, limit = 100) {
+    if (arr.length > limit) {
+      arr.splice(0, arr.length - limit);
     }
   }
   async createGroup(groupName) {
@@ -16553,8 +16561,46 @@ var ChatManager = class extends BaseComponent {
                   raw: true
                 };
               }
-              console.log("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435:", messageData);
-              await this.handleIncomingStreamMessage(messageData, remotePeer);
+              if (messageData.type === "private_message") {
+                await this.addMessageToPrivateHistory({
+                  text: messageData.text,
+                  from: remotePeer,
+                  to: this.state.peerId,
+                  type: "received",
+                  timestamp: messageData.timestamp || Date.now(),
+                  isPrivate: true
+                });
+                const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+                let isActiveChat = false;
+                if (chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer) {
+                  isActiveChat = true;
+                }
+                if (isActiveChat) {
+                  if (chatInterface) {
+                    await chatInterface.postMessage({
+                      type: "INCOMING_PRIVATE_MESSAGE",
+                      data: {
+                        text: messageData.text,
+                        from: remotePeer,
+                        timestamp: messageData.timestamp,
+                        isPrivate: true
+                      }
+                    });
+                  }
+                } else {
+                  if (!isActiveChat) {
+                    if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                    this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                    if (chatInterface && chatInterface.updateMembersList) {
+                      await chatInterface.updateMembersList({
+                        unreadCounts: this.state.unreadCounts
+                      });
+                    }
+                  }
+                }
+              } else {
+                await this.handleIncomingStreamMessage(messageData, remotePeer);
+              }
             } catch (readError) {
               if (readError.message === "Stream read timeout") {
                 continue;
@@ -16564,9 +16610,6 @@ var ChatManager = class extends BaseComponent {
               }
               log5.error("Error reading from lpStream: %o", readError);
               break;
-            } finally {
-              await stream.close().catch(() => {
-              });
             }
           }
         } catch (error) {
@@ -16966,8 +17009,24 @@ function renderMembersList({ state = {} } = {}) {
     return `        <div class="empty-members">            <div class="empty-icon">\u{1F465}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0432 \u0441\u0435\u0442\u0438</p>        </div>        `;
   }
   return `    <div class="members-container">        ${allMembers.map((member) => {
+    const unreadCount = state.unreadCounts?.[member.id] || 0;
+    const showUnread = !member.isCurrentUser && unreadCount > 0;
     const displayName = member.isCurrentUser ? "\u0412\u044B" : getPeerName(member) || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`;
-    return `            <div class="member-item                        ${member.isCurrentUser ? "current-user" : ""}                        ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""}                       ${!member.isCurrentUser ? "clickable" : ""}"                  data-peer-id="${member.id}">                <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">                    ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}                </div>                <div class="member-info">                    <div class="member-name">${displayName}</div>                    <div class="member-status ${member.online ? "online" : "offline"}">                        ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}                    </div>                </div>            </div>            `;
+    return `                <div class="member-item ${member.isCurrentUser ? "current-user" : ""} ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""} clickable" data-peer-id="${member.id}">
+                    <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
+                        ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
+                    </div>
+                    <div class="member-info">
+                        <div class="member-name">${displayName}</div>
+                        <div class="member-status ${member.online ? "online" : "offline"}">
+                            ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
+                        </div>
+                    </div>
+                    ${showUnread ? `
+                    <div class="unread-badge">${unreadCount > 99 ? "99+" : unreadCount}</div>
+                    ` : ""}
+                </div>
+                `;
   }).join("")}    </div>    `;
 }
 __name(renderMembersList, "renderMembersList");
@@ -17596,6 +17655,7 @@ async function clearChatHistory() {
 __name(clearChatHistory, "clearChatHistory");
 async function setActiveGroup(group) {
   const log7 = logger("chat-interface:actions:setActiveGroup");
+  debugger;
   try {
     if (!group || !group.topic) {
       log7.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B: %o", group);
@@ -17610,6 +17670,9 @@ async function setActiveGroup(group) {
       selector: "#messages-list",
       replace: true
     });
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    const history = chatManager?.state.topicHistories[group.topic] || [];
+    this.state.messages = [...history];
     await this.setCurrentGroup(safeGroup);
     await this.updateConnectionStatus(true);
     await this.hideSkeleton();
@@ -17676,6 +17739,7 @@ async function searchMessages(query) {
 __name(searchMessages, "searchMessages");
 async function setActiveMember(member) {
   const log7 = logger("chat-interface:actions:setActiveMember");
+  debugger;
   try {
     if (!member || !member.id) {
       log7.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
@@ -17694,6 +17758,8 @@ async function setActiveMember(member) {
     await this.updateChatHeader();
     const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
     if (chatManager) {
+      const history = chatManager?.state.privateHistories[member.id] || [];
+      this.state.messages = [...history];
       await chatManager.postMessage({
         type: "UPDATE_CHAT_HEADER",
         data: {
@@ -17702,7 +17768,6 @@ async function setActiveMember(member) {
         }
       });
     }
-    this.state.messages = [];
     await this.renderPart({
       partName: "renderMessages",
       state: this.state,
@@ -17858,11 +17923,32 @@ var ChatInterface = class extends BaseComponent {
   async addMessage(message2) {
     this.state.messages.push({
       ...message2,
-      timestamp: Date.now(),
+      timestamp: message2.timestamp || Date.now(),
       id: Math.random().toString(36).substr(2, 9)
     });
     if (this.state.messages.length > 100) {
       this.state.messages = this.state.messages.slice(-100);
+    }
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
+      if (message2.isPrivate && message2.from === this.state.peerId) {
+        await chatManager.addMessageToPrivateHistory({
+          text: message2.text,
+          from: message2.from,
+          to: message2.to,
+          type: "sent",
+          timestamp: message2.timestamp || Date.now(),
+          isPrivate: true
+        });
+      } else if (message2.topic) {
+        await chatManager.addMessageToTopicHistory({
+          text: message2.text,
+          topic: message2.topic,
+          from: message2.from,
+          type: message2.type || (message2.from === this.state.peerId ? "sent" : "received"),
+          timestamp: message2.timestamp || Date.now()
+        });
+      }
     }
     await this.renderPart({
       partName: "renderMessages",
@@ -18043,13 +18129,13 @@ var ChatInterface = class extends BaseComponent {
   /**
    * Обновляет список участников в боковой панели
    */
-  async updateMembersList() {
+  async updateMembersList(props = {}) {
     try {
       const membersPanel = this.shadowRoot.querySelector("#members-panel");
       if (membersPanel && this.renderPart) {
         await this.renderPart({
           partName: "renderMembersList",
-          state: this.state,
+          state: Object.assign(this.state, props),
           selector: ".members-list"
         });
         this._log.trace("\u0441\u043F\u0438\u0441\u043E\u043A \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
@@ -18108,7 +18194,6 @@ var ChatInterface = class extends BaseComponent {
       log7("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
       this.state.activeMember = memberWithName;
       this.state.isPrivateChat = true;
-      await this.updateMembersList();
       await this.updateChatHeader();
       const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
       if (chatManager) {
@@ -18119,8 +18204,16 @@ var ChatInterface = class extends BaseComponent {
             activeMember: memberWithName
           }
         });
+        const peerId = member.id;
+        const history = chatManager.state.privateHistories?.[peerId] || [];
+        this.state.messages = [...history];
+      } else {
+        this.state.messages = [];
       }
-      this.state.messages = [];
+      if (this.state.unreadCounts?.[member.id]) {
+        delete this.state.unreadCounts[member.id];
+      }
+      await this.updateMembersList();
       await this.renderPart({
         partName: "renderMessages",
         state: this.state,
@@ -20448,7 +20541,7 @@ function isIdentityMultihash(multihash) {
 }
 __name(isIdentityMultihash, "isIdentityMultihash");
 function isSha256Multihash(multihash) {
-  return multihash.code === sha256.code;
+  return multihash.code === sha2562.code;
 }
 __name(isSha256Multihash, "isSha256Multihash");
 
@@ -30402,11 +30495,11 @@ __name(expand, "expand");
 // node_modules/@chainsafe/libp2p-noise/dist/src/crypto/js.js
 var pureJsCrypto = {
   hashSHA256(data) {
-    return sha2562(data.subarray());
+    return sha2563(data.subarray());
   },
   getHKDF(ck, ikm) {
-    const prk = extract(sha2562, ikm, ck);
-    const okmU8Array = expand(sha2562, prk, void 0, 96);
+    const prk = extract(sha2563, ikm, ck);
+    const okmU8Array = expand(sha2563, prk, void 0, 96);
     const okm = okmU8Array;
     const k1 = okm.subarray(0, 32);
     const k2 = okm.subarray(32, 64);
@@ -36783,7 +36876,6 @@ var PeerConnection = class extends BaseComponent {
       const allAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
       this.state.listeningAddresses = allAddresses;
       const webRtcAddresses = allAddresses.filter((addr) => WebRTC.matches(multiaddr(addr)));
-      console.log("dddddddddddsssssssss", webRtcAddresses, allAddresses);
       this.state.webRtcAddress = webRtcAddresses.length > 0 ? webRtcAddresses[0] : null;
       this.state.connected = true;
       this.state.startTime = Date.now();
