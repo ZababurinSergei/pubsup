@@ -263,7 +263,7 @@ export class ChatManager extends BaseComponent {
 
     async createGroup(groupName) {
         const group = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: Math.random().toString(36).substring(2, 9),
             name: String(groupName).trim() || 'Безымянная группа',
             topic: `chat-group-${String(groupName).replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`,
             peers: [],

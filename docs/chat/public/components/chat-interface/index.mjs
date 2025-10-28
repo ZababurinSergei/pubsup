@@ -100,7 +100,7 @@ export class ChatInterface extends BaseComponent {
         const safeName = typeof group.name === 'string'
             ? group.name
             : (typeof group.name === 'object' && group.name?.name
-                ? group.name.name
+                ? group.name
                 : 'Безымянная группа');
 
         const safeGroup = {
@@ -122,6 +122,10 @@ export class ChatInterface extends BaseComponent {
                 data: { currentGroup: safeGroup }
             });
         }
+
+        console.log('--------------------', group)
+        // ✅ Обновляем список участников в боковой панели
+        await this.updateMembersList();
 
         await this.updateChatInput();
         await this.fullRender(this.state);
@@ -193,6 +197,12 @@ export class ChatInterface extends BaseComponent {
             this._log('📨 получено сообщение: %s %o', event.type, event.data);
 
             switch (event.type) {
+                case 'ACTIVE_GROUPS_UPDATED':
+                    // Сохраняем список активных групп в состоянии
+                    this.state.activeGroups = event.data.activeGroups || [];
+                    // Обновляем список участников (включая группы)
+                    await this.updateMembersList();
+                    break;
                 case 'PEERS_UPDATE':
                     await this.handlePeersUpdate(event.data);
                     break;

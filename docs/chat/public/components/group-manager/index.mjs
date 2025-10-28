@@ -440,10 +440,16 @@ export class GroupManager extends BaseComponent {
     }
 
     /**
-     * Уведомляет другие компоненты о создании группы
+     * Уведомляет другие компоненты о создании группы и передаёт список активных групп
      */
     async notifyGroupCreation(group) {
         try {
+            // Собираем актуальный список групп (мои + присоединённые)
+            const activeGroups = [
+                ...(this.state.groups || []),
+                ...(this.state.joinedGroups || [])
+            ];
+
             // Уведомляем chat-manager
             const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
             if (chatManager) {
@@ -453,12 +459,18 @@ export class GroupManager extends BaseComponent {
                 });
             }
 
-            // Уведомляем chat-interface напрямую
+            // Уведомляем chat-interface с группой и списком активных групп
             const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
             if (chatInterface) {
                 await chatInterface.postMessage({
                     type: 'GROUP_CREATED',
                     data: group
+                });
+
+                // 🔥 Передаём список активных групп для обновления members-list
+                await chatInterface.postMessage({
+                    type: 'ACTIVE_GROUPS_UPDATED',
+                    data: { activeGroups }
                 });
             }
 

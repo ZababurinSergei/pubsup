@@ -176,10 +176,27 @@ export function renderStatus({state = {}} = {}) {
     `;
 }
 
+
 /**
- * Шаблон для списка участников
+ * Извлекает читаемое имя из топика группы
  */
-export function renderMembersList({state = {}} = {}) {
+function extractGroupNameFromTopic(topic) {
+    if (!topic || typeof topic !== 'string') return 'Безымянная группа';
+    let clean = topic;
+    if (topic.startsWith('chat-group-')) {
+        clean = topic.substring('chat-group-'.length);
+    }
+    const namePart = clean.split('-')[0];
+    return namePart
+        .replace(/_/g, ' ')
+        .replace(/%20/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase()) || 'Безымянная группа';
+}
+
+/**
+ * Шаблон для списка участников и групп
+ */
+export function renderMembersList({ state = {} } = {}) {
     const members = state.connectedPeers || [];
     const currentUser = state.peerId ? {
         id: state.peerId,
@@ -190,42 +207,68 @@ export function renderMembersList({state = {}} = {}) {
 
     const allMembers = currentUser ? [currentUser, ...members] : members;
 
-    if (allMembers.length === 0) {
+    // Группы (если есть)
+    const groups = (state.activeGroups || []).map(group => ({
+        id: group.topic || group.id,
+        name: getGroupName(group),
+        isGroup: true,
+        online: true
+    }));
+
+    // Объединяем участников и группы
+    const displayItems = [...allMembers, ...groups];
+
+    if (displayItems.length === 0) {
         return `\
         <div class="empty-members">\
             <div class="empty-icon">👥</div>\
-            <p class="empty-text">Нет участников в сети</p>\
+            <p class="empty-text">Нет участников и групп</p>\
         </div>\
         `;
     }
 
     return `\
     <div class="members-container">\
-        ${allMembers.map(member => {
-        const unreadCount = state.unreadCounts?.[member.id] || 0;
-        const showUnread = !member.isCurrentUser && unreadCount > 0;
-        
-        // Для текущего пользователя показываем "Вы", для других - сгенерированное имя
-        const displayName = member.isCurrentUser ?
-            'Вы' :
-            (getPeerName(member) || `Пользователь ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`);
-
-        return `\
-                <div class="member-item ${member.isCurrentUser ? 'current-user' : ''} ${state.isPrivateChat && state.activeMember?.id === member.id ? 'active' : ''} clickable" data-peer-id="${member.id}">
-                    <div class="member-avatar ${member.isCurrentUser ? 'current-user' : ''}">
-                        ${member.isCurrentUser ? '👤' : (member.id ? member.id.substring(2, 4).toUpperCase() : '??')}
+        ${displayItems.map(item => {
+        if (item.isGroup) {
+            // Рендер группы
+            return `\
+                <div class="member-item group-item clickable" data-group-topic="${item.id}">
+                    <div class="member-avatar group">
+                        #
                     </div>
                     <div class="member-info">
-                        <div class="member-name">${displayName}</div>
-                        <div class="member-status ${member.online ? 'online' : 'offline'}">
-                            ${member.isCurrentUser ? 'Вы' : (member.online ? 'В сети' : 'Не в сети')}
-                        </div>
+                        <div class="member-name">${escapeHtml(item.name)}</div>
+                        <div class="member-status online">Топик</div>
                     </div>
-                    ${showUnread ? `
-                    <div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>
-                    ` : ''}
                 </div>
                 `;
+        }
+
+        // Рендер участника
+        const unreadCount = state.unreadCounts?.[item.id] || 0;
+        const showUnread = !item.isCurrentUser && unreadCount > 0;
+
+        const displayName = item.isCurrentUser
+            ? 'Вы'
+            : (getPeerName(item) || `Пользователь ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
+
+        return `\
+            <div class="member-item ${item.isCurrentUser ? 'current-user' : ''} ${state.isPrivateChat && state.activeMember?.id === item.id ? 'active' : ''} clickable" data-peer-id="${item.id}">
+                <div class="member-avatar ${item.isCurrentUser ? 'current-user' : ''}">
+                    ${item.isCurrentUser ? '👤' : (item.id ? item.id.substring(2, 4).toUpperCase() : '??')}
+                </div>
+                <div class="member-info">
+                    <div class="member-name">${escapeHtml(displayName)}</div>
+                    <div class="member-status ${item.online ? 'online' : 'offline'}">
+                        ${item.isCurrentUser ? 'Вы' : (item.online ? 'В сети' : 'Не в сети')}
+                    </div>
+                </div>
+                ${showUnread ? `
+                <div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>
+                ` : ''}
+            </div>
+            `;
     }).join('')}\
     </div>\
     `;
@@ -455,17 +498,14 @@ export function renderChatHeader({state = {}} = {}) {
     `;
 }
 
-/**
- * Вспомогательные функции
- */
-
-// Безопасное получение имени группы
 function getGroupName(group) {
-    if (!group) return 'Чат';
+    if (!group) return 'Безымянная группа';
     if (typeof group.name === 'string') return group.name;
     if (typeof group.name === 'object' && typeof group.name.name === 'string') return group.name.name;
+    if (typeof group.topic === 'string') return extractGroupNameFromTopic(group.topic);
     return 'Безымянная группа';
 }
+
 
 // Безопасное получение имени пира
 function getPeerName(peer) {

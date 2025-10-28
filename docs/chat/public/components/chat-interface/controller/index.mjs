@@ -177,15 +177,38 @@ export const controller = async (context) => {
                         }
 
                         const peerId = e.currentTarget.getAttribute('data-peer-id');
-                        const member = context.state.connectedPeers.find(p => p.id === peerId);
+                        const groupTopic = e.currentTarget.getAttribute('data-group-topic');
 
-                        if (member && !member.isCurrentUser) {
-                            try {
-                                log('выбор пользователя для приватного чата: %s', member.name || member.id);
-                                await context.setActiveMember(member);
-                            } catch (error) {
-                                log.error('ошибка выбора пользователя: %o', error);
+                        try {
+                            // Обработка приватного чата с пиром
+                            if (peerId) {
+                                const member = context.state.connectedPeers.find(p => p.id === peerId);
+                                if (member && !member.isCurrentUser) {
+                                    log('выбор пользователя для приватного чата: %s', member.name || member.id);
+                                    await context.setActiveMember(member);
+                                }
+                                return;
                             }
+
+                            // Обработка выбора группы
+                            if (groupTopic) {
+                                // Ищем группу по топику в активных группах
+                                const group = context.state.activeGroups?.find(g => g.topic === groupTopic) ||
+                                    context.state.groups?.find(g => g.topic === groupTopic) ||
+                                    context.state.discoveredGroups?.find(g => g.topic === groupTopic);
+
+                                if (group) {
+                                    log('выбор группы для чата: %s', group.name || groupTopic);
+                                    await context.setActiveGroup(group);
+                                } else {
+                                    log.warn('группа не найдена по топику: %s', groupTopic);
+                                }
+                                return;
+                            }
+
+                            log.warn('элемент не содержит ни data-peer-id, ни data-group-topic');
+                        } catch (error) {
+                            log.error('ошибка при выборе элемента: %o', error);
                         }
                     };
 

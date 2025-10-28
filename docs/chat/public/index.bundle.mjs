@@ -2233,8 +2233,8 @@ function getGroupName(group) {
   if (!group) return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F";
   if (typeof group.name === "string") return group.name;
   if (typeof group.name === "object" && group.name?.name) return group.name.name;
-  if (typeof group.name === "object" && group.name?.topic) return extractGroupNameFromTopic2(group.name.topic);
-  if (group.topic) return extractGroupNameFromTopic2(group.topic);
+  if (typeof group.name === "object" && group.name?.topic) return extractGroupNameFromTopic(group.name.topic);
+  if (group.topic) return extractGroupNameFromTopic(group.topic);
   return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F";
 }
 __name(getGroupName, "getGroupName");
@@ -2243,7 +2243,7 @@ function getGroupInitial(group) {
   return name3.charAt(0).toUpperCase();
 }
 __name(getGroupInitial, "getGroupInitial");
-function extractGroupNameFromTopic2(topic) {
+function extractGroupNameFromTopic(topic) {
   if (!topic) return "\u0413\u0440\u0443\u043F\u043F\u0430";
   if (topic.startsWith("chat-group-")) {
     const parts = topic.replace("chat-group-", "").split("-");
@@ -2251,7 +2251,7 @@ function extractGroupNameFromTopic2(topic) {
   }
   return topic;
 }
-__name(extractGroupNameFromTopic2, "extractGroupNameFromTopic");
+__name(extractGroupNameFromTopic, "extractGroupNameFromTopic");
 function renderMyGroups({ state = {} } = {}) {
   const groups = state.groups || [];
   if (groups.length === 0) {
@@ -16275,7 +16275,7 @@ var ChatManager = class extends BaseComponent {
   }
   async createGroup(groupName) {
     const group = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 9),
       name: String(groupName).trim() || "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430",
       topic: `chat-group-${String(groupName).replace(/\s+/g, "-").toLowerCase()}-${Date.now()}`,
       peers: [],
@@ -16996,6 +16996,16 @@ function renderStatus({ state = {} } = {}) {
   return `    <div class="status-message connected">        <span class="status-icon">\u{1F7E2}</span>        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${getGroupName2(state.currentGroup)}</span>    </div>    `;
 }
 __name(renderStatus, "renderStatus");
+function extractGroupNameFromTopic2(topic) {
+  if (!topic || typeof topic !== "string") return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+  let clean3 = topic;
+  if (topic.startsWith("chat-group-")) {
+    clean3 = topic.substring("chat-group-".length);
+  }
+  const namePart = clean3.split("-")[0];
+  return namePart.replace(/_/g, " ").replace(/%20/g, " ").replace(/\b\w/g, (c2) => c2.toUpperCase()) || "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+}
+__name(extractGroupNameFromTopic2, "extractGroupNameFromTopic");
 function renderMembersList({ state = {} } = {}) {
   const members = state.connectedPeers || [];
   const currentUser = state.peerId ? {
@@ -17005,28 +17015,47 @@ function renderMembersList({ state = {} } = {}) {
     isCurrentUser: true
   } : null;
   const allMembers = currentUser ? [currentUser, ...members] : members;
-  if (allMembers.length === 0) {
-    return `        <div class="empty-members">            <div class="empty-icon">\u{1F465}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0432 \u0441\u0435\u0442\u0438</p>        </div>        `;
+  const groups = (state.activeGroups || []).map((group) => ({
+    id: group.topic || group.id,
+    name: getGroupName2(group),
+    isGroup: true,
+    online: true
+  }));
+  const displayItems = [...allMembers, ...groups];
+  if (displayItems.length === 0) {
+    return `        <div class="empty-members">            <div class="empty-icon">\u{1F465}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0438 \u0433\u0440\u0443\u043F\u043F</p>        </div>        `;
   }
-  return `    <div class="members-container">        ${allMembers.map((member) => {
-    const unreadCount = state.unreadCounts?.[member.id] || 0;
-    const showUnread = !member.isCurrentUser && unreadCount > 0;
-    const displayName = member.isCurrentUser ? "\u0412\u044B" : getPeerName(member) || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${member.id.substring(0, 6)}...${member.id.substring(member.id.length - 4)}`;
-    return `                <div class="member-item ${member.isCurrentUser ? "current-user" : ""} ${state.isPrivateChat && state.activeMember?.id === member.id ? "active" : ""} clickable" data-peer-id="${member.id}">
-                    <div class="member-avatar ${member.isCurrentUser ? "current-user" : ""}">
-                        ${member.isCurrentUser ? "\u{1F464}" : member.id ? member.id.substring(2, 4).toUpperCase() : "??"}
+  return `    <div class="members-container">        ${displayItems.map((item) => {
+    if (item.isGroup) {
+      return `                <div class="member-item group-item clickable" data-group-topic="${item.id}">
+                    <div class="member-avatar group">
+                        #
                     </div>
                     <div class="member-info">
-                        <div class="member-name">${displayName}</div>
-                        <div class="member-status ${member.online ? "online" : "offline"}">
-                            ${member.isCurrentUser ? "\u0412\u044B" : member.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
-                        </div>
+                        <div class="member-name">${escapeHtml2(item.name)}</div>
+                        <div class="member-status online">\u0422\u043E\u043F\u0438\u043A</div>
                     </div>
-                    ${showUnread ? `
-                    <div class="unread-badge">${unreadCount > 99 ? "99+" : unreadCount}</div>
-                    ` : ""}
                 </div>
                 `;
+    }
+    const unreadCount = state.unreadCounts?.[item.id] || 0;
+    const showUnread = !item.isCurrentUser && unreadCount > 0;
+    const displayName = item.isCurrentUser ? "\u0412\u044B" : getPeerName(item) || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`;
+    return `            <div class="member-item ${item.isCurrentUser ? "current-user" : ""} ${state.isPrivateChat && state.activeMember?.id === item.id ? "active" : ""} clickable" data-peer-id="${item.id}">
+                <div class="member-avatar ${item.isCurrentUser ? "current-user" : ""}">
+                    ${item.isCurrentUser ? "\u{1F464}" : item.id ? item.id.substring(2, 4).toUpperCase() : "??"}
+                </div>
+                <div class="member-info">
+                    <div class="member-name">${escapeHtml2(displayName)}</div>
+                    <div class="member-status ${item.online ? "online" : "offline"}">
+                        ${item.isCurrentUser ? "\u0412\u044B" : item.online ? "\u0412 \u0441\u0435\u0442\u0438" : "\u041D\u0435 \u0432 \u0441\u0435\u0442\u0438"}
+                    </div>
+                </div>
+                ${showUnread ? `
+                <div class="unread-badge">${unreadCount > 99 ? "99+" : unreadCount}</div>
+                ` : ""}
+            </div>
+            `;
   }).join("")}    </div>    `;
 }
 __name(renderMembersList, "renderMembersList");
@@ -17092,9 +17121,10 @@ function renderChatHeader({ state = {} } = {}) {
 }
 __name(renderChatHeader, "renderChatHeader");
 function getGroupName2(group) {
-  if (!group) return "\u0427\u0430\u0442";
+  if (!group) return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
   if (typeof group.name === "string") return group.name;
   if (typeof group.name === "object" && typeof group.name.name === "string") return group.name.name;
+  if (typeof group.topic === "string") return extractGroupNameFromTopic2(group.topic);
   return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
 }
 __name(getGroupName2, "getGroupName");
@@ -17284,14 +17314,29 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
               return;
             }
             const peerId = e2.currentTarget.getAttribute("data-peer-id");
-            const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
-            if (member && !member.isCurrentUser) {
-              try {
-                log7("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name || member.id);
-                await context.setActiveMember(member);
-              } catch (error) {
-                log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0431\u043E\u0440\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
+            const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
+            try {
+              if (peerId) {
+                const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
+                if (member && !member.isCurrentUser) {
+                  log7("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name || member.id);
+                  await context.setActiveMember(member);
+                }
+                return;
               }
+              if (groupTopic) {
+                const group = context.state.activeGroups?.find((g) => g.topic === groupTopic) || context.state.groups?.find((g) => g.topic === groupTopic) || context.state.discoveredGroups?.find((g) => g.topic === groupTopic);
+                if (group) {
+                  log7("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
+                  await context.setActiveGroup(group);
+                } else {
+                  log7.warn("\u0433\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443: %s", groupTopic);
+                }
+                return;
+              }
+              log7.warn("\u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u043D\u0438 data-peer-id, \u043D\u0438 data-group-topic");
+            } catch (error) {
+              log7.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0432\u044B\u0431\u043E\u0440\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430: %o", error);
             }
           }, "handler");
           item.addEventListener("click", handler);
@@ -17966,7 +18011,7 @@ var ChatInterface = class extends BaseComponent {
       this._log.error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:", group);
       return;
     }
-    const safeName = typeof group.name === "string" ? group.name : typeof group.name === "object" && group.name?.name ? group.name.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+    const safeName = typeof group.name === "string" ? group.name : typeof group.name === "object" && group.name?.name ? group.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
     const safeGroup = {
       ...group,
       name: safeName,
@@ -17984,6 +18029,8 @@ var ChatInterface = class extends BaseComponent {
         data: { currentGroup: safeGroup }
       });
     }
+    console.log("--------------------", group);
+    await this.updateMembersList();
     await this.updateChatInput();
     await this.fullRender(this.state);
   }
@@ -18036,6 +18083,10 @@ var ChatInterface = class extends BaseComponent {
     try {
       this._log("\u{1F4E8} \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s %o", event.type, event.data);
       switch (event.type) {
+        case "ACTIVE_GROUPS_UPDATED":
+          this.state.activeGroups = event.data.activeGroups || [];
+          await this.updateMembersList();
+          break;
         case "PEERS_UPDATE":
           await this.handlePeersUpdate(event.data);
           break;
@@ -18924,6 +18975,23 @@ async function createActions3(context) {
   let discoveredGroupsInterval = null;
   const GROUPS_ANNOUNCEMENT_TOPIC2 = "chat-groups-announcements";
   const log7 = logger("group-manager:actions");
+  function extractGroupNameFromTopic3(topic) {
+    if (!topic || typeof topic !== "string") {
+      return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+    }
+    let cleanTopic = topic;
+    if (topic.startsWith("chat-group-")) {
+      cleanTopic = topic.substring("chat-group-".length);
+    }
+    const namePart = cleanTopic.split("-")[0];
+    if (!namePart) {
+      return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+    }
+    let decodedName = namePart.replace(/_/g, " ").replace(/%20/g, " ");
+    decodedName = decodedName.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+    return decodedName || "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
+  }
+  __name(extractGroupNameFromTopic3, "extractGroupNameFromTopic");
   function normalizeGroupName(name3) {
     if (typeof name3 === "string" && name3.trim()) {
       return name3.trim();
@@ -18932,7 +19000,7 @@ async function createActions3(context) {
       return name3.name.trim();
     }
     if (typeof name3 === "object" && name3 !== null && typeof name3.topic === "string") {
-      return extractGroupNameFromTopic(name3.topic);
+      return extractGroupNameFromTopic3(name3.topic);
     }
     return "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
   }
@@ -19832,10 +19900,14 @@ var GroupManager = class extends BaseComponent {
     }
   }
   /**
-   * Уведомляет другие компоненты о создании группы
+   * Уведомляет другие компоненты о создании группы и передаёт список активных групп
    */
   async notifyGroupCreation(group) {
     try {
+      const activeGroups = [
+        ...this.state.groups || [],
+        ...this.state.joinedGroups || []
+      ];
       const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
       if (chatManager) {
         await chatManager.postMessage({
@@ -19848,6 +19920,10 @@ var GroupManager = class extends BaseComponent {
         await chatInterface.postMessage({
           type: "GROUP_CREATED",
           data: group
+        });
+        await chatInterface.postMessage({
+          type: "ACTIVE_GROUPS_UPDATED",
+          data: { activeGroups }
         });
       }
       this.log("Group creation notified to other components");

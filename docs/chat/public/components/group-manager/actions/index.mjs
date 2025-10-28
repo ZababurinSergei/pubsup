@@ -12,6 +12,43 @@ export async function createActions(context) {
     const log = logger('group-manager:actions');
 
     /**
+     * Извлекает читаемое имя группы из топика.
+     * @param {string} topic - Строка топика (например, 'chat-group-test-1712345678')
+     * @returns {string} Читаемое имя группы (например, 'Test')
+     */
+    function extractGroupNameFromTopic(topic) {
+        if (!topic || typeof topic !== 'string') {
+            return 'Безымянная группа';
+        }
+
+        // Убираем префикс 'chat-group-' если есть
+        let cleanTopic = topic;
+        if (topic.startsWith('chat-group-')) {
+            cleanTopic = topic.substring('chat-group-'.length);
+        }
+
+        // Берём часть до первого дефиса (остальное — временная метка или идентификатор)
+        const namePart = cleanTopic.split('-')[0];
+
+        if (!namePart) {
+            return 'Безымянная группа';
+        }
+
+        // Декодируем возможные спецсимволы (если использовалось кодирование)
+        // Например, замена подчёркиваний или %20 → пробелы (опционально)
+        let decodedName = namePart
+            .replace(/_/g, ' ')           // заменяем подчёркивания на пробелы
+            .replace(/%20/g, ' ');        // заменяем URL-кодированные пробелы
+
+        // Приводим к нормальному виду: первая буква каждого слова — заглавная
+        decodedName = decodedName
+            .toLowerCase()
+            .replace(/\b\w/g, char => char.toUpperCase());
+
+        return decodedName || 'Безымянная группа';
+    }
+
+    /**
      * Нормализует имя группы: гарантирует, что это строка.
      * @param {*} name - Любое значение
      * @returns {string}

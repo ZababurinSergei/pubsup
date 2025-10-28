@@ -985,3 +985,55 @@ textarea:focus-visible {
     z-index: 2;
     box-sizing: border-box;
 }
+
+.member-groups {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.group-badge {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* Стили для групп в списке участников */
+.group-item {
+    background: rgba(72, 187, 120, 0.15); /* Светло-зелёный фон */
+    border: 1px solid rgba(72, 187, 120, 0.3);
+    border-radius: 10px;
+}
+
+.group-item:hover {
+    background: rgba(72, 187, 120, 0.2);
+    border-color: rgba(72, 187, 120, 0.5);
+    box-shadow: 0 2px 6px rgba(72, 187, 120, 0.2);
+}
+
+/* Активный элемент — общий стиль для участников и групп */
+.member-item.active,
+.group-item.active {
+    background: rgba(102, 126, 234, 0.15) !important;
+    border-color: rgba(102, 126, 234, 0.4) !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2) !important;
+}
+
+.member-item.active .member-avatar,
+.group-item.active .member-avatar,
+.group-item.active .group-avatar {
+    border: 2px solid #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.member-item.active .member-name,
+.group-item.active .member-name,
+.group-item.active .group-name {
+    color: #667eea;
+    font-weight: 600;
+}
