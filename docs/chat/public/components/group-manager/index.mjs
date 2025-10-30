@@ -71,11 +71,35 @@ export class GroupManager extends BaseComponent {
         await this.initializeFromPeerConnection();
     }
 
+    get allGroups() {
+        return {
+            groups: [...this.state.groups, ...this.state.joinedGroups],
+            discovered: [...this.state.discoveredGroups],
+            all: [...this.state.discoveredGroups, ...this.state.groups, ...this.state.joinedGroups],
+            discoveredGroups: this.state.discoveredGroups,
+            joinedGroups: this.state.joinedGroups
+        }
+    }
     // ✅ ДОБАВЛЕНО: обработка события перезапуска ноды
     async postMessage(event) {
         if (event.type === 'NODE_RESTARTED') {
             await this.handleNodeRestart();
             return;
+        }
+
+        switch (event.type) {
+            case 'REQUEST_ACTIVE_GROUPS':
+                const activeGroups = [...(this.state.groups || []), ...(this.state.joinedGroups || [])];
+                const requester = await this.getComponentAsync('chat-interface', 'main-chat');
+                if (requester) {
+                    await requester.postMessage({
+                        type: 'ACTIVE_GROUPS_RESPONSE',
+                        data: { activeGroups }
+                    });
+                }
+                break;
+            default:
+                log.error('Неизвестный тип сообщения: %s', event.type);
         }
 
         // Остальные типы сообщений (если понадобятся в будущем)
@@ -205,24 +229,47 @@ export class GroupManager extends BaseComponent {
         }
     }
 
-    async createGroup(groupName) {
+    async createGroup(input) {
         // Проверяем готовность ноды
         if (!this.state.nodeReady) {
             throw new Error('P2P нода не готова. Подождите немного и попробуйте снова.');
         }
 
         try {
-            this.log('creating group: %s', groupName);
-            const group = await this._actions.createGroup(groupName);
-            this.log('group created: %o', group);
+            console.log('#################################### input ##############', input)
+            let group;
+            console.log('group-manager: createGroup', input)
+            if (typeof input === 'string') {
+                // Создание новой группы
+                const groupName = input.trim();
+                if (!groupName) {
+                    throw new Error('Название группы не может быть пустым');
+                }
 
-            // Принудительное обновление состояния - создаем новый массив для реактивности
-            this.state.groups = [...this.state.groups];
+                this.log('creating group: %s', groupName);
+                group = await this._actions.createGroup(groupName);
+                this.log('group created: %o', group);
 
-            // Несколько способов обновления UI
+                // Обновляем локальный список "моих групп"
+                this.state.groups = [...this.state.groups];
+
+            } else if (input && typeof input === 'object') {
+                // Подключение к существующей группе
+                const groupData = input;
+                if (!groupData.topic) {
+                    throw new Error('Объект группы должен содержать поле "topic"');
+                }
+
+                this.log('joining existing group: %s (%s)', groupData.name || groupData.topic, groupData.topic);
+                group = await this.joinGroup(groupData);
+                this.log('joined group: %o', group);
+
+            } else {
+                throw new Error('Неверный тип аргумента: ожидается строка или объект группы');
+            }
+
+            // Обновление UI
             let uiUpdated = false;
-
-            // Способ 1: Через renderPart
             try {
                 uiUpdated = await this.safeRenderPart({
                     partName: 'renderMyGroups',
@@ -234,7 +281,6 @@ export class GroupManager extends BaseComponent {
                 this.log.error('Error updating via renderPart: %o', error);
             }
 
-            // Способ 2: Полный рендер если renderPart не сработал
             if (!uiUpdated) {
                 this.log('Using full render as fallback');
                 await this.fullRender(this.state);
@@ -244,14 +290,13 @@ export class GroupManager extends BaseComponent {
             // Уведомляем другие компоненты
             await this.notifyGroupCreation(group);
 
-            this.log('Group creation completed, UI updated: %s', uiUpdated);
+            this.log('Group operation completed, UI updated: %s', uiUpdated);
 
             return group;
 
         } catch (error) {
-            this.log.error('error creating group: %o', error);
+            this.log.error('error in createGroup: %o', error);
 
-            // Если ошибка связана с PubSub, помечаем ноду как неготовую
             if (error.message.includes('Pubsub has not started')) {
                 this.state.nodeReady = false;
                 await this.safeUpdateUI();

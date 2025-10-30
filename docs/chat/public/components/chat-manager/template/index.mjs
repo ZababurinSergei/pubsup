@@ -1,4 +1,4 @@
-import {generatePeerName} from '../../utils/index.mjs'
+import {generatePeerName, parseChatGroupStringRegex} from '../../utils/index.mjs'
 
 /**
  * Основной шаблон компонента ChatManager
@@ -214,6 +214,7 @@ export default function defaultTemplate({state = {}} = {}) {
     `;
 }
 
+
 /**
  * Вспомогательная функция: извлекает строковое имя группы
  */
@@ -221,8 +222,8 @@ function getGroupName(group) {
     if (!group) return 'Безымянная';
     if (typeof group.name === 'string') return group.name;
     if (typeof group.name === 'object' && group.name?.name) return group.name.name;
-    if (typeof group.name === 'object' && group.name?.topic) return extractGroupNameFromTopic(group.name.topic);
-    if (group.topic) return extractGroupNameFromTopic(group.topic);
+    if (typeof group.name === 'object' && group.name?.topic) return parseChatGroupStringRegex(group.name.topic);
+    if (group.topic) return parseChatGroupStringRegex(group.topic);
     return 'Безымянная';
 }
 
@@ -235,23 +236,12 @@ function getGroupInitial(group) {
 }
 
 /**
- * Извлекает имя из топика
- */
-function extractGroupNameFromTopic(topic) {
-    if (!topic) return 'Группа';
-    if (topic.startsWith('chat-group-')) {
-        const parts = topic.replace('chat-group-', '').split('-');
-        return parts[0].replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
-    return topic;
-}
-
-/**
  * Шаблон для моих групп
  */
 export function renderMyGroups({state = {}} = {}) {
     const groups = state.groups || [];
 
+    console.log('======= groups ===========', groups)
     if (groups.length === 0) {
         return `\
         <div class=\"empty-state\">\
@@ -266,25 +256,29 @@ export function renderMyGroups({state = {}} = {}) {
 
     return `\
     <div class=\"groups-list\" id=\"my-groups-list\">\
-        ${groups.map((group, index) => `\
-        <div class=\"group-item ${state.currentGroup?.id === group.id ? 'active' : ''}\" data-group-id=\"${group.id}\" data-group-topic=\"${group.topic}\">\
-            <div class=\"group-avatar\">\
-                ${getGroupInitial(group)}\
-            </div>\
-            <div class=\"group-info\">\
-                <div class=\"group-name\">${escapeHtml(getGroupName(group))}</div>\
-                <div class=\"group-meta\">\
-                    <span class=\"meta-item\">👥 ${group.memberCount || 1}</span>\
-                    <span class=\"meta-item\">${formatDate(group.createdAt)}</span>\
+        ${groups.map((group, index) => {
+            return `\
+                <div class=\"group-item ${state.currentGroup?.id === group.id ? 'active' : ''}\" data-group-id=\"${group.id}\" data-group-topic=\"${group.topic}\">\
+                    <div class=\"group-avatar\">\
+                        ${getGroupInitial(group)}\
+                    </div>\
+                    <div class=\"group-info\">\
+                        <div class=\"group-name\">${group.name}</div>\
+                        <div class=\"group-meta\">\
+                            <span class=\"meta-item\">👥 ${group.memberCount || 1}</span>\
+                            <span class=\"meta-item\">${formatDate(group.createdAt)}</span>\
+                        </div>\
+                    </div>\
+                    <div class=\"group-actions\">\
+                        <button class=\"group-action-btn join\" data-group-id=\"${group.id}\" title=\"Присоединиться\">\
+                            <span class=\"btn-icon\">➡️</span>\
+                        </button>\
+                    </div>\
                 </div>\
-            </div>\
-            <div class=\"group-actions\">\
-                <button class=\"group-action-btn join\" data-group-id=\"${group.id}\" title=\"Присоединиться\">\
-                    <span class=\"btn-icon\">➡️</span>\
-                </button>\
-            </div>\
-        </div>\
-        `).join('')}\
+                `
+        
+        
+        }).join('')}\
     </div>\
     `;
 }
@@ -315,7 +309,7 @@ export function renderDiscoveredGroups({state = {}} = {}) {
                 ${getGroupInitial(group)}\
             </div>\
             <div class=\"group-info\">\
-                <div class=\"group-name\">${escapeHtml(getGroupName(group))}</div>\
+                <div class=\"group-name\">${group.name}</div>\
                 <div class=\"group-description\">${group.description || 'Описание отсутствует'}</div>\
                 <div class=\"group-meta\">\
                     <span class=\"meta-item\">👥 ${group.memberCount || 0}</span>\
@@ -356,7 +350,7 @@ export function renderJoinedGroups({state = {}} = {}) {
                 ${getGroupInitial(group)}\
             </div>\
             <div class=\"group-info\">\
-                <div class=\"group-name\">${escapeHtml(getGroupName(group))}</div>\
+                <div class=\"group-name\">${group.name}</div>\
                 <div class=\"group-meta\">\
                     <span class=\"meta-item\">👥 ${group.memberCount || 1}</span>\
                     <span class=\"meta-item\">${formatDate(group.joinedAt)}</span>\
@@ -458,17 +452,21 @@ export function renderGroupMembers({ state = {} } = {}) {
     }
 
 
+
     return `\
     <div class="members-list">\
-        ${members.map(member => `\
-        <div class="member-item" data-peer-id="${member.id}">\
-            <div class="member-avatar">${member.name.charAt(0)}</div>\
-            <div class="member-info">\
-                <div class="member-name">${escapeHtml(member.name)}</div>\
-                <div class="member-status online">В сети</div>\
-            </div>\
-        </div>\
-        `).join('')}\
+        ${members.map(member => {
+            console.log('@@@@@@@@@@@@@', member)
+            return `\
+                <div class="member-item" data-peer-id="${member.id}">\
+                    <div class="member-avatar">${member.name.charAt(0)}</div>\
+                    <div class="member-info">\
+                        <div class="member-name">${member.name}</div>\
+                        <div class="member-status online">В сети</div>\
+                    </div>\
+                </div>\
+                `
+        }).join('')}\
     </div>\
     `;
 }
@@ -648,7 +646,7 @@ export function renderGroups({state = {}} = {}) {
                 ${getGroupInitial(group)}\
             </div>\
             <div class=\"group-info\">\
-                <div class=\"group-name\">${escapeHtml(getGroupName(group))}</div>\
+                <div class=\"group-name\">${group.name}</div>\
                 <div class=\"group-meta\">\
                     <span class=\"meta-item\">👥 ${group.memberCount || 1}</span>\
                     <span class=\"meta-item\">${formatDate(group.createdAt)}</span>\

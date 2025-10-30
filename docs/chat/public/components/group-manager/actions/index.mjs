@@ -1,3 +1,4 @@
+import {parseChatGroupStringRegex} from '../../utils/index.mjs'
 import { logger } from '@libp2p/logger';
 
 /**
@@ -12,43 +13,6 @@ export async function createActions(context) {
     const log = logger('group-manager:actions');
 
     /**
-     * Извлекает читаемое имя группы из топика.
-     * @param {string} topic - Строка топика (например, 'chat-group-test-1712345678')
-     * @returns {string} Читаемое имя группы (например, 'Test')
-     */
-    function extractGroupNameFromTopic(topic) {
-        if (!topic || typeof topic !== 'string') {
-            return 'Безымянная группа';
-        }
-
-        // Убираем префикс 'chat-group-' если есть
-        let cleanTopic = topic;
-        if (topic.startsWith('chat-group-')) {
-            cleanTopic = topic.substring('chat-group-'.length);
-        }
-
-        // Берём часть до первого дефиса (остальное — временная метка или идентификатор)
-        const namePart = cleanTopic.split('-')[0];
-
-        if (!namePart) {
-            return 'Безымянная группа';
-        }
-
-        // Декодируем возможные спецсимволы (если использовалось кодирование)
-        // Например, замена подчёркиваний или %20 → пробелы (опционально)
-        let decodedName = namePart
-            .replace(/_/g, ' ')           // заменяем подчёркивания на пробелы
-            .replace(/%20/g, ' ');        // заменяем URL-кодированные пробелы
-
-        // Приводим к нормальному виду: первая буква каждого слова — заглавная
-        decodedName = decodedName
-            .toLowerCase()
-            .replace(/\b\w/g, char => char.toUpperCase());
-
-        return decodedName || 'Безымянная группа';
-    }
-
-    /**
      * Нормализует имя группы: гарантирует, что это строка.
      * @param {*} name - Любое значение
      * @returns {string}
@@ -61,7 +25,7 @@ export async function createActions(context) {
             return name.name.trim();
         }
         if (typeof name === 'object' && name !== null && typeof name.topic === 'string') {
-            return extractGroupNameFromTopic(name.topic);
+            return parseChatGroupStringRegex(name.topic);
         }
         return 'Безымянная группа';
     }
@@ -79,7 +43,7 @@ export async function createActions(context) {
             await this.subscribeToGroupsAnnouncements();
 
             // Запускаем периодический поиск групп
-            this.startGroupDiscovery();
+            await this.startGroupDiscovery();
 
             log('libp2p инициализирован для управления группами');
         },
@@ -134,6 +98,7 @@ export async function createActions(context) {
                     // Нормализуем имя группы
                     groupInfo.name = normalizeGroupName(groupInfo.name);
 
+                    console.log('2222222222222222222', groupInfo)
                     // Обновляем список обнаруженных групп
                     await this.updateDiscoveredGroups(groupInfo);
 
@@ -157,6 +122,7 @@ export async function createActions(context) {
             // Нормализуем имя
             groupInfo.name = normalizeGroupName(groupInfo.name);
 
+            console.log('3333333333333', groupInfo)
             // Проверяем, нет ли уже такой группы
             const existingIndex = context.state.discoveredGroups.findIndex(g => g.id === groupInfo.id);
 
@@ -342,6 +308,8 @@ export async function createActions(context) {
                 // Получаем список активных топиков из PubSub
                 const topics = libp2p.services.pubsub?.getTopics() || [];
 
+                const allGroups = [...context.state.groups, ...context.state.joinedGroups ,...context.state.discoveredGroups]
+
                 const groupTopics = topics.filter(topic =>
                     topic.startsWith('chat-group-') ||
                     topic.startsWith('universe-chat-') ||
@@ -357,10 +325,16 @@ export async function createActions(context) {
                         const subscribers = libp2p.services.pubsub.getSubscribers(topic);
                         const memberCount = subscribers.length;
 
+                        const groupObject = allGroups.filter(item => item.id === topic)
+
                         // Извлекаем название группы из топика
                         let groupName = topic;
                         if (topic.startsWith('chat-group-')) {
-                            groupName = topic.replace('chat-group-', '').split('-')[0];
+                            if(groupObject.length > 0) {
+                                groupName = groupObject[0].name;
+                            } else {
+                                groupName = 'не должно быть проверь'
+                            }
                         } else if (topic.startsWith('universe-chat-')) {
                             groupName = topic.replace('universe-chat-', '');
                         } else if (topic.startsWith('chat-groups-')) {
@@ -585,12 +559,15 @@ export async function createActions(context) {
                 const subscribers = libp2p.services.pubsub.getSubscribers(topic);
                 const memberCount = subscribers.length;
 
+                const allGroupts = (context.allGroups).all
+                const topicObject = allGroupts.filter(item => item.id === topic)
+
                 const group = {
                     id: topic,
-                    name: this.extractGroupNameFromTopic(topic),
+                    name: topicObject[0].name,
                     topic: topic,
                     memberCount: memberCount,
-                    description: `Присоединенная группа: ${this.extractGroupNameFromTopic(topic)}`,
+                    description: `Присоединенная группа: ${parseChatGroupStringRegex(topic)}`,
                     joinedAt: Date.now(),
                     isPublic: true
                 };
@@ -603,7 +580,13 @@ export async function createActions(context) {
                     context.state.joinedGroups = [];
                 }
 
-                if (!context.state.joinedGroups.find(g => g.id === topic)) {
+                if (!context.state.joinedGroups.find(g => {
+
+                    if(g.id === topic) {
+                        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',g,  topic)
+                        return true
+                    }
+                })) {
                     context.state.joinedGroups.push(group);
                 }
 
@@ -773,19 +756,6 @@ export async function createActions(context) {
                 .replace(/[^a-z0-9а-яё]/g, '-')
                 .replace(/-+/g, '-')
                 .replace(/^-|-$/g, '');
-        },
-
-        /**
-         * Извлечение названия группы из топика
-         * @param {string} topic - Топик группы
-         * @returns {string} Название группы
-         */
-        extractGroupNameFromTopic: function(topic) {
-            if (topic.startsWith('chat-group-')) {
-                const parts = topic.replace('chat-group-', '').split('-');
-                return this.formatGroupName(parts[0]);
-            }
-            return this.formatGroupName(topic);
         },
 
         /**

@@ -35,37 +35,39 @@ export const controller = async (context) => {
             }
 
             // Обработчик создания группы
-            const createGroupBtn = context.shadowRoot.querySelector('#create-group');
-            if (createGroupBtn) {
-                const createGroupHandler = async () => {
-                    const groupNameInput = context.shadowRoot.querySelector('#group-name');
-                    if (groupNameInput && groupNameInput.value.trim()) {
-                        await context.createGroup(groupNameInput.value.trim());
-                        groupNameInput.value = '';
-                    } else {
-                        // Показать модальное окно для ввода имени
-                        await context.showModal({
-                            title: 'Создание группы',
-                            content: '<input type="text" id="quick-group-name" placeholder="Название группы..." style="width:100%; padding:0.5rem;">',
-                            buttons: [
-                                { text: 'Отмена', type: 'secondary' },
-                                {
-                                    text: 'Создать',
-                                    type: 'primary',
-                                    action: async () => {
-                                        const input = document.getElementById('quick-group-name');
-                                        if (input?.value.trim()) {
-                                            await context.createGroup(input.value.trim());
-                                        }
-                                    }
-                                }
-                            ]
-                        });
-                    }
-                };
-                createGroupBtn.addEventListener('click', createGroupHandler);
-                eventListeners.push({ element: createGroupBtn, handler: createGroupHandler });
-            }
+            // const createGroupBtn = context.shadowRoot.querySelector('#create-group');
+            // if (createGroupBtn) {
+            //     const createGroupHandler = async () => {
+            //         console.log('###########')
+            //         debugger
+            //         const groupNameInput = context.shadowRoot.querySelector('#group-name');
+            //         if (groupNameInput && groupNameInput.value.trim()) {
+            //             await context.createGroup(groupNameInput.value.trim());
+            //             groupNameInput.value = '';
+            //         } else {
+            //             // Показать модальное окно для ввода имени
+            //             await context.showModal({
+            //                 title: 'Создание группы',
+            //                 content: '<input type="text" id="quick-group-name" placeholder="Название группы..." style="width:100%; padding:0.5rem;">',
+            //                 buttons: [
+            //                     { text: 'Отмена', type: 'secondary' },
+            //                     {
+            //                         text: 'Создать',
+            //                         type: 'primary',
+            //                         action: async () => {
+            //                             const input = document.getElementById('quick-group-name');
+            //                             if (input?.value.trim()) {
+            //                                 await context.createGroup(input.value.trim());
+            //                             }
+            //                         }
+            //                     }
+            //                 ]
+            //             });
+            //         }
+            //     };
+            //     createGroupBtn.addEventListener('click', createGroupHandler);
+            //     eventListeners.push({ element: createGroupBtn, handler: createGroupHandler });
+            // }
 
             // Обработчик поиска групп
             const searchInput = context.shadowRoot.querySelector('#group-search');
@@ -298,12 +300,13 @@ export const controller = async (context) => {
                 eventListeners.push({ element: refreshMembersBtn, handler });
             }
 
+
             /**
              * Активирует выбранную группу с проверкой подписки
              * @param {Object} group - Объект группы с полями id, name, topic
              * @async
              */
-            async function activateGroup(group) {
+            const activateGroup = async function activateGroup(group) {
                 if (!group || !group.topic) {
                     log.error('Неверные данные группы:', group);
                     return;
@@ -314,7 +317,11 @@ export const controller = async (context) => {
 
                 if (isSubscribed) {
                     // Уже подписан — активируем
+                    console.log('------ start ------')
+
                     try {
+                        context.state.groups =  await context._actions.discoverGroups()
+                        console.log('dddddddddddddddddddd', context.state.groups)
                         context.state.currentGroup = group;
                         await context.renderPart({
                             partName: 'renderMyGroups',
@@ -328,11 +335,28 @@ export const controller = async (context) => {
                             selector: '.chat-header'
                         });
 
-                        log('Группа активирована: %s', group.name);
+                        const activeGroups_key = await context.node.services.pubsub.getTopics()
+                        let activeGroups = []
+                        log('Группа активирована: %s', group.name, activeGroups);
+
+
+                        const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                        await groupManager.joinGroup(group)
+
+                        if (groupManager?.state) {
+                            activeGroups = [
+                                ...(groupManager.state.joinedGroups || [])
+                            ];
+                        }
 
                         // Уведомляем chat-interface
                         const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
                         if (chatInterface) {
+
+                            await chatInterface.postMessage({
+                                type: 'ACTIVE_GROUPS_UPDATED',
+                                data: { activeGroups }
+                            });
                             await chatInterface.setCurrentGroup(group);
                         }
                     } catch (error) {
@@ -362,32 +386,7 @@ export const controller = async (context) => {
                                     try {
                                         const success = await context._actions.subscribeToGroup(group.topic);
                                         if (success) {
-                                            // Добавляем в "мои", если ещё не там
-                                            if (!context.state.groups.find(g => g.topic === group.topic)) {
-                                                context.state.groups.push({ ...group, joinedAt: Date.now() });
-                                            }
-
-                                            // Активируем
-                                            context.state.currentGroup = group;
-
-                                            await context.renderPart({
-                                                partName: 'renderMyGroups',
-                                                state: context.state,
-                                                selector: '#my-groups-container'
-                                            });
-
-                                            await context.renderPart({
-                                                partName: 'renderActiveChatHeader',
-                                                state: context.state,
-                                                selector: '.chat-header'
-                                            });
-
-                                            // Уведомляем chat-interface
-                                            const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
-                                            if (chatInterface) {
-                                                await chatInterface.setCurrentGroup(group);
-                                            }
-
+                                            await context.callback.activateGroup(group)
                                             log('Успешная подписка и активация группы: %s', group.name);
                                         } else {
                                             throw new Error('Не удалось подписаться на топик');
@@ -414,42 +413,48 @@ export const controller = async (context) => {
                 }
             }
 
+            const handlersSetupGroup =  async (e) => {
+                console.log('%%%%%%%%%%%%%%%% 1 %%%%%%%%%%%%%%%%%%%')
+                // Предотвращаем срабатывание на кнопках действий
+                if (e.target.closest('.group-actions')) {
+                    return;
+                }
+
+                const groupId = e.currentTarget.getAttribute('data-group-id');
+                const groupTopic = e.currentTarget.getAttribute('data-group-topic');
+
+                if (!groupId && !groupTopic) {
+                    log.error('Клик по группе без data-group-id или data-group-topic');
+                    return;
+                }
+
+                const topic = groupTopic || groupId;
+
+
+                const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                const allGroups = (groupManager.allGroups).all
+
+                // Ищем группу в любом из списков
+                const group = allGroups.find(g => g.id === topic || g.topic === topic)
+                // allGroups.groups.find(g => g.id === topic || g.topic === topic) ||
+                // allGroups.discoveredGroups.find(g => g.id === topic || g.topic === topic) ||
+                // allGroups.joinedGroups.find(g => g.id === topic || g.topic === topic);
+
+                console.log('%%%%%%%%%%%%%%%%%% 2 %%%%%%%%%%%%%%%%%', group)
+                if (!group) {
+                    log.error('Группа не найдена по топику/ID:', topic);
+                    return;
+                }
+
+                console.log('@@@@@@@@ 1 -> activateGroup(group) @@@@@@@@@@@@@', group)
+                await activateGroup(group)
+            };
             // Обработчики для переключения между группами
             const setupGroupHandlers = () => {
                 const groupItems = context.shadowRoot.querySelectorAll('.group-item');
                 groupItems.forEach(item => {
-                    const handler = async (e) => {
-                        // Предотвращаем срабатывание на кнопках действий
-                        if (e.target.closest('.group-actions')) {
-                            return;
-                        }
-
-                        const groupId = e.currentTarget.getAttribute('data-group-id');
-                        const groupTopic = e.currentTarget.getAttribute('data-group-topic');
-
-                        if (!groupId && !groupTopic) {
-                            log.warn('Клик по группе без data-group-id или data-group-topic');
-                            return;
-                        }
-
-                        const topic = groupTopic || groupId;
-
-                        // Ищем группу в любом из списков
-                        const group =
-                            context.state.groups.find(g => g.id === topic || g.topic === topic) ||
-                            context.state.discoveredGroups.find(g => g.id === topic || g.topic === topic) ||
-                            context.state.joinedGroups.find(g => g.id === topic || g.topic === topic);
-
-                        if (!group) {
-                            log.warn('Группа не найдена по топику/ID:', topic);
-                            return;
-                        }
-
-                        await activateGroup(group)
-                    };
-
-                    item.addEventListener('click', handler);
-                    eventListeners.push({ element: item, handler: handler });
+                    item.addEventListener('click', handlersSetupGroup);
+                    eventListeners.push({ element: item, handler: handlersSetupGroup });
                 });
             };
 
@@ -545,6 +550,11 @@ export const controller = async (context) => {
             }
 
             log('ChatManager controller initialized');
+
+            return {
+                handlersSetupGroup: handlersSetupGroup,
+                activateGroup: activateGroup
+            }
         },
 
         /**

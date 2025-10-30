@@ -285,6 +285,7 @@ export class BaseComponent extends HTMLElement {
 
         await this._componentReady();
         await this.#registerComponent();
+
     }
 
     async #loadComponentStyles() {

@@ -123,7 +123,7 @@ export class ChatInterface extends BaseComponent {
             });
         }
 
-        console.log('--------------------', group)
+        console.log('--------- setCurrentGroup -----------', group)
         // ✅ Обновляем список участников в боковой панели
         await this.updateMembersList();
 

@@ -21,3 +21,12 @@ export function generateMessageId(text, timestamp) {
     const input = `${text}|${ts}`;
     return sha256(input).substring(0, 16); // 16-символьный хеш для компактности
 }
+
+export function parseChatGroupStringRegex(input) {
+    if (typeof input !== 'string') {
+        return '';
+    }
+
+    const match = input.match(/^chat-group-(.+?)(?:-\d+)?$/);
+    return match ? match[1] : input.replace(/^chat-groups-/, '');
+}

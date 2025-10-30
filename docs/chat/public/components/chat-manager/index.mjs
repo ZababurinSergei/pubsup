@@ -42,7 +42,7 @@ export class ChatManager extends BaseComponent {
 
         this._controller = await controller(this);
         this._actions = await createActions(this);
-        await this._controller.init();
+        this.callback = await this._controller.init();
 
         // Получаем ноду из peer-connection вместо создания своей
         await this.initializeFromPeerConnection();
@@ -262,15 +262,14 @@ export class ChatManager extends BaseComponent {
     }
 
     async createGroup(groupName) {
-        const group = {
-            id: Math.random().toString(36).substring(2, 9),
-            name: String(groupName).trim() || 'Безымянная группа',
-            topic: `chat-group-${String(groupName).replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`,
-            peers: [],
-            createdAt: Date.now(),
-            isPublic: true
-        };
-
+        // const group = {
+        //     id: Math.random().toString(36).substring(2, 9),
+        //     name: String(groupName).trim() || 'Безымянная группа',
+        //     topic: `chat-group-${String(groupName).replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`,
+        //     peers: [],
+        //     createdAt: Date.now(),
+        //     isPublic: true
+        // };
         // Добавляем в "Мои группы"
         // this.state.groups.push(group);
 
@@ -294,33 +293,35 @@ export class ChatManager extends BaseComponent {
         //     selector: '#discovered-groups-container' // ← должен быть в шаблоне
         // });
 
+        console.log('dddddddddddd groupName ddddddddddddd', groupName)
         const groupManager = await this.getComponentAsync('group-manager', 'group-manager');
         if (groupManager) {
             await groupManager.createGroup(groupName);
         }
 
-        log('Group created: %s (%s)', groupName, group.topic);
+        log('Group created: %s (%s)', groupName);
 
-        return group;
+        return groupName;
     }
 
     async joinGroup(topic, groupName = null) {
         const existingGroup = this.state.groups.find(g => g.topic === topic);
 
-        if (!existingGroup) {
-            const group = {
-                id: Math.random().toString(36).substr(2, 9),
-                name: typeof groupName === 'string' ? groupName.trim() : (typeof topic === 'string' ? topic : 'Безымянная группа'),
-                topic: typeof topic === 'string' ? topic : '',
-                peers: [],
-                joinedAt: Date.now()
-            };
-
-            this.state.groups.push(group);
-            this.state.currentGroup = group;
-        } else {
+        // if (!existingGroup) {
+        //     const group = {
+        //         id: Math.random().toString(36).substr(2, 9),
+        //         name: typeof groupName === 'string' ? groupName.trim() : (typeof topic === 'string' ? topic : 'Безымянная группа'),
+        //         topic: typeof topic === 'string' ? topic : '',
+        //         peers: [],
+        //         joinedAt: Date.now()
+        //     };
+        //
+        //     console.log('ddddddddddd group ddddddddddd', group)
+        //     this.state.groups.push(group);
+        //     this.state.currentGroup = group;
+        // } else {
             this.state.currentGroup = existingGroup;
-        }
+        // }
 
         await this._actions.subscribeToGroup(topic);
 
@@ -1093,7 +1094,7 @@ export class ChatManager extends BaseComponent {
             // Нормализуем данные группы
             const safeGroup = {
                 ...groupData,
-                id: groupData.id || groupData.topic || Math.random().toString(36).substr(2, 9),
+                id: groupData.id || groupData.topic || Math.random().toString(36).substring(2, 9),
                 name: typeof groupData.name === 'string' ? groupData.name.trim() : 'Безымянная группа',
                 topic: typeof groupData.topic === 'string' ? groupData.topic : '',
                 joinedAt: Date.now()

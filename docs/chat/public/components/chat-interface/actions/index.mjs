@@ -391,6 +391,7 @@ async function setActiveMember(member) {
 
         // Обновляем состояние
         this.state.activeMember = memberWithName;
+        this.state.currentGroup = null;
         this.state.isPrivateChat = true;
 
         // Обновляем UI списка участников

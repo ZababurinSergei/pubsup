@@ -1,3 +1,4 @@
+import {parseChatGroupStringRegex} from '../../utils/index.mjs'
 import { logger } from '@libp2p/logger';
 const log = logger('chat-manager:actions');
 
@@ -136,19 +137,26 @@ export async function createActions(context) {
             try {
                 const topics = Array.from(context.node.services.pubsub.getTopics());
                 const groups = [];
-
+                const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                const allGroups = (groupManager.allGroups).all
                 for (const topic of topics) {
                     if (topic.startsWith('chat-group-')) {
                         const peers = context.node.services.pubsub.getSubscribers(topic);
-                        groups.push({
-                            topic: topic,
-                            name: topic.replace('chat-group-', '').split('-')[0],
-                            memberCount: peers.size,
-                            peers: Array.from(peers).map(p => p.toString())
-                        });
+                        const group = allGroups.filter(item => item.id === topic)
+                        if(group.length > 0) {
+                            groups.push(Object.assign(group[0], {
+                                topic: topic,
+                                name: group[0].name,
+                                memberCount: peers.size,
+                                peers: Array.from(peers).map(p => p.toString())
+                            }));
+                        } else {
+                            console.error('Должно быть, надо проверить')
+                        }
                     }
                 }
 
+                console.log('sssssssssssssssssssssssss', groups)
                 return groups;
             } catch (error) {
                 log.error('Error discovering groups: %o', error);

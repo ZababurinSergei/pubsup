@@ -165,55 +165,80 @@ export const controller = async (context) => {
                 });
             };
 
+
+            const handlerSetupMemberClick =  async (e) => {
+                // Предотвращаем срабатывание на кнопках действий
+                if (e.target.closest('.member-actions')) {
+                    return;
+                }
+
+                console.log('ddddddddddddddddddddddd',e.currentTarget)
+                const peerId = e.currentTarget.getAttribute('data-peer-id');
+                const groupTopic = e.currentTarget.getAttribute('data-group-topic');
+
+                try {
+                    // Обработка приватного чата с пиром
+                    if (peerId) {
+                        const member = context.state.connectedPeers.find(p => p.id === peerId);
+                        if (member && !member.isCurrentUser) {
+                            log('выбор пользователя для приватного чата: %s', member.name || member.id);
+                            await context.setActiveMember(member);
+                        }
+                        return;
+                    }
+
+                    // Обработка выбора группы
+                    if (groupTopic) {
+                        const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
+                        const allGroups = (groupManager.allGroups).all
+                        // Ищем группу по топику в активных группах
+                        const group = allGroups.find(g => g.topic === groupTopic)
+                            // context.state.activeGroups?.find(g => g.topic === groupTopic) ||
+                            // context.state.groups?.find(g => g.topic === groupTopic) ||
+                            // context.state.discoveredGroups?.find(g => g.topic === groupTopic);
+
+                        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', group)
+                        if(group) {
+                            const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                            console.log('@@@@@@@@@@@@@@@@@ 222 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', chatManager.callback.handlersSetupGroup)
+                            log('выбор группы для чата: %s', group.name || groupTopic);
+                            chatManager.callback.handlersSetupGroup({
+                                currentTarget: {
+                                    getAttribute: (type) => {
+                                        switch (type) {
+                                            case 'data-group-id':
+                                                return group.id
+                                            case 'data-group-topic':
+                                                return group.topic
+
+                                        }
+                                    }
+                                },
+                                target: {
+                                    closest: () => {
+                                        return false
+                                    }
+                                }
+                            })
+                            // await context.setActiveGroup(group);
+                        } else {
+                            log.warn('группа не найдена по топику: %s', groupTopic);
+                        }
+                        return;
+                    }
+
+                    log.warn('элемент не содержит ни data-peer-id, ни data-group-topic');
+                } catch (error) {
+                    log.error('ошибка при выборе элемента: %o', error);
+                }
+            };
             // Обработчики кликов на участников для приватного чата
             const setupMemberClickHandlers = () => {
                 const memberItems = context.shadowRoot.querySelectorAll('.member-item');
 
                 memberItems.forEach(item => {
-                    const handler = async (e) => {
-                        // Предотвращаем срабатывание на кнопках действий
-                        if (e.target.closest('.member-actions')) {
-                            return;
-                        }
-
-                        const peerId = e.currentTarget.getAttribute('data-peer-id');
-                        const groupTopic = e.currentTarget.getAttribute('data-group-topic');
-
-                        try {
-                            // Обработка приватного чата с пиром
-                            if (peerId) {
-                                const member = context.state.connectedPeers.find(p => p.id === peerId);
-                                if (member && !member.isCurrentUser) {
-                                    log('выбор пользователя для приватного чата: %s', member.name || member.id);
-                                    await context.setActiveMember(member);
-                                }
-                                return;
-                            }
-
-                            // Обработка выбора группы
-                            if (groupTopic) {
-                                // Ищем группу по топику в активных группах
-                                const group = context.state.activeGroups?.find(g => g.topic === groupTopic) ||
-                                    context.state.groups?.find(g => g.topic === groupTopic) ||
-                                    context.state.discoveredGroups?.find(g => g.topic === groupTopic);
-
-                                if (group) {
-                                    log('выбор группы для чата: %s', group.name || groupTopic);
-                                    await context.setActiveGroup(group);
-                                } else {
-                                    log.warn('группа не найдена по топику: %s', groupTopic);
-                                }
-                                return;
-                            }
-
-                            log.warn('элемент не содержит ни data-peer-id, ни data-group-topic');
-                        } catch (error) {
-                            log.error('ошибка при выборе элемента: %o', error);
-                        }
-                    };
-
-                    item.addEventListener('click', handler);
-                    eventListeners.push({ element: item, handler: handler });
+                    item.addEventListener('click', handlerSetupMemberClick);
+                    eventListeners.push({ element: item, handler: handlerSetupMemberClick });
                 });
             };
 

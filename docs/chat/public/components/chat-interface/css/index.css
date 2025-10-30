@@ -5,7 +5,7 @@
     width: 100%;
     height: 100%;
     font-family: var(--font-family);
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-gradient: linear-gradient(135deg, #8846936e 0%, #764ba2 100%);
     --success-gradient: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
     --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -472,6 +472,7 @@
     background: var(--primary-gradient);
     color: white;
     border-bottom-right-radius: 4px;
+    min-width: 256px;
 }
 
 .message-received .message-bubble {
@@ -479,6 +480,7 @@
     color: var(--cosmic-text-primary);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-bottom-left-radius: 4px;
+    min-width: 256px;
 }
 
 .message-sender {
@@ -492,6 +494,9 @@
     font-size: 0.875rem;
     line-height: 1.4;
     margin-bottom: 0.5rem;
+    position: relative;
+    min-height: 52px;
+    padding-top: 32px;
 }
 
 .message-meta {
@@ -966,6 +971,11 @@ textarea:focus-visible {
     margin-left: 8px;
 }
 
+
+.message-sent .message-topic-badge {
+    color: white;
+}
+
 .unread-badge {
     position: absolute;
     bottom: -0.5rem;
@@ -1036,4 +1046,12 @@ textarea:focus-visible {
 .group-item.active .group-name {
     color: #667eea;
     font-weight: 600;
+}
+
+.message-topic-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 4px 0 0 0;
+    padding-left: 0;
 }

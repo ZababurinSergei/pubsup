@@ -837,3 +837,16 @@ body {
         border: 1px solid #ccc;
     }
 }
+
+#tests {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1235px;
+    margin: 24px auto;
+}
+
+#mocha-stats em {
+    color: white!important;
+}

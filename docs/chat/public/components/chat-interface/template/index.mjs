@@ -1,3 +1,4 @@
+import {parseChatGroupStringRegex} from '../../utils/index.mjs'
 /**
  * Основной шаблон компонента ChatInterface
  * @param {Object} params
@@ -176,23 +177,6 @@ export function renderStatus({state = {}} = {}) {
     `;
 }
 
-
-/**
- * Извлекает читаемое имя из топика группы
- */
-function extractGroupNameFromTopic(topic) {
-    if (!topic || typeof topic !== 'string') return 'Безымянная группа';
-    let clean = topic;
-    if (topic.startsWith('chat-group-')) {
-        clean = topic.substring('chat-group-'.length);
-    }
-    const namePart = clean.split('-')[0];
-    return namePart
-        .replace(/_/g, ' ')
-        .replace(/%20/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase()) || 'Безымянная группа';
-}
-
 /**
  * Шаблон для списка участников и групп
  */
@@ -210,7 +194,7 @@ export function renderMembersList({ state = {} } = {}) {
     // Группы (если есть)
     const groups = (state.activeGroups || []).map(group => ({
         id: group.topic || group.id,
-        name: getGroupName(group),
+        name: group.name,
         isGroup: true,
         online: true
     }));
@@ -231,9 +215,10 @@ export function renderMembersList({ state = {} } = {}) {
     <div class="members-container">\
         ${displayItems.map(item => {
         if (item.isGroup) {
-            // Рендер группы
+            // Рендер группы — добавляем класс active, если топик активен
+            const isActiveGroup = !state.isPrivateChat && state.currentGroup?.topic === item.id;
             return `\
-                <div class="member-item group-item clickable" data-group-topic="${item.id}">
+                <div class="member-item group-item clickable ${isActiveGroup ? 'active' : ''}" data-group-topic="${item.id}">
                     <div class="member-avatar group">
                         #
                     </div>
@@ -242,19 +227,21 @@ export function renderMembersList({ state = {} } = {}) {
                         <div class="member-status online">Топик</div>
                     </div>
                 </div>
-                `;
+            `;
         }
 
-        // Рендер участника
+        // Рендер участника — добавляем active только для пиров
         const unreadCount = state.unreadCounts?.[item.id] || 0;
         const showUnread = !item.isCurrentUser && unreadCount > 0;
 
         const displayName = item.isCurrentUser
             ? 'Вы'
             : (getPeerName(item) || `Пользователь ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
+        
+        const isActivePeer = state.isPrivateChat && state.activeMember?.id === item.id;
 
         return `\
-            <div class="member-item ${item.isCurrentUser ? 'current-user' : ''} ${state.isPrivateChat && state.activeMember?.id === item.id ? 'active' : ''} clickable" data-peer-id="${item.id}">
+            <div class="member-item ${item.isCurrentUser ? 'current-user' : ''} ${isActivePeer ? 'active' : ''} clickable" data-peer-id="${item.id}">
                 <div class="member-avatar ${item.isCurrentUser ? 'current-user' : ''}">
                     ${item.isCurrentUser ? '👤' : (item.id ? item.id.substring(2, 4).toUpperCase() : '??')}
                 </div>
@@ -340,7 +327,10 @@ export function renderMessage({message = {}} = {}) {
             ${message.type === 'received' ? `\
             <div class="message-sender">${message.from ? message.from.substring(0, 12) + '...' : 'Неизвестный'}</div>\
             ` : ''}\
-            <div class="message-content">${escapeHtml(message.text)}${topicBadge}</div>\
+            <div class="message-content">
+                ${topicBadge}
+                ${escapeHtml(message.text)}
+            </div>\
             <div class="message-meta">\
                 <span class="message-time">${time}</span>\
                 ${message.status === 'sent' ? '<span class="message-status">✓</span>' : ''}\
@@ -502,7 +492,7 @@ function getGroupName(group) {
     if (!group) return 'Безымянная группа';
     if (typeof group.name === 'string') return group.name;
     if (typeof group.name === 'object' && typeof group.name.name === 'string') return group.name.name;
-    if (typeof group.topic === 'string') return extractGroupNameFromTopic(group.topic);
+    if (typeof group.topic === 'string') return parseChatGroupStringRegex(group.topic);
     return 'Безымянная группа';
 }
 
