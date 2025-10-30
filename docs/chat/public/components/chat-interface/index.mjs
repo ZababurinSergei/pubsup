@@ -112,10 +112,18 @@ export class ChatInterface extends BaseComponent {
         this.state.currentGroup = safeGroup;
         this.state.activeMember = null; // Сбрасываем активного пользователя
         this.state.isPrivateChat = false; // Возвращаем в групповой режим
-        this.state.messages = [];
-        this._log('установлена текущая группа: %s', safeGroup.name);
 
+        // ✅ Подгружаем историю из chat-manager
         const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+        let history = [];
+        if (chatManager?.state?.topicHistories?.[safeGroup.topic]) {
+            history = [...chatManager.state.topicHistories[safeGroup.topic]];
+        }
+
+        this.state.messages = history;
+        this._log('установлена текущая группа: %s, загружено сообщений: %d', safeGroup.name, history.length);
+
+        // Уведомляем chat-manager об обновлении заголовка
         if (chatManager) {
             await chatManager.postMessage({
                 type: 'UPDATE_CHAT_HEADER',
@@ -123,9 +131,13 @@ export class ChatInterface extends BaseComponent {
             });
         }
 
-        // ✅ Обновляем список участников в боковой панели
-        await this.updateMembersList();
+        // ✅ Сбрасываем unread-счётчик для этой группы, если он был
+        if (this.state.unreadCounts?.[safeGroup.topic]) {
+            delete this.state.unreadCounts[safeGroup.topic];
+        }
 
+        // Обновляем UI
+        await this.updateMembersList();
         await this.updateChatInput();
         await this.fullRender(this.state);
     }

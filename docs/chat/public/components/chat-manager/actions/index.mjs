@@ -30,20 +30,24 @@ export async function createActions(context) {
                             // Определяем, является ли сообщение нашим
                             const isOwnMessage = from && context.node.peerId && from.toString() === context.node.peerId.toString();
                             const messageType = isOwnMessage ? 'sent' : 'received';
-                            const messageFrom = isOwnMessage ? context.state.peerId : from.toString(); // или from.toString(), если нужно
+                            const messageFrom = isOwnMessage ? context.state.peerId : from.toString();
 
-                            console.log('------------- HISTORY -------------')
-                            // Сохраняем в историю топика
+                            const timestamp = Date.now();
+
+                            // Сохраняем в историю топика в любом случае
                             await context.addMessageToTopicHistory({
                                 text,
                                 topic,
                                 from: messageFrom,
                                 type: messageType,
-                                timestamp: Date.now()
+                                timestamp
                             });
 
-                            // Если этот топик сейчас активен — обновляем интерфейс
-                            if (context.state.currentGroup?.topic === topic) {
+                            // Проверяем, активна ли эта группа
+                            const isActiveGroup = context.state.currentGroup?.topic === topic;
+
+                            if (isActiveGroup) {
+                                // Активная группа — отправляем в интерфейс
                                 const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
                                 if (chatInterface) {
                                     await chatInterface.postMessage({
@@ -53,8 +57,22 @@ export async function createActions(context) {
                                             topic,
                                             from: messageFrom,
                                             type: messageType,
-                                            timestamp: Date.now()
+                                            timestamp
                                         }
+                                    });
+                                }
+                            } else {
+                                // Неактивная группа — увеличиваем unread-счётчик
+                                if (!context.state.unreadCounts) {
+                                    context.state.unreadCounts = {};
+                                }
+                                context.state.unreadCounts[topic] = (context.state.unreadCounts[topic] || 0) + 1;
+
+                                // Обновляем UI в chat-interface (если доступен)
+                                const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                                if (chatInterface && chatInterface.updateMembersList) {
+                                    await chatInterface.updateMembersList({
+                                        unreadCounts: context.state.unreadCounts
                                     });
                                 }
                             }

@@ -225,53 +225,63 @@ async function clearChatHistory() {
 }
 
 /**
- * Логика установки активной группы
+ * Устанавливает активную группу и подгружает её историю
  * @async
  * @param {Object} group - Данные группы
- * @param {string} group.id - ID группы
- * @param {string} group.name - Название группы
- * @param {string} group.topic - Топик группы
- * @param {Array} group.peers - Список участников
  * @this {HTMLElement} Контекст компонента
  */
 async function setActiveGroup(group) {
     const log = logger('chat-interface:actions:setActiveGroup');
 
-    debugger
     try {
         if (!group || !group.topic) {
             log.error('неверные данные группы: %o', group);
             throw new Error('Неверные данные группы');
         }
 
-        // Нормализуем имя группы как строку
         const safeName = typeof group.name === 'string' ? group.name : 'Безымянная группа';
         const safeGroup = { ...group, name: safeName };
 
         log('установка активной группы: %s (%s)', safeName, group.topic);
 
-        // Сбрасываем приватный чат при выборе группы
+        // Сбрасываем приватный чат
         this.state.activeMember = null;
         this.state.isPrivateChat = false;
 
-        // Показываем индикатор загрузки
+        // Показываем скелетон
         await this.showSkeleton({
             selector: '#messages-list',
             replace: true
         });
 
+        // ✅ Получаем историю из chat-manager
         const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
-        const history = chatManager?.state.topicHistories[group.topic] || [];
-        this.state.messages = [...history];
+        let history = [];
+        if (chatManager?.state?.topicHistories?.[group.topic]) {
+            history = [...chatManager.state.topicHistories[group.topic]];
+        }
 
-        // Устанавливаем новую группу
-        await this.setCurrentGroup(safeGroup);
+        // Устанавливаем состояние
+        this.state.currentGroup = safeGroup;
+        this.state.messages = history;
 
-        // Обновляем статус подключения
+        // Обновляем UI
+        await this.updateChatHeader();
         await this.updateConnectionStatus(true);
-
-        // Скрываем индикатор загрузки
         await this.hideSkeleton();
+
+        // ✅ Рендерим историю
+        await this.renderPart({
+            partName: 'renderMessages',
+            state: this.state,
+            selector: '#messages-list'
+        });
+
+        // Автоскролл вниз
+        const messagesContainer = this.shadowRoot.querySelector('#messages-list');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
 
         log('переключение на группу завершено: %s (%s)', safeName, group.topic);
 

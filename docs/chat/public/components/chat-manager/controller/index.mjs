@@ -300,9 +300,8 @@ export const controller = async (context) => {
                 eventListeners.push({ element: refreshMembersBtn, handler });
             }
 
-
             /**
-             * Активирует выбранную группу с проверкой подписки
+             * Активирует выбранную группу с проверкой подписки и подгрузкой истории
              * @param {Object} group - Объект группы с полями id, name, topic
              * @async
              */
@@ -316,11 +315,24 @@ export const controller = async (context) => {
                 const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
 
                 if (isSubscribed) {
-                    // Уже подписан — активируем
-
                     try {
-                        context.state.groups =  await context._actions.discoverGroups()
+                        // Обновляем список групп (опционально)
+                        context.state.groups = await context._actions.discoverGroups();
                         context.state.currentGroup = group;
+
+                        // ✅ Подгружаем историю из chat-manager
+                        const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                        let history = [];
+                        if (chatManager?.state?.topicHistories?.[group.topic]) {
+                            history = [...chatManager.state.topicHistories[group.topic]];
+                        }
+                        console.log('22222222222222222222222222222222222222222222222222222222222222222222222222222', group, history)
+                        // Устанавливаем историю в состояние chat-manager (для синхронизации)
+                        if (chatManager) {
+                            chatManager.state.messages = history;
+                        }
+
+                        // Рендерим заголовок и список групп
                         await context.renderPart({
                             partName: 'renderMyGroups',
                             state: context.state,
@@ -333,14 +345,11 @@ export const controller = async (context) => {
                             selector: '.chat-header'
                         });
 
-                        const activeGroups_key = await context.node.services.pubsub.getTopics()
-                        let activeGroups = []
-                        log('Группа активирована: %s', group.name, activeGroups);
-
-
+                        // Получаем актуальные активные группы из group-manager
                         const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
-                        await groupManager.joinGroup(group)
+                        await groupManager.joinGroup(group); // гарантируем, что группа в joinedGroups
 
+                        let activeGroups = [];
                         if (groupManager?.state) {
                             activeGroups = [
                                 ...(groupManager.state.joinedGroups || [])
@@ -350,13 +359,17 @@ export const controller = async (context) => {
                         // Уведомляем chat-interface
                         const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
                         if (chatInterface) {
-
                             await chatInterface.postMessage({
                                 type: 'ACTIVE_GROUPS_UPDATED',
                                 data: { activeGroups }
                             });
+
+                            // ✅ Передаём историю напрямую через setCurrentGroup (внутри он загрузит из chat-manager)
                             await chatInterface.setCurrentGroup(group);
                         }
+
+                        log('Группа активирована: %s', group.name);
+
                     } catch (error) {
                         log.error('Ошибка активации группы: %o', error);
                         context.addError({
@@ -384,7 +397,8 @@ export const controller = async (context) => {
                                     try {
                                         const success = await context._actions.subscribeToGroup(group.topic);
                                         if (success) {
-                                            await context.callback.activateGroup(group)
+                                            // После подписки — активируем (рекурсивно)
+                                            await context.callback.activateGroup(group);
                                             log('Успешная подписка и активация группы: %s', group.name);
                                         } else {
                                             throw new Error('Не удалось подписаться на топик');
@@ -409,7 +423,7 @@ export const controller = async (context) => {
                         closeOnBackdropClick: true
                     });
                 }
-            }
+            };
 
             const handlersSetupGroup =  async (e) => {
                 // Предотвращаем срабатывание на кнопках действий

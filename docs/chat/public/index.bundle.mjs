@@ -2637,6 +2637,15 @@ var controller = /* @__PURE__ */ __name(async (context) => {
           try {
             context.state.groups = await context._actions.discoverGroups();
             context.state.currentGroup = group;
+            const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+            let history = [];
+            if (chatManager?.state?.topicHistories?.[group.topic]) {
+              history = [...chatManager.state.topicHistories[group.topic]];
+            }
+            console.log("22222222222222222222222222222222222222222222222222222222222222222222222222222", group, history);
+            if (chatManager) {
+              chatManager.state.messages = history;
+            }
             await context.renderPart({
               partName: "renderMyGroups",
               state: context.state,
@@ -2647,11 +2656,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               state: context.state,
               selector: ".chat-header"
             });
-            const activeGroups_key = await context.node.services.pubsub.getTopics();
-            let activeGroups = [];
-            log3("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name, activeGroups);
             const groupManager = await context.getComponentAsync("group-manager", "group-manager");
             await groupManager.joinGroup(group);
+            let activeGroups = [];
             if (groupManager?.state) {
               activeGroups = [
                 ...groupManager.state.joinedGroups || []
@@ -2665,6 +2672,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               });
               await chatInterface.setCurrentGroup(group);
             }
+            log3("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
           } catch (error) {
             log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
             context.addError({
@@ -2860,15 +2868,16 @@ async function createActions(context) {
               const isOwnMessage = from4 && context.node.peerId && from4.toString() === context.node.peerId.toString();
               const messageType = isOwnMessage ? "sent" : "received";
               const messageFrom = isOwnMessage ? context.state.peerId : from4.toString();
-              console.log("------------- HISTORY -------------");
+              const timestamp = Date.now();
               await context.addMessageToTopicHistory({
                 text,
                 topic,
                 from: messageFrom,
                 type: messageType,
-                timestamp: Date.now()
+                timestamp
               });
-              if (context.state.currentGroup?.topic === topic) {
+              const isActiveGroup = context.state.currentGroup?.topic === topic;
+              if (isActiveGroup) {
                 const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
                 if (chatInterface) {
                   await chatInterface.postMessage({
@@ -2878,8 +2887,19 @@ async function createActions(context) {
                       topic,
                       from: messageFrom,
                       type: messageType,
-                      timestamp: Date.now()
+                      timestamp
                     }
+                  });
+                }
+              } else {
+                if (!context.state.unreadCounts) {
+                  context.state.unreadCounts = {};
+                }
+                context.state.unreadCounts[topic] = (context.state.unreadCounts[topic] || 0) + 1;
+                const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+                if (chatInterface && chatInterface.updateMembersList) {
+                  await chatInterface.updateMembersList({
+                    unreadCounts: context.state.unreadCounts
                   });
                 }
               }
@@ -16982,6 +17002,8 @@ function renderMembersList({ state = {} } = {}) {
   return `    <div class="members-container">        ${displayItems.map((item) => {
     if (item.isGroup) {
       const isActiveGroup = !state.isPrivateChat && state.currentGroup?.topic === item.id;
+      const unreadCount2 = state.unreadCounts?.[item.id] || 0;
+      const showUnread2 = !isActiveGroup && unreadCount2 > 0;
       return `                <div class="member-item group-item clickable ${isActiveGroup ? "active" : ""}" data-group-topic="${item.id}">
                     <div class="member-avatar group">
                         ${item.name.charAt(0)}
@@ -16990,6 +17012,9 @@ function renderMembersList({ state = {} } = {}) {
                         <div class="member-name">${escapeHtml2(item.name)}</div>
                         <div class="member-status online">\u0422\u043E\u043F\u0438\u043A</div>
                     </div>
+                    ${showUnread2 ? `
+                    <div class="unread-badge">${unreadCount2 > 99 ? "99+" : unreadCount2}</div>
+                    ` : ""}
                 </div>
             `;
     }
@@ -17018,21 +17043,18 @@ __name(renderMembersList, "renderMembersList");
 function renderMessages2({ state = {} } = {}) {
   const messages2 = state.messages || [];
   if (messages2.length === 0) {
-    let emptyTitle, emptyDescription, showAction;
+    let emptyTitle, emptyDescription;
     if (state.isPrivateChat && state.activeMember) {
       emptyTitle = `\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0441 ${getPeerName(state.activeMember)}`;
       emptyDescription = "\u041E\u0442\u043F\u0440\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442";
-      showAction = false;
     } else if (!state.currentGroup) {
       emptyTitle = "\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439";
-      emptyDescription = "\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435";
-      showAction = true;
+      emptyDescription = "\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F";
     } else {
       emptyTitle = "\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439";
-      emptyDescription = "\u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u043E\u0431\u0449\u0435\u043D\u0438\u0435, \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0432 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435";
-      showAction = false;
+      emptyDescription = "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u0443\u0441\u0442\u0430. \u041E\u0442\u043F\u0440\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435!";
     }
-    return `        <div class="empty-chat">            <div class="empty-content">                <div class="empty-icon">\u{1F4AC}</div>                <h3 class="empty-title">${emptyTitle}</h3>                <p class="empty-description">${emptyDescription}</p>                ${showAction && !state.currentGroup ? `                <button class="empty-action" id="find-groups">                    \u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B                </button>                ` : ""}            </div>        </div>        `;
+    return `        <div class="empty-chat">            <div class="empty-content">                <div class="empty-icon">\u{1F4AC}</div>                <h3 class="empty-title">${emptyTitle}</h3>                <p class="empty-description">${emptyDescription}</p>            </div>        </div>        `;
   }
   return `    <div class="messages-content">        ${messages2.map((message2) => renderMessage({ message: message2 })).join("")}    </div>    `;
 }
@@ -17043,11 +17065,8 @@ function renderMessage({ message: message2 = {} } = {}) {
     hour: "2-digit",
     minute: "2-digit"
   });
-  const topicBadge = message2.topic ? `<span class="message-topic-badge">#${message2.topic}</span>` : "";
-  return `    <div class="message-item ${messageClass}" data-message-id="${message2.id}" data-topic="${message2.topic || ""}">        <div class="message-bubble">            ${message2.type === "received" ? `            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>            ` : ""}            <div class="message-content">
-                ${topicBadge}
-                ${escapeHtml2(message2.text)}
-            </div>            <div class="message-meta">                <span class="message-time">${time}</span>                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}            </div>        </div>    </div>    `;
+  const topicBadge = message2.topic ? `<span class="message-topic-badge">#${parseChatGroupStringRegex(message2.topic)}</span>` : "";
+  return `    <div class="message-item ${messageClass}" data-message-id="${message2.id}" data-topic="${message2.topic || ""}">        <div class="message-bubble">            ${message2.type === "received" ? `            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>            ` : ""}            <div class="message-content">                ${topicBadge}                ${escapeHtml2(message2.text)}            </div>            <div class="message-meta">                <span class="message-time">${time}</span>                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}            </div>        </div>    </div>    `;
 }
 __name(renderMessage, "renderMessage");
 function renderTypingIndicator({ state = {} } = {}) {
@@ -17678,7 +17697,6 @@ async function clearChatHistory() {
 __name(clearChatHistory, "clearChatHistory");
 async function setActiveGroup(group) {
   const log8 = logger("chat-interface:actions:setActiveGroup");
-  debugger;
   try {
     if (!group || !group.topic) {
       log8.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B: %o", group);
@@ -17694,11 +17712,24 @@ async function setActiveGroup(group) {
       replace: true
     });
     const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    const history = chatManager?.state.topicHistories[group.topic] || [];
-    this.state.messages = [...history];
-    await this.setCurrentGroup(safeGroup);
+    let history = [];
+    if (chatManager?.state?.topicHistories?.[group.topic]) {
+      history = [...chatManager.state.topicHistories[group.topic]];
+    }
+    this.state.currentGroup = safeGroup;
+    this.state.messages = history;
+    await this.updateChatHeader();
     await this.updateConnectionStatus(true);
     await this.hideSkeleton();
+    await this.renderPart({
+      partName: "renderMessages",
+      state: this.state,
+      selector: "#messages-list"
+    });
+    const messagesContainer = this.shadowRoot.querySelector("#messages-list");
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
     log8("\u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E: %s (%s)", safeName, group.topic);
   } catch (error) {
     log8.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
@@ -17999,14 +18030,21 @@ var ChatInterface = class extends BaseComponent {
     this.state.currentGroup = safeGroup;
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
-    this.state.messages = [];
-    this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", safeGroup.name);
     const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    let history = [];
+    if (chatManager?.state?.topicHistories?.[safeGroup.topic]) {
+      history = [...chatManager.state.topicHistories[safeGroup.topic]];
+    }
+    this.state.messages = history;
+    this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s, \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %d", safeGroup.name, history.length);
     if (chatManager) {
       await chatManager.postMessage({
         type: "UPDATE_CHAT_HEADER",
         data: { currentGroup: safeGroup }
       });
+    }
+    if (this.state.unreadCounts?.[safeGroup.topic]) {
+      delete this.state.unreadCounts[safeGroup.topic];
     }
     await this.updateMembersList();
     await this.updateChatInput();

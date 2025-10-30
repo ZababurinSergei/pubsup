@@ -204,28 +204,35 @@ export function renderMembersList({ state = {} } = {}) {
 
     if (displayItems.length === 0) {
         return `\
-        <div class="empty-members">\
-            <div class="empty-icon">👥</div>\
-            <p class="empty-text">Нет участников и групп</p>\
+        <div class=\"empty-members\">\
+            <div class=\"empty-icon\">👥</div>\
+            <p class=\"empty-text\">Нет участников и групп</p>\
         </div>\
         `;
     }
 
     return `\
-    <div class="members-container">\
+    <div class=\"members-container\">\
         ${displayItems.map(item => {
         if (item.isGroup) {
             // Рендер группы — добавляем класс active, если топик активен
             const isActiveGroup = !state.isPrivateChat && state.currentGroup?.topic === item.id;
+            // Считаем непрочитанные сообщения в группе
+            const unreadCount = state.unreadCounts?.[item.id] || 0;
+            const showUnread = !isActiveGroup && unreadCount > 0;
+
             return `\
-                <div class="member-item group-item clickable ${isActiveGroup ? 'active' : ''}" data-group-topic="${item.id}">
-                    <div class="member-avatar group">
+                <div class=\"member-item group-item clickable ${isActiveGroup ? 'active' : ''}\" data-group-topic=\"${item.id}\">
+                    <div class=\"member-avatar group\">
                         ${item.name.charAt(0)}
                     </div>
-                    <div class="member-info">
-                        <div class="member-name">${escapeHtml(item.name)}</div>
-                        <div class="member-status online">Топик</div>
+                    <div class=\"member-info\">
+                        <div class=\"member-name\">${escapeHtml(item.name)}</div>
+                        <div class=\"member-status online\">Топик</div>
                     </div>
+                    ${showUnread ? `
+                    <div class=\"unread-badge\">${unreadCount > 99 ? '99+' : unreadCount}</div>
+                    ` : ''}
                 </div>
             `;
         }
@@ -237,22 +244,22 @@ export function renderMembersList({ state = {} } = {}) {
         const displayName = item.isCurrentUser
             ? 'Вы'
             : (getPeerName(item) || `Пользователь ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
-        
+
         const isActivePeer = state.isPrivateChat && state.activeMember?.id === item.id;
 
         return `\
-            <div class="member-item ${item.isCurrentUser ? 'current-user' : ''} ${isActivePeer ? 'active' : ''} clickable" data-peer-id="${item.id}">
-                <div class="member-avatar ${item.isCurrentUser ? 'current-user' : ''}">
+            <div class=\"member-item ${item.isCurrentUser ? 'current-user' : ''} ${isActivePeer ? 'active' : ''} clickable\" data-peer-id=\"${item.id}\">
+                <div class=\"member-avatar ${item.isCurrentUser ? 'current-user' : ''}\">
                     ${item.isCurrentUser ? '👤' : (item.id ? item.id.substring(2, 4).toUpperCase() : '??')}
                 </div>
-                <div class="member-info">
-                    <div class="member-name">${escapeHtml(displayName)}</div>
-                    <div class="member-status ${item.online ? 'online' : 'offline'}">
+                <div class=\"member-info\">
+                    <div class=\"member-name\">${escapeHtml(displayName)}</div>
+                    <div class=\"member-status ${item.online ? 'online' : 'offline'}\">
                         ${item.isCurrentUser ? 'Вы' : (item.online ? 'В сети' : 'Не в сети')}
                     </div>
                 </div>
                 ${showUnread ? `
-                <div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>
+                <div class=\"unread-badge\">${unreadCount > 99 ? '99+' : unreadCount}</div>
                 ` : ''}
             </div>
             `;
@@ -268,20 +275,17 @@ export function renderMessages({state = {}} = {}) {
     const messages = state.messages || [];
 
     if (messages.length === 0) {
-        let emptyTitle, emptyDescription, showAction;
+        let emptyTitle, emptyDescription;
 
         if (state.isPrivateChat && state.activeMember) {
             emptyTitle = `Начните общение с ${getPeerName(state.activeMember)}`;
             emptyDescription = 'Отправьте первое сообщение в приватный чат';
-            showAction = false;
         } else if (!state.currentGroup) {
             emptyTitle = 'Нет сообщений';
-            emptyDescription = 'Начните общение, отправив первое сообщение';
-            showAction = true;
+            emptyDescription = 'Выберите или создайте группу для начала общения';
         } else {
             emptyTitle = 'Нет сообщений';
-            emptyDescription = 'Начните общение, отправив первое сообщение';
-            showAction = false;
+            emptyDescription = 'История пуста. Отправьте первое сообщение!';
         }
 
         return `\
@@ -290,11 +294,6 @@ export function renderMessages({state = {}} = {}) {
                 <div class="empty-icon">💬</div>\
                 <h3 class="empty-title">${emptyTitle}</h3>\
                 <p class="empty-description">${emptyDescription}</p>\
-                ${showAction && !state.currentGroup ? `\
-                <button class="empty-action" id="find-groups">\
-                    Найти группы\
-                </button>\
-                ` : ''}\
             </div>\
         </div>\
         `;
@@ -307,9 +306,6 @@ export function renderMessages({state = {}} = {}) {
     `;
 }
 
-/**
- * Шаблон для отдельного сообщения
- */
 export function renderMessage({message = {}} = {}) {
     const messageClass = message.type === 'sent' ? 'message-sent' : 'message-received';
     const time = new Date(message.timestamp).toLocaleTimeString('ru-RU', {
@@ -317,9 +313,9 @@ export function renderMessage({message = {}} = {}) {
         minute: '2-digit'
     });
 
-    // Пометка топика, если сообщение из группы
+    // ✅ Отображаем топик, если сообщение из группы
     const topicBadge = message.topic ?
-        `<span class="message-topic-badge">#${message.topic}</span>` : '';
+        `<span class="message-topic-badge">#${parseChatGroupStringRegex(message.topic)}</span>` : '';
 
     return `\
     <div class="message-item ${messageClass}" data-message-id="${message.id}" data-topic="${message.topic || ''}">\
@@ -327,9 +323,9 @@ export function renderMessage({message = {}} = {}) {
             ${message.type === 'received' ? `\
             <div class="message-sender">${message.from ? message.from.substring(0, 12) + '...' : 'Неизвестный'}</div>\
             ` : ''}\
-            <div class="message-content">
-                ${topicBadge}
-                ${escapeHtml(message.text)}
+            <div class="message-content">\
+                ${topicBadge}\
+                ${escapeHtml(message.text)}\
             </div>\
             <div class="message-meta">\
                 <span class="message-time">${time}</span>\
