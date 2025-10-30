@@ -32,6 +32,7 @@ export async function createActions(context) {
                             const messageType = isOwnMessage ? 'sent' : 'received';
                             const messageFrom = isOwnMessage ? context.state.peerId : from.toString(); // или from.toString(), если нужно
 
+                            console.log('------------- HISTORY -------------')
                             // Сохраняем в историю топика
                             await context.addMessageToTopicHistory({
                                 text,
@@ -156,7 +157,6 @@ export async function createActions(context) {
                     }
                 }
 
-                console.log('sssssssssssssssssssssssss', groups)
                 return groups;
             } catch (error) {
                 log.error('Error discovering groups: %o', error);

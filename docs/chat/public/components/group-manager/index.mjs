@@ -236,9 +236,7 @@ export class GroupManager extends BaseComponent {
         }
 
         try {
-            console.log('#################################### input ##############', input)
             let group;
-            console.log('group-manager: createGroup', input)
             if (typeof input === 'string') {
                 // Создание новой группы
                 const groupName = input.trim();

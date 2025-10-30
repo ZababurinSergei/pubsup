@@ -2253,7 +2253,6 @@ function getGroupInitial(group) {
 __name(getGroupInitial, "getGroupInitial");
 function renderMyGroups({ state = {} } = {}) {
   const groups = state.groups || [];
-  console.log("======= groups ===========", groups);
   if (groups.length === 0) {
     return `        <div class="empty-state">            <div class="empty-icon">\u{1F3E0}</div>            <p class="empty-text">\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F</p>            <button class="empty-action" id="create-first-group">                \u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443            </button>        </div>        `;
   }
@@ -2635,10 +2634,8 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         }
         const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
         if (isSubscribed) {
-          console.log("------ start ------");
           try {
             context.state.groups = await context._actions.discoverGroups();
-            console.log("dddddddddddddddddddd", context.state.groups);
             context.state.currentGroup = group;
             await context.renderPart({
               partName: "renderMyGroups",
@@ -2721,7 +2718,6 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         }
       }, "activateGroup");
       const handlersSetupGroup = /* @__PURE__ */ __name(async (e2) => {
-        console.log("%%%%%%%%%%%%%%%% 1 %%%%%%%%%%%%%%%%%%%");
         if (e2.target.closest(".group-actions")) {
           return;
         }
@@ -2735,12 +2731,10 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         const groupManager = await context.getComponentAsync("group-manager", "group-manager");
         const allGroups = groupManager.allGroups.all;
         const group = allGroups.find((g) => g.id === topic || g.topic === topic);
-        console.log("%%%%%%%%%%%%%%%%%% 2 %%%%%%%%%%%%%%%%%", group);
         if (!group) {
           log3.error("\u0413\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443/ID:", topic);
           return;
         }
-        console.log("@@@@@@@@ 1 -> activateGroup(group) @@@@@@@@@@@@@", group);
         await activateGroup(group);
       }, "handlersSetupGroup");
       const setupGroupHandlers = /* @__PURE__ */ __name(() => {
@@ -2866,6 +2860,7 @@ async function createActions(context) {
               const isOwnMessage = from4 && context.node.peerId && from4.toString() === context.node.peerId.toString();
               const messageType = isOwnMessage ? "sent" : "received";
               const messageFrom = isOwnMessage ? context.state.peerId : from4.toString();
+              console.log("------------- HISTORY -------------");
               await context.addMessageToTopicHistory({
                 text,
                 topic,
@@ -2981,7 +2976,6 @@ async function createActions(context) {
             }
           }
         }
-        console.log("sssssssssssssssssssssssss", groups);
         return groups;
       } catch (error) {
         log4.error("Error discovering groups: %o", error);
@@ -16264,7 +16258,6 @@ var ChatManager = class extends BaseComponent {
     }
   }
   async createGroup(groupName) {
-    console.log("dddddddddddd groupName ddddddddddddd", groupName);
     const groupManager = await this.getComponentAsync("group-manager", "group-manager");
     if (groupManager) {
       await groupManager.createGroup(groupName);
@@ -16991,7 +16984,7 @@ function renderMembersList({ state = {} } = {}) {
       const isActiveGroup = !state.isPrivateChat && state.currentGroup?.topic === item.id;
       return `                <div class="member-item group-item clickable ${isActiveGroup ? "active" : ""}" data-group-topic="${item.id}">
                     <div class="member-avatar group">
-                        #
+                        ${item.name.charAt(0)}
                     </div>
                     <div class="member-info">
                         <div class="member-name">${escapeHtml2(item.name)}</div>
@@ -17276,7 +17269,6 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         if (e2.target.closest(".member-actions")) {
           return;
         }
-        console.log("ddddddddddddddddddddddd", e2.currentTarget);
         const peerId = e2.currentTarget.getAttribute("data-peer-id");
         const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
         try {
@@ -17292,10 +17284,8 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const groupManager = await context.getComponentAsync("group-manager", "group-manager");
             const allGroups = groupManager.allGroups.all;
             const group = allGroups.find((g) => g.topic === groupTopic);
-            console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", group);
             if (group) {
               const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-              console.log("@@@@@@@@@@@@@@@@@ 222 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", chatManager.callback.handlersSetupGroup);
               log8("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
               chatManager.callback.handlersSetupGroup({
                 currentTarget: {
@@ -18018,7 +18008,6 @@ var ChatInterface = class extends BaseComponent {
         data: { currentGroup: safeGroup }
       });
     }
-    console.log("--------- setCurrentGroup -----------", group);
     await this.updateMembersList();
     await this.updateChatInput();
     await this.fullRender(this.state);
@@ -19027,7 +19016,6 @@ async function createActions3(context) {
         if (announcement.type === "GROUP_CREATED" || announcement.type === "GROUP_UPDATED") {
           const groupInfo = announcement.data;
           groupInfo.name = normalizeGroupName(groupInfo.name);
-          console.log("2222222222222222222", groupInfo);
           await this.updateDiscoveredGroups(groupInfo);
           log8("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
         }
@@ -19045,7 +19033,6 @@ async function createActions3(context) {
         context.state.discoveredGroups = [];
       }
       groupInfo.name = normalizeGroupName(groupInfo.name);
-      console.log("3333333333333", groupInfo);
       const existingIndex = context.state.discoveredGroups.findIndex((g) => g.id === groupInfo.id);
       if (existingIndex >= 0) {
         context.state.discoveredGroups[existingIndex] = {
@@ -19391,7 +19378,6 @@ async function createActions3(context) {
         }
         if (!context.state.joinedGroups.find((g) => {
           if (g.id === topic) {
-            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", g, topic);
             return true;
           }
         })) {
@@ -19724,9 +19710,7 @@ var GroupManager = class extends BaseComponent {
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430. \u041F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.");
     }
     try {
-      console.log("#################################### input ##############", input);
       let group;
-      console.log("group-manager: createGroup", input);
       if (typeof input === "string") {
         const groupName = input.trim();
         if (!groupName) {

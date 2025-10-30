@@ -241,7 +241,6 @@ function getGroupInitial(group) {
 export function renderMyGroups({state = {}} = {}) {
     const groups = state.groups || [];
 
-    console.log('======= groups ===========', groups)
     if (groups.length === 0) {
         return `\
         <div class=\"empty-state\">\

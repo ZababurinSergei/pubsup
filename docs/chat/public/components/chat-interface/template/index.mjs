@@ -220,7 +220,7 @@ export function renderMembersList({ state = {} } = {}) {
             return `\
                 <div class="member-item group-item clickable ${isActiveGroup ? 'active' : ''}" data-group-topic="${item.id}">
                     <div class="member-avatar group">
-                        #
+                        ${item.name.charAt(0)}
                     </div>
                     <div class="member-info">
                         <div class="member-name">${escapeHtml(item.name)}</div>

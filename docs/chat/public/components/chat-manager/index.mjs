@@ -293,7 +293,6 @@ export class ChatManager extends BaseComponent {
         //     selector: '#discovered-groups-container' // ← должен быть в шаблоне
         // });
 
-        console.log('dddddddddddd groupName ddddddddddddd', groupName)
         const groupManager = await this.getComponentAsync('group-manager', 'group-manager');
         if (groupManager) {
             await groupManager.createGroup(groupName);

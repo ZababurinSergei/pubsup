@@ -172,7 +172,6 @@ export const controller = async (context) => {
                     return;
                 }
 
-                console.log('ddddddddddddddddddddddd',e.currentTarget)
                 const peerId = e.currentTarget.getAttribute('data-peer-id');
                 const groupTopic = e.currentTarget.getAttribute('data-group-topic');
 
@@ -197,10 +196,8 @@ export const controller = async (context) => {
                             // context.state.groups?.find(g => g.topic === groupTopic) ||
                             // context.state.discoveredGroups?.find(g => g.topic === groupTopic);
 
-                        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', group)
                         if(group) {
                             const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
-                            console.log('@@@@@@@@@@@@@@@@@ 222 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', chatManager.callback.handlersSetupGroup)
                             log('выбор группы для чата: %s', group.name || groupTopic);
                             chatManager.callback.handlersSetupGroup({
                                 currentTarget: {

@@ -317,11 +317,9 @@ export const controller = async (context) => {
 
                 if (isSubscribed) {
                     // Уже подписан — активируем
-                    console.log('------ start ------')
 
                     try {
                         context.state.groups =  await context._actions.discoverGroups()
-                        console.log('dddddddddddddddddddd', context.state.groups)
                         context.state.currentGroup = group;
                         await context.renderPart({
                             partName: 'renderMyGroups',
@@ -414,7 +412,6 @@ export const controller = async (context) => {
             }
 
             const handlersSetupGroup =  async (e) => {
-                console.log('%%%%%%%%%%%%%%%% 1 %%%%%%%%%%%%%%%%%%%')
                 // Предотвращаем срабатывание на кнопках действий
                 if (e.target.closest('.group-actions')) {
                     return;
@@ -440,13 +437,11 @@ export const controller = async (context) => {
                 // allGroups.discoveredGroups.find(g => g.id === topic || g.topic === topic) ||
                 // allGroups.joinedGroups.find(g => g.id === topic || g.topic === topic);
 
-                console.log('%%%%%%%%%%%%%%%%%% 2 %%%%%%%%%%%%%%%%%', group)
                 if (!group) {
                     log.error('Группа не найдена по топику/ID:', topic);
                     return;
                 }
 
-                console.log('@@@@@@@@ 1 -> activateGroup(group) @@@@@@@@@@@@@', group)
                 await activateGroup(group)
             };
             // Обработчики для переключения между группами

@@ -77,7 +77,6 @@ describe('Подключание к relay[серверу реле] lestener [С�
                         const test_listener_address = window.localStorage.getItem('test_listener_address');
                         peerAddressInput.value = test_listener_address;
                         connectPeerBtn.click();
-                        console.log('test_listener_address', test_listener_address);
                         break;
                     default:
                         console.warn('неизвестный тип mode', mode);
@@ -102,7 +101,6 @@ describe('Подключание к relay[серверу реле] lestener [С�
 
                         quickGroupName.value = 'Тестовая группа'
                         btnCreate.click()
-                        console.log('chatManager', createGroup);
                         resolve(true);
                         break;
                     default:

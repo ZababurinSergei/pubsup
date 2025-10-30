@@ -98,7 +98,6 @@ export async function createActions(context) {
                     // Нормализуем имя группы
                     groupInfo.name = normalizeGroupName(groupInfo.name);
 
-                    console.log('2222222222222222222', groupInfo)
                     // Обновляем список обнаруженных групп
                     await this.updateDiscoveredGroups(groupInfo);
 
@@ -122,7 +121,6 @@ export async function createActions(context) {
             // Нормализуем имя
             groupInfo.name = normalizeGroupName(groupInfo.name);
 
-            console.log('3333333333333', groupInfo)
             // Проверяем, нет ли уже такой группы
             const existingIndex = context.state.discoveredGroups.findIndex(g => g.id === groupInfo.id);
 
@@ -581,9 +579,7 @@ export async function createActions(context) {
                 }
 
                 if (!context.state.joinedGroups.find(g => {
-
                     if(g.id === topic) {
-                        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$',g,  topic)
                         return true
                     }
                 })) {
