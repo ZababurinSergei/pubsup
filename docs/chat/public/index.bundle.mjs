@@ -2660,9 +2660,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             await groupManager.joinGroup(group);
             let activeGroups = [];
             if (groupManager?.state) {
-              activeGroups = [
-                ...groupManager.state.joinedGroups || []
-              ];
+              activeGroups = [.../* @__PURE__ */ new Set([...groupManager.state.groups || [], ...groupManager.state.joinedGroups || []])];
             }
             const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
             if (chatInterface) {
@@ -19623,9 +19621,14 @@ var GroupManager = class extends BaseComponent {
   }
   get allGroups() {
     return {
-      groups: [...this.state.groups, ...this.state.joinedGroups],
-      discovered: [...this.state.discoveredGroups],
-      all: [...this.state.discoveredGroups, ...this.state.groups, ...this.state.joinedGroups],
+      groups: [.../* @__PURE__ */ new Set([...this.state.groups || [], ...this.state.joinedGroups || []])],
+      all: [.../* @__PURE__ */ new Set(
+        [
+          ...this.state.groups || [],
+          ...this.state.joinedGroups || [],
+          ...this.state.discoveredGroups || []
+        ]
+      )],
       discoveredGroups: this.state.discoveredGroups,
       joinedGroups: this.state.joinedGroups
     };

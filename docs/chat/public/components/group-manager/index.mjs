@@ -73,9 +73,13 @@ export class GroupManager extends BaseComponent {
 
     get allGroups() {
         return {
-            groups: [...this.state.groups, ...this.state.joinedGroups],
-            discovered: [...this.state.discoveredGroups],
-            all: [...this.state.discoveredGroups, ...this.state.groups, ...this.state.joinedGroups],
+            groups: [...new Set([...(this.state.groups  || []), ...(this.state.joinedGroups || [])])],
+            all: [...new Set([
+                ...(this.state.groups  || []),
+                ...(this.state.joinedGroups || []),
+                ...(this.state.discoveredGroups || []),
+                ]
+            )],
             discoveredGroups: this.state.discoveredGroups,
             joinedGroups: this.state.joinedGroups
         }

@@ -351,9 +351,7 @@ export const controller = async (context) => {
 
                         let activeGroups = [];
                         if (groupManager?.state) {
-                            activeGroups = [
-                                ...(groupManager.state.joinedGroups || [])
-                            ];
+                            activeGroups = [...new Set([...(groupManager.state.groups  || []), ...(groupManager.state.joinedGroups || [])])];
                         }
 
                         // Уведомляем chat-interface
