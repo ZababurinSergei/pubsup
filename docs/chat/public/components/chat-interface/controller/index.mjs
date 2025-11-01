@@ -55,6 +55,21 @@ export const controller = async (context) => {
                 eventListeners.push({ element: messageInput, handler: enterHandler });
             }
 
+            // Внутри controller → init()
+            const setupScreenShareHandlers = () => {
+                const screenShareButtons = context.shadowRoot.querySelectorAll('.screen-share-btn');
+                screenShareButtons.forEach(button => {
+                    const handler = async (e) => {
+                        e.stopPropagation();
+
+                    };
+                    button.addEventListener('click', handler);
+                    eventListeners.push({ element: button, handler });
+                });
+            };
+
+            setupScreenShareHandlers();
+
             // Обработчик очистки чата
             const clearChatBtn = context.shadowRoot.querySelector('#clear-chat');
             if (clearChatBtn) {
