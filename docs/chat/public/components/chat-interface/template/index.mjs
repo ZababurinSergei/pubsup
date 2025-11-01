@@ -179,6 +179,10 @@ export function renderStatus({state = {}} = {}) {
 
 /**
  * Шаблон для списка участников и групп
+ * @function renderMembersList
+ * @param {Object} params - Параметры рендеринга
+ * @param {Object} params.state - Состояние компонента
+ * @returns {string} HTML строка списка участников и групп
  */
 export function renderMembersList({ state = {} } = {}) {
     const members = state.connectedPeers || [];
@@ -203,38 +207,33 @@ export function renderMembersList({ state = {} } = {}) {
     const displayItems = [...allMembers, ...groups];
 
     if (displayItems.length === 0) {
-        return `\
-        <div class=\"empty-members\">\
-            <div class=\"empty-icon\">👥</div>\
-            <p class=\"empty-text\">Нет участников и групп</p>\
-        </div>\
-        `;
+        return `
+      <div class="empty-members">
+        <div class="empty-icon">👥</div>
+        <p class="empty-text">Нет участников и групп</p>
+      </div>
+    `;
     }
 
-    return `\
-    <div class=\"members-container\">\
-        ${displayItems.map(item => {
+    return `
+    <div class="members-container">
+      ${displayItems.map(item => {
         if (item.isGroup) {
             // Рендер группы — добавляем класс active, если топик активен
             const isActiveGroup = !state.isPrivateChat && state.currentGroup?.topic === item.id;
-            // Считаем непрочитанные сообщения в группе
             const unreadCount = state.unreadCounts?.[item.id] || 0;
-            const showUnread = !isActiveGroup && unreadCount > 0;
+            const showUnread = unreadCount > 0;
 
-            return `\
-                <div class=\"member-item group-item clickable ${isActiveGroup ? 'active' : ''}\" data-group-topic=\"${item.id}\">
-                    <div class=\"member-avatar group\">
-                        ${item.name.charAt(0)}
-                    </div>
-                    <div class=\"member-info\">
-                        <div class=\"member-name\">${escapeHtml(item.name)}</div>
-                        <div class=\"member-status online\">Топик</div>
-                    </div>
-                    ${showUnread ? `
-                    <div class=\"unread-badge\">${unreadCount > 99 ? '99+' : unreadCount}</div>
-                    ` : ''}
-                </div>
-            `;
+            return `
+            <div class="member-item ${isActiveGroup ? 'active' : ''}" data-peer-id="${item.id}">
+              <div class="member-avatar group">${item.name.charAt(0).toUpperCase()}</div>
+              <div class="member-info">
+                <div class="member-name">${item.name}</div>
+                <div class="member-status online">Топик</div>
+              </div>
+              ${showUnread ? `<div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
+            </div>
+          `;
         }
 
         // Рендер участника — добавляем active только для пиров
@@ -243,29 +242,32 @@ export function renderMembersList({ state = {} } = {}) {
 
         const displayName = item.isCurrentUser
             ? 'Вы'
-            : (getPeerName(item) || `Пользователь ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
+            : (item.name || `Пользователь ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
 
         const isActivePeer = state.isPrivateChat && state.activeMember?.id === item.id;
 
-        return `\
-            <div class=\"member-item ${item.isCurrentUser ? 'current-user' : ''} ${isActivePeer ? 'active' : ''} clickable\" data-peer-id=\"${item.id}\">
-                <div class=\"member-avatar ${item.isCurrentUser ? 'current-user' : ''}\">
-                    ${item.isCurrentUser ? '👤' : (item.id ? item.id.substring(2, 4).toUpperCase() : '??')}
-                </div>
-                <div class=\"member-info\">
-                    <div class=\"member-name\">${escapeHtml(displayName)}</div>
-                    <div class=\"member-status ${item.online ? 'online' : 'offline'}\">
-                        ${item.isCurrentUser ? 'Вы' : (item.online ? 'В сети' : 'Не в сети')}
-                    </div>
-                </div>
-                ${showUnread ? `
-                <div class=\"unread-badge\">${unreadCount > 99 ? '99+' : unreadCount}</div>
-                ` : ''}
+        return `
+          <div class="member-item ${item.isCurrentUser ? 'current-user' : ''} ${isActivePeer ? 'active' : ''} clickable" data-peer-id="${item.id}">
+            <div class="member-avatar ${item.isCurrentUser ? 'current-user' : ''}">
+              ${item.isCurrentUser ? '👤' : (item.id ? item.id.substring(2, 4).toUpperCase() : '??')}
             </div>
-            `;
-    }).join('')}\
-    </div>\
-    `;
+            <div class="member-info">
+              <div class="member-name">${escapeHtml(displayName)}</div>
+              <div class="member-status ${item.online ? 'online' : 'offline'}">
+                ${item.isCurrentUser ? 'Вы' : (item.online ? 'В сети' : 'Не в сети')}
+              </div>
+            </div>
+            ${!item.isCurrentUser && item.online ? `
+              <button class="action-btn screen-share-btn" title="Показать экран" data-peer-id="${item.id}">
+                <span class="btn-icon">🖥️</span>
+              </button>
+            ` : ''}
+            ${showUnread ? `<div class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
+          </div>
+        `;
+    }).join('')}
+    </div>
+  `;
 }
 
 /**
