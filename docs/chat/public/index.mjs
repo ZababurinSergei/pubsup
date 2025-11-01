@@ -6,8 +6,8 @@ import './components/screen-share-manager/index.mjs'
 
 import {test} from './components/tests/src/index.mjs'
 
-// window.onload = async function () {
-// test({
-//     path: '/tests/index.mjs'
-// }).catch(e => {console.log('error devtool', e)})
-// }
+window.onload = async function () {
+    test({
+        path: '/tests/index.mjs'
+    }).catch(e => {console.log('error devtool', e)})
+}
