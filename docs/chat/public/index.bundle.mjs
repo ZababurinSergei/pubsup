@@ -1834,16 +1834,16 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         if (targetElement) {
           targetElement.innerHTML = skeletonHtml;
         } else {
-          const container = document.createElement("div");
-          container.id = "root";
-          container.innerHTML = skeletonHtml;
-          this.shadowRoot.appendChild(container);
+          const container2 = document.createElement("div");
+          container2.id = "root";
+          container2.innerHTML = skeletonHtml;
+          this.shadowRoot.appendChild(container2);
         }
       } else {
-        const container = document.createElement("div");
-        container.className = "skeleton-overlay";
-        container.innerHTML = skeletonHtml;
-        this.shadowRoot.appendChild(container);
+        const container2 = document.createElement("div");
+        container2.className = "skeleton-overlay";
+        container2.innerHTML = skeletonHtml;
+        this.shadowRoot.appendChild(container2);
       }
       log2(`\u0421\u043A\u0435\u043B\u0435\u0442\u043E\u043D-\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430 \u0434\u043B\u044F ${this.constructor.name}`);
     } catch (error) {
@@ -2215,12 +2215,12 @@ __name(parseChatGroupStringRegex, "parseChatGroupStringRegex");
 async function insertRemoteControl(context, targetPeer, mode) {
   const componentId = `remote-control-${targetPeer}-${mode}`;
   const existing = context.shadowRoot.getElementById(componentId) || context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
-  console.log("@@@@@@@@@@@@@ insertRemoteControl @@@@@@@@@@@@@@@@@@@@@@@@@", existing);
   if (existing) existing.remove();
   const remoteControl = document.createElement("remote-control");
   remoteControl.id = componentId;
   remoteControl.setAttribute("target-peer", targetPeer);
   remoteControl.setAttribute("mode", mode);
+  remoteControl.setAttribute("slot", "remote-control");
   const chatArea = context.shadowRoot.querySelector(".chat-area");
   if (chatArea) {
     chatArea.insertAdjacentElement("afterbegin", remoteControl);
@@ -16455,14 +16455,12 @@ var ChatManager = class extends BaseComponent {
     return peersWithConnections;
   }
   async sendPrivateMessage(peerId, messageText) {
-    console.log("######################### 0 ################################");
     if (!this.node || !this.state.connected) {
       log6.error("Node not available for private message");
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430");
     }
     try {
       const connectedPeers = await this.getConnectedPeers();
-      console.log("######################### 1 ################################");
       const targetPeer = connectedPeers.find((peer) => peer.id === peerId);
       if (!targetPeer) {
         throw new Error(`\u041F\u0438\u0440 ${peerId} \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0441\u0440\u0435\u0434\u0438 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445`);
@@ -16476,7 +16474,7 @@ var ChatManager = class extends BaseComponent {
               log6("Using active connection address: %s", targetAddress);
               break;
             } catch (error) {
-              log6.warn("Error parsing connection address: %o", error);
+              log6.error("Error parsing connection address: %o", error);
             }
           }
         }
@@ -16516,7 +16514,15 @@ var ChatManager = class extends BaseComponent {
           isPrivate: true
         };
       }
-      const messageBytes = fromString2(JSON.stringify(messageData));
+      let request = JSON.stringify(messageData.payload ? messageData.payload : messageData);
+      if (messageData.payload) {
+        console.log("--------- messageData -------------", messageData);
+        request = JSON.stringify(messageData);
+      } else {
+        request = JSON.stringify(messageData);
+      }
+      const messageBytes = fromString2(request);
+      console.log("----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) ----------------------- !!!!!!!!!!!!!", request);
       await lp.write(messageBytes);
       if (messageData.type === "private_message") {
         await this.addMessage({
@@ -16529,6 +16535,51 @@ var ChatManager = class extends BaseComponent {
         });
       } else if (messageData.type === "REMOTE_CONTROL_REQUEST") {
         log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
+        console.log("-------------------- REMOTE_CONTROL_REQUEST ------------------------------", {
+          text: JSON.stringify(messageData),
+          to: peerId,
+          from: this.state.peerId,
+          type: "sent",
+          timestamp: messageData.timestamp,
+          isPrivate: true
+        });
+        const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface) {
+          await chatInterface.addMessage({
+            text: JSON.stringify(messageData),
+            to: peerId,
+            from: this.state.peerId,
+            type: "sent",
+            timestamp: messageData.timestamp,
+            isPrivate: true
+          });
+        }
+      } else if (messageData.type === "REMOTE_CONTROL_ACCEPTED") {
+        log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
+        const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface) {
+          await chatInterface.addMessage({
+            text: JSON.stringify(messageData),
+            to: peerId,
+            from: this.state.peerId,
+            type: "sent",
+            timestamp: messageData.timestamp,
+            isPrivate: true
+          });
+        }
+      } else if (messageData.type === "REMOTE_CONTROL_EVENT") {
+        console.log(")))))))))))))))))))))))))))))))))))", messageData.payload);
+        const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface) {
+          await chatInterface.addMessage({
+            text: JSON.stringify(messageData.payload),
+            to: peerId,
+            from: this.state.peerId,
+            type: "sent",
+            timestamp: messageData.timestamp,
+            isPrivate: true
+          });
+        }
       }
       log6('\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0442\u0438\u043F\u0430 "%s" \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s', messageData.type, peerId);
       await stream.close();
@@ -16554,18 +16605,15 @@ var ChatManager = class extends BaseComponent {
     }
     try {
       await this.node.handle("/remote-control/1.0.0", async (stream, connection) => {
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         const remotePeer = connection.remotePeer.toString();
         log6("Remote control stream established from: %s", remotePeer);
         try {
           const viewerId = `remote-control-${remotePeer}-viewer`;
           const remoteControl = await BaseComponent.getComponentAsync("remote-control", viewerId, 3e3);
-          console.log("remoteControl===============\u0410", remoteControl);
-          if (remoteControl?.setStream) {
-            remoteControl.setStream(stream);
-            log6("Remote control stream attached to viewer component");
-          } else {
-            log6.warn("Viewer remote-control not found or lacks setStream method");
-            await stream.close();
+          console.log("------------------ >>> handle(/remote-control/1.0.0) ------------------ >>>", remotePeer);
+          if (remoteControl) {
+            await remoteControl._actions.startScreenShare();
           }
         } catch (err) {
           log6.error("Error in /remote-control/1.0.0 handler: %o", err);
@@ -16576,7 +16624,6 @@ var ChatManager = class extends BaseComponent {
         }
       });
       await this.node.handle("/chat/1.0.0", async (stream, connection) => {
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         log6("Incoming chat stream established from: %s", connection.remotePeer?.toString());
         try {
           const lp = lpStream(stream);
@@ -16602,6 +16649,7 @@ var ChatManager = class extends BaseComponent {
                   raw: true
                 };
               }
+              console.log("----------------- handle(/chat/1.0.0) messageData.type -----------------", messageData);
               if (messageData.type === "private_message") {
                 await this.addMessageToPrivateHistory({
                   text: messageData.text,
@@ -16635,10 +16683,50 @@ var ChatManager = class extends BaseComponent {
                 const myPeerId = this.state.peerId;
                 log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u0434\u043B\u044F %s", initiator, targetPeer);
                 if (myPeerId === targetPeer) {
+                  await this.addMessageToPrivateHistory({
+                    text: JSON.stringify(messageData),
+                    from: remotePeer,
+                    to: this.state.peerId,
+                    type: "received",
+                    timestamp: messageData.timestamp || Date.now(),
+                    isPrivate: true
+                  });
                   const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
                   if (chatInterface) {
-                    await insertRemoteControl(chatInterface, initiator, "viewer");
+                    const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+                    if (isActiveChat) {
+                      await chatInterface.postMessage({
+                        type: "INCOMING_PRIVATE_MESSAGE",
+                        data: {
+                          text: JSON.stringify(messageData),
+                          from: remotePeer,
+                          timestamp: messageData.timestamp,
+                          isPrivate: true
+                        }
+                      });
+                    } else {
+                      if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                      this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                      if (chatInterface?.updateMembersList) {
+                        await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                      }
+                    }
                   }
+                  console.log("----------------- handle(/chat/1.0.0) -> postMessage -----------------", {
+                    type: "SEND_PRIVATE_MESSAGE",
+                    data: {
+                      peerId: initiator,
+                      message: JSON.stringify({
+                        type: "REMOTE_CONTROL_ACCEPTED",
+                        payload: {
+                          targetPeer: myPeerId,
+                          initiator
+                          // ← КЛЮЧЕВОЕ: чтобы инициатор знал, что это для него
+                        }
+                      })
+                    }
+                  });
+                  await insertRemoteControl(chatInterface, messageData.from, "viewer");
                   await this.postMessage({
                     type: "SEND_PRIVATE_MESSAGE",
                     data: {
@@ -16662,7 +16750,37 @@ var ChatManager = class extends BaseComponent {
                 const myPeerId = this.state.peerId;
                 if (myPeerId === initiator) {
                   log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442 %s", remotePeer);
+                  await this.addMessageToPrivateHistory({
+                    text: JSON.stringify(messageData),
+                    from: remotePeer,
+                    to: this.state.peerId,
+                    type: "received",
+                    timestamp: messageData.timestamp || Date.now(),
+                    isPrivate: true
+                  });
                   try {
+                    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+                    if (chatInterface) {
+                      const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+                      if (isActiveChat) {
+                        await chatInterface.postMessage({
+                          type: "INCOMING_PRIVATE_MESSAGE",
+                          data: {
+                            text: JSON.stringify(messageData),
+                            from: remotePeer,
+                            timestamp: messageData.timestamp,
+                            isPrivate: true
+                          }
+                        });
+                      } else {
+                        if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                        this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                        if (chatInterface?.updateMembersList) {
+                          await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                        }
+                      }
+                      await insertRemoteControl(chatInterface, messageData.from, "controller");
+                    }
                     const connectedPeers = await this.getConnectedPeers();
                     const targetPeerInfo = connectedPeers.find((p2) => p2.id === remotePeer);
                     let dialAddress = remotePeer;
@@ -16675,16 +16793,8 @@ var ChatManager = class extends BaseComponent {
                     }
                     const ma = multiaddr(dialAddress);
                     const stream2 = await this.node.dialProtocol(ma, "/remote-control/1.0.0");
-                    const controllerId = `remote-control-${remotePeer}-controller`;
-                    const remoteControl = await this.getComponentAsync("remote-control", controllerId, 2e3);
-                    console.log("=== remoteControl ===", remoteControl);
-                    if (remoteControl?.setStream) {
-                      remoteControl.setStream(stream2);
-                      log6("Remote control stream established as controller to %s", remotePeer);
-                    } else {
-                      log6.error("Controller remote-control not found, closing stream");
-                      await stream2.close();
-                    }
+                    console.log("---------- SEND STREAM -------------------");
+                    await stream2.close();
                   } catch (err) {
                     log6.error("Failed to establish remote control stream to %s: %o", remotePeer, err);
                   }
@@ -16734,8 +16844,8 @@ var ChatManager = class extends BaseComponent {
    * @param {Object} messageData - Данные сообщения
    */
   async handleIncomingPrivateMessage(messageData) {
-    debugger;
     const log11 = logger("chat-manager:actions:handleIncomingPrivateMessage");
+    console.log("----------------- INCOMMING handleIncomingPrivateMessage -----------------", messageData);
     try {
       log11("Incoming private message from: %s", messageData.from);
       if (!messageData.text || !messageData.from) {
@@ -16782,23 +16892,6 @@ var ChatManager = class extends BaseComponent {
         if (!confirmed) {
           log11("\u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442\u043A\u043B\u043E\u043D\u0451\u043D");
           return;
-        }
-        const chatInterface2 = await this.getComponentAsync("chat-interface", "main-chat");
-        if (chatInterface2) {
-          const insertRemoteControl2 = /* @__PURE__ */ __name(async (context, targetPeer, mode) => {
-            const existing = context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
-            if (existing) existing.remove();
-            const remoteControl = document.createElement("remote-control");
-            remoteControl.setAttribute("target-peer", targetPeer);
-            remoteControl.setAttribute("mode", mode);
-            const chatArea = context.shadowRoot.querySelector(".chat-area") || context.shadowRoot.querySelector(".messages-container")?.parentElement;
-            if (chatArea) {
-              chatArea.insertAdjacentElement("afterbegin", remoteControl);
-            } else {
-              context.shadowRoot.appendChild(remoteControl);
-            }
-          }, "insertRemoteControl");
-          await insertRemoteControl2(chatInterface2, messageData.from, "viewer");
         }
         await this.postMessage({
           type: "SEND_PRIVATE_MESSAGE",
@@ -17014,7 +17107,8 @@ var ChatManager = class extends BaseComponent {
           if (myPeerId === targetPeer) {
             const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
             if (chatInterface) {
-              await insertRemoteControl(chatInterface, initiator, "viewer");
+              debugger;
+              console.log("!!!!!!!!!!!!!!!!!!!!! insertRemoteControl - \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u043E !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             }
             await this.postMessage({
               type: "REMOTE_CONTROL_ACK",
@@ -17078,7 +17172,6 @@ var ChatManager = class extends BaseComponent {
           await this.handleIncomingPrivateMessage(event.data);
           break;
         case "SEND_PRIVATE_MESSAGE":
-          console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", event.data.peerId, event.data.message);
           log6("SEND_PRIVATE_MESSAGE received in ChatManager: %o", event.data);
           await this.sendPrivateMessage(event.data.peerId, event.data.message);
           break;
@@ -17431,7 +17524,21 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
               if (!chatManager) {
                 throw new Error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
               }
-              console.log("@@@@@@@@@@@@@@@@@@@@@@@@");
+              console.log("-------------- click button ------------------", {
+                type: "SEND_PRIVATE_MESSAGE",
+                data: {
+                  peerId,
+                  message: JSON.stringify({
+                    type: "REMOTE_CONTROL_REQUEST",
+                    payload: {
+                      targetPeer: peerId,
+                      // ← тот, кого хотим контролировать
+                      initiator: context.state.peerId,
+                      timestamp: Date.now()
+                    }
+                  })
+                }
+              });
               await chatManager.postMessage({
                 type: "SEND_PRIVATE_MESSAGE",
                 data: {
@@ -17447,7 +17554,6 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
                   })
                 }
               });
-              await insertRemoteControl(context, peerId, "controller");
             } catch (error) {
               console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F:", error);
               await context.showModal({
@@ -17594,11 +17700,11 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
                 }
               });
             } else {
-              log11.warn("\u0433\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443: %s", groupTopic);
+              log11.error("\u0433\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443: %s", groupTopic);
             }
             return;
           }
-          log11.warn("\u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u043D\u0438 data-peer-id, \u043D\u0438 data-group-topic");
+          log11.error("\u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u043D\u0438 data-peer-id, \u043D\u0438 data-group-topic");
         } catch (error) {
           log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0432\u044B\u0431\u043E\u0440\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430: %o", error);
         }
@@ -35559,7 +35665,7 @@ var toMultiaddrConnection = /* @__PURE__ */ __name((init) => {
 }, "toMultiaddrConnection");
 
 // node_modules/@libp2p/webrtc/dist/src/webrtc/index.browser.js
-var RTCPeerConnection = globalThis.RTCPeerConnection;
+var RTCPeerConnection2 = globalThis.RTCPeerConnection;
 var RTCSessionDescription = globalThis.RTCSessionDescription;
 var RTCIceCandidate = globalThis.RTCIceCandidate;
 
@@ -35753,7 +35859,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
     runOnLimitedConnection: true
   });
   const messageStream = pbStream(stream).pb(Message2);
-  const peerConnection = new RTCPeerConnection(rtcConfiguration);
+  const peerConnection = new RTCPeerConnection2(rtcConfiguration);
   peerConnection.addEventListener("connectionstatechange", () => {
     switch (peerConnection.connectionState) {
       case "closed":
@@ -36102,7 +36208,7 @@ var WebRTCTransport = class {
     return connection;
   }
   async _onProtocol(stream, connection, signal) {
-    const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration));
+    const peerConnection = new RTCPeerConnection2(await getRtcConfiguration(this.init.rtcConfiguration));
     peerConnection.addEventListener("connectionstatechange", () => {
       switch (peerConnection.connectionState) {
         case "closed":
@@ -37453,7 +37559,7 @@ var PeerConnection = class extends BaseComponent {
           log7.error("Error sending peers to chat interface: %o", sendError);
         }
       } else {
-        log7.warn("getConnectedPeers action not available");
+        log7.error("getConnectedPeers action not available");
       }
     } catch (error) {
       log7.error("Error updating peer list: %o", error);
@@ -37621,48 +37727,179 @@ if (!customElements.get("peer-connection")) {
 var template_exports5 = {};
 __export(template_exports5, {
   defaultTemplate: () => defaultTemplate5,
-  renderClickEffect: () => renderClickEffect,
   renderCursor: () => renderCursor
 });
-function defaultTemplate5({ state = {} }) {
-  const { mode = "viewer", isConnected = false } = state;
+function defaultTemplate5({ state = {} } = {}) {
+  const { mode = "viewer", isConnected = false, videoEnabled = false, focusOnCursor = false } = state;
   return `
-    <div class="remote-control">
-      <div class="control-header">
-        <h3 class="control-title">
-          ${mode === "controller" ? "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u044D\u043A\u0440\u0430\u043D\u043E\u043C" : "\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u044B\u0439 \u044D\u043A\u0440\u0430\u043D"}
-        </h3>
-        <div class="connection-status ${isConnected ? "connected" : "disconnected"}">
-          <span class="status-dot"></span>
-          <span class="status-text">${isConnected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>
-        </div>
-      </div>
-      <div id="remote-screen" class="remote-screen">
-        ${mode === "viewer" ? '<div id="remote-cursor" class="remote-cursor">\u{1F5B1}\uFE0F</div>' : ""}
-      </div>
+<div class="remote-control">
+  <div class="control-header">
+    <h3 class="control-title">
+      ${mode === "controller" ? "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u044D\u043A\u0440\u0430\u043D\u043E\u043C" : "\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u044B\u0439 \u044D\u043A\u0440\u0430\u043D"}
+    </h3>
+    ${isConnected ? '<span class="status-indicator connected">\u{1F7E2}</span>' : '<span class="status-indicator disconnected">\u{1F534}</span>'}
+  </div>
+
+  ${mode === "controller" ? `
+    <div class="control-actions">
+      <button id="toggle-video" class="video-toggle-btn">
+        ${videoEnabled ? "\u23F9\uFE0F \u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0438\u0434\u0435\u043E" : "\u25B6\uFE0F \u0412\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0438\u0434\u0435\u043E"}
+      </button>
+      <label class="focus-cursor-toggle">
+        <input type="checkbox" id="focus-cursor" ${focusOnCursor ? "checked" : ""}>
+        <span>\u0421\u043B\u0435\u0434\u0438\u0442\u044C \u0437\u0430 \u043A\u0443\u0440\u0441\u043E\u0440\u043E\u043C</span>
+      </label>
+    </div>
+  ` : ""}
+
+  <div class="screen" id="remote-screen">
+    ${mode === "controller" ? `
+      <video id="remote-video" autoplay playsinline muted style="width:100%;height:100%;background:black;"></video>
+    ` : ""}
+    ${mode === "viewer" ? '<div id="remote-cursor" class="remote-cursor">\u{1F5B1}\uFE0F</div>' : ""}
+  </div>
+</div>
+`;
+}
+__name(defaultTemplate5, "defaultTemplate");
+function renderCursor({ state = {} } = {}) {
+  const { cursorPosition = { x: 0, y: 0 } } = state;
+  return `
+    <div id="remote-cursor" class="remote-cursor" style="left:${cursorPosition.x}px;top:${cursorPosition.y}px;">
+      \u{1F5B1}\uFE0F
     </div>
   `;
 }
-__name(defaultTemplate5, "defaultTemplate");
-function renderCursor({ state = {} }) {
-  const { x = 0, y = 0 } = state.cursorPosition || {};
-  return `<div class="remote-cursor" style="left:${x}px;top:${y}px;">\u{1F5B1}\uFE0F</div>`;
-}
 __name(renderCursor, "renderCursor");
-function renderClickEffect({ state = {} }) {
-  const { x = 0, y = 0 } = state;
-  return `<div class="click-effect" style="left:${x}px;top:${y}px;"></div>`;
-}
-__name(renderClickEffect, "renderClickEffect");
 
 // public/components/remote-control/controller/index.mjs
 var log8 = logger("remote-control:controller");
-var controller5 = /* @__PURE__ */ __name((context) => {
+function debounce3(func, wait) {
+  let timeout;
+  return /* @__PURE__ */ __name(function executedFunction(...args) {
+    const later = /* @__PURE__ */ __name(() => {
+      clearTimeout(timeout);
+      func(...args);
+    }, "later");
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  }, "executedFunction");
+}
+__name(debounce3, "debounce");
+var controller5 = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
   const add2 = /* @__PURE__ */ __name((el, ev, fn) => {
-    el?.addEventListener(ev, fn);
+    if (!el) return;
+    window.addEventListener(ev, fn);
     eventListeners.push({ element: el, event: ev, handler: fn });
   }, "add");
+  const getNormalizedCoords = /* @__PURE__ */ __name((e2) => {
+    const pageX = e2.pageX || e2.clientX + window.scrollX;
+    const pageY = e2.pageY || e2.clientY + window.scrollY;
+    return {
+      normX: document.body.scrollWidth > 0 ? pageX / document.body.scrollWidth : 0,
+      normY: document.body.scrollHeight > 0 ? pageY / document.body.scrollHeight : 0
+    };
+  }, "getNormalizedCoords");
+  const debouncedSendMouseEvent = debounce3((eventData) => {
+    if (!context._remoteStream) return;
+    const lp = lpStream(context._remoteStream);
+    const msg = fromString2(JSON.stringify({
+      type: "REMOTE_CONTROL_EVENT",
+      payload: eventData
+    }));
+    lp.write(msg).catch((err) => {
+      log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043C\u044B\u0448\u0438:", err);
+    });
+  }, 50);
+  const mouseMoveHandler = /* @__PURE__ */ __name((e2) => {
+    if (!context._remoteStream) return;
+    const screen = context.shadowRoot.querySelector("#remote-screen");
+    if (!screen) return;
+    const rect = screen.getBoundingClientRect();
+    const x = e2.clientX - rect.left;
+    const y = e2.clientY - rect.top;
+    const { normX, normY } = getNormalizedCoords(e2);
+    const eventData = {
+      type: "mousemove",
+      x,
+      y,
+      normX,
+      normY,
+      targetPeer: context.state.targetPeer,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+      focusOnCursor: context.state.focusOnCursor ?? false,
+      fullPageWidth: document.body.scrollWidth,
+      fullPageHeight: document.body.scrollHeight
+    };
+    debouncedSendMouseEvent(eventData);
+  }, "mouseMoveHandler");
+  const mouseDownHandler = /* @__PURE__ */ __name((e2) => {
+    if (!context._remoteStream) return;
+    const screen = context.shadowRoot.querySelector("#remote-screen");
+    if (!screen) return;
+    const rect = screen.getBoundingClientRect();
+    const x = e2.clientX - rect.left;
+    const y = e2.clientY - rect.top;
+    const { normX, normY } = getNormalizedCoords(e2);
+    const eventData = {
+      type: "mousedown",
+      x,
+      y,
+      normX,
+      normY,
+      button: e2.button,
+      targetPeer: context.state.targetPeer,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+      focusOnCursor: context.state.focusOnCursor ?? false,
+      fullPageWidth: document.body.scrollWidth,
+      fullPageHeight: document.body.scrollHeight
+    };
+    debouncedSendMouseEvent(eventData);
+  }, "mouseDownHandler");
+  const mouseUpHandler = /* @__PURE__ */ __name((e2) => {
+    if (!context._remoteStream) return;
+    const screen = context.shadowRoot.querySelector("#remote-screen");
+    if (!screen) return;
+    const rect = screen.getBoundingClientRect();
+    const x = e2.clientX - rect.left;
+    const y = e2.clientY - rect.top;
+    const { normX, normY } = getNormalizedCoords(e2);
+    const eventData = {
+      type: "mouseup",
+      x,
+      y,
+      normX,
+      normY,
+      button: e2.button,
+      targetPeer: context.state.targetPeer,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+      focusOnCursor: context.state.focusOnCursor ?? false,
+      fullPageWidth: document.body.scrollWidth,
+      fullPageHeight: document.body.scrollHeight
+    };
+    debouncedSendMouseEvent(eventData);
+  }, "mouseUpHandler");
+  const toggleVideoHandler = /* @__PURE__ */ __name(async () => {
+    const enabled = !context.state.videoEnabled;
+    if (enabled) {
+      await context._actions.startVideoStream();
+    } else {
+      context._actions.stopVideoStream();
+    }
+  }, "toggleVideoHandler");
   return {
     /**
      * Инициализирует контроллер: навешивает обработчики событий в зависимости от режима
@@ -37671,53 +37908,22 @@ var controller5 = /* @__PURE__ */ __name((context) => {
     async init() {
       if (context.state.mode === "controller") {
         const screen = context.shadowRoot.querySelector("#remote-screen");
-        if (screen) {
-          add2(screen, "mousemove", (e2) => {
-            const rect = screen.getBoundingClientRect();
-            const x = e2.clientX - rect.left;
-            const y = e2.clientY - rect.top;
-            context._actions.sendInputEvent({
-              type: "mousemove",
-              x,
-              y
-            });
-          });
-          add2(screen, "mousedown", (e2) => {
-            const rect = screen.getBoundingClientRect();
-            const x = e2.clientX - rect.left;
-            const y = e2.clientY - rect.top;
-            context._actions.sendInputEvent({
-              type: "mousedown",
-              x,
-              y,
-              button: e2.button
-            });
-          });
-          add2(screen, "mouseup", (e2) => {
-            const rect = screen.getBoundingClientRect();
-            const x = e2.clientX - rect.left;
-            const y = e2.clientY - rect.top;
-            context._actions.sendInputEvent({
-              type: "mouseup",
-              x,
-              y,
-              button: e2.button
-            });
-          });
-          add2(screen, "keydown", (e2) => {
-            context._actions.sendInputEvent({
-              type: "keydown",
-              key: e2.key,
-              code: e2.code,
-              ctrlKey: e2.ctrlKey,
-              shiftKey: e2.shiftKey,
-              altKey: e2.altKey,
-              metaKey: e2.metaKey
-            });
-          });
-          screen.setAttribute("tabindex", "0");
-          screen.focus();
+        if (!screen) {
+          log8.error("\u042D\u043B\u0435\u043C\u0435\u043D\u0442 #remote-screen \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
+          return;
         }
+        screen.setAttribute("tabindex", "0");
+        screen.focus();
+        add2(screen, "mousemove", mouseMoveHandler);
+        add2(screen, "mousedown", mouseDownHandler);
+        add2(screen, "mouseup", mouseUpHandler);
+        const videoBtn = context.shadowRoot.querySelector("#toggle-video");
+        if (videoBtn) {
+          videoBtn.addEventListener("click", toggleVideoHandler);
+          eventListeners.push({ element: videoBtn, handler: toggleVideoHandler });
+        }
+        log8("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043C\u044B\u0448\u0438 \u0438 \u0432\u0438\u0434\u0435\u043E \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
+      } else {
       }
     },
     /**
@@ -37741,13 +37947,29 @@ var controller5 = /* @__PURE__ */ __name((context) => {
 // public/components/remote-control/actions/index.mjs
 var log9 = logger("remote-control:actions");
 async function createActions5(context) {
+  let videoPeerConnection = null;
+  let localStream = null;
+  let lastCursorPosition = { x: 0, y: 0 };
   function isCdpAvailable() {
     return false;
   }
   __name(isCdpAvailable, "isCdpAvailable");
+  function debounce4(func, wait) {
+    let timeout;
+    return /* @__PURE__ */ __name(function executedFunction(...args) {
+      const later = /* @__PURE__ */ __name(() => {
+        clearTimeout(timeout);
+        func(...args);
+      }, "later");
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    }, "executedFunction");
+  }
+  __name(debounce4, "debounce");
   async function sendInputEvent(eventData) {
-    if (!context.state.targetPeer) {
-      log9.warn("\u041D\u0435\u0442 \u0446\u0435\u043B\u0435\u0432\u043E\u0433\u043E \u043F\u0438\u0440\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430");
+    const targetPeer = context.getAttribute("target-peer");
+    if (!targetPeer) {
+      log9.error("\u041D\u0435\u0442 \u0446\u0435\u043B\u0435\u0432\u043E\u0433\u043E \u043F\u0438\u0440\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430");
       return;
     }
     const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
@@ -37763,67 +37985,241 @@ async function createActions5(context) {
       }
     };
     try {
-      await chatManager.sendPrivateMessage(context.state.targetPeer, JSON.stringify(message2));
+      console.log(">>>>>>>>> sendInputEvent -> sendPrivateMessage >>>>>>>>>> message", targetPeer, message2);
+      await chatManager.sendPrivateMessage(targetPeer, JSON.stringify(message2));
       log9("\u0421\u043E\u0431\u044B\u0442\u0438\u0435 \u0432\u0432\u043E\u0434\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E: %s", eventData.type);
     } catch (error) {
       log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430: %o", error);
     }
   }
   __name(sendInputEvent, "sendInputEvent");
-  async function handleInputEvent(messageData) {
-    if (!messageData?.payload || context.state.mode !== "viewer") {
-      return;
-    }
-    const { type, x, y, key, button } = messageData.payload;
-    if (type === "mousemove" && typeof x === "number" && typeof y === "number") {
-      context.state.cursorPosition = { x, y };
-      await context.renderPart({
-        partName: "renderCursor",
-        state: context.state,
-        selector: "#remote-cursor"
+  const getNormalizedCoords = /* @__PURE__ */ __name((e2) => {
+    const pageX = e2.pageX || e2.clientX + window.scrollX;
+    const pageY = e2.pageY || e2.clientY + window.scrollY;
+    const normX = pageX / document.body.scrollWidth;
+    const normY = pageY / document.body.scrollHeight;
+    return { normX, normY };
+  }, "getNormalizedCoords");
+  const debouncedSendMouseEvent = debounce4((eventData) => {
+    sendInputEvent(eventData);
+  }, 50);
+  context.mouseMoveHandler = (e2) => {
+    if (!context._remoteStream) return;
+    const rect = e2.currentTarget.getBoundingClientRect();
+    const x = e2.clientX - rect.left;
+    const y = e2.clientY - rect.top;
+    const { normX, normY } = getNormalizedCoords(e2);
+    const eventData = {
+      type: "mousemove",
+      x,
+      y,
+      normX,
+      normY,
+      targetPeer: context.state.targetPeer,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+      focusOnCursor: context.state.focusOnCursor ?? false,
+      fullPageWidth: document.body.scrollWidth,
+      fullPageHeight: document.body.scrollHeight
+    };
+    debouncedSendMouseEvent(eventData);
+  };
+  context.mouseDownHandler = (e2) => {
+    if (!context._remoteStream) return;
+    const rect = e2.currentTarget.getBoundingClientRect();
+    const x = e2.clientX - rect.left;
+    const y = e2.clientY - rect.top;
+    const { normX, normY } = getNormalizedCoords(e2);
+    const eventData = {
+      type: "mousedown",
+      x,
+      y,
+      normX,
+      normY,
+      button: e2.button,
+      targetPeer: context.state.targetPeer,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+      focusOnCursor: context.state.focusOnCursor ?? false,
+      fullPageWidth: document.body.scrollWidth,
+      fullPageHeight: document.body.scrollHeight
+    };
+    debouncedSendMouseEvent(eventData);
+  };
+  context.mouseUpHandler = (e2) => {
+    if (!context._remoteStream) return;
+    const rect = e2.currentTarget.getBoundingClientRect();
+    const x = e2.clientX - rect.left;
+    const y = e2.clientY - rect.top;
+    const { normX, normY } = getNormalizedCoords(e2);
+    const eventData = {
+      type: "mouseup",
+      x,
+      y,
+      normX,
+      normY,
+      button: e2.button,
+      targetPeer: context.state.targetPeer,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+      focusOnCursor: context.state.focusOnCursor ?? false,
+      fullPageWidth: document.body.scrollWidth,
+      fullPageHeight: document.body.scrollHeight
+    };
+    debouncedSendMouseEvent(eventData);
+  };
+  let screenStream = null;
+  async function startScreenShare() {
+    if (context.state.mode !== "viewer") return;
+    console.log("------------------ START SCREEN SHARE 1 ------------------");
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      console.log("------------------ START SCREEN SHARE 2 ------------------");
+      const pc = new RTCPeerConnection({ iceServers: [] });
+      console.log("------------------ START SCREEN SHARE 3 ------------------");
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+      console.log("------------------ START SCREEN SHARE 4 ------------------");
+      const offer = await pc.createOffer();
+      console.log("--------- offer ---------", offer);
+      await pc.setLocalDescription(offer);
+      context._videoPeerConnection = pc;
+      context._screenStream = stream;
+      console.log("------------------ SEND OFFER ------------------", offer);
+      await sendInputEvent({
+        type: "VIDEO_SDP",
+        sdpType: "offer",
+        sdp: offer.sdp
       });
-    }
-    if (type === "mousedown" && typeof x === "number" && typeof y === "number") {
-      await context.renderPart({
-        partName: "renderClickEffect",
-        state: { x, y },
-        selector: "#remote-screen",
-        method: "append"
-      });
-    }
-    if (isCdpAvailable()) {
-      log9("CDP \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D \u0432 \u0442\u0435\u043A\u0443\u0449\u0435\u0439 \u0441\u0440\u0435\u0434\u0435 \u2014 \u043F\u0440\u043E\u043F\u0443\u0441\u043A \u0440\u0435\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0432\u0432\u043E\u0434\u0430");
+      pc.onicecandidate = (e2) => {
+        if (e2.candidate) {
+          console.log("------------------- ICE CANDIDATE -------------------", e2.candidate);
+          sendInputEvent({
+            type: "VIDEO_ICE_CANDIDATE",
+            candidate: e2.candidate
+          });
+        }
+      };
+    } catch (err) {
+      console.error("ERROR", err);
+      log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0445\u0432\u0430\u0442\u0430 \u044D\u043A\u0440\u0430\u043D\u0430:", err);
+      stopScreenShare();
+      context.state.videoEnabled = false;
+      await context.renderPart({ partName: "defaultTemplate", state: context.state, selector: "#root", method: "innerHTML" });
     }
   }
-  __name(handleInputEvent, "handleInputEvent");
+  __name(startScreenShare, "startScreenShare");
+  function stopScreenShare() {
+    if (context._screenStream) {
+      context._screenStream.getTracks().forEach((t2) => t2.stop());
+      context._screenStream = null;
+    }
+    if (context._videoPeerConnection) {
+      context._videoPeerConnection.close();
+      context._videoPeerConnection = null;
+    }
+    context.state.videoEnabled = false;
+  }
+  __name(stopScreenShare, "stopScreenShare");
+  async function toggleVideo(enabled) {
+    if (enabled === context.state.videoEnabled) return;
+    context.state.videoEnabled = enabled;
+    await context.renderPart({
+      partName: "defaultTemplate",
+      state: context.state,
+      selector: "#root",
+      method: "innerHTML"
+    });
+    if (context.state.mode === "viewer") {
+      if (enabled) {
+        await startScreenShare();
+      } else {
+        stopScreenShare();
+      }
+    }
+  }
+  __name(toggleVideo, "toggleVideo");
+  async function startVideoStream() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      videoPeerConnection = new RTCPeerConnection({ iceServers: [] });
+      localStream.getTracks().forEach((track) => {
+        videoPeerConnection.addTrack(track, localStream);
+      });
+      await new Promise((resolve) => {
+        if (videoPeerConnection.iceGatheringState === "complete") {
+          resolve();
+        } else {
+          const check = /* @__PURE__ */ __name(() => {
+            if (videoPeerConnection.iceGatheringState === "complete") {
+              videoPeerConnection.removeEventListener("icegatheringstatechange", check);
+              resolve();
+            }
+          }, "check");
+          videoPeerConnection.addEventListener("icegatheringstatechange", check);
+        }
+      });
+      const offer = await videoPeerConnection.createOffer();
+      await videoPeerConnection.setLocalDescription(offer);
+      sendInputEvent({
+        type: "VIDEO_SDP",
+        sdp: offer.sdp,
+        sdpType: "offer"
+        // ← уникальное имя поля
+      }).catch(() => {
+      });
+    } catch (err) {
+      log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0432\u0438\u0434\u0435\u043E:", err);
+      stopVideoStream();
+      context.state.videoEnabled = false;
+      await context.renderPart({
+        partName: "defaultTemplate",
+        state: context.state,
+        selector: "#root",
+        method: "innerHTML"
+      });
+    }
+  }
+  __name(startVideoStream, "startVideoStream");
+  function stopVideoStream() {
+    if (localStream) {
+      localStream.getTracks().forEach((t2) => t2.stop());
+      localStream = null;
+    }
+    if (videoPeerConnection) {
+      videoPeerConnection.close();
+      videoPeerConnection = null;
+    }
+    context.state.videoEnabled = false;
+  }
+  __name(stopVideoStream, "stopVideoStream");
   async function setupInputListener() {
   }
   __name(setupInputListener, "setupInputListener");
   async function cleanup() {
-    log9("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 remote-control \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0430");
+    stopVideoStream();
   }
   __name(cleanup, "cleanup");
-  async function sendInputToExtension(eventData) {
-    const EXTENSION_ID = "abcdefghijklmnopabcdefhijklmno";
-    try {
-      const response = await chrome.runtime.sendMessage(EXTENSION_ID, {
-        type: "REMOTE_CONTROL_EVENT",
-        payload: eventData
-      });
-      if (response?.error) {
-        console.warn("\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0430\u0441\u0448\u0438\u0440\u0435\u043D\u0438\u044F:", response.error);
-      }
-    } catch (e2) {
-      console.error("\u0420\u0430\u0441\u0448\u0438\u0440\u0435\u043D\u0438\u0435 \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u043D\u043E:", e2);
-    }
-  }
-  __name(sendInputToExtension, "sendInputToExtension");
   return {
-    sendInputToExtension,
+    startScreenShare,
+    stopScreenShare,
+    stopVideoStream,
+    startVideoStream,
     sendInputEvent,
-    handleInputEvent,
     setupInputListener,
-    cleanup
+    cleanup,
+    toggleVideo,
+    mouseMoveHandler: context.mouseMoveHandler,
+    mouseDownHandler: context.mouseDownHandler,
+    mouseUpHandler: context.mouseUpHandler
   };
 }
 __name(createActions5, "createActions");
@@ -37840,18 +38236,21 @@ var RemoteControl = class extends BaseComponent {
     super();
     this._templateMethods = template_exports5;
     this.state = {
-      mode: "viewer",
+      mode: null,
       // или 'controller'
       targetPeer: null,
       isConnected: false,
       isCdpAvailable: false,
       cursorPosition: { x: 0, y: 0 },
-      eventsQueue: []
+      eventsQueue: [],
+      focusOnCursor: true
+      // ← управляется через UI (чекбокс/кнопка)
     };
   }
   async _componentReady() {
     this._controller = await controller5(this);
     this._actions = await createActions5(this);
+    this.state.mode = this.getAttribute("mode");
     await this.fullRender(this.state);
     await this._controller.init();
   }
@@ -37881,7 +38280,7 @@ var RemoteControl = class extends BaseComponent {
       method: "innerHTML"
     });
     if (this.state.mode === "viewer") {
-      this._startReadingStream(stream);
+      await this._startReadingStream(stream);
     }
   }
   async _startReadingStream(stream) {
@@ -37912,7 +38311,7 @@ var RemoteControl = class extends BaseComponent {
       await this.renderPart({
         partName: "defaultTemplate",
         state: this.state,
-        selector: ":host",
+        selector: "#root",
         method: "innerHTML"
       });
     }
@@ -51022,7 +51421,7 @@ var $947d894b4a2680e5$exports = {};
     inherits(Dot, base1);
     Dot.description = "dot matrix representation";
   });
-  var doc = createCommonjsModule(function(module, exports) {
+  var doc2 = createCommonjsModule(function(module, exports) {
     var constants = runner1.constants;
     var EVENT_TEST_PASS = constants.EVENT_TEST_PASS;
     var EVENT_TEST_FAIL = constants.EVENT_TEST_FAIL;
@@ -52127,7 +52526,7 @@ var $947d894b4a2680e5$exports = {};
   var reporters = createCommonjsModule(function(module, exports) {
     exports.Base = exports.base = base1;
     exports.Dot = exports.dot = dot;
-    exports.Doc = exports.doc = doc;
+    exports.Doc = exports.doc = doc2;
     exports.TAP = exports.tap = tap;
     exports.JSON = exports.json = json1;
     exports.HTML = exports.html = html1;
@@ -55315,10 +55714,10 @@ var $3817b02937c60b41$var$chai = $3817b02937c60b41$var$createCommonjsModule(func
                     return xmlSerializer.serializeToString(value2);
                   } else {
                     var ns = "http://www.w3.org/1999/xhtml";
-                    var container = document.createElementNS(ns, "_");
-                    container.appendChild(value2.cloneNode(false));
-                    var html = container.innerHTML.replace("><", ">" + value2.innerHTML + "<");
-                    container.innerHTML = "";
+                    var container2 = document.createElementNS(ns, "_");
+                    container2.appendChild(value2.cloneNode(false));
+                    var html = container2.innerHTML.replace("><", ">" + value2.innerHTML + "<");
+                    container2.innerHTML = "";
                     return html;
                   }
                 } catch (err) {
@@ -56331,6 +56730,20 @@ window.onload = async function() {
     console.log("error devtool", e2);
   });
 };
+var container = document.body.querySelector(".container");
+container.attachShadow({ mode: "open" });
+var doc = document.createElement("div");
+var slotRemoteControl = document.createElement("slot");
+var slotChatInterface = document.createElement("slot");
+var slotPeerConnection = document.createElement("slot");
+slotChatInterface.name = "chat-interface";
+slotRemoteControl.name = "remote-control";
+slotPeerConnection.name = "peer-connection";
+doc.classList.add("container");
+doc.appendChild(slotPeerConnection);
+doc.appendChild(slotChatInterface);
+doc.appendChild(slotRemoteControl);
+container.shadowRoot.appendChild(doc);
 /*!
 * The buffer module from node.js, for the browser.
 *

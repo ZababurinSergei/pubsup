@@ -38,7 +38,7 @@ export async function insertRemoteControl(context, targetPeer, mode) {
     // Удаляем старый, если есть (по ID или по атрибуту)
     const existing = context.shadowRoot.getElementById(componentId) ||
         context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
-    console.log('@@@@@@@@@@@@@ insertRemoteControl @@@@@@@@@@@@@@@@@@@@@@@@@', existing);
+
     if (existing) existing.remove();
 
     // Создаём новый
@@ -46,7 +46,7 @@ export async function insertRemoteControl(context, targetPeer, mode) {
     remoteControl.id = componentId; // ← обязательный уникальный id
     remoteControl.setAttribute('target-peer', targetPeer);
     remoteControl.setAttribute('mode', mode);
-
+    remoteControl.setAttribute('slot', "remote-control");
     // Вставляем в область чата (например, над полем ввода)
     const chatArea = context.shadowRoot.querySelector('.chat-area');
     if (chatArea) {

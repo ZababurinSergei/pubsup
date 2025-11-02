@@ -526,7 +526,6 @@ export class ChatManager extends BaseComponent {
     }
 
     async sendPrivateMessage(peerId, messageText) {
-        console.log('######################### 0 ################################');
         if (!this.node || !this.state.connected) {
             log.error('Node not available for private message');
             throw new Error('P2P нода не готова');
@@ -535,8 +534,6 @@ export class ChatManager extends BaseComponent {
         try {
             // Получаем список подключенных пиров
             const connectedPeers = await this.getConnectedPeers();
-            console.log('######################### 1 ################################');
-
             const targetPeer = connectedPeers.find(peer => peer.id === peerId);
             if (!targetPeer) {
                 throw new Error(`Пир ${peerId} не найден среди подключенных`);
@@ -551,7 +548,7 @@ export class ChatManager extends BaseComponent {
                             log('Using active connection address: %s', targetAddress);
                             break;
                         } catch (error) {
-                            log.warn('Error parsing connection address: %o', error);
+                            log.error('Error parsing connection address: %o', error);
                         }
                     }
                 }
@@ -601,8 +598,16 @@ export class ChatManager extends BaseComponent {
                 };
             }
 
+            let request = JSON.stringify(messageData.payload ? messageData.payload: messageData)
+            if(messageData.payload) {
+                console.log('--------- messageData -------------', messageData)
+                request = JSON.stringify(messageData)
+            } else {
+                request = JSON.stringify(messageData)
+            }
             // === ОТПРАВКА ===
-            const messageBytes = uint8ArrayFromString(JSON.stringify(messageData));
+            const messageBytes = uint8ArrayFromString(request);
+            console.log('----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) ----------------------- !!!!!!!!!!!!!', request);
             await lp.write(messageBytes);
 
             // === ЛОГИКА СОХРАНЕНИЯ В ИСТОРИЮ ===
@@ -618,7 +623,51 @@ export class ChatManager extends BaseComponent {
                 });
             } else if (messageData.type === 'REMOTE_CONTROL_REQUEST') {
                 log('Отправлен запрос на удалённое управление к: %s', peerId);
-                // Опционально: можно сохранить в отдельную историю событий или не сохранять
+                console.log('-------------------- REMOTE_CONTROL_REQUEST ------------------------------',{
+                    text: JSON.stringify(messageData),
+                    to: peerId,
+                    from: this.state.peerId,
+                    type: 'sent',
+                    timestamp: messageData.timestamp,
+                    isPrivate: true
+                })
+                const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+                if (chatInterface) {
+                   await chatInterface.addMessage({
+                        text: JSON.stringify(messageData),
+                        to: peerId,
+                        from: this.state.peerId,
+                        type: 'sent',
+                        timestamp: messageData.timestamp,
+                        isPrivate: true
+                    });
+                }
+            } else if (messageData.type === "REMOTE_CONTROL_ACCEPTED") {
+                log('Отправлен запрос на подтверждение управление к: %s', peerId);
+                const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+                if (chatInterface) {
+                    await chatInterface.addMessage({
+                        text: JSON.stringify(messageData),
+                        to: peerId,
+                        from: this.state.peerId,
+                        type: 'sent',
+                        timestamp: messageData.timestamp,
+                        isPrivate: true
+                    });
+                }
+            } else if (messageData.type === "REMOTE_CONTROL_EVENT") {
+                console.log(')))))))))))))))))))))))))))))))))))', messageData.payload)
+                const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+                if (chatInterface) {
+                    await chatInterface.addMessage({
+                        text: JSON.stringify(messageData.payload),
+                        to: peerId,
+                        from: this.state.peerId,
+                        type: 'sent',
+                        timestamp: messageData.timestamp,
+                        isPrivate: true
+                    });
+                }
             }
 
             log('Сообщение типа "%s" отправлено пользователю: %s', messageData.type, peerId);
@@ -651,22 +700,29 @@ export class ChatManager extends BaseComponent {
 
         try {
             await this.node.handle('/remote-control/1.0.0', async (stream, connection) => {
+                console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@')
                 const remotePeer = connection.remotePeer.toString();
                 log('Remote control stream established from: %s', remotePeer);
+
 
                 try {
                     // ID компонента viewer: он был создан при получении REMOTE_CONTROL_REQUEST
                     const viewerId = `remote-control-${remotePeer}-viewer`;
                     const remoteControl = await BaseComponent.getComponentAsync('remote-control', viewerId, 3000);
 
-                    console.log('remoteControl===============А', remoteControl)
-                    if (remoteControl?.setStream) {
-                        remoteControl.setStream(stream);
-                        log('Remote control stream attached to viewer component');
-                    } else {
-                        log.warn('Viewer remote-control not found or lacks setStream method');
-                        await stream.close();
+
+                    console.log('------------------ >>> handle(/remote-control/1.0.0) ------------------ >>>', remotePeer)
+                    if(remoteControl) {
+                        await remoteControl._actions.startScreenShare()
                     }
+
+                    // if (remoteControl?.setStream) {
+                    //     remoteControl.setStream(stream);
+                    //     log('Remote control stream attached to viewer component');
+                    // } else {
+                    //     log.error('Viewer remote-control not found or lacks setStream method');
+                    //     await stream.close();
+                    // }
                 } catch (err) {
                     log.error('Error in /remote-control/1.0.0 handler: %o', err);
                     try { await stream.close(); } catch {}
@@ -675,7 +731,6 @@ export class ChatManager extends BaseComponent {
 
             // Обработчик для протокола чата
             await this.node.handle('/chat/1.0.0', async (stream, connection) => {
-                console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
                 log('Incoming chat stream established from: %s', connection.remotePeer?.toString());
 
                 try {
@@ -707,6 +762,7 @@ export class ChatManager extends BaseComponent {
                                 };
                             }
 
+                            console.log('----------------- handle(/chat/1.0.0) messageData.type -----------------', messageData);
                             // === Обработка приватных сообщений ===
                             if (messageData.type === 'private_message') {
                                 await this.addMessageToPrivateHistory({
@@ -748,10 +804,55 @@ export class ChatManager extends BaseComponent {
                                 log('Получен запрос на удалённое управление от %s для %s', initiator, targetPeer);
 
                                 if (myPeerId === targetPeer) {
+                                    await this.addMessageToPrivateHistory({
+                                        text: JSON.stringify(messageData),
+                                        from: remotePeer,
+                                        to: this.state.peerId,
+                                        type: 'received',
+                                        timestamp: messageData.timestamp || Date.now(),
+                                        isPrivate: true
+                                    });
+
                                     const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
                                     if (chatInterface) {
-                                        await insertRemoteControl(chatInterface, initiator, 'viewer');
+                                        const isActiveChat = chatInterface?.state?.isPrivateChat &&
+                                            chatInterface.state.activeMember?.id === remotePeer;
+
+                                        if (isActiveChat) {
+
+                                            await chatInterface.postMessage({
+                                                type: 'INCOMING_PRIVATE_MESSAGE',
+                                                data: {
+                                                    text: JSON.stringify(messageData),
+                                                    from: remotePeer,
+                                                    timestamp: messageData.timestamp,
+                                                    isPrivate: true
+                                                }
+                                            });
+                                        } else {
+                                            if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                                            this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                                            if (chatInterface?.updateMembersList) {
+                                                await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                                            }
+                                        }
                                     }
+
+                                    console.log('----------------- handle(/chat/1.0.0) -> postMessage -----------------', {
+                                        type: 'SEND_PRIVATE_MESSAGE',
+                                        data: {
+                                            peerId: initiator,
+                                            message: JSON.stringify({
+                                                type: 'REMOTE_CONTROL_ACCEPTED',
+                                                payload: {
+                                                    targetPeer: myPeerId,
+                                                    initiator: initiator  // ← КЛЮЧЕВОЕ: чтобы инициатор знал, что это для него
+                                                }
+                                            })
+                                        }
+                                    });
+
+                                    await insertRemoteControl(chatInterface, messageData.from, 'viewer'); // правильно
 
                                     // Отправляем подтверждение с указанием initiator
                                     await this.postMessage({
@@ -780,8 +881,41 @@ export class ChatManager extends BaseComponent {
 
                                 if (myPeerId === initiator) {
                                     log('Получено подтверждение удалённого управления от %s', remotePeer);
+                                    await this.addMessageToPrivateHistory({
+                                        text: JSON.stringify(messageData),
+                                        from: remotePeer,
+                                        to: this.state.peerId,
+                                        type: 'received',
+                                        timestamp: messageData.timestamp || Date.now(),
+                                        isPrivate: true
+                                    });
 
                                     try {
+                                        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+                                        if (chatInterface) {
+                                            const isActiveChat = chatInterface?.state?.isPrivateChat &&
+                                                chatInterface.state.activeMember?.id === remotePeer;
+                                            if (isActiveChat) {
+                                                await chatInterface.postMessage({
+                                                    type: 'INCOMING_PRIVATE_MESSAGE',
+                                                    data: {
+                                                        text: JSON.stringify(messageData),
+                                                        from: remotePeer,
+                                                        timestamp: messageData.timestamp,
+                                                        isPrivate: true
+                                                    }
+                                                });
+                                            } else {
+                                                if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                                                this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                                                if (chatInterface?.updateMembersList) {
+                                                    await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                                                }
+                                            }
+
+                                            await insertRemoteControl(chatInterface, messageData.from, 'controller'); // правильно
+                                        }
+
                                         // Получаем мультиадрес для dial
                                         const connectedPeers = await this.getConnectedPeers();
                                         const targetPeerInfo = connectedPeers.find(p => p.id === remotePeer);
@@ -796,18 +930,33 @@ export class ChatManager extends BaseComponent {
                                         const ma = multiaddr(dialAddress);
                                         const stream = await this.node.dialProtocol(ma, '/remote-control/1.0.0');
 
-                                        // === ИСПОЛЬЗУЕМ getComponentAsync вместо querySelector ===
-                                        const controllerId = `remote-control-${remotePeer}-controller`;
-                                        const remoteControl = await this.getComponentAsync('remote-control', controllerId, 2000);
+                                        console.log('---------- SEND STREAM -------------------')
+                                        // const lp = lpStream(stream);
+                                        //
+                                        // // Отправляем как JSON для единообразия
+                                        // const messageData = {
+                                        //     type: 'group_message',
+                                        //     text: messageText,
+                                        //     from: this.state.peerId,
+                                        //     timestamp: Date.now(),
+                                        //     topic: topic
+                                        // };
+                                        //
+                                        // await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
+                                        await stream.close();
 
-                                        console.log('=== remoteControl ===', remoteControl)
-                                        if (remoteControl?.setStream) {
-                                            remoteControl.setStream(stream);
-                                            log('Remote control stream established as controller to %s', remotePeer);
-                                        } else {
-                                            log.error('Controller remote-control not found, closing stream');
-                                            await stream.close();
-                                        }
+                                        // === ИСПОЛЬЗУЕМ getComponentAsync вместо querySelector ===
+                                        // const controllerId = `remote-control-${remotePeer}-controller`;
+                                        //
+                                        // const remoteControl = await this.getComponentAsync('remote-control', controllerId, 2000);
+                                        //
+                                        // if (remoteControl?.setStream) {
+                                        //     remoteControl.setStream(stream);
+                                        //     log('Remote control stream established as controller to %s', remotePeer);
+                                        // } else {
+                                        //     log.error('Controller remote-control not found, closing stream');
+                                        //     await stream.close();
+                                        // }
                                     } catch (err) {
                                         log.error('Failed to establish remote control stream to %s: %o', remotePeer, err);
                                     }
@@ -863,9 +1012,9 @@ export class ChatManager extends BaseComponent {
      * @param {Object} messageData - Данные сообщения
      */
     async handleIncomingPrivateMessage(messageData) {
-        debugger
         const log = logger('chat-manager:actions:handleIncomingPrivateMessage');
 
+        console.log('----------------- INCOMMING handleIncomingPrivateMessage -----------------', messageData)
         try {
             log('Incoming private message from: %s', messageData.from);
 
@@ -925,31 +1074,6 @@ export class ChatManager extends BaseComponent {
                 if (!confirmed) {
                     log('Запрос на удалённое управление отклонён');
                     return;
-                }
-
-                // Отображаем компонент remote-control в режиме viewer
-                const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
-                if (chatInterface) {
-                    // Импортируем insertRemoteControl или вставляем inline
-                    const insertRemoteControl = async (context, targetPeer, mode) => {
-                        const existing = context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
-                        if (existing) existing.remove();
-
-                        const remoteControl = document.createElement('remote-control');
-                        remoteControl.setAttribute('target-peer', targetPeer);
-                        remoteControl.setAttribute('mode', mode);
-
-                        const chatArea = context.shadowRoot.querySelector('.chat-area') ||
-                            context.shadowRoot.querySelector('.messages-container')?.parentElement;
-
-                        if (chatArea) {
-                            chatArea.insertAdjacentElement('afterbegin', remoteControl);
-                        } else {
-                            context.shadowRoot.appendChild(remoteControl);
-                        }
-                    };
-
-                    await insertRemoteControl(chatInterface, messageData.from, 'viewer');
                 }
 
                 // Отправляем подтверждение (опционально)
@@ -1233,7 +1357,9 @@ export class ChatManager extends BaseComponent {
                         // Отображаем remote-control в режиме viewer
                         const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
                         if (chatInterface) {
-                            await insertRemoteControl(chatInterface, initiator, 'viewer');
+                            debugger
+                            console.log('!!!!!!!!!!!!!!!!!!!!! insertRemoteControl - отключенно !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                            // await insertRemoteControl(chatInterface, initiator, 'viewer');
                         }
 
                         // Подтверждаем получение (опционально)
@@ -1306,9 +1432,6 @@ export class ChatManager extends BaseComponent {
                     await this.handleIncomingPrivateMessage(event.data);
                     break;
                 case 'SEND_PRIVATE_MESSAGE':
-                    console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%', event.data.peerId, event.data.message)
-                    // Отправка приватного сообщения
-
                     log('SEND_PRIVATE_MESSAGE received in ChatManager: %o', event.data);
                     await this.sendPrivateMessage(event.data.peerId, event.data.message);
                     break;

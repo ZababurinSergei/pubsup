@@ -12,29 +12,46 @@
  * @param {Object} params - Параметры рендеринга
  * @param {Object} params.state - Состояние компонента
  * @param {string} [params.state.mode='viewer'] - Режим: 'controller' или 'viewer'
- * @param {string|null} [params.state.targetPeer=null] - ID удалённого пира
  * @param {boolean} [params.state.isConnected=false] - Состояние подключения
- * @param {Object} [params.state.cursorPosition={x:0,y:0}] - Позиция курсора
+ * @param {string|null} [params.state.targetPeer=null] - ID удалённого пира
+ * @param {boolean} [params.state.videoEnabled=false] - Включено ли видео
+ * @param {boolean} [params.state.focusOnCursor=false] - Следить ли за курсором
  * @returns {string} HTML строка
  */
-export function defaultTemplate({ state = {} }) {
-    const { mode = 'viewer', isConnected = false } = state;
+export function defaultTemplate({ state = {} } = {}) {
+    const { mode = 'viewer', isConnected = false, videoEnabled = false, focusOnCursor = false } = state;
+
     return `
-    <div class="remote-control">
-      <div class="control-header">
-        <h3 class="control-title">
-          ${mode === 'controller' ? 'Управление экраном' : 'Удалённый экран'}
-        </h3>
-        <div class="connection-status ${isConnected ? 'connected' : 'disconnected'}">
-          <span class="status-dot"></span>
-          <span class="status-text">${isConnected ? 'Подключено' : 'Не подключено'}</span>
-        </div>
-      </div>
-      <div id="remote-screen" class="remote-screen">
-        ${mode === 'viewer' ? '<div id="remote-cursor" class="remote-cursor">🖱️</div>' : ''}
-      </div>
+<div class="remote-control">
+  <div class="control-header">
+    <h3 class="control-title">
+      ${mode === 'controller' ? 'Управление экраном' : 'Удалённый экран'}
+    </h3>
+    ${isConnected
+        ? '<span class="status-indicator connected">🟢</span>'
+        : '<span class="status-indicator disconnected">🔴</span>'}
+  </div>
+
+  ${mode === 'controller' ? `
+    <div class="control-actions">
+      <button id="toggle-video" class="video-toggle-btn">
+        ${videoEnabled ? '⏹️ Выключить видео' : '▶️ Включить видео'}
+      </button>
+      <label class="focus-cursor-toggle">
+        <input type="checkbox" id="focus-cursor" ${focusOnCursor ? 'checked' : ''}>
+        <span>Следить за курсором</span>
+      </label>
     </div>
-  `;
+  ` : ''}
+
+  <div class="screen" id="remote-screen">
+    ${mode === 'controller' ? `
+      <video id="remote-video" autoplay playsinline muted style="width:100%;height:100%;background:black;"></video>
+    ` : ''}
+    ${mode === 'viewer' ? '<div id="remote-cursor" class="remote-cursor">🖱️</div>' : ''}
+  </div>
+</div>
+`;
 }
 
 /**
@@ -42,24 +59,14 @@ export function defaultTemplate({ state = {} }) {
  * @function renderCursor
  * @param {Object} params - Параметры рендеринга
  * @param {Object} params.state - Состояние компонента
- * @param {Object} params.state.cursorPosition - Позиция курсора {x, y}
+ * @param {Object} params.state.cursorPosition - Позиция курсора { x, y }
  * @returns {string} HTML строка
  */
-export function renderCursor({ state = {} }) {
-    const { x = 0, y = 0 } = state.cursorPosition || {};
-    return `<div class="remote-cursor" style="left:${x}px;top:${y}px;">🖱️</div>`;
-}
-
-/**
- * Визуальный эффект клика
- * @function renderClickEffect
- * @param {Object} params - Параметры рендеринга
- * @param {Object} params.state - Состояние с координатами
- * @param {number} params.state.x - X-координата клика
- * @param {number} params.state.y - Y-координата клика
- * @returns {string} HTML строка
- */
-export function renderClickEffect({ state = {} }) {
-    const { x = 0, y = 0 } = state;
-    return `<div class="click-effect" style="left:${x}px;top:${y}px;"></div>`;
+export function renderCursor({ state = {} } = {}) {
+    const { cursorPosition = { x: 0, y: 0 } } = state;
+    return `
+    <div id="remote-cursor" class="remote-cursor" style="left:${cursorPosition.x}px;top:${cursorPosition.y}px;">
+      🖱️
+    </div>
+  `;
 }

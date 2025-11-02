@@ -9,6 +9,11 @@ const log = logger('remote-control:actions');
  * @returns {Object} Объект с методами действий
  */
 export async function createActions(context) {
+
+    let videoPeerConnection = null;
+    let localStream = null;
+    let lastCursorPosition = { x: 0, y: 0 };
+
     /**
      * Проверяет, доступен ли Chrome DevTools Protocol (CDP) на текущей машине.
      * В обычном браузере — недоступен. Требуется расширение или внешний CDP-сервер.
@@ -19,19 +24,24 @@ export async function createActions(context) {
         return false;
     }
 
-    /**
-     * Отправляет событие ввода (мышь/клавиатура) целевому пиру через приватный стрим.
-     * Использует существующее соединение из chat-manager.
-     * @param {Object} eventData - Данные события
-     * @param {string} eventData.type - Тип события ('mousemove', 'mousedown', 'mouseup', 'keydown', 'keyup')
-     * @param {number} [eventData.x] - Координата X (для мыши)
-     * @param {number} [eventData.y] - Координата Y (для мыши)
-     * @param {string} [eventData.key] - Код клавиши (для клавиатуры)
-     * @param {number} [eventData.button] - Кнопка мыши (0 — левая, 1 — средняя, 2 — правая)
-     */
+    // === Debounce utility ===
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // === Отправка события ввода через chat-manager ===
     async function sendInputEvent(eventData) {
-        if (!context.state.targetPeer) {
-            log.warn('Нет целевого пира для отправки события ввода');
+        const targetPeer = context.getAttribute('target-peer')
+        if (!targetPeer) {
+            log.error('Нет целевого пира для отправки события ввода');
             return;
         }
 
@@ -50,90 +60,292 @@ export async function createActions(context) {
         };
 
         try {
-            await chatManager.sendPrivateMessage(context.state.targetPeer, JSON.stringify(message));
+            console.log('>>>>>>>>> sendInputEvent -> sendPrivateMessage >>>>>>>>>> message', targetPeer, message)
+            await chatManager.sendPrivateMessage(targetPeer, JSON.stringify(message));
             log('Событие ввода отправлено: %s', eventData.type);
         } catch (error) {
             log.error('Ошибка отправки события ввода: %o', error);
         }
     }
 
-    /**
-     * Обрабатывает входящее событие ввода от удалённого пира.
-     * Выполняет визуализацию (курсор, клики) и, при наличии CDP — реальные действия.
-     * @param {Object} messageData - Данные сообщения из chat-manager
-     */
-    async function handleInputEvent(messageData) {
-        if (!messageData?.payload || context.state.mode !== 'viewer') {
-            return;
-        }
+    // === Нормализация координат относительно всей страницы ===
+    const getNormalizedCoords = (e) => {
+        const pageX = e.pageX || (e.clientX + window.scrollX);
+        const pageY = e.pageY || (e.clientY + window.scrollY);
 
-        const { type, x, y, key, button } = messageData.payload;
+        const normX = pageX / document.body.scrollWidth;
+        const normY = pageY / document.body.scrollHeight;
 
-        // === Визуализация курсора ===
-        if (type === 'mousemove' && typeof x === 'number' && typeof y === 'number') {
-            context.state.cursorPosition = { x, y };
-            await context.renderPart({
-                partName: 'renderCursor',
-                state: context.state,
-                selector: '#remote-cursor'
-            });
-        }
+        return { normX, normY };
+    };
 
-        // === Визуализация клика ===
-        if (type === 'mousedown' && typeof x === 'number' && typeof y === 'number') {
-            await context.renderPart({
-                partName: 'renderClickEffect',
-                state: { x, y },
-                selector: '#remote-screen',
-                method: 'append'
-            });
-        }
+    // === Debounced отправка мышиных событий ===
+    const debouncedSendMouseEvent = debounce((eventData) => {
+        sendInputEvent(eventData);
+    }, 50); // ~20 FPS
 
-        // === Реальное управление через CDP (заглушка) ===
-        if (isCdpAvailable()) {
-            log('CDP недоступен в текущей среде — пропуск реального ввода');
-            // Здесь могла бы быть интеграция с chrome-remote-interface
-        }
-    }
+    // === Обработчики событий мыши (вызываются из controller) ===
+    context.mouseMoveHandler = (e) => {
+        if (!context._remoteStream) return;
 
-    /**
-     * Подписывается на входящие REMOTE_CONTROL_EVENT через chat-manager.
-     * В текущей архитектуре chat-manager должен пересылать такие события.
-     */
-    async function setupInputListener() {
-        // Подписка реализуется через postMessage от chat-manager.
-        // Никаких дополнительных действий не требуется — обработка в postMessage компонента.
-    }
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-    /**
-     * Очистка ресурсов при отключении компонента.
-     */
-    async function cleanup() {
-        // Нет активных стримов — всё управление через chat-manager
-        log('Очистка remote-control завершена');
-    }
+        const { normX, normY } = getNormalizedCoords(e);
 
-    async function sendInputToExtension(eventData) {
-        const EXTENSION_ID = 'abcdefghijklmnopabcdefhijklmno'; // ← ваш ID
+        const eventData = {
+            type: 'mousemove',
+            x,
+            y,
+            normX,
+            normY,
+            targetPeer: context.state.targetPeer,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            scrollX: window.scrollX,
+            scrollY: window.scrollY,
+            zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+            focusOnCursor: context.state.focusOnCursor ?? false,
+            fullPageWidth: document.body.scrollWidth,
+            fullPageHeight: document.body.scrollHeight
+        };
 
+        debouncedSendMouseEvent(eventData);
+    };
+
+    context.mouseDownHandler = (e) => {
+        if (!context._remoteStream) return;
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const { normX, normY } = getNormalizedCoords(e);
+
+        const eventData = {
+            type: 'mousedown',
+            x,
+            y,
+            normX,
+            normY,
+            button: e.button,
+            targetPeer: context.state.targetPeer,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            scrollX: window.scrollX,
+            scrollY: window.scrollY,
+            zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+            focusOnCursor: context.state.focusOnCursor ?? false,
+            fullPageWidth: document.body.scrollWidth,
+            fullPageHeight: document.body.scrollHeight
+        };
+
+        debouncedSendMouseEvent(eventData);
+    };
+
+    context.mouseUpHandler = (e) => {
+        if (!context._remoteStream) return;
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const { normX, normY } = getNormalizedCoords(e);
+
+        const eventData = {
+            type: 'mouseup',
+            x,
+            y,
+            normX,
+            normY,
+            button: e.button,
+            targetPeer: context.state.targetPeer,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            scrollX: window.scrollX,
+            scrollY: window.scrollY,
+            zoomLevel: window.visualViewport?.scale ?? window.devicePixelRatio ?? 1,
+            focusOnCursor: context.state.focusOnCursor ?? false,
+            fullPageWidth: document.body.scrollWidth,
+            fullPageHeight: document.body.scrollHeight
+        };
+
+        debouncedSendMouseEvent(eventData);
+    };
+
+    // === Обработка входящего события ввода ===
+
+
+    let screenStream = null;
+
+    // Удалите старую startVideoStream()
+    async function startScreenShare() {
+        if (context.state.mode !== 'viewer') return;
+
+        console.log('------------------ START SCREEN SHARE 1 ------------------')
         try {
-            const response = await chrome.runtime.sendMessage(EXTENSION_ID, {
-                type: 'REMOTE_CONTROL_EVENT',
-                payload: eventData
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+            console.log('------------------ START SCREEN SHARE 2 ------------------')
+            // Создаём peer connection (без ICE-серверов, т.к. Libp2p уже установил соединение)
+            const pc = new RTCPeerConnection({ iceServers: [] });
+            console.log('------------------ START SCREEN SHARE 3 ------------------')
+            stream.getTracks().forEach(track => pc.addTrack(track, stream));
+            console.log('------------------ START SCREEN SHARE 4 ------------------')
+            // Создаём offer
+            const offer = await pc.createOffer();
+            console.log('--------- offer ---------', offer)
+            await pc.setLocalDescription(offer);
+
+            // Сохраняем соединение в контексте
+            context._videoPeerConnection = pc;
+            context._screenStream = stream;
+
+            console.log('------------------ SEND OFFER ------------------', offer)
+
+            // Отправляем offer через Libp2p-стрим
+            await sendInputEvent({
+                type: 'VIDEO_SDP',
+                sdpType: 'offer',
+                sdp: offer.sdp
             });
-            if (response?.error) {
-                console.warn('Ошибка расширения:', response.error);
-            }
-        } catch (e) {
-            console.error('Расширение недоступно:', e);
+
+            // Обработка ICE-кандидатов (если понадобится)
+            pc.onicecandidate = (e) => {
+                if (e.candidate) {
+                    console.log('------------------- ICE CANDIDATE -------------------', e.candidate)
+                    sendInputEvent({
+                        type: 'VIDEO_ICE_CANDIDATE',
+                        candidate: e.candidate
+                    });
+                }
+            };
+
+        } catch (err) {
+            console.error('ERROR',err)
+            log.error('Ошибка захвата экрана:', err);
+            stopScreenShare();
+            context.state.videoEnabled = false;
+            await context.renderPart({ partName: 'defaultTemplate', state: context.state, selector: '#root', method: 'innerHTML' });
         }
+    }
+
+    function stopScreenShare() {
+        if (context._screenStream) {
+            context._screenStream.getTracks().forEach(t => t.stop());
+            context._screenStream = null;
+        }
+        if (context._videoPeerConnection) {
+            context._videoPeerConnection.close();
+            context._videoPeerConnection = null;
+        }
+        context.state.videoEnabled = false;
+    }
+
+    async function toggleVideo(enabled) {
+        if (enabled === context.state.videoEnabled) return;
+
+        context.state.videoEnabled = enabled;
+        await context.renderPart({
+            partName: 'defaultTemplate',
+            state: context.state,
+            selector: '#root',
+            method: 'innerHTML'
+        });
+
+        if (context.state.mode === 'viewer') {
+            if (enabled) {
+                await startScreenShare();
+            } else {
+                stopScreenShare();
+            }
+        }
+        // На стороне controller — ничего не делаем здесь
+    }
+
+    async function startVideoStream() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+
+            // Без ICE-серверов — полагаемся на уже открытый NAT mapping
+            videoPeerConnection = new RTCPeerConnection({ iceServers: [] });
+
+            localStream.getTracks().forEach(track => {
+                videoPeerConnection.addTrack(track, localStream);
+            });
+
+            // Ждём завершения ICE gathering
+            await new Promise(resolve => {
+                if (videoPeerConnection.iceGatheringState === 'complete') {
+                    resolve();
+                } else {
+                    const check = () => {
+                        if (videoPeerConnection.iceGatheringState === 'complete') {
+                            videoPeerConnection.removeEventListener('icegatheringstatechange', check);
+                            resolve();
+                        }
+                    };
+                    videoPeerConnection.addEventListener('icegatheringstatechange', check);
+                }
+            });
+
+            const offer = await videoPeerConnection.createOffer();
+            await videoPeerConnection.setLocalDescription(offer);
+
+            // ✅ Исправлено: нет дублирования поля `type`
+            sendInputEvent({
+                type: 'VIDEO_SDP',
+                sdp: offer.sdp,
+                sdpType: 'offer'  // ← уникальное имя поля
+            }).catch(() => {});
+
+        } catch (err) {
+            log.error('Ошибка запуска видео:', err);
+            stopVideoStream();
+            context.state.videoEnabled = false;
+            await context.renderPart({
+                partName: 'defaultTemplate',
+                state: context.state,
+                selector: '#root',
+                method: 'innerHTML'
+            });
+        }
+    }
+
+    function stopVideoStream() {
+        if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+            localStream = null;
+        }
+        if (videoPeerConnection) {
+            videoPeerConnection.close();
+            videoPeerConnection = null;
+        }
+        context.state.videoEnabled = false;
+    }
+
+    // === Подписка на события (реализуется через postMessage) ===
+    async function setupInputListener() {
+        // Обработка в postMessage компонента
+    }
+
+    // === Очистка при отключении ===
+    async function cleanup() {
+        stopVideoStream();
+        // Очистка обработчиков — делается в controller
     }
 
     return {
-        sendInputToExtension,
+        startScreenShare,
+        stopScreenShare,
+        stopVideoStream,
+        startVideoStream,
         sendInputEvent,
-        handleInputEvent,
         setupInputListener,
-        cleanup
+        cleanup,
+        toggleVideo,
+        mouseMoveHandler: context.mouseMoveHandler,
+        mouseDownHandler: context.mouseDownHandler,
+        mouseUpHandler: context.mouseUpHandler
     };
 }

@@ -327,7 +327,7 @@ export class PeerConnection extends BaseComponent {
                 }
 
             } else {
-                log.warn('getConnectedPeers action not available');
+                log.error('getConnectedPeers action not available');
             }
         } catch (error) {
             log.error('Error updating peer list: %o', error);

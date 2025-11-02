@@ -11,3 +11,22 @@ window.onload = async function () {
         path: '/tests/index.mjs'
     }).catch(e => {console.log('error devtool', e)})
 }
+
+const container = document.body.querySelector('.container')
+container.attachShadow({mode: "open"})
+
+const doc = document.createElement('div')
+const slotRemoteControl = document.createElement('slot')
+const slotChatInterface = document.createElement('slot')
+const slotPeerConnection = document.createElement('slot')
+slotChatInterface.name = 'chat-interface'
+slotRemoteControl.name = 'remote-control'
+slotPeerConnection.name = 'peer-connection'
+doc.classList.add('container')
+
+
+doc.appendChild(slotPeerConnection)
+doc.appendChild(slotChatInterface)
+doc.appendChild(slotRemoteControl)
+
+container.shadowRoot.appendChild(doc)

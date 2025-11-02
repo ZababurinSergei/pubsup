@@ -71,7 +71,6 @@ export const controller = async (context) => {
                                 throw new Error('chat-manager не найден');
                             }
 
-                            console.log('@@@@@@@@@@@@@@@@@@@@@@@@')
                             // 2. Отправляем событие REMOTE_CONTROL_REQUEST
                             // await chatManager.postMessage({
                             //     type: 'REMOTE_CONTROL_REQUEST',
@@ -81,6 +80,21 @@ export const controller = async (context) => {
                             //         timestamp: Date.now()
                             //     }
                             // });
+
+                            console.log('-------------- click button ------------------', {
+                                type: 'SEND_PRIVATE_MESSAGE',
+                                data: {
+                                    peerId: peerId,
+                                    message: JSON.stringify({
+                                        type: 'REMOTE_CONTROL_REQUEST',
+                                        payload: {
+                                            targetPeer: peerId, // ← тот, кого хотим контролировать
+                                            initiator: context.state.peerId,
+                                            timestamp: Date.now()
+                                        }
+                                    })
+                                }
+                            })
 
                             // Отправляем приватное сообщение напрямую через chat-manager
                             await chatManager.postMessage({
@@ -99,7 +113,7 @@ export const controller = async (context) => {
                             });
 
                             // 3. Локально вставляем remote-control в режиме controller
-                            await insertRemoteControl(context, peerId, 'controller');
+                            // await insertRemoteControl(context, peerId, 'controller');
 
                         } catch (error) {
                             console.error('Ошибка запуска удалённого управления:', error);
@@ -281,12 +295,12 @@ export const controller = async (context) => {
                             })
                             // await context.setActiveGroup(group);
                         } else {
-                            log.warn('группа не найдена по топику: %s', groupTopic);
+                            log.error('группа не найдена по топику: %s', groupTopic);
                         }
                         return;
                     }
 
-                    log.warn('элемент не содержит ни data-peer-id, ни data-group-topic');
+                    log.error('элемент не содержит ни data-peer-id, ни data-group-topic');
                 } catch (error) {
                     log.error('ошибка при выборе элемента: %o', error);
                 }

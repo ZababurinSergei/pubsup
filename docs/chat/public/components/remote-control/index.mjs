@@ -17,18 +17,21 @@ export class RemoteControl extends BaseComponent {
         super();
         this._templateMethods = template;
         this.state = {
-            mode: 'viewer', // или 'controller'
+            mode: null, // или 'controller'
             targetPeer: null,
             isConnected: false,
             isCdpAvailable: false,
             cursorPosition: { x: 0, y: 0 },
-            eventsQueue: []
+            eventsQueue: [],
+            focusOnCursor: true // ← управляется через UI (чекбокс/кнопка)
         };
     }
 
     async _componentReady() {
+        // debugger
         this._controller = await controller(this);
         this._actions = await createActions(this);
+        this.state.mode = this.getAttribute('mode')
         await this.fullRender(this.state);
         await this._controller.init();
     }
@@ -66,7 +69,7 @@ export class RemoteControl extends BaseComponent {
 
         // Подписываемся на события ввода (если viewer)
         if (this.state.mode === 'viewer') {
-            this._startReadingStream(stream);
+            await this._startReadingStream(stream);
         }
     }
 
@@ -101,7 +104,7 @@ export class RemoteControl extends BaseComponent {
             await this.renderPart({
                 partName: 'defaultTemplate',
                 state: this.state,
-                selector: ':host',
+                selector: '#root',
                 method: 'innerHTML'
             });
         }
