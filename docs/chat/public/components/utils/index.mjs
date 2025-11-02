@@ -30,3 +30,31 @@ export function parseChatGroupStringRegex(input) {
     const match = input.match(/^chat-group-(.+?)(?:-\d+)?$/);
     return match ? match[1] : input.replace(/^chat-groups-/, '');
 }
+
+export async function insertRemoteControl(context, targetPeer, mode) {
+    // Генерируем уникальный ID на основе targetPeer и режима
+    const componentId = `remote-control-${targetPeer}-${mode}`;
+
+    // Удаляем старый, если есть (по ID или по атрибуту)
+    const existing = context.shadowRoot.getElementById(componentId) ||
+        context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
+    console.log('@@@@@@@@@@@@@ insertRemoteControl @@@@@@@@@@@@@@@@@@@@@@@@@', existing);
+    if (existing) existing.remove();
+
+    // Создаём новый
+    const remoteControl = document.createElement('remote-control');
+    remoteControl.id = componentId; // ← обязательный уникальный id
+    remoteControl.setAttribute('target-peer', targetPeer);
+    remoteControl.setAttribute('mode', mode);
+
+    // Вставляем в область чата (например, над полем ввода)
+    const chatArea = context.shadowRoot.querySelector('.chat-area');
+    if (chatArea) {
+        chatArea.insertAdjacentElement('afterbegin', remoteControl);
+    } else {
+        context.shadowRoot.appendChild(remoteControl);
+    }
+
+    // Опционально: скрываем обычные сообщения на время сессии
+    // context.shadowRoot.querySelector('.messages-container')?.classList.add('hidden-during-rc');
+}

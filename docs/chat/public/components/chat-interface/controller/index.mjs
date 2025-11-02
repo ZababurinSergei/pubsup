@@ -1,5 +1,5 @@
 import { logger } from '@libp2p/logger';
-
+import { insertRemoteControl } from '../../utils/index.mjs'
 /**
  * Контроллер для компонента ChatInterface
  * @param {HTMLElement} context - Ссылка на экземпляр компонента
@@ -61,7 +61,54 @@ export const controller = async (context) => {
                 screenShareButtons.forEach(button => {
                     const handler = async (e) => {
                         e.stopPropagation();
+                        const peerId = button.closest('.member-item')?.dataset.peerId;
+                        if (!peerId) return;
 
+                        try {
+                            // 1. Отправляем команду через chat-manager
+                            const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+                            if (!chatManager) {
+                                throw new Error('chat-manager не найден');
+                            }
+
+                            console.log('@@@@@@@@@@@@@@@@@@@@@@@@')
+                            // 2. Отправляем событие REMOTE_CONTROL_REQUEST
+                            // await chatManager.postMessage({
+                            //     type: 'REMOTE_CONTROL_REQUEST',
+                            //     data: {
+                            //         targetPeer: peerId,
+                            //         initiator: context.state.peerId,
+                            //         timestamp: Date.now()
+                            //     }
+                            // });
+
+                            // Отправляем приватное сообщение напрямую через chat-manager
+                            await chatManager.postMessage({
+                                type: 'SEND_PRIVATE_MESSAGE',
+                                data: {
+                                    peerId: peerId,
+                                    message: JSON.stringify({
+                                        type: 'REMOTE_CONTROL_REQUEST',
+                                        payload: {
+                                            targetPeer: peerId, // ← тот, кого хотим контролировать
+                                            initiator: context.state.peerId,
+                                            timestamp: Date.now()
+                                        }
+                                    })
+                                }
+                            });
+
+                            // 3. Локально вставляем remote-control в режиме controller
+                            await insertRemoteControl(context, peerId, 'controller');
+
+                        } catch (error) {
+                            console.error('Ошибка запуска удалённого управления:', error);
+                            await context.showModal({
+                                title: 'Ошибка',
+                                content: `<p>Не удалось начать сессию удалённого управления: ${error.message}</p>`,
+                                buttons: [{ text: 'OK', type: 'primary' }]
+                            });
+                        }
                     };
                     button.addEventListener('click', handler);
                     eventListeners.push({ element: button, handler });

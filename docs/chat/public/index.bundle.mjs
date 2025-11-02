@@ -2212,6 +2212,23 @@ function parseChatGroupStringRegex(input) {
   return match ? match[1] : input.replace(/^chat-groups-/, "");
 }
 __name(parseChatGroupStringRegex, "parseChatGroupStringRegex");
+async function insertRemoteControl(context, targetPeer, mode) {
+  const componentId = `remote-control-${targetPeer}-${mode}`;
+  const existing = context.shadowRoot.getElementById(componentId) || context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
+  console.log("@@@@@@@@@@@@@ insertRemoteControl @@@@@@@@@@@@@@@@@@@@@@@@@", existing);
+  if (existing) existing.remove();
+  const remoteControl = document.createElement("remote-control");
+  remoteControl.id = componentId;
+  remoteControl.setAttribute("target-peer", targetPeer);
+  remoteControl.setAttribute("mode", mode);
+  const chatArea = context.shadowRoot.querySelector(".chat-area");
+  if (chatArea) {
+    chatArea.insertAdjacentElement("afterbegin", remoteControl);
+  } else {
+    context.shadowRoot.appendChild(remoteControl);
+  }
+}
+__name(insertRemoteControl, "insertRemoteControl");
 
 // public/components/chat-manager/template/index.mjs
 function defaultTemplate({ state = {} } = {}) {
@@ -16071,6 +16088,7 @@ var ChatManager = class extends BaseComponent {
     super();
     this._templateMethods = template_exports;
     this.state = {
+      pendingRemoteControlRequests: /* @__PURE__ */ new Set(),
       mode: globalThis.APP_INITIAL_MODE,
       connected: false,
       messages: [],
@@ -16437,12 +16455,14 @@ var ChatManager = class extends BaseComponent {
     return peersWithConnections;
   }
   async sendPrivateMessage(peerId, messageText) {
+    console.log("######################### 0 ################################");
     if (!this.node || !this.state.connected) {
       log6.error("Node not available for private message");
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430");
     }
     try {
       const connectedPeers = await this.getConnectedPeers();
+      console.log("######################### 1 ################################");
       const targetPeer = connectedPeers.find((peer) => peer.id === peerId);
       if (!targetPeer) {
         throw new Error(`\u041F\u0438\u0440 ${peerId} \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0441\u0440\u0435\u0434\u0438 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445`);
@@ -16469,33 +16489,49 @@ var ChatManager = class extends BaseComponent {
       const ma = multiaddr(targetAddress);
       const stream = await this.node.dialProtocol(ma, "/chat/1.0.0");
       const lp = lpStream(stream);
-      const messageData = {
-        type: "private_message",
-        text: messageText,
-        from: this.state.peerId,
-        timestamp: Date.now(),
-        isPrivate: true
-      };
-      stream.addEventListener("close", () => {
-        console.log("\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0437\u0430\u043A\u0440\u044B\u0442\u043E");
-      });
-      stream.addEventListener("error", (error) => {
-        console.error("\u041E\u0448\u0438\u0431\u043A\u0430:", error);
-      });
-      stream.addEventListener("end", () => {
-        console.log("\u0427\u0442\u0435\u043D\u0438\u0435 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E");
-      });
+      let messageData;
+      try {
+        const parsed = JSON.parse(messageText);
+        if (parsed && typeof parsed === "object" && parsed.type) {
+          messageData = {
+            ...parsed,
+            from: this.state.peerId,
+            timestamp: parsed.timestamp || Date.now()
+          };
+        } else {
+          messageData = {
+            type: "private_message",
+            text: messageText,
+            from: this.state.peerId,
+            timestamp: Date.now(),
+            isPrivate: true
+          };
+        }
+      } catch (e2) {
+        messageData = {
+          type: "private_message",
+          text: messageText,
+          from: this.state.peerId,
+          timestamp: Date.now(),
+          isPrivate: true
+        };
+      }
       const messageBytes = fromString2(JSON.stringify(messageData));
       await lp.write(messageBytes);
-      log6("\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
-      await this.addMessage({
-        text: messageText,
-        to: peerId,
-        from: this.state.peerId,
-        type: "sent",
-        timestamp: Date.now(),
-        isPrivate: true
-      });
+      if (messageData.type === "private_message") {
+        await this.addMessage({
+          text: messageData.text,
+          to: peerId,
+          from: this.state.peerId,
+          type: "sent",
+          timestamp: messageData.timestamp,
+          isPrivate: true
+        });
+      } else if (messageData.type === "REMOTE_CONTROL_REQUEST") {
+        log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
+      }
+      log6('\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0442\u0438\u043F\u0430 "%s" \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s', messageData.type, peerId);
+      await stream.close();
       return true;
     } catch (error) {
       log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
@@ -16517,7 +16553,30 @@ var ChatManager = class extends BaseComponent {
       return;
     }
     try {
+      await this.node.handle("/remote-control/1.0.0", async (stream, connection) => {
+        const remotePeer = connection.remotePeer.toString();
+        log6("Remote control stream established from: %s", remotePeer);
+        try {
+          const viewerId = `remote-control-${remotePeer}-viewer`;
+          const remoteControl = await BaseComponent.getComponentAsync("remote-control", viewerId, 3e3);
+          console.log("remoteControl===============\u0410", remoteControl);
+          if (remoteControl?.setStream) {
+            remoteControl.setStream(stream);
+            log6("Remote control stream attached to viewer component");
+          } else {
+            log6.warn("Viewer remote-control not found or lacks setStream method");
+            await stream.close();
+          }
+        } catch (err) {
+          log6.error("Error in /remote-control/1.0.0 handler: %o", err);
+          try {
+            await stream.close();
+          } catch {
+          }
+        }
+      });
       await this.node.handle("/chat/1.0.0", async (stream, connection) => {
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         log6("Incoming chat stream established from: %s", connection.remotePeer?.toString());
         try {
           const lp = lpStream(stream);
@@ -16553,32 +16612,84 @@ var ChatManager = class extends BaseComponent {
                   isPrivate: true
                 });
                 const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-                let isActiveChat = false;
-                if (chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer) {
-                  isActiveChat = true;
+                const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+                if (isActiveChat && chatInterface) {
+                  await chatInterface.postMessage({
+                    type: "INCOMING_PRIVATE_MESSAGE",
+                    data: {
+                      text: messageData.text,
+                      from: remotePeer,
+                      timestamp: messageData.timestamp,
+                      isPrivate: true
+                    }
+                  });
+                } else {
+                  if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                  this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                  if (chatInterface?.updateMembersList) {
+                    await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                  }
                 }
-                if (isActiveChat) {
+              } else if (messageData.type === "REMOTE_CONTROL_REQUEST") {
+                const { initiator, targetPeer, timestamp } = messageData.payload;
+                const myPeerId = this.state.peerId;
+                log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u0434\u043B\u044F %s", initiator, targetPeer);
+                if (myPeerId === targetPeer) {
+                  const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
                   if (chatInterface) {
-                    await chatInterface.postMessage({
-                      type: "INCOMING_PRIVATE_MESSAGE",
-                      data: {
-                        text: messageData.text,
-                        from: remotePeer,
-                        timestamp: messageData.timestamp,
-                        isPrivate: true
+                    await insertRemoteControl(chatInterface, initiator, "viewer");
+                  }
+                  await this.postMessage({
+                    type: "SEND_PRIVATE_MESSAGE",
+                    data: {
+                      peerId: initiator,
+                      message: JSON.stringify({
+                        type: "REMOTE_CONTROL_ACCEPTED",
+                        payload: {
+                          targetPeer: myPeerId,
+                          initiator
+                          // ← КЛЮЧЕВОЕ: чтобы инициатор знал, что это для него
+                        }
+                      })
+                    }
+                  });
+                  log6("\u0421\u0435\u0441\u0441\u0438\u044F \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0430\u0447\u0430\u0442\u0430 \u043A\u0430\u043A viewer \u0441 %s", initiator);
+                } else {
+                  log6("REMOTE_CONTROL_REQUEST \u043F\u0440\u043E\u0438\u0433\u043D\u043E\u0440\u0438\u0440\u043E\u0432\u0430\u043D: \u044F \u043D\u0435 \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C (\u043E\u0436\u0438\u0434\u0430\u043B %s, \u043F\u043E\u043B\u0443\u0447\u0438\u043B \u043E\u0442 %s)", myPeerId, targetPeer);
+                }
+              } else if (messageData.type === "REMOTE_CONTROL_ACCEPTED") {
+                const { initiator } = messageData.payload;
+                const myPeerId = this.state.peerId;
+                if (myPeerId === initiator) {
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442 %s", remotePeer);
+                  try {
+                    const connectedPeers = await this.getConnectedPeers();
+                    const targetPeerInfo = connectedPeers.find((p2) => p2.id === remotePeer);
+                    let dialAddress = remotePeer;
+                    if (targetPeerInfo?.connections?.length > 0) {
+                      const conn = targetPeerInfo.connections.find((c2) => c2.remoteAddr);
+                      if (conn?.remoteAddr) {
+                        dialAddress = conn.remoteAddr;
+                        log6("Using multiaddr for remote control dial: %s", dialAddress);
                       }
-                    });
+                    }
+                    const ma = multiaddr(dialAddress);
+                    const stream2 = await this.node.dialProtocol(ma, "/remote-control/1.0.0");
+                    const controllerId = `remote-control-${remotePeer}-controller`;
+                    const remoteControl = await this.getComponentAsync("remote-control", controllerId, 2e3);
+                    console.log("=== remoteControl ===", remoteControl);
+                    if (remoteControl?.setStream) {
+                      remoteControl.setStream(stream2);
+                      log6("Remote control stream established as controller to %s", remotePeer);
+                    } else {
+                      log6.error("Controller remote-control not found, closing stream");
+                      await stream2.close();
+                    }
+                  } catch (err) {
+                    log6.error("Failed to establish remote control stream to %s: %o", remotePeer, err);
                   }
                 } else {
-                  if (!isActiveChat) {
-                    if (!this.state.unreadCounts) this.state.unreadCounts = {};
-                    this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
-                    if (chatInterface && chatInterface.updateMembersList) {
-                      await chatInterface.updateMembersList({
-                        unreadCounts: this.state.unreadCounts
-                      });
-                    }
-                  }
+                  log6.debug("REMOTE_CONTROL_ACCEPTED ignored: not for this peer (initiator: %s, me: %s)", initiator, myPeerId);
                 }
               } else {
                 await this.handleIncomingStreamMessage(messageData, remotePeer);
@@ -16623,21 +16734,96 @@ var ChatManager = class extends BaseComponent {
    * @param {Object} messageData - Данные сообщения
    */
   async handleIncomingPrivateMessage(messageData) {
+    debugger;
+    const log11 = logger("chat-manager:actions:handleIncomingPrivateMessage");
     try {
-      log6("Incoming private message from: %s", messageData.from);
+      log11("Incoming private message from: %s", messageData.from);
       if (!messageData.text || !messageData.from) {
-        log6.error("Invalid private message data: %o", messageData);
+        log11.error("Invalid private message data: %o", messageData);
         return;
       }
-      await this.addMessage({
-        text: messageData.text,
-        from: messageData.from,
-        to: this.state.peerId,
-        type: "received",
-        timestamp: messageData.timestamp || Date.now(),
-        isPrivate: true
-      });
-      console.log("==========================", {
+      let parsed;
+      try {
+        parsed = JSON.parse(messageData.text);
+      } catch (e2) {
+        await this.addMessageToPrivateHistory({
+          text: messageData.text,
+          from: messageData.from,
+          to: this.state.peerId,
+          type: "received",
+          timestamp: messageData.timestamp || Date.now(),
+          isPrivate: true
+        });
+        const chatInterface2 = await this.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface2) {
+          await chatInterface2.postMessage({
+            type: "INCOMING_PRIVATE_MESSAGE",
+            data: {
+              text: messageData.text,
+              from: messageData.from,
+              timestamp: messageData.timestamp || Date.now(),
+              isPrivate: true
+            }
+          });
+        }
+        log11("\u041E\u0431\u044B\u0447\u043D\u043E\u0435 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043E \u043E\u0442: %s", messageData.from);
+        return;
+      }
+      if (parsed.type === "REMOTE_CONTROL_REQUEST") {
+        log11("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s", messageData.from);
+        const confirmed = await this.showModal({
+          title: "\u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435",
+          content: `<p>\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${messageData.from} \u0437\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F \u043A \u0432\u0430\u0448\u0435\u043C\u0443 \u044D\u043A\u0440\u0430\u043D\u0443.</p>`,
+          buttons: [
+            { text: "\u041E\u0442\u043A\u043B\u043E\u043D\u0438\u0442\u044C", type: "secondary" },
+            { text: "\u0420\u0430\u0437\u0440\u0435\u0448\u0438\u0442\u044C", type: "primary" }
+          ]
+        });
+        if (!confirmed) {
+          log11("\u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442\u043A\u043B\u043E\u043D\u0451\u043D");
+          return;
+        }
+        const chatInterface2 = await this.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface2) {
+          const insertRemoteControl2 = /* @__PURE__ */ __name(async (context, targetPeer, mode) => {
+            const existing = context.shadowRoot.querySelector(`remote-control[target-peer="${targetPeer}"]`);
+            if (existing) existing.remove();
+            const remoteControl = document.createElement("remote-control");
+            remoteControl.setAttribute("target-peer", targetPeer);
+            remoteControl.setAttribute("mode", mode);
+            const chatArea = context.shadowRoot.querySelector(".chat-area") || context.shadowRoot.querySelector(".messages-container")?.parentElement;
+            if (chatArea) {
+              chatArea.insertAdjacentElement("afterbegin", remoteControl);
+            } else {
+              context.shadowRoot.appendChild(remoteControl);
+            }
+          }, "insertRemoteControl");
+          await insertRemoteControl2(chatInterface2, messageData.from, "viewer");
+        }
+        await this.postMessage({
+          type: "SEND_PRIVATE_MESSAGE",
+          data: {
+            peerId: messageData.from,
+            message: JSON.stringify({
+              type: "REMOTE_CONTROL_ACCEPTED",
+              payload: { targetPeer: this.state.peerId }
+            })
+          }
+        });
+        log11("\u0421\u0435\u0441\u0441\u0438\u044F \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0430\u0447\u0430\u0442\u0430 \u043A\u0430\u043A viewer \u0441 %s", messageData.from);
+        return;
+      }
+      if (parsed.type === "REMOTE_CONTROL_EVENT") {
+        const chatInterface2 = await this.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface2) {
+          await chatInterface2.postMessage({
+            type: "REMOTE_CONTROL_EVENT",
+            data: parsed.payload
+          });
+        }
+        return;
+      }
+      await this.addMessageToPrivateHistory({
         text: messageData.text,
         from: messageData.from,
         to: this.state.peerId,
@@ -16646,12 +16832,19 @@ var ChatManager = class extends BaseComponent {
         isPrivate: true
       });
       const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-      if (chatInterface && chatInterface._actions && chatInterface._actions.handleIncomingPrivateMessage) {
-        await chatInterface.postMessage({ type: "INCOMING_PRIVATE_MESSAGE", data: messageData });
+      if (chatInterface) {
+        await chatInterface.postMessage({
+          type: "INCOMING_PRIVATE_MESSAGE",
+          data: {
+            text: messageData.text,
+            from: messageData.from,
+            timestamp: messageData.timestamp || Date.now(),
+            isPrivate: true
+          }
+        });
       }
-      log6("Private message processed from: %s", messageData.from);
     } catch (error) {
-      log6.error("Error handling incoming private message: %o", error);
+      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "handleIncomingPrivateMessage",
@@ -16804,7 +16997,32 @@ var ChatManager = class extends BaseComponent {
         });
         return;
       }
+      let targetPeer = "";
       switch (event.type) {
+        case "REMOTE_CONTROL_EVENT":
+          let { event: eventData } = event.data;
+          targetPeer = event.data.targetPeer;
+          await this.sendPrivateMessage(JSON.stringify({
+            type: "REMOTE_CONTROL_EVENT",
+            payload: eventData
+          }), targetPeer);
+          break;
+        case "REMOTE_CONTROL_REQUEST":
+          const { initiator } = event.data;
+          targetPeer = event.data.targetPeer;
+          const myPeerId = this.state.peerId;
+          if (myPeerId === targetPeer) {
+            const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+            if (chatInterface) {
+              await insertRemoteControl(chatInterface, initiator, "viewer");
+            }
+            await this.postMessage({
+              type: "REMOTE_CONTROL_ACK",
+              data: { from: myPeerId, to: initiator }
+            });
+          } else if (myPeerId === initiator) {
+          }
+          break;
         case "UPDATE_CHAT_HEADER":
           if (event.data?.isPrivateChat && event.data.activeMember) {
             this.state.isPrivateChat = true;
@@ -16860,6 +17078,7 @@ var ChatManager = class extends BaseComponent {
           await this.handleIncomingPrivateMessage(event.data);
           break;
         case "SEND_PRIVATE_MESSAGE":
+          console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", event.data.peerId, event.data.message);
           log6("SEND_PRIVATE_MESSAGE received in ChatManager: %o", event.data);
           await this.sendPrivateMessage(event.data.peerId, event.data.message);
           break;
@@ -17205,6 +17424,38 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         screenShareButtons.forEach((button) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
             e2.stopPropagation();
+            const peerId = button.closest(".member-item")?.dataset.peerId;
+            if (!peerId) return;
+            try {
+              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+              if (!chatManager) {
+                throw new Error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
+              }
+              console.log("@@@@@@@@@@@@@@@@@@@@@@@@");
+              await chatManager.postMessage({
+                type: "SEND_PRIVATE_MESSAGE",
+                data: {
+                  peerId,
+                  message: JSON.stringify({
+                    type: "REMOTE_CONTROL_REQUEST",
+                    payload: {
+                      targetPeer: peerId,
+                      // ← тот, кого хотим контролировать
+                      initiator: context.state.peerId,
+                      timestamp: Date.now()
+                    }
+                  })
+                }
+              });
+              await insertRemoteControl(context, peerId, "controller");
+            } catch (error) {
+              console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F:", error);
+              await context.showModal({
+                title: "\u041E\u0448\u0438\u0431\u043A\u0430",
+                content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043D\u0430\u0447\u0430\u0442\u044C \u0441\u0435\u0441\u0441\u0438\u044E \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F: ${error.message}</p>`,
+                buttons: [{ text: "OK", type: "primary" }]
+              });
+            }
           }, "handler");
           button.addEventListener("click", handler);
           eventListeners.push({ element: button, handler });
@@ -36626,8 +36877,9 @@ async function createActions4(context) {
      * @async
      */
     async updateAddressList() {
+      console.log("!!!!!!!!!!!! updateAddressList !!!!!!!!!!!!!!!!");
       if (!libp2p || !context.state) {
-        log11("updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        log11.error("updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
       }
       const addresses = libp2p.getMultiaddrs().filter((ma) => WebRTC.matches(ma)).map((ma) => ma.toString());
@@ -37611,6 +37863,58 @@ var RemoteControl = class extends BaseComponent {
       return !!response;
     } catch (e2) {
       return false;
+    }
+  }
+  // В классе RemoteControl
+  async setStream(stream) {
+    log10("\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0441\u0442\u0440\u0438\u043C\u0430 \u0434\u043B\u044F remote-control \u0432 \u0440\u0435\u0436\u0438\u043C\u0435 %s", this.state.mode);
+    if (!stream) {
+      log10.error("\u041F\u043E\u043F\u044B\u0442\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u0442\u044C \u043F\u0443\u0441\u0442\u043E\u0439 \u0441\u0442\u0440\u0438\u043C");
+      return;
+    }
+    this._remoteStream = stream;
+    this.state.isConnected = true;
+    await this.renderPart({
+      partName: "defaultTemplate",
+      state: this.state,
+      selector: "#root",
+      method: "innerHTML"
+    });
+    if (this.state.mode === "viewer") {
+      this._startReadingStream(stream);
+    }
+  }
+  async _startReadingStream(stream) {
+    const lp = lpStream(stream);
+    try {
+      while (true) {
+        const message2 = await lp.read();
+        if (!message2 || message2.length === 0) continue;
+        const text = toString2(message2.subarray());
+        let eventData;
+        try {
+          eventData = JSON.parse(text);
+        } catch (e2) {
+          log10.error("\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 remote-control \u0441\u0442\u0440\u0438\u043C\u0435:", text);
+          continue;
+        }
+        if (eventData.type === "REMOTE_CONTROL_EVENT") {
+          if (this._actions?.handleInputEvent) {
+            await this._actions.handleInputEvent(eventData.payload);
+          }
+        }
+      }
+    } catch (err) {
+      if (err.message !== "stream closed" && err.code !== "ERR_STREAM_RESET") {
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0447\u0442\u0435\u043D\u0438\u044F remote-control \u0441\u0442\u0440\u0438\u043C\u0430:", err);
+      }
+      this.state.isConnected = false;
+      await this.renderPart({
+        partName: "defaultTemplate",
+        state: this.state,
+        selector: ":host",
+        method: "innerHTML"
+      });
     }
   }
   async _componentAttributeChanged(name3, oldValue, newValue) {

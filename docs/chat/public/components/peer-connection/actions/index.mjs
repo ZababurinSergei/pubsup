@@ -344,8 +344,9 @@ export async function createActions(context) {
          * @async
          */
         async updateAddressList() {
+            console.log('!!!!!!!!!!!! updateAddressList !!!!!!!!!!!!!!!!')
             if (!libp2p || !context.state) {
-                log('updateAddressList: libp2p или context.state не доступны');
+                log.error('updateAddressList: libp2p или context.state не доступны');
                 return;
             }
 
