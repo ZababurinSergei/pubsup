@@ -182,19 +182,13 @@ export async function createActions(context) {
     // Удалите старую startVideoStream()
     async function startScreenShare() {
         if (context.state.mode !== 'viewer') return;
-
-        console.log('------------------ START SCREEN SHARE 1 ------------------')
         try {
             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-            console.log('------------------ START SCREEN SHARE 2 ------------------')
             // Создаём peer connection (без ICE-серверов, т.к. Libp2p уже установил соединение)
             const pc = new RTCPeerConnection({ iceServers: [] });
-            console.log('------------------ START SCREEN SHARE 3 ------------------')
             stream.getTracks().forEach(track => pc.addTrack(track, stream));
-            console.log('------------------ START SCREEN SHARE 4 ------------------')
             // Создаём offer
             const offer = await pc.createOffer();
-            console.log('--------- offer ---------', offer)
             await pc.setLocalDescription(offer);
 
             // Сохраняем соединение в контексте

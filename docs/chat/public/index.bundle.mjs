@@ -3204,6 +3204,13 @@ var InvalidMessageError = class extends Error {
     this.name = "InvalidMessageError";
   }
 };
+var ProtocolError = class extends Error {
+  static name = "ProtocolError";
+  constructor(message2 = "Protocol error") {
+    super(message2);
+    this.name = "ProtocolError";
+  }
+};
 var TimeoutError = class extends Error {
   static name = "TimeoutError";
   constructor(message2 = "Timed out") {
@@ -16485,11 +16492,14 @@ var ChatManager = class extends BaseComponent {
       }
       log6("Attempting to dial: %s", targetAddress);
       const ma = multiaddr(targetAddress);
-      const stream = await this.node.dialProtocol(ma, "/chat/1.0.0");
-      const lp = lpStream(stream);
       let messageData;
+      let lp;
+      let stream;
       try {
         const parsed = JSON.parse(messageText);
+        const IS_REMOTE_CONTROL_EVENT = parsed.type === "REMOTE_CONTROL_EVENT";
+        stream = await this.node.dialProtocol(ma, IS_REMOTE_CONTROL_EVENT ? "/remote-control/1.0.0" : "/chat/1.0.0");
+        lp = lpStream(stream);
         if (parsed && typeof parsed === "object" && parsed.type) {
           messageData = {
             ...parsed,
@@ -16514,7 +16524,7 @@ var ChatManager = class extends BaseComponent {
           isPrivate: true
         };
       }
-      let request = JSON.stringify(messageData.payload ? messageData.payload : messageData);
+      let request = "";
       if (messageData.payload) {
         console.log("--------- messageData -------------", messageData);
         request = JSON.stringify(messageData);
@@ -16522,7 +16532,7 @@ var ChatManager = class extends BaseComponent {
         request = JSON.stringify(messageData);
       }
       const messageBytes = fromString2(request);
-      console.log("----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) ----------------------- !!!!!!!!!!!!!", request);
+      console.log("----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) -----------------------");
       await lp.write(messageBytes);
       if (messageData.type === "private_message") {
         await this.addMessage({
@@ -16568,7 +16578,6 @@ var ChatManager = class extends BaseComponent {
           });
         }
       } else if (messageData.type === "REMOTE_CONTROL_EVENT") {
-        console.log(")))))))))))))))))))))))))))))))))))", messageData.payload);
         const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
         if (chatInterface) {
           await chatInterface.addMessage({
@@ -16603,17 +16612,130 @@ var ChatManager = class extends BaseComponent {
       log6.error("Node not available for message handler setup");
       return;
     }
+    const sendMessageToInterface = /* @__PURE__ */ __name(async ({ messageData, remotePeer, type = "sent" }) => {
+      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+      const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+      if (isActiveChat && chatInterface) {
+        await chatInterface.addMessage({
+          text: JSON.stringify(messageData),
+          to: remotePeer,
+          from: this.state.peerId,
+          type,
+          timestamp: messageData.timestamp,
+          isPrivate: true
+        });
+      } else {
+        if (!this.state.unreadCounts) this.state.unreadCounts = {};
+        this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+        if (chatInterface?.updateMembersList) {
+          await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+        }
+      }
+    }, "sendMessageToInterface");
     try {
       await this.node.handle("/remote-control/1.0.0", async (stream, connection) => {
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        const remotePeer = connection.remotePeer.toString();
-        log6("Remote control stream established from: %s", remotePeer);
         try {
-          const viewerId = `remote-control-${remotePeer}-viewer`;
-          const remoteControl = await BaseComponent.getComponentAsync("remote-control", viewerId, 3e3);
-          console.log("------------------ >>> handle(/remote-control/1.0.0) ------------------ >>>", remotePeer);
-          if (remoteControl) {
-            await remoteControl._actions.startScreenShare();
+          const lp = lpStream(stream);
+          const remotePeer = connection.remotePeer.toString();
+          log6("Remote control stream established from: %s", remotePeer);
+          let messageData = void 0;
+          while (true) {
+            try {
+              const message2 = await lp.read();
+              if (!message2 || message2.length === 0) {
+                log6("Empty message received from %s, continuing...", remotePeer);
+                continue;
+              }
+              const messageText = toString2(message2.subarray());
+              log6("Received length-prefixed message from %s: %s", remotePeer, messageText);
+              try {
+                messageData = JSON.parse(messageText);
+              } catch (e2) {
+                log6("Non-JSON message received, treating as plain text: %s", messageText);
+                messageData = null;
+              }
+              console.log("----------------- INCOMMING handle(/remote-control/1.0.0) messageData.type -----------------", messageData);
+              if (messageData?.type === "REMOTE_CONTROL_EVENT") {
+                await sendMessageToInterface({
+                  messageData: messageData?.payload,
+                  remotePeer,
+                  type: "received"
+                });
+                const message3 = messageData?.payload;
+                if (message3.type === "VIDEO_SDP" && message3.sdpType === "offer") {
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC offer \u043E\u0442 %s:", remotePeer, message3.sdp);
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC \u043E\u0444\u0435\u0440 \u043E\u0442 %s", remotePeer);
+                  const controllerId = `remote-control-${remotePeer}-controller`;
+                  const remoteControl = await BaseComponent.getComponentAsync("remote-control", controllerId, 3e3);
+                  console.log("----------------------", remoteControl);
+                  if (remoteControl && typeof remoteControl.handleWebRtcOffer === "function") {
+                    await remoteControl.handleWebRtcOffer({
+                      sdp: message3.sdp,
+                      from: remotePeer
+                    });
+                  } else {
+                    log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (viewer) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcOffer");
+                  }
+                }
+                if (message3.type === "VIDEO_SDP" && message3.sdpType === "answer") {
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC answer \u043E\u0442 %s", remotePeer);
+                  const remoteControl = await BaseComponent.getComponentAsync(
+                    "remote-control",
+                    `remote-control-${remotePeer}-viewer`,
+                    3e3
+                  );
+                  if (remoteControl && typeof remoteControl.handleWebRtcAnswer === "function") {
+                    await remoteControl.handleWebRtcAnswer({
+                      sdp: message3.sdp
+                    });
+                  } else {
+                    log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcAnswer");
+                  }
+                }
+                if (message3.type === "VIDEO_ICE_CANDIDATE") {
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u043E\u0442 %s", remotePeer);
+                  const controllerId = `remote-control-${remotePeer}-controller`;
+                  const remoteControl = await BaseComponent.getComponentAsync("remote-control", controllerId, 3e3);
+                  if (remoteControl && typeof remoteControl.handleIceCandidate === "function") {
+                    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", {
+                      candidate: message3.candidate.candidate,
+                      sdpMid: message3.candidate.sdpMid,
+                      sdpMLineIndex: message3.candidate.sdpMLineIndex,
+                      from: remotePeer
+                    });
+                    await remoteControl.handleIceCandidate({
+                      candidate: message3.candidate.candidate,
+                      sdpMid: message3.candidate.sdpMid,
+                      sdpMLineIndex: message3.candidate.sdpMLineIndex,
+                      from: remotePeer
+                    });
+                  } else {
+                    log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleIceCandidate");
+                  }
+                }
+              }
+              if (messageData?.type === "video_stream_start") {
+                await sendMessageToInterface({
+                  messageData,
+                  remotePeer,
+                  type: "received"
+                });
+                const viewerId = `remote-control-${remotePeer}-viewer`;
+                const remoteControl = await BaseComponent.getComponentAsync("remote-control", viewerId, 3e3);
+                if (remoteControl) {
+                  await remoteControl._actions.startScreenShare();
+                }
+              }
+            } catch (readError) {
+              if (readError.message === "Stream read timeout") {
+                continue;
+              }
+              if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed")) {
+                break;
+              }
+              log6.error("Error reading from lpStream: %o", readError);
+              break;
+            }
           }
         } catch (err) {
           log6.error("Error in /remote-control/1.0.0 handler: %o", err);
@@ -16791,9 +16913,22 @@ var ChatManager = class extends BaseComponent {
                         log6("Using multiaddr for remote control dial: %s", dialAddress);
                       }
                     }
+                    console.log("---------- SEND STREAM -------------------");
                     const ma = multiaddr(dialAddress);
                     const stream2 = await this.node.dialProtocol(ma, "/remote-control/1.0.0");
-                    console.log("---------- SEND STREAM -------------------");
+                    const lp2 = lpStream(stream2);
+                    messageData = {
+                      type: "video_stream_start",
+                      text: "start connect",
+                      from: this.state.peerId,
+                      timestamp: Date.now()
+                    };
+                    await sendMessageToInterface({
+                      messageData,
+                      remotePeer,
+                      type: "sent"
+                    });
+                    await lp2.write(fromString2(JSON.stringify(messageData)));
                     await stream2.close();
                   } catch (err) {
                     log6.error("Failed to establish remote control stream to %s: %o", remotePeer, err);
@@ -18367,7 +18502,7 @@ var ChatInterface = class extends BaseComponent {
           text: message2.text,
           from: message2.from,
           to: message2.to,
-          type: "sent",
+          type: message2.type,
           timestamp: message2.timestamp || Date.now(),
           isPrivate: true
         });
@@ -32003,7 +32138,7 @@ var GoAwayCode;
 var HEADER_LENGTH = 12;
 
 // node_modules/@chainsafe/libp2p-yamux/dist/src/errors.js
-var ProtocolError = class extends Error {
+var ProtocolError2 = class extends Error {
   static name = "ProtocolError";
   reason;
   constructor(message2, reason) {
@@ -32016,49 +32151,49 @@ function isProtocolError(err) {
   return err?.reason !== null;
 }
 __name(isProtocolError, "isProtocolError");
-var InvalidFrameError = class extends ProtocolError {
+var InvalidFrameError = class extends ProtocolError2 {
   static name = "InvalidFrameError";
   constructor(message2 = "The frame was invalid") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "InvalidFrameError";
   }
 };
-var UnRequestedPingError = class extends ProtocolError {
+var UnRequestedPingError = class extends ProtocolError2 {
   static name = "UnRequestedPingError";
   constructor(message2 = "Un-requested ping error") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "UnRequestedPingError";
   }
 };
-var NotMatchingPingError = class extends ProtocolError {
+var NotMatchingPingError = class extends ProtocolError2 {
   static name = "NotMatchingPingError";
   constructor(message2 = "Not matching ping error") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "NotMatchingPingError";
   }
 };
-var StreamAlreadyExistsError = class extends ProtocolError {
+var StreamAlreadyExistsError = class extends ProtocolError2 {
   static name = "StreamAlreadyExistsError";
   constructor(message2 = "Stream already exists") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "StreamAlreadyExistsError";
   }
 };
-var DecodeInvalidVersionError = class extends ProtocolError {
+var DecodeInvalidVersionError = class extends ProtocolError2 {
   static name = "DecodeInvalidVersionError";
   constructor(message2 = "Decode invalid version") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "DecodeInvalidVersionError";
   }
 };
-var BothClientsError = class extends ProtocolError {
+var BothClientsError = class extends ProtocolError2 {
   static name = "BothClientsError";
   constructor(message2 = "Both clients") {
     super(message2, GoAwayCode.ProtocolError);
     this.name = "BothClientsError";
   }
 };
-var ReceiveWindowExceededError = class extends ProtocolError {
+var ReceiveWindowExceededError = class extends ProtocolError2 {
   static name = "ReceiveWindowExceededError";
   constructor(message2 = "Receive window exceeded") {
     super(message2, GoAwayCode.ProtocolError);
@@ -35666,8 +35801,8 @@ var toMultiaddrConnection = /* @__PURE__ */ __name((init) => {
 
 // node_modules/@libp2p/webrtc/dist/src/webrtc/index.browser.js
 var RTCPeerConnection2 = globalThis.RTCPeerConnection;
-var RTCSessionDescription = globalThis.RTCSessionDescription;
-var RTCIceCandidate = globalThis.RTCIceCandidate;
+var RTCSessionDescription2 = globalThis.RTCSessionDescription;
+var RTCIceCandidate2 = globalThis.RTCIceCandidate;
 
 // node_modules/@libp2p/webrtc/dist/src/error.js
 var WebRTCTransportError = class extends Error {
@@ -35785,7 +35920,7 @@ var readCandidatesUntilConnected = /* @__PURE__ */ __name(async (pc, stream, opt
         options.log.trace("end-of-candidates received");
         continue;
       }
-      const candidate = new RTCIceCandidate(candidateInit);
+      const candidate = new RTCIceCandidate2(candidateInit);
       options.log.trace("%s received new ICE candidate %o", options.direction, candidateInit);
       try {
         options.onProgress?.(new CustomProgressEvent("webrtc:add-ice-candidate", candidate.candidate));
@@ -35921,7 +36056,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
       throw new SDPHandshakeFailedError("Remote should send an SDP answer");
     }
     log11.trace("initiator received SDP answer %s", answerMessage.data);
-    const answerSdp = new RTCSessionDescription({ type: "answer", sdp: answerMessage.data });
+    const answerSdp = new RTCSessionDescription2({ type: "answer", sdp: answerMessage.data });
     await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
       log11.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
@@ -36047,7 +36182,7 @@ async function handleIncomingStream(stream, connection, { peerConnection, signal
       throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? "undefined"} `);
     }
     log11.trace("recipient received SDP offer %s", pbOffer.data);
-    const offer = new RTCSessionDescription({
+    const offer = new RTCSessionDescription2({
       type: "offer",
       sdp: pbOffer.data
     });
@@ -36721,6 +36856,144 @@ __name(identify, "identify");
 
 // public/components/peer-connection/actions/index.mjs
 import { gossipsub } from "https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm";
+
+// node_modules/@libp2p/ping/dist/src/constants.js
+var PING_LENGTH2 = 32;
+var PROTOCOL_VERSION2 = "1.0.0";
+var PROTOCOL_NAME2 = "ping";
+var PROTOCOL_PREFIX2 = "ipfs";
+var TIMEOUT = 1e4;
+var MAX_INBOUND_STREAMS = 2;
+var MAX_OUTBOUND_STREAMS = 1;
+
+// node_modules/@libp2p/ping/dist/src/ping.js
+var Ping = class {
+  static {
+    __name(this, "Ping");
+  }
+  protocol;
+  components;
+  started;
+  timeout;
+  maxInboundStreams;
+  maxOutboundStreams;
+  runOnLimitedConnection;
+  constructor(components, init = {}) {
+    this.components = components;
+    this.started = false;
+    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX2}/${PROTOCOL_NAME2}/${PROTOCOL_VERSION2}`;
+    this.timeout = init.timeout ?? TIMEOUT;
+    this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS;
+    this.runOnLimitedConnection = init.runOnLimitedConnection ?? true;
+    this.handlePing = this.handlePing.bind(this);
+  }
+  [Symbol.toStringTag] = "@libp2p/ping";
+  [serviceCapabilities] = [
+    "@libp2p/ping"
+  ];
+  async start() {
+    await this.components.registrar.handle(this.protocol, this.handlePing, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams,
+      runOnLimitedConnection: this.runOnLimitedConnection
+    });
+    this.started = true;
+  }
+  async stop() {
+    await this.components.registrar.unhandle(this.protocol);
+    this.started = false;
+  }
+  isStarted() {
+    return this.started;
+  }
+  /**
+   * A handler to register with Libp2p to process ping messages
+   */
+  async handlePing(stream, connection) {
+    const log11 = stream.log.newScope("ping");
+    log11.trace("ping from %p", connection.remotePeer);
+    const signal = AbortSignal.timeout(this.timeout);
+    setMaxListeners(Infinity, signal);
+    signal.addEventListener("abort", () => {
+      stream.abort(new TimeoutError("Ping timed out"));
+    });
+    const start2 = Date.now();
+    for await (const buf of stream) {
+      if (stream.status !== "open") {
+        log11("stream status changed to %s", stream.status);
+        break;
+      }
+      if (!stream.send(buf)) {
+        log11("waiting for stream to drain");
+        await pEvent(stream, "drain", {
+          rejectionEvents: [
+            "close"
+          ],
+          signal
+        });
+        log11("stream drained");
+      }
+    }
+    log11("ping from %p complete in %dms", connection.remotePeer, Date.now() - start2);
+    await stream.close({
+      signal
+    });
+  }
+  /**
+   * Ping a given peer and wait for its response, getting the operation latency.
+   */
+  async ping(peer, options = {}) {
+    const data = randomBytes2(PING_LENGTH2);
+    const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
+      runOnLimitedConnection: this.runOnLimitedConnection,
+      ...options
+    });
+    const log11 = stream.log.newScope("ping");
+    try {
+      const start2 = Date.now();
+      const finished = Promise.withResolvers();
+      const received = new Uint8ArrayList();
+      const onPong = /* @__PURE__ */ __name((evt) => {
+        received.append(evt.data);
+        if (received.byteLength === PING_LENGTH2) {
+          stream.removeEventListener("message", onPong);
+          const rtt = Date.now() - start2;
+          Promise.all([
+            stream.closeRead(options)
+          ]).then(() => {
+            if (!equals3(data, received.subarray())) {
+              throw new ProtocolError(`Received wrong ping ack after ${rtt}ms`);
+            } else {
+              finished.resolve(rtt);
+            }
+          }).catch((err) => {
+            stream.abort(err);
+            finished.reject(err);
+          });
+        }
+      }, "onPong");
+      stream.addEventListener("message", onPong);
+      stream.send(data);
+      await stream.close(options);
+      return await raceSignal(finished.promise, options.signal);
+    } catch (err) {
+      log11.error("error while pinging %o - %e", peer, err);
+      stream?.abort(err);
+      throw err;
+    } finally {
+      stream?.close();
+    }
+  }
+};
+
+// node_modules/@libp2p/ping/dist/src/index.js
+function ping(init = {}) {
+  return (components) => new Ping(components, init);
+}
+__name(ping, "ping");
+
+// public/components/peer-connection/actions/index.mjs
 async function createActions4(context) {
   const log11 = logger("peer-connection:actions");
   let libp2p = null;
@@ -36753,6 +37026,12 @@ async function createActions4(context) {
           connectionEncrypters: [noise()],
           streamMuxers: [yamux()],
           services: {
+            ping: ping({
+              protocolPrefix: "libp2p",
+              maxInboundStreams: 10,
+              maxOutboundStreams: 10,
+              timeout: 5e3
+            }),
             identify: identify(),
             pubsub: gossipsub({
               doPX: true,
@@ -36779,7 +37058,6 @@ async function createActions4(context) {
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString())
         });
         await self2.setupEventHandlers();
-        await self2.startPeerListUpdates();
         return libp2p;
       } catch (error) {
         log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p: %o", error);
@@ -38080,16 +38358,11 @@ async function createActions5(context) {
   let screenStream = null;
   async function startScreenShare() {
     if (context.state.mode !== "viewer") return;
-    console.log("------------------ START SCREEN SHARE 1 ------------------");
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-      console.log("------------------ START SCREEN SHARE 2 ------------------");
       const pc = new RTCPeerConnection({ iceServers: [] });
-      console.log("------------------ START SCREEN SHARE 3 ------------------");
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-      console.log("------------------ START SCREEN SHARE 4 ------------------");
       const offer = await pc.createOffer();
-      console.log("--------- offer ---------", offer);
       await pc.setLocalDescription(offer);
       context._videoPeerConnection = pc;
       context._screenStream = stream;
@@ -38254,6 +38527,11 @@ var RemoteControl = class extends BaseComponent {
     await this.fullRender(this.state);
     await this._controller.init();
   }
+  async postMessage(event) {
+    if (event.type === "WEBRTC_OFFER_RECEIVED") {
+      await this.handleWebRtcOffer(event.data);
+    }
+  }
   // Проверка, установлено ли расширение
   async isCdpExtensionAvailable() {
     const extensionId = "\u0432\u0430\u0448-extension-id";
@@ -38262,6 +38540,100 @@ var RemoteControl = class extends BaseComponent {
       return !!response;
     } catch (e2) {
       return false;
+    }
+  }
+  /**
+   * Обрабатывает WebRTC offer от viewer (запрос на передачу экрана)
+   * Вызывается в режиме "controller"
+   * @param {Object} offerData - { sdp: string, from: string }
+   */
+  async handleWebRtcOffer(offerData) {
+    const log11 = logger("remote-control:webrtc:controller");
+    try {
+      if (this.state.mode !== "controller") {
+        throw new Error("handleWebRtcOffer \u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C \u0442\u043E\u043B\u044C\u043A\u043E \u0432 \u0440\u0435\u0436\u0438\u043C\u0435 controller");
+      }
+      const pc = new RTCPeerConnection({ iceServers: [] });
+      pc.ontrack = (event) => {
+        const remoteVideo = this.shadowRoot.querySelector("#remote-video");
+        if (remoteVideo) {
+          remoteVideo.srcObject = event.streams[0];
+          log11("\u0412\u0438\u0434\u0435\u043E \u043E\u0442 viewer \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0438 \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044F");
+        }
+      };
+      await pc.setRemoteDescription(
+        new RTCSessionDescription({ type: "offer", sdp: offerData.sdp })
+      );
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      this._videoPeerConnection = pc;
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (!chatManager) throw new Error("chat-manager \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+      await chatManager.sendPrivateMessage(offerData.from, JSON.stringify({
+        type: "REMOTE_CONTROL_EVENT",
+        payload: {
+          type: "VIDEO_SDP",
+          sdpType: "answer",
+          sdp: answer.sdp,
+          targetPeer: offerData.from,
+          timestamp: Date.now()
+        }
+      }));
+      log11("WebRTC answer \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D viewer: %s", offerData.from);
+    } catch (err) {
+      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC offer \u0432 controller:", err);
+      this.addError({
+        componentName: "RemoteControl",
+        source: "handleWebRtcOffer",
+        message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C WebRTC offer \u043E\u0442 viewer",
+        details: err
+      });
+    }
+  }
+  async handleIceCandidate(candidateData) {
+    if (!this._videoPeerConnection) {
+      log10.error("RTCPeerConnection \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C \u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442");
+      return;
+    }
+    try {
+      await this._videoPeerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+      log10("ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D:", candidateData);
+    } catch (err) {
+      log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u044F ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442\u0430:", err);
+    }
+  }
+  /**
+   * Обрабатывает входящий WebRTC SDP-ответ (answer)
+   * @param {Object} answerData - { sdp: string }
+   */
+  async handleWebRtcAnswer(answerData) {
+    const log11 = logger("remote-control:webrtc");
+    try {
+      if (!this._videoPeerConnection) {
+        log11.error("RTCPeerConnection \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        return;
+      }
+      await this._videoPeerConnection.setRemoteDescription(
+        new RTCSessionDescription({
+          type: "answer",
+          sdp: answerData.sdp
+        })
+      );
+      log11("WebRTC answer \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u0440\u0438\u043C\u0435\u043D\u0451\u043D");
+      this._videoPeerConnection.ontrack = (event) => {
+        const remoteVideo = this.shadowRoot.querySelector("#remote-video");
+        if (remoteVideo) {
+          remoteVideo.srcObject = event.streams[0];
+        }
+      };
+    } catch (err) {
+      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC-\u043E\u0442\u0432\u0435\u0442\u0430:", err);
+      this.addError({
+        componentName: "RemoteControl",
+        source: "handleWebRtcAnswer",
+        message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C WebRTC answer",
+        details: err
+      });
     }
   }
   // В классе RemoteControl

@@ -10,6 +10,7 @@ import { gossipsub } from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7
 import { multiaddr } from '@multiformats/multiaddr';
 import { fromString } from 'uint8arrays';
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher";
+import { ping } from '@libp2p/ping'
 // Импортируем логгер
 import { logger } from '@libp2p/logger';
 
@@ -55,6 +56,12 @@ export async function createActions(context) {
                     connectionEncrypters: [noise()],
                     streamMuxers: [yamux()],
                     services: {
+                        ping: ping({
+                            protocolPrefix: 'libp2p',
+                            maxInboundStreams: 10,
+                            maxOutboundStreams: 10,
+                            timeout: 5000
+                        }),
                         identify: identify(),
                         pubsub: gossipsub({
                             doPX: true,
@@ -87,7 +94,7 @@ export async function createActions(context) {
                 await self.setupEventHandlers();
 
                 // Запускаем обновление списка подключенных пиров
-                await self.startPeerListUpdates();
+                // await self.startPeerListUpdates();
 
                 return libp2p;
 

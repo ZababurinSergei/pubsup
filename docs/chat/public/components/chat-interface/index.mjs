@@ -58,7 +58,7 @@ export class ChatInterface extends BaseComponent {
                     text: message.text,
                     from: message.from,
                     to: message.to,
-                    type: 'sent',
+                    type: message.type,
                     timestamp: message.timestamp || Date.now(),
                     isPrivate: true
                 });

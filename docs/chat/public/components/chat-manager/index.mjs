@@ -561,15 +561,20 @@ export class ChatManager extends BaseComponent {
 
             log('Attempting to dial: %s', targetAddress);
             const ma = multiaddr(targetAddress);
-            const stream = await this.node.dialProtocol(ma, '/chat/1.0.0');
-            const lp = lpStream(stream);
 
             // === ОПРЕДЕЛЕНИЕ ТИПА СООБЩЕНИЯ ===
             let messageData;
+            let lp;
+            let stream;
 
             try {
                 // Пытаемся распарсить как JSON
                 const parsed = JSON.parse(messageText);
+
+                const IS_REMOTE_CONTROL_EVENT = parsed.type === 'REMOTE_CONTROL_EVENT'
+                stream = await this.node.dialProtocol(ma, IS_REMOTE_CONTROL_EVENT ?'/remote-control/1.0.0':'/chat/1.0.0');
+                lp = lpStream(stream);
+
                 if (parsed && typeof parsed === 'object' && parsed.type) {
                     // Это уже структурированное сообщение (например, REMOTE_CONTROL_REQUEST)
                     messageData = {
@@ -598,7 +603,7 @@ export class ChatManager extends BaseComponent {
                 };
             }
 
-            let request = JSON.stringify(messageData.payload ? messageData.payload: messageData)
+            let request = ''
             if(messageData.payload) {
                 console.log('--------- messageData -------------', messageData)
                 request = JSON.stringify(messageData)
@@ -607,7 +612,7 @@ export class ChatManager extends BaseComponent {
             }
             // === ОТПРАВКА ===
             const messageBytes = uint8ArrayFromString(request);
-            console.log('----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) ----------------------- !!!!!!!!!!!!!', request);
+            console.log('----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) -----------------------');
             await lp.write(messageBytes);
 
             // === ЛОГИКА СОХРАНЕНИЯ В ИСТОРИЮ ===
@@ -656,7 +661,6 @@ export class ChatManager extends BaseComponent {
                     });
                 }
             } else if (messageData.type === "REMOTE_CONTROL_EVENT") {
-                console.log(')))))))))))))))))))))))))))))))))))', messageData.payload)
                 const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
                 if (chatInterface) {
                     await chatInterface.addMessage({
@@ -689,6 +693,8 @@ export class ChatManager extends BaseComponent {
         }
     }
 
+
+
     /**
      * Настраивает обработчик входящих сообщений
      */
@@ -698,31 +704,157 @@ export class ChatManager extends BaseComponent {
             return;
         }
 
+        const sendMessageToInterface = async ({messageData, remotePeer, type = 'sent'}) => {
+            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+            const isActiveChat = chatInterface?.state?.isPrivateChat &&
+                chatInterface.state.activeMember?.id === remotePeer;
+
+            if (isActiveChat && chatInterface) {
+                await chatInterface.addMessage({
+                    text: JSON.stringify(messageData),
+                    to: remotePeer,
+                    from: this.state.peerId,
+                    type: type,
+                    timestamp: messageData.timestamp,
+                    isPrivate: true
+                });
+            } else {
+                if (!this.state.unreadCounts) this.state.unreadCounts = {};
+                this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                if (chatInterface?.updateMembersList) {
+                    await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                }
+            }
+        }
+
         try {
             await this.node.handle('/remote-control/1.0.0', async (stream, connection) => {
-                console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-                const remotePeer = connection.remotePeer.toString();
-                log('Remote control stream established from: %s', remotePeer);
-
-
                 try {
-                    // ID компонента viewer: он был создан при получении REMOTE_CONTROL_REQUEST
-                    const viewerId = `remote-control-${remotePeer}-viewer`;
-                    const remoteControl = await BaseComponent.getComponentAsync('remote-control', viewerId, 3000);
+                    const lp = lpStream(stream);
+                    const remotePeer = connection.remotePeer.toString();
+                    log('Remote control stream established from: %s', remotePeer);
+                    let messageData = undefined
+
+                    while (true) {
+                        try {
+                            const message = await lp.read();
+
+                            if (!message || message.length === 0) {
+                                log('Empty message received from %s, continuing...', remotePeer);
+                                continue;
+                            }
+
+                            const messageText = uint8ArrayToString(message.subarray());
+                            log('Received length-prefixed message from %s: %s', remotePeer, messageText);
+
+                            try {
+                                messageData = JSON.parse(messageText);
+                            } catch (e) {
+                                log('Non-JSON message received, treating as plain text: %s', messageText);
+                                messageData = null
+                            }
 
 
-                    console.log('------------------ >>> handle(/remote-control/1.0.0) ------------------ >>>', remotePeer)
-                    if(remoteControl) {
-                        await remoteControl._actions.startScreenShare()
+                            console.log('----------------- INCOMMING handle(/remote-control/1.0.0) messageData.type -----------------', messageData);
+
+                            if(messageData?.type  === "REMOTE_CONTROL_EVENT") {
+                                await sendMessageToInterface({
+                                    messageData: messageData?.payload,
+                                    remotePeer,
+                                    type: 'received'
+                                })
+
+                                const message = messageData?.payload
+
+                                if(message.type === "VIDEO_SDP" && message.sdpType === "offer") {
+                                    log('Получен WebRTC offer от %s:', remotePeer, message.sdp);
+
+                                    log('Получен WebRTC офер от %s', remotePeer);
+
+                                    // ID компонента controller: он был создан при отправке REMOTE_CONTROL_REQUEST
+                                    const controllerId = `remote-control-${remotePeer}-controller`;
+                                    const remoteControl = await BaseComponent.getComponentAsync('remote-control', controllerId, 3000);
+
+                                    console.log('----------------------', remoteControl)
+                                    if (remoteControl && typeof remoteControl.handleWebRtcOffer === 'function') {
+                                        await remoteControl.handleWebRtcOffer({
+                                            sdp: message.sdp,
+                                            from: remotePeer
+                                        });
+                                    } else {
+                                        log.error('Компонент remote-control (viewer) не найден или не поддерживает handleWebRtcOffer');
+                                    }
+                                }
+
+                                if(message.type === "VIDEO_SDP" && message.sdpType === "answer") {
+                                    log('Получен WebRTC answer от %s', remotePeer);
+
+
+                                    const remoteControl = await BaseComponent.getComponentAsync(
+                                        'remote-control',
+                                        `remote-control-${remotePeer}-viewer`,
+                                        3000
+                                    );
+
+                                    if (remoteControl && typeof remoteControl.handleWebRtcAnswer === 'function') {
+                                        await remoteControl.handleWebRtcAnswer({
+                                            sdp: message.sdp
+                                        });
+                                    } else {
+                                        log.error('Компонент remote-control (controller) не найден или не поддерживает handleWebRtcAnswer');
+                                    }
+                                }
+
+                                if (message.type === "VIDEO_ICE_CANDIDATE") {
+                                    log('Получен ICE-кандидат от %s', remotePeer);
+
+                                    const controllerId = `remote-control-${remotePeer}-controller`;
+                                    const remoteControl = await BaseComponent.getComponentAsync('remote-control', controllerId, 3000);
+
+                                    if (remoteControl && typeof remoteControl.handleIceCandidate === 'function') {
+                                        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', {
+                                            candidate: message.candidate.candidate,
+                                            sdpMid: message.candidate.sdpMid,
+                                            sdpMLineIndex: message.candidate.sdpMLineIndex,
+                                            from: remotePeer
+                                        })
+                                        await remoteControl.handleIceCandidate({
+                                            candidate: message.candidate.candidate,
+                                            sdpMid: message.candidate.sdpMid,
+                                            sdpMLineIndex: message.candidate.sdpMLineIndex,
+                                            from: remotePeer
+                                        });
+                                    } else {
+                                        log.error('Компонент remote-control (controller) не найден или не поддерживает handleIceCandidate');
+                                    }
+                                }
+                            }
+
+                            if (messageData?.type === "video_stream_start") {
+                                await sendMessageToInterface({
+                                    messageData,
+                                    remotePeer,
+                                    type: 'received'
+                                })
+                                // ID компонента viewer: он был создан при получении REMOTE_CONTROL_REQUEST
+                                const viewerId = `remote-control-${remotePeer}-viewer`;
+                                const remoteControl = await BaseComponent.getComponentAsync('remote-control', viewerId, 3000);
+
+                                if(remoteControl) {
+                                    await remoteControl._actions.startScreenShare()
+                                }
+                            }
+                        } catch (readError) {
+                            if (readError.message === 'Stream read timeout') {
+                                continue;
+                            }
+                            if (readError.code === 'ERR_STREAM_RESET' || readError.message.includes('stream closed')) {
+                                break;
+                            }
+                            log.error('Error reading from lpStream: %o', readError);
+                            break;
+                        }
                     }
-
-                    // if (remoteControl?.setStream) {
-                    //     remoteControl.setStream(stream);
-                    //     log('Remote control stream attached to viewer component');
-                    // } else {
-                    //     log.error('Viewer remote-control not found or lacks setStream method');
-                    //     await stream.close();
-                    // }
                 } catch (err) {
                     log.error('Error in /remote-control/1.0.0 handler: %o', err);
                     try { await stream.close(); } catch {}
@@ -927,24 +1059,28 @@ export class ChatManager extends BaseComponent {
                                                 log('Using multiaddr for remote control dial: %s', dialAddress);
                                             }
                                         }
+                                        console.log('---------- SEND STREAM -------------------')
                                         const ma = multiaddr(dialAddress);
                                         const stream = await this.node.dialProtocol(ma, '/remote-control/1.0.0');
+                                        const lp = lpStream(stream);
 
-                                        console.log('---------- SEND STREAM -------------------')
-                                        // const lp = lpStream(stream);
-                                        //
-                                        // // Отправляем как JSON для единообразия
-                                        // const messageData = {
-                                        //     type: 'group_message',
-                                        //     text: messageText,
-                                        //     from: this.state.peerId,
-                                        //     timestamp: Date.now(),
-                                        //     topic: topic
-                                        // };
-                                        //
-                                        // await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
+                                       messageData = {
+                                            type: 'video_stream_start',
+                                            text: 'start connect',
+                                            from: this.state.peerId,
+                                            timestamp: Date.now()
+                                        };
+
+                                        await sendMessageToInterface({
+                                            messageData,
+                                            remotePeer,
+                                            type: 'sent'
+                                        })
+
+                                        await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
                                         await stream.close();
 
+                                        // await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
                                         // === ИСПОЛЬЗУЕМ getComponentAsync вместо querySelector ===
                                         // const controllerId = `remote-control-${remotePeer}-controller`;
                                         //

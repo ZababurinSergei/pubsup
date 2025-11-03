@@ -36,6 +36,11 @@ export class RemoteControl extends BaseComponent {
         await this._controller.init();
     }
 
+    async postMessage(event) {
+        if (event.type === 'WEBRTC_OFFER_RECEIVED') {
+            await this.handleWebRtcOffer(event.data);
+        }
+    }
     // Проверка, установлено ли расширение
     async isCdpExtensionAvailable() {
         const extensionId = 'ваш-extension-id'; // см. ниже
@@ -44,6 +49,124 @@ export class RemoteControl extends BaseComponent {
             return !!response;
         } catch (e) {
             return false;
+        }
+    }
+
+    /**
+     * Обрабатывает WebRTC offer от viewer (запрос на передачу экрана)
+     * Вызывается в режиме "controller"
+     * @param {Object} offerData - { sdp: string, from: string }
+     */
+    async handleWebRtcOffer(offerData) {
+        const log = logger('remote-control:webrtc:controller');
+        try {
+            if (this.state.mode !== 'controller') {
+                throw new Error('handleWebRtcOffer допустим только в режиме controller');
+            }
+
+            // Создаём RTCPeerConnection (без ICE-серверов — соединение уже через libp2p)
+            const pc = new RTCPeerConnection({ iceServers: [] });
+
+            // Обработка входящего видео от viewer
+            pc.ontrack = (event) => {
+                const remoteVideo = this.shadowRoot.querySelector('#remote-video');
+                if (remoteVideo) {
+                    remoteVideo.srcObject = event.streams[0];
+                    log('Видео от viewer получено и отображается');
+                }
+            };
+
+            // Устанавливаем удалённое описание (offer от viewer)
+            await pc.setRemoteDescription(
+                new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp })
+            );
+
+            // Создаём и отправляем ответ (answer)
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+
+            // Сохраняем соединение
+            this._videoPeerConnection = pc;
+
+            // Отправляем answer обратно viewer через приватное сообщение
+            const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+            if (!chatManager) throw new Error('chat-manager недоступен');
+
+            await chatManager.sendPrivateMessage(offerData.from, JSON.stringify({
+                type: 'REMOTE_CONTROL_EVENT',
+                payload: {
+                    type: 'VIDEO_SDP',
+                    sdpType: 'answer',
+                    sdp: answer.sdp,
+                    targetPeer: offerData.from,
+                    timestamp: Date.now()
+                }
+            }));
+
+            log('WebRTC answer отправлен viewer: %s', offerData.from);
+
+        } catch (err) {
+            log.error('Ошибка обработки WebRTC offer в controller:', err);
+            this.addError({
+                componentName: 'RemoteControl',
+                source: 'handleWebRtcOffer',
+                message: 'Не удалось обработать WebRTC offer от viewer',
+                details: err
+            });
+        }
+    }
+
+    async handleIceCandidate(candidateData) {
+        if (!this._videoPeerConnection) {
+            log.error('RTCPeerConnection не инициализирован, игнорируем кандидат');
+            return;
+        }
+
+        try {
+            await this._videoPeerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+            log('ICE-кандидат успешно добавлен:', candidateData);
+        } catch (err) {
+            log.error('Ошибка добавления ICE-кандидата:', err);
+        }
+    }
+    /**
+     * Обрабатывает входящий WebRTC SDP-ответ (answer)
+     * @param {Object} answerData - { sdp: string }
+     */
+    async handleWebRtcAnswer(answerData) {
+        const log = logger('remote-control:webrtc');
+        try {
+            if (!this._videoPeerConnection) {
+                log.error('RTCPeerConnection не инициализирован');
+                return;
+            }
+
+            // Устанавливаем удалённое описание (answer)
+            await this._videoPeerConnection.setRemoteDescription(
+                new RTCSessionDescription({
+                    type: 'answer',
+                    sdp: answerData.sdp
+                })
+            );
+
+            log('WebRTC answer успешно применён');
+
+            // Необязательно: установка обработчика ontrack для отображения стрима
+            this._videoPeerConnection.ontrack = (event) => {
+                const remoteVideo = this.shadowRoot.querySelector('#remote-video');
+                if (remoteVideo) {
+                    remoteVideo.srcObject = event.streams[0];
+                }
+            };
+
+        } catch (err) {
+            log.error('Ошибка обработки WebRTC-ответа:', err);
+            this.addError({
+                componentName: 'RemoteControl',
+                source: 'handleWebRtcAnswer',
+                message: 'Не удалось обработать WebRTC answer',
+                details: err
+            });
         }
     }
 
