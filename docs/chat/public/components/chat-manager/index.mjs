@@ -8,7 +8,7 @@ import {fromString as uint8ArrayFromString} from 'uint8arrays/from-string';
 import {logger} from '@libp2p/logger';
 import {multiaddr} from "@multiformats/multiaddr";
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher"
-import {insertRemoteControl, generatePeerName, generateMessageId} from "../utils/index.mjs";
+import {insertRemoteControl, generatePeerName, generateMessageId, getProtocol} from "../utils/index.mjs";
 
 const GROUPS_ANNOUNCEMENT_TOPIC = 'chat-groups-announcements';
 
@@ -572,7 +572,7 @@ export class ChatManager extends BaseComponent {
                 const parsed = JSON.parse(messageText);
 
                 const IS_REMOTE_CONTROL_EVENT = parsed.type === 'REMOTE_CONTROL_EVENT'
-                stream = await this.node.dialProtocol(ma, IS_REMOTE_CONTROL_EVENT ?'/remote-control/1.0.0':'/chat/1.0.0');
+                stream = await this.node.dialProtocol(ma, IS_REMOTE_CONTROL_EVENT ? '/remote-control/1.0.0' : '/chat/1.0.0');
                 lp = lpStream(stream);
 
                 if (parsed && typeof parsed === 'object' && parsed.type) {
@@ -604,15 +604,18 @@ export class ChatManager extends BaseComponent {
             }
 
             let request = ''
-            if(messageData.payload) {
-                console.log('--------- messageData -------------', messageData)
+            if (messageData.payload) {
                 request = JSON.stringify(messageData)
             } else {
                 request = JSON.stringify(messageData)
             }
+
+            const protocol = getProtocol(messageData.type)
+            stream = await this.node.dialProtocol(ma, protocol);
+
             // === ОТПРАВКА ===
             const messageBytes = uint8ArrayFromString(request);
-            console.log('----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) -----------------------');
+            console.log(`----------------------- SEND PRIVATE_MESSAGE dialProtocol(ma, ${protocol}) -----------------------`, messageData.payload ? messageData.payload: messageData);
             await lp.write(messageBytes);
 
             // === ЛОГИКА СОХРАНЕНИЯ В ИСТОРИЮ ===
@@ -628,17 +631,9 @@ export class ChatManager extends BaseComponent {
                 });
             } else if (messageData.type === 'REMOTE_CONTROL_REQUEST') {
                 log('Отправлен запрос на удалённое управление к: %s', peerId);
-                console.log('-------------------- REMOTE_CONTROL_REQUEST ------------------------------',{
-                    text: JSON.stringify(messageData),
-                    to: peerId,
-                    from: this.state.peerId,
-                    type: 'sent',
-                    timestamp: messageData.timestamp,
-                    isPrivate: true
-                })
                 const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
                 if (chatInterface) {
-                   await chatInterface.addMessage({
+                    await chatInterface.addMessage({
                         text: JSON.stringify(messageData),
                         to: peerId,
                         from: this.state.peerId,
@@ -687,12 +682,11 @@ export class ChatManager extends BaseComponent {
                 componentName: this.constructor.name,
                 source: 'sendPrivateMessage',
                 message: 'Ошибка отправки приватного сообщения',
-                details: { peerId, messageText, error }
+                details: {peerId, messageText, error}
             });
             throw error;
         }
     }
-
 
 
     /**
@@ -722,7 +716,7 @@ export class ChatManager extends BaseComponent {
                 if (!this.state.unreadCounts) this.state.unreadCounts = {};
                 this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
                 if (chatInterface?.updateMembersList) {
-                    await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                    await chatInterface.updateMembersList({unreadCounts: this.state.unreadCounts});
                 }
             }
         }
@@ -755,9 +749,9 @@ export class ChatManager extends BaseComponent {
                             }
 
 
-                            console.log('----------------- INCOMMING handle(/remote-control/1.0.0) messageData.type -----------------', messageData);
+                            console.log('----------------- INCOMING handle(/remote-control/1.0.0) -----------------', messageData?.payload ? messageData.payload: messageData);
 
-                            if(messageData?.type  === "REMOTE_CONTROL_EVENT") {
+                            if (messageData?.type === "REMOTE_CONTROL_EVENT") {
                                 await sendMessageToInterface({
                                     messageData: messageData?.payload,
                                     remotePeer,
@@ -766,18 +760,14 @@ export class ChatManager extends BaseComponent {
 
                                 const message = messageData?.payload
 
-                                if(message.type === "VIDEO_SDP" && message.sdpType === "offer") {
+                                if (message.type === "VIDEO_SDP" && message.sdpType === "offer") {
                                     log('Получен WebRTC offer от %s:', remotePeer, message.sdp);
-
-                                    log('Получен WebRTC офер от %s', remotePeer);
-
                                     // ID компонента controller: он был создан при отправке REMOTE_CONTROL_REQUEST
                                     const controllerId = `remote-control-${remotePeer}-controller`;
-                                    const remoteControl = await BaseComponent.getComponentAsync('remote-control', controllerId, 3000);
+                                    const remoteControl = await this.getComponentAsync('remote-control', controllerId, 3000);
 
-                                    console.log('----------------------', remoteControl)
-                                    if (remoteControl && typeof remoteControl.handleWebRtcOffer === 'function') {
-                                        await remoteControl.handleWebRtcOffer({
+                                    if (remoteControl && typeof remoteControl.negotiateWebRtcOffer === 'function') {
+                                        await remoteControl.negotiateWebRtcOffer({
                                             sdp: message.sdp,
                                             from: remotePeer
                                         });
@@ -786,7 +776,7 @@ export class ChatManager extends BaseComponent {
                                     }
                                 }
 
-                                if(message.type === "VIDEO_SDP" && message.sdpType === "answer") {
+                                if (message.type === "VIDEO_SDP" && message.sdpType === "answer") {
                                     log('Получен WebRTC answer от %s', remotePeer);
 
 
@@ -808,16 +798,11 @@ export class ChatManager extends BaseComponent {
                                 if (message.type === "VIDEO_ICE_CANDIDATE") {
                                     log('Получен ICE-кандидат от %s', remotePeer);
 
-                                    const controllerId = `remote-control-${remotePeer}-controller`;
-                                    const remoteControl = await BaseComponent.getComponentAsync('remote-control', controllerId, 3000);
+                                    const controllerId = `remote-control-${remotePeer}-${message.mode}`;
+                                    const remoteControl = await this.getComponentAsync('remote-control', controllerId, 3000);
 
+                                    console.log('remoteControl: ------------------', remoteControl, controllerId)
                                     if (remoteControl && typeof remoteControl.handleIceCandidate === 'function') {
-                                        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', {
-                                            candidate: message.candidate.candidate,
-                                            sdpMid: message.candidate.sdpMid,
-                                            sdpMLineIndex: message.candidate.sdpMLineIndex,
-                                            from: remotePeer
-                                        })
                                         await remoteControl.handleIceCandidate({
                                             candidate: message.candidate.candidate,
                                             sdpMid: message.candidate.sdpMid,
@@ -840,7 +825,7 @@ export class ChatManager extends BaseComponent {
                                 const viewerId = `remote-control-${remotePeer}-viewer`;
                                 const remoteControl = await BaseComponent.getComponentAsync('remote-control', viewerId, 3000);
 
-                                if(remoteControl) {
+                                if (remoteControl) {
                                     await remoteControl._actions.startScreenShare()
                                 }
                             }
@@ -857,7 +842,10 @@ export class ChatManager extends BaseComponent {
                     }
                 } catch (err) {
                     log.error('Error in /remote-control/1.0.0 handler: %o', err);
-                    try { await stream.close(); } catch {}
+                    try {
+                        await stream.close();
+                    } catch {
+                    }
                 }
             });
 
@@ -894,7 +882,7 @@ export class ChatManager extends BaseComponent {
                                 };
                             }
 
-                            console.log('----------------- handle(/chat/1.0.0) messageData.type -----------------', messageData);
+                            console.log('----------------- INCOMING  handle(/chat/1.0.0) -----------------', messageData.payload ? messageData.payload: messageData);
                             // === Обработка приватных сообщений ===
                             if (messageData.type === 'private_message') {
                                 await this.addMessageToPrivateHistory({
@@ -924,13 +912,13 @@ export class ChatManager extends BaseComponent {
                                     if (!this.state.unreadCounts) this.state.unreadCounts = {};
                                     this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
                                     if (chatInterface?.updateMembersList) {
-                                        await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                                        await chatInterface.updateMembersList({unreadCounts: this.state.unreadCounts});
                                     }
                                 }
 
                                 // === Обработка запроса на удалённое управление ===
                             } else if (messageData.type === 'REMOTE_CONTROL_REQUEST') {
-                                const { initiator, targetPeer, timestamp } = messageData.payload;
+                                const {initiator, targetPeer, timestamp} = messageData.payload;
                                 const myPeerId = this.state.peerId;
 
                                 log('Получен запрос на удалённое управление от %s для %s', initiator, targetPeer);
@@ -965,24 +953,10 @@ export class ChatManager extends BaseComponent {
                                             if (!this.state.unreadCounts) this.state.unreadCounts = {};
                                             this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
                                             if (chatInterface?.updateMembersList) {
-                                                await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                                                await chatInterface.updateMembersList({unreadCounts: this.state.unreadCounts});
                                             }
                                         }
                                     }
-
-                                    console.log('----------------- handle(/chat/1.0.0) -> postMessage -----------------', {
-                                        type: 'SEND_PRIVATE_MESSAGE',
-                                        data: {
-                                            peerId: initiator,
-                                            message: JSON.stringify({
-                                                type: 'REMOTE_CONTROL_ACCEPTED',
-                                                payload: {
-                                                    targetPeer: myPeerId,
-                                                    initiator: initiator  // ← КЛЮЧЕВОЕ: чтобы инициатор знал, что это для него
-                                                }
-                                            })
-                                        }
-                                    });
 
                                     await insertRemoteControl(chatInterface, messageData.from, 'viewer'); // правильно
 
@@ -1008,8 +982,9 @@ export class ChatManager extends BaseComponent {
 
                                 // === Обработка подтверждения удалённого управления ===
                             } else if (messageData.type === 'REMOTE_CONTROL_ACCEPTED') {
-                                const { initiator } = messageData.payload;
+                                const {initiator} = messageData.payload;
                                 const myPeerId = this.state.peerId;
+
 
                                 if (myPeerId === initiator) {
                                     log('Получено подтверждение удалённого управления от %s', remotePeer);
@@ -1041,11 +1016,19 @@ export class ChatManager extends BaseComponent {
                                                 if (!this.state.unreadCounts) this.state.unreadCounts = {};
                                                 this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
                                                 if (chatInterface?.updateMembersList) {
-                                                    await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+                                                    await chatInterface.updateMembersList({unreadCounts: this.state.unreadCounts});
                                                 }
                                             }
 
                                             await insertRemoteControl(chatInterface, messageData.from, 'controller'); // правильно
+                                        }
+
+                                        const controllerId = `remote-control-${remotePeer}-controller`;
+                                        const remoteControl = await this.getComponentAsync('remote-control', controllerId, 3000);
+                                        if (remoteControl && typeof remoteControl.createPeerConnection === 'function') {
+                                            await remoteControl?.createPeerConnection();
+                                        } else {
+                                            log.error('Компонент remote-control (controller) рс не создан');
                                         }
 
                                         // Получаем мультиадрес для dial
@@ -1059,12 +1042,13 @@ export class ChatManager extends BaseComponent {
                                                 log('Using multiaddr for remote control dial: %s', dialAddress);
                                             }
                                         }
+
                                         console.log('---------- SEND STREAM -------------------')
                                         const ma = multiaddr(dialAddress);
                                         const stream = await this.node.dialProtocol(ma, '/remote-control/1.0.0');
                                         const lp = lpStream(stream);
 
-                                       messageData = {
+                                        messageData = {
                                             type: 'video_stream_start',
                                             text: 'start connect',
                                             from: this.state.peerId,
@@ -1079,20 +1063,6 @@ export class ChatManager extends BaseComponent {
 
                                         await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
                                         await stream.close();
-
-                                        // await lp.write(uint8ArrayFromString(JSON.stringify(messageData)));
-                                        // === ИСПОЛЬЗУЕМ getComponentAsync вместо querySelector ===
-                                        // const controllerId = `remote-control-${remotePeer}-controller`;
-                                        //
-                                        // const remoteControl = await this.getComponentAsync('remote-control', controllerId, 2000);
-                                        //
-                                        // if (remoteControl?.setStream) {
-                                        //     remoteControl.setStream(stream);
-                                        //     log('Remote control stream established as controller to %s', remotePeer);
-                                        // } else {
-                                        //     log.error('Controller remote-control not found, closing stream');
-                                        //     await stream.close();
-                                        // }
                                     } catch (err) {
                                         log.error('Failed to establish remote control stream to %s: %o', remotePeer, err);
                                     }

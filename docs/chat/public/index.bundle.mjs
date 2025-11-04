@@ -2229,6 +2229,14 @@ async function insertRemoteControl(context, targetPeer, mode) {
   }
 }
 __name(insertRemoteControl, "insertRemoteControl");
+var getProtocol = /* @__PURE__ */ __name(function(type) {
+  switch (type) {
+    case "REMOTE_CONTROL_EVENT":
+      return "/remote-control/1.0.0";
+    default:
+      return "/chat/1.0.0";
+  }
+}, "getProtocol");
 
 // public/components/chat-manager/template/index.mjs
 function defaultTemplate({ state = {} } = {}) {
@@ -16526,13 +16534,14 @@ var ChatManager = class extends BaseComponent {
       }
       let request = "";
       if (messageData.payload) {
-        console.log("--------- messageData -------------", messageData);
         request = JSON.stringify(messageData);
       } else {
         request = JSON.stringify(messageData);
       }
+      const protocol = getProtocol(messageData.type);
+      stream = await this.node.dialProtocol(ma, protocol);
       const messageBytes = fromString2(request);
-      console.log("----------------------- sendPrivateMessage dialProtocol(ma, /chat/1.0.0) -----------------------");
+      console.log(`----------------------- SEND PRIVATE_MESSAGE dialProtocol(ma, ${protocol}) -----------------------`, messageData.payload ? messageData.payload : messageData);
       await lp.write(messageBytes);
       if (messageData.type === "private_message") {
         await this.addMessage({
@@ -16545,14 +16554,6 @@ var ChatManager = class extends BaseComponent {
         });
       } else if (messageData.type === "REMOTE_CONTROL_REQUEST") {
         log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
-        console.log("-------------------- REMOTE_CONTROL_REQUEST ------------------------------", {
-          text: JSON.stringify(messageData),
-          to: peerId,
-          from: this.state.peerId,
-          type: "sent",
-          timestamp: messageData.timestamp,
-          isPrivate: true
-        });
         const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
         if (chatInterface) {
           await chatInterface.addMessage({
@@ -16654,7 +16655,7 @@ var ChatManager = class extends BaseComponent {
                 log6("Non-JSON message received, treating as plain text: %s", messageText);
                 messageData = null;
               }
-              console.log("----------------- INCOMMING handle(/remote-control/1.0.0) messageData.type -----------------", messageData);
+              console.log("----------------- INCOMING handle(/remote-control/1.0.0) -----------------", messageData?.payload ? messageData.payload : messageData);
               if (messageData?.type === "REMOTE_CONTROL_EVENT") {
                 await sendMessageToInterface({
                   messageData: messageData?.payload,
@@ -16664,12 +16665,10 @@ var ChatManager = class extends BaseComponent {
                 const message3 = messageData?.payload;
                 if (message3.type === "VIDEO_SDP" && message3.sdpType === "offer") {
                   log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC offer \u043E\u0442 %s:", remotePeer, message3.sdp);
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC \u043E\u0444\u0435\u0440 \u043E\u0442 %s", remotePeer);
                   const controllerId = `remote-control-${remotePeer}-controller`;
-                  const remoteControl = await BaseComponent.getComponentAsync("remote-control", controllerId, 3e3);
-                  console.log("----------------------", remoteControl);
-                  if (remoteControl && typeof remoteControl.handleWebRtcOffer === "function") {
-                    await remoteControl.handleWebRtcOffer({
+                  const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
+                  if (remoteControl && typeof remoteControl.negotiateWebRtcOffer === "function") {
+                    await remoteControl.negotiateWebRtcOffer({
                       sdp: message3.sdp,
                       from: remotePeer
                     });
@@ -16694,15 +16693,10 @@ var ChatManager = class extends BaseComponent {
                 }
                 if (message3.type === "VIDEO_ICE_CANDIDATE") {
                   log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u043E\u0442 %s", remotePeer);
-                  const controllerId = `remote-control-${remotePeer}-controller`;
-                  const remoteControl = await BaseComponent.getComponentAsync("remote-control", controllerId, 3e3);
+                  const controllerId = `remote-control-${remotePeer}-${message3.mode}`;
+                  const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
+                  console.log("remoteControl: ------------------", remoteControl, controllerId);
                   if (remoteControl && typeof remoteControl.handleIceCandidate === "function") {
-                    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", {
-                      candidate: message3.candidate.candidate,
-                      sdpMid: message3.candidate.sdpMid,
-                      sdpMLineIndex: message3.candidate.sdpMLineIndex,
-                      from: remotePeer
-                    });
                     await remoteControl.handleIceCandidate({
                       candidate: message3.candidate.candidate,
                       sdpMid: message3.candidate.sdpMid,
@@ -16771,7 +16765,7 @@ var ChatManager = class extends BaseComponent {
                   raw: true
                 };
               }
-              console.log("----------------- handle(/chat/1.0.0) messageData.type -----------------", messageData);
+              console.log("----------------- INCOMING  handle(/chat/1.0.0) -----------------", messageData.payload ? messageData.payload : messageData);
               if (messageData.type === "private_message") {
                 await this.addMessageToPrivateHistory({
                   text: messageData.text,
@@ -16834,20 +16828,6 @@ var ChatManager = class extends BaseComponent {
                       }
                     }
                   }
-                  console.log("----------------- handle(/chat/1.0.0) -> postMessage -----------------", {
-                    type: "SEND_PRIVATE_MESSAGE",
-                    data: {
-                      peerId: initiator,
-                      message: JSON.stringify({
-                        type: "REMOTE_CONTROL_ACCEPTED",
-                        payload: {
-                          targetPeer: myPeerId,
-                          initiator
-                          // ← КЛЮЧЕВОЕ: чтобы инициатор знал, что это для него
-                        }
-                      })
-                    }
-                  });
                   await insertRemoteControl(chatInterface, messageData.from, "viewer");
                   await this.postMessage({
                     type: "SEND_PRIVATE_MESSAGE",
@@ -16902,6 +16882,13 @@ var ChatManager = class extends BaseComponent {
                         }
                       }
                       await insertRemoteControl(chatInterface, messageData.from, "controller");
+                    }
+                    const controllerId = `remote-control-${remotePeer}-controller`;
+                    const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
+                    if (remoteControl && typeof remoteControl.createPeerConnection === "function") {
+                      await remoteControl?.createPeerConnection();
+                    } else {
+                      log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u0440\u0441 \u043D\u0435 \u0441\u043E\u0437\u0434\u0430\u043D");
                     }
                     const connectedPeers = await this.getConnectedPeers();
                     const targetPeerInfo = connectedPeers.find((p2) => p2.id === remotePeer);
@@ -38031,7 +38018,8 @@ function defaultTemplate5({ state = {} } = {}) {
   ` : ""}
 
   <div class="screen" id="remote-screen">
-    ${mode === "controller" ? `
+    ${mode === "controller" || mode === "viewer" ? `
+     <div id="video-status" class="video-status"></div>
       <video id="remote-video" autoplay playsinline muted style="width:100%;height:100%;background:black;"></video>
     ` : ""}
     ${mode === "viewer" ? '<div id="remote-cursor" class="remote-cursor">\u{1F5B1}\uFE0F</div>' : ""}
@@ -38263,7 +38251,6 @@ async function createActions5(context) {
       }
     };
     try {
-      console.log(">>>>>>>>> sendInputEvent -> sendPrivateMessage >>>>>>>>>> message", targetPeer, message2);
       await chatManager.sendPrivateMessage(targetPeer, JSON.stringify(message2));
       log9("\u0421\u043E\u0431\u044B\u0442\u0438\u0435 \u0432\u0432\u043E\u0434\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E: %s", eventData.type);
     } catch (error) {
@@ -38360,27 +38347,18 @@ async function createActions5(context) {
     if (context.state.mode !== "viewer") return;
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-      const pc = new RTCPeerConnection({ iceServers: [] });
+      const pc = await context.createPeerConnection();
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+      await context._events(pc);
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       context._videoPeerConnection = pc;
       context._screenStream = stream;
-      console.log("------------------ SEND OFFER ------------------", offer);
       await sendInputEvent({
         type: "VIDEO_SDP",
         sdpType: "offer",
         sdp: offer.sdp
       });
-      pc.onicecandidate = (e2) => {
-        if (e2.candidate) {
-          console.log("------------------- ICE CANDIDATE -------------------", e2.candidate);
-          sendInputEvent({
-            type: "VIDEO_ICE_CANDIDATE",
-            candidate: e2.candidate
-          });
-        }
-      };
     } catch (err) {
       console.error("ERROR", err);
       log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0445\u0432\u0430\u0442\u0430 \u044D\u043A\u0440\u0430\u043D\u0430:", err);
@@ -38420,72 +38398,16 @@ async function createActions5(context) {
     }
   }
   __name(toggleVideo, "toggleVideo");
-  async function startVideoStream() {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-      videoPeerConnection = new RTCPeerConnection({ iceServers: [] });
-      localStream.getTracks().forEach((track) => {
-        videoPeerConnection.addTrack(track, localStream);
-      });
-      await new Promise((resolve) => {
-        if (videoPeerConnection.iceGatheringState === "complete") {
-          resolve();
-        } else {
-          const check = /* @__PURE__ */ __name(() => {
-            if (videoPeerConnection.iceGatheringState === "complete") {
-              videoPeerConnection.removeEventListener("icegatheringstatechange", check);
-              resolve();
-            }
-          }, "check");
-          videoPeerConnection.addEventListener("icegatheringstatechange", check);
-        }
-      });
-      const offer = await videoPeerConnection.createOffer();
-      await videoPeerConnection.setLocalDescription(offer);
-      sendInputEvent({
-        type: "VIDEO_SDP",
-        sdp: offer.sdp,
-        sdpType: "offer"
-        // ← уникальное имя поля
-      }).catch(() => {
-      });
-    } catch (err) {
-      log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0432\u0438\u0434\u0435\u043E:", err);
-      stopVideoStream();
-      context.state.videoEnabled = false;
-      await context.renderPart({
-        partName: "defaultTemplate",
-        state: context.state,
-        selector: "#root",
-        method: "innerHTML"
-      });
-    }
-  }
-  __name(startVideoStream, "startVideoStream");
-  function stopVideoStream() {
-    if (localStream) {
-      localStream.getTracks().forEach((t2) => t2.stop());
-      localStream = null;
-    }
-    if (videoPeerConnection) {
-      videoPeerConnection.close();
-      videoPeerConnection = null;
-    }
-    context.state.videoEnabled = false;
-  }
-  __name(stopVideoStream, "stopVideoStream");
   async function setupInputListener() {
   }
   __name(setupInputListener, "setupInputListener");
   async function cleanup() {
-    stopVideoStream();
+    stopScreenShare();
   }
   __name(cleanup, "cleanup");
   return {
     startScreenShare,
     stopScreenShare,
-    stopVideoStream,
-    startVideoStream,
     sendInputEvent,
     setupInputListener,
     cleanup,
@@ -38508,6 +38430,8 @@ var RemoteControl = class extends BaseComponent {
   constructor() {
     super();
     this._templateMethods = template_exports5;
+    this._videoPeerConnection = null;
+    this._screenStream = null;
     this.state = {
       mode: null,
       // или 'controller'
@@ -38542,31 +38466,109 @@ var RemoteControl = class extends BaseComponent {
       return false;
     }
   }
+  _events(pc) {
+    pc.ontrack = (event) => {
+      console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+      const remoteVideo = this.shadowRoot.querySelector("#remote-video");
+      if (remoteVideo) {
+        remoteVideo.srcObject = event.streams[0];
+        log10("\u0412\u0438\u0434\u0435\u043E \u043E\u0442 viewer \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0438 \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044F");
+      }
+    };
+    pc.onicecandidateerror = (event) => {
+      console.log("########### \u041E\u0428\u0418\u0411\u041A\u0410 \u041A\u0410\u041D\u0414\u0418\u0414\u0410\u0422\u0410 ###################", event);
+    };
+    pc.oniceconnectionstatechange = () => {
+      console.log("############### oniceconnectionstatechange #######################");
+      this._handleIceConnectionState(pc.iceConnectionState);
+    };
+    pc.onicecandidate = (e2) => {
+      if (e2.candidate) {
+        const mode = this.getAttribute("mode");
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!! CANDIDATE !!!!!!!!!!!!!!!!!!!!!!!!!!!!", mode);
+        log10("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u043B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0439 ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442:", e2.candidate);
+        this._actions.sendInputEvent({
+          type: "VIDEO_ICE_CANDIDATE",
+          mode: mode === "viewer" ? "controller" : "viewer",
+          candidate: e2.candidate
+        });
+      }
+    };
+  }
   /**
-   * Обрабатывает WebRTC offer от viewer (запрос на передачу экрана)
-   * Вызывается в режиме "controller"
+   * Обрабатывает изменение состояния ICE-соединения
+   * @param {string} state - Текущее состояние (например, 'connected', 'failed', 'disconnected' и т.д.)
+   */
+  _handleIceConnectionState(state) {
+    const log11 = logger("remote-control:ice");
+    const remoteVideo = this.shadowRoot.querySelector("#remote-video");
+    const statusEl = this.shadowRoot.querySelector("#video-status");
+    log11("ICE Connection State: %s", state);
+    switch (state) {
+      case "connected":
+      case "completed":
+        console.log("\u2705 WebRTC \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u043E. \u0412\u0438\u0434\u0435\u043E \u0434\u043E\u043B\u0436\u043D\u043E \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0442\u044C\u0441\u044F.");
+        if (statusEl) {
+          statusEl.textContent = "\u0412\u0438\u0434\u0435\u043E\u0441\u0432\u044F\u0437\u044C \u0430\u043A\u0442\u0438\u0432\u043D\u0430";
+          statusEl.className = "video-status connected";
+        }
+        break;
+      case "failed":
+        console.log("\u274C WebRTC \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C");
+        if (statusEl) {
+          statusEl.textContent = "\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F";
+          statusEl.className = "video-status failed";
+        }
+        break;
+      case "disconnected":
+        log11("\u26A0\uFE0F WebRTC \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0440\u0430\u0437\u043E\u0440\u0432\u0430\u043D\u043E");
+        if (statusEl) {
+          statusEl.textContent = "\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0440\u0430\u0437\u043E\u0440\u0432\u0430\u043D\u043E";
+          statusEl.className = "video-status disconnected";
+        }
+        break;
+      case "checking":
+        if (statusEl) {
+          statusEl.textContent = "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F...";
+          statusEl.className = "video-status checking";
+        }
+        break;
+      default:
+        if (statusEl) {
+          statusEl.textContent = `ICE: ${state}`;
+          statusEl.className = `video-status ${state}`;
+        }
+        log11("ICE state: %s", state);
+    }
+  }
+  /**
+   * Создаёт и настраивает RTCPeerConnection для режима controller
+   * @returns {RTCPeerConnection}
+   */
+  async createPeerConnection() {
+    const log11 = logger("remote-control:webrtc:controller");
+    const pc = new RTCPeerConnection({ iceServers: [] });
+    this._events(pc);
+    this._videoPeerConnection = pc;
+    return pc;
+  }
+  /**
+   * Обрабатывает WebRTC offer от viewer и отправляет answer
    * @param {Object} offerData - { sdp: string, from: string }
    */
-  async handleWebRtcOffer(offerData) {
+  async negotiateWebRtcOffer(offerData) {
     const log11 = logger("remote-control:webrtc:controller");
     try {
       if (this.state.mode !== "controller") {
-        throw new Error("handleWebRtcOffer \u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C \u0442\u043E\u043B\u044C\u043A\u043E \u0432 \u0440\u0435\u0436\u0438\u043C\u0435 controller");
+        console.warn("negotiateWebRtcOffer \u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C \u0442\u043E\u043B\u044C\u043A\u043E \u0432 \u0440\u0435\u0436\u0438\u043C\u0435 controller");
+        return;
       }
-      const pc = new RTCPeerConnection({ iceServers: [] });
-      pc.ontrack = (event) => {
-        const remoteVideo = this.shadowRoot.querySelector("#remote-video");
-        if (remoteVideo) {
-          remoteVideo.srcObject = event.streams[0];
-          log11("\u0412\u0438\u0434\u0435\u043E \u043E\u0442 viewer \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0438 \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044F");
-        }
-      };
+      const pc = this._videoPeerConnection = this._videoPeerConnection ? this._videoPeerConnection : await this.createPeerConnection();
       await pc.setRemoteDescription(
         new RTCSessionDescription({ type: "offer", sdp: offerData.sdp })
       );
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      this._videoPeerConnection = pc;
       const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
       if (!chatManager) throw new Error("chat-manager \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
       await chatManager.sendPrivateMessage(offerData.from, JSON.stringify({
@@ -38584,7 +38586,7 @@ var RemoteControl = class extends BaseComponent {
       log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC offer \u0432 controller:", err);
       this.addError({
         componentName: "RemoteControl",
-        source: "handleWebRtcOffer",
+        source: "negotiateWebRtcOffer",
         message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C WebRTC offer \u043E\u0442 viewer",
         details: err
       });
@@ -38597,6 +38599,13 @@ var RemoteControl = class extends BaseComponent {
     }
     try {
       await this._videoPeerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+      this._videoPeerConnection.ontrack = (event) => {
+        console.log(";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;");
+        const remoteVideo = this.shadowRoot.querySelector("#remote-video");
+        if (remoteVideo) {
+          remoteVideo.srcObject = event.streams[0];
+        }
+      };
       log10("ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D:", candidateData);
     } catch (err) {
       log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u044F ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442\u0430:", err);
@@ -38607,6 +38616,7 @@ var RemoteControl = class extends BaseComponent {
    * @param {Object} answerData - { sdp: string }
    */
   async handleWebRtcAnswer(answerData) {
+    console.log("||||||||||||| ANSWER |||||||||||||", this._videoPeerConnection);
     const log11 = logger("remote-control:webrtc");
     try {
       if (!this._videoPeerConnection) {
@@ -38620,12 +38630,6 @@ var RemoteControl = class extends BaseComponent {
         })
       );
       log11("WebRTC answer \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u0440\u0438\u043C\u0435\u043D\u0451\u043D");
-      this._videoPeerConnection.ontrack = (event) => {
-        const remoteVideo = this.shadowRoot.querySelector("#remote-video");
-        if (remoteVideo) {
-          remoteVideo.srcObject = event.streams[0];
-        }
-      };
     } catch (err) {
       log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC-\u043E\u0442\u0432\u0435\u0442\u0430:", err);
       this.addError({
@@ -38634,25 +38638,6 @@ var RemoteControl = class extends BaseComponent {
         message: "\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C WebRTC answer",
         details: err
       });
-    }
-  }
-  // В классе RemoteControl
-  async setStream(stream) {
-    log10("\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0441\u0442\u0440\u0438\u043C\u0430 \u0434\u043B\u044F remote-control \u0432 \u0440\u0435\u0436\u0438\u043C\u0435 %s", this.state.mode);
-    if (!stream) {
-      log10.error("\u041F\u043E\u043F\u044B\u0442\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u0438\u0442\u044C \u043F\u0443\u0441\u0442\u043E\u0439 \u0441\u0442\u0440\u0438\u043C");
-      return;
-    }
-    this._remoteStream = stream;
-    this.state.isConnected = true;
-    await this.renderPart({
-      partName: "defaultTemplate",
-      state: this.state,
-      selector: "#root",
-      method: "innerHTML"
-    });
-    if (this.state.mode === "viewer") {
-      await this._startReadingStream(stream);
     }
   }
   async _startReadingStream(stream) {

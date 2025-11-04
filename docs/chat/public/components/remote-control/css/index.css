@@ -82,3 +82,24 @@
     left: 0;
     z-index: 1000000;
 }
+
+
+.video-status {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+.video-status.connected {
+    background: rgba(0, 176, 155, 0.2);
+    color: #00b09b;
+}
+.video-status.failed,
+.video-status.disconnected {
+    background: rgba(245, 87, 108, 0.2);
+    color: #f5576c;
+}
+.video-status.checking {
+    background: rgba(255, 165, 0, 0.2);
+    color: #ffa500;
+}

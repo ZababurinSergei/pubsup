@@ -60,7 +60,6 @@ export async function createActions(context) {
         };
 
         try {
-            console.log('>>>>>>>>> sendInputEvent -> sendPrivateMessage >>>>>>>>>> message', targetPeer, message)
             await chatManager.sendPrivateMessage(targetPeer, JSON.stringify(message));
             log('Событие ввода отправлено: %s', eventData.type);
         } catch (error) {
@@ -184,10 +183,10 @@ export async function createActions(context) {
         if (context.state.mode !== 'viewer') return;
         try {
             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-            // Создаём peer connection (без ICE-серверов, т.к. Libp2p уже установил соединение)
-            const pc = new RTCPeerConnection({ iceServers: [] });
+            const pc = await context.createPeerConnection()
             stream.getTracks().forEach(track => pc.addTrack(track, stream));
-            // Создаём offer
+
+            await context._events(pc)
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
@@ -195,26 +194,12 @@ export async function createActions(context) {
             context._videoPeerConnection = pc;
             context._screenStream = stream;
 
-            console.log('------------------ SEND OFFER ------------------', offer)
-
             // Отправляем offer через Libp2p-стрим
             await sendInputEvent({
                 type: 'VIDEO_SDP',
                 sdpType: 'offer',
                 sdp: offer.sdp
             });
-
-            // Обработка ICE-кандидатов (если понадобится)
-            pc.onicecandidate = (e) => {
-                if (e.candidate) {
-                    console.log('------------------- ICE CANDIDATE -------------------', e.candidate)
-                    sendInputEvent({
-                        type: 'VIDEO_ICE_CANDIDATE',
-                        candidate: e.candidate
-                    });
-                }
-            };
-
         } catch (err) {
             console.error('ERROR',err)
             log.error('Ошибка захвата экрана:', err);
@@ -257,67 +242,6 @@ export async function createActions(context) {
         // На стороне controller — ничего не делаем здесь
     }
 
-    async function startVideoStream() {
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-
-            // Без ICE-серверов — полагаемся на уже открытый NAT mapping
-            videoPeerConnection = new RTCPeerConnection({ iceServers: [] });
-
-            localStream.getTracks().forEach(track => {
-                videoPeerConnection.addTrack(track, localStream);
-            });
-
-            // Ждём завершения ICE gathering
-            await new Promise(resolve => {
-                if (videoPeerConnection.iceGatheringState === 'complete') {
-                    resolve();
-                } else {
-                    const check = () => {
-                        if (videoPeerConnection.iceGatheringState === 'complete') {
-                            videoPeerConnection.removeEventListener('icegatheringstatechange', check);
-                            resolve();
-                        }
-                    };
-                    videoPeerConnection.addEventListener('icegatheringstatechange', check);
-                }
-            });
-
-            const offer = await videoPeerConnection.createOffer();
-            await videoPeerConnection.setLocalDescription(offer);
-
-            // ✅ Исправлено: нет дублирования поля `type`
-            sendInputEvent({
-                type: 'VIDEO_SDP',
-                sdp: offer.sdp,
-                sdpType: 'offer'  // ← уникальное имя поля
-            }).catch(() => {});
-
-        } catch (err) {
-            log.error('Ошибка запуска видео:', err);
-            stopVideoStream();
-            context.state.videoEnabled = false;
-            await context.renderPart({
-                partName: 'defaultTemplate',
-                state: context.state,
-                selector: '#root',
-                method: 'innerHTML'
-            });
-        }
-    }
-
-    function stopVideoStream() {
-        if (localStream) {
-            localStream.getTracks().forEach(t => t.stop());
-            localStream = null;
-        }
-        if (videoPeerConnection) {
-            videoPeerConnection.close();
-            videoPeerConnection = null;
-        }
-        context.state.videoEnabled = false;
-    }
-
     // === Подписка на события (реализуется через postMessage) ===
     async function setupInputListener() {
         // Обработка в postMessage компонента
@@ -325,15 +249,13 @@ export async function createActions(context) {
 
     // === Очистка при отключении ===
     async function cleanup() {
-        stopVideoStream();
+        stopScreenShare();
         // Очистка обработчиков — делается в controller
     }
 
     return {
         startScreenShare,
         stopScreenShare,
-        stopVideoStream,
-        startVideoStream,
         sendInputEvent,
         setupInputListener,
         cleanup,

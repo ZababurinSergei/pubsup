@@ -16,6 +16,8 @@ export class RemoteControl extends BaseComponent {
     constructor() {
         super();
         this._templateMethods = template;
+        this._videoPeerConnection = null
+        this._screenStream = null
         this.state = {
             mode: null, // или 'controller'
             targetPeer: null,
@@ -52,43 +54,136 @@ export class RemoteControl extends BaseComponent {
         }
     }
 
+    _events (pc) {
+        // Обработка входящего видео от viewer
+        pc.ontrack = (event) => {
+            console.log('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD')
+            const remoteVideo = this.shadowRoot.querySelector('#remote-video');
+            if (remoteVideo) {
+                remoteVideo.srcObject = event.streams[0];
+                log('Видео от viewer получено и отображается');
+            }
+        };
+
+        pc.onicecandidateerror = (event) => {
+            console.log('########### ОШИБКА КАНДИДАТА ###################', event)
+        }
+
+        pc.oniceconnectionstatechange = () => {
+            console.log('############### oniceconnectionstatechange #######################')
+            this._handleIceConnectionState(pc.iceConnectionState);
+        };
+
+        // Обработка ICE-кандидатов (если понадобится)
+        pc.onicecandidate = (e) => {
+            if (e.candidate) {
+                const mode = this.getAttribute('mode')
+                console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!! CANDIDATE !!!!!!!!!!!!!!!!!!!!!!!!!!!!', mode)
+                log('Получен локальный ICE-кандидат:', e.candidate);
+                this._actions.sendInputEvent({
+                    type: 'VIDEO_ICE_CANDIDATE',
+                    mode: mode === 'viewer' ? 'controller': 'viewer',
+                    candidate: e.candidate
+                });
+            }
+        };
+    }
     /**
-     * Обрабатывает WebRTC offer от viewer (запрос на передачу экрана)
-     * Вызывается в режиме "controller"
+     * Обрабатывает изменение состояния ICE-соединения
+     * @param {string} state - Текущее состояние (например, 'connected', 'failed', 'disconnected' и т.д.)
+     */
+    _handleIceConnectionState(state) {
+        const log = logger('remote-control:ice');
+        const remoteVideo = this.shadowRoot.querySelector('#remote-video');
+        const statusEl = this.shadowRoot.querySelector('#video-status');
+
+        log('ICE Connection State: %s', state);
+
+        switch (state) {
+            case 'connected':
+            case 'completed':
+                console.log('✅ WebRTC соединение установлено. Видео должно отображаться.');
+                if (statusEl) {
+                    statusEl.textContent = 'Видеосвязь активна';
+                    statusEl.className = 'video-status connected';
+                }
+                // Видео уже привязано в ontrack, но можно обновить состояние
+                break;
+
+            case 'failed':
+                console.log('❌ WebRTC соединение не удалось');
+                if (statusEl) {
+                    statusEl.textContent = 'Ошибка соединения';
+                    statusEl.className = 'video-status failed';
+                }
+                // Опционально: остановить поток или показать ошибку
+                // this._cleanupWebRtc();
+                break;
+
+            case 'disconnected':
+                log('⚠️ WebRTC соединение разорвано');
+                if (statusEl) {
+                    statusEl.textContent = 'Соединение разорвано';
+                    statusEl.className = 'video-status disconnected';
+                }
+                break;
+
+            case 'checking':
+                if (statusEl) {
+                    statusEl.textContent = 'Установка соединения...';
+                    statusEl.className = 'video-status checking';
+                }
+                break;
+
+            default:
+                if (statusEl) {
+                    statusEl.textContent = `ICE: ${state}`;
+                    statusEl.className = `video-status ${state}`;
+                }
+                log('ICE state: %s', state);
+        }
+    }
+
+    /**
+     * Создаёт и настраивает RTCPeerConnection для режима controller
+     * @returns {RTCPeerConnection}
+     */
+    async createPeerConnection() {
+        const log = logger('remote-control:webrtc:controller');
+
+        const pc = new RTCPeerConnection({ iceServers: [] });
+
+        this._events(pc)
+
+        this._videoPeerConnection = pc;
+
+        return pc;
+    }
+
+    /**
+     * Обрабатывает WebRTC offer от viewer и отправляет answer
      * @param {Object} offerData - { sdp: string, from: string }
      */
-    async handleWebRtcOffer(offerData) {
+    async negotiateWebRtcOffer(offerData) {
         const log = logger('remote-control:webrtc:controller');
         try {
             if (this.state.mode !== 'controller') {
-                throw new Error('handleWebRtcOffer допустим только в режиме controller');
+                console.warn('negotiateWebRtcOffer допустим только в режиме controller')
+                return
             }
 
-            // Создаём RTCPeerConnection (без ICE-серверов — соединение уже через libp2p)
-            const pc = new RTCPeerConnection({ iceServers: [] });
+            const pc = this._videoPeerConnection = this._videoPeerConnection ? this._videoPeerConnection : await this.createPeerConnection()
 
-            // Обработка входящего видео от viewer
-            pc.ontrack = (event) => {
-                const remoteVideo = this.shadowRoot.querySelector('#remote-video');
-                if (remoteVideo) {
-                    remoteVideo.srcObject = event.streams[0];
-                    log('Видео от viewer получено и отображается');
-                }
-            };
-
-            // Устанавливаем удалённое описание (offer от viewer)
+            // 2. Устанавливаем удалённое описание (offer)
             await pc.setRemoteDescription(
                 new RTCSessionDescription({ type: 'offer', sdp: offerData.sdp })
             );
 
-            // Создаём и отправляем ответ (answer)
+            // 3. Генерируем и устанавливаем локальное описание (answer)
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
 
-            // Сохраняем соединение
-            this._videoPeerConnection = pc;
-
-            // Отправляем answer обратно viewer через приватное сообщение
+            // 5. Отправляем answer через chat-manager
             const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
             if (!chatManager) throw new Error('chat-manager недоступен');
 
@@ -109,7 +204,7 @@ export class RemoteControl extends BaseComponent {
             log.error('Ошибка обработки WebRTC offer в controller:', err);
             this.addError({
                 componentName: 'RemoteControl',
-                source: 'handleWebRtcOffer',
+                source: 'negotiateWebRtcOffer',
                 message: 'Не удалось обработать WebRTC offer от viewer',
                 details: err
             });
@@ -123,7 +218,18 @@ export class RemoteControl extends BaseComponent {
         }
 
         try {
+
             await this._videoPeerConnection.addIceCandidate(new RTCIceCandidate(candidateData));
+
+            // Необязательно: установка обработчика ontrack для отображения стрима
+            this._videoPeerConnection.ontrack = (event) => {
+                console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+                const remoteVideo = this.shadowRoot.querySelector('#remote-video');
+
+                if (remoteVideo) {
+                    remoteVideo.srcObject = event.streams[0];
+                }
+            };
             log('ICE-кандидат успешно добавлен:', candidateData);
         } catch (err) {
             log.error('Ошибка добавления ICE-кандидата:', err);
@@ -134,6 +240,7 @@ export class RemoteControl extends BaseComponent {
      * @param {Object} answerData - { sdp: string }
      */
     async handleWebRtcAnswer(answerData) {
+        console.log('||||||||||||| ANSWER |||||||||||||', this._videoPeerConnection)
         const log = logger('remote-control:webrtc');
         try {
             if (!this._videoPeerConnection) {
@@ -150,15 +257,6 @@ export class RemoteControl extends BaseComponent {
             );
 
             log('WebRTC answer успешно применён');
-
-            // Необязательно: установка обработчика ontrack для отображения стрима
-            this._videoPeerConnection.ontrack = (event) => {
-                const remoteVideo = this.shadowRoot.querySelector('#remote-video');
-                if (remoteVideo) {
-                    remoteVideo.srcObject = event.streams[0];
-                }
-            };
-
         } catch (err) {
             log.error('Ошибка обработки WebRTC-ответа:', err);
             this.addError({
@@ -167,32 +265,6 @@ export class RemoteControl extends BaseComponent {
                 message: 'Не удалось обработать WebRTC answer',
                 details: err
             });
-        }
-    }
-
-    // В классе RemoteControl
-    async setStream(stream) {
-        log('Установка стрима для remote-control в режиме %s', this.state.mode);
-
-        if (!stream) {
-            log.error('Попытка установить пустой стрим');
-            return;
-        }
-
-        this._remoteStream = stream;
-        this.state.isConnected = true;
-
-        // Обновляем UI (статус подключения)
-        await this.renderPart({
-            partName: 'defaultTemplate',
-            state: this.state,
-            selector: '#root',
-            method: 'innerHTML'
-        });
-
-        // Подписываемся на события ввода (если viewer)
-        if (this.state.mode === 'viewer') {
-            await this._startReadingStream(stream);
         }
     }
 

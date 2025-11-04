@@ -58,3 +58,12 @@ export async function insertRemoteControl(context, targetPeer, mode) {
     // Опционально: скрываем обычные сообщения на время сессии
     // context.shadowRoot.querySelector('.messages-container')?.classList.add('hidden-during-rc');
 }
+
+export const getProtocol = function (type) {
+    switch (type) {
+        case 'REMOTE_CONTROL_EVENT':
+            return '/remote-control/1.0.0'
+        default:
+            return '/chat/1.0.0'
+    }
+}

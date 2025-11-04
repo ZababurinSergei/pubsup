@@ -45,7 +45,8 @@ export function defaultTemplate({ state = {} } = {}) {
   ` : ''}
 
   <div class="screen" id="remote-screen">
-    ${mode === 'controller' ? `
+    ${mode === 'controller' || mode === 'viewer' ? `
+     <div id="video-status" class="video-status"></div>
       <video id="remote-video" autoplay playsinline muted style="width:100%;height:100%;background:black;"></video>
     ` : ''}
     ${mode === 'viewer' ? '<div id="remote-cursor" class="remote-cursor">🖱️</div>' : ''}
