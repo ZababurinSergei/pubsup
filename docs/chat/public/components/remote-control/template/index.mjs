@@ -27,22 +27,7 @@ export function defaultTemplate({ state = {} } = {}) {
     <h3 class="control-title">
       ${mode === 'controller' ? 'Управление экраном' : 'Удалённый экран'}
     </h3>
-    ${isConnected
-        ? '<span class="status-indicator connected">🟢</span>'
-        : '<span class="status-indicator disconnected">🔴</span>'}
   </div>
-
-  ${mode === 'controller' ? `
-    <div class="control-actions">
-      <button id="toggle-video" class="video-toggle-btn">
-        ${videoEnabled ? '⏹️ Выключить видео' : '▶️ Включить видео'}
-      </button>
-      <label class="focus-cursor-toggle">
-        <input type="checkbox" id="focus-cursor" ${focusOnCursor ? 'checked' : ''}>
-        <span>Следить за курсором</span>
-      </label>
-    </div>
-  ` : ''}
 
   <div class="screen" id="remote-screen">
     ${mode === 'controller' || mode === 'viewer' ? `

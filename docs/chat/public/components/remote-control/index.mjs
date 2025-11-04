@@ -54,14 +54,44 @@ export class RemoteControl extends BaseComponent {
         }
     }
 
+    async setSlotToChatInterface() {
+        const mode = this.getAttribute('mode')
+        console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!', mode)
+        if(mode === 'controller') {
+            const targetPeer = this.getAttribute('target-peer')
+            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+            const isActiveChat = chatInterface?.state?.isPrivateChat &&
+                chatInterface.state.activeMember?.id === targetPeer;
+
+            if (isActiveChat && chatInterface) {
+                await chatInterface.addMessage({
+                    text: `<slot name="remote-control-${targetPeer}"></slot>`,
+                    to: targetPeer,
+                    type: 'slot',
+                    timestamp: Date.now(),
+                    isPrivate: true
+                });
+            } else {
+                const chatManager = await this.getComponentAsync('chat-manager', 'chat-manager');
+                if (chatManager) {
+                    if (!chatManager.state.unreadCounts) chatManager.state.unreadCounts = {};
+                    chatManager.state.unreadCounts[remotePeer] = (chatManager.state.unreadCounts[remotePeer] || 0) + 1;
+                    if (chatInterface?.updateMembersList) {
+                        await chatInterface.updateMembersList({unreadCounts: chatManager.state.unreadCounts});
+                    }
+                }
+            }
+        }
+    }
+
     _events (pc) {
         // Обработка входящего видео от viewer
-        pc.ontrack = (event) => {
-            console.log('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD')
+        pc.ontrack = async (event) => {
             const remoteVideo = this.shadowRoot.querySelector('#remote-video');
             if (remoteVideo) {
                 remoteVideo.srcObject = event.streams[0];
                 log('Видео от viewer получено и отображается');
+                await this.setSlotToChatInterface()
             }
         };
 
@@ -70,7 +100,6 @@ export class RemoteControl extends BaseComponent {
         }
 
         pc.oniceconnectionstatechange = () => {
-            console.log('############### oniceconnectionstatechange #######################')
             this._handleIceConnectionState(pc.iceConnectionState);
         };
 
@@ -78,7 +107,6 @@ export class RemoteControl extends BaseComponent {
         pc.onicecandidate = (e) => {
             if (e.candidate) {
                 const mode = this.getAttribute('mode')
-                console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!! CANDIDATE !!!!!!!!!!!!!!!!!!!!!!!!!!!!', mode)
                 log('Получен локальный ICE-кандидат:', e.candidate);
                 this._actions.sendInputEvent({
                     type: 'VIDEO_ICE_CANDIDATE',
@@ -240,7 +268,6 @@ export class RemoteControl extends BaseComponent {
      * @param {Object} answerData - { sdp: string }
      */
     async handleWebRtcAnswer(answerData) {
-        console.log('||||||||||||| ANSWER |||||||||||||', this._videoPeerConnection)
         const log = logger('remote-control:webrtc');
         try {
             if (!this._videoPeerConnection) {

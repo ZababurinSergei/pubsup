@@ -2220,13 +2220,14 @@ async function insertRemoteControl(context, targetPeer, mode) {
   remoteControl.id = componentId;
   remoteControl.setAttribute("target-peer", targetPeer);
   remoteControl.setAttribute("mode", mode);
-  remoteControl.setAttribute("slot", "remote-control");
+  remoteControl.setAttribute("slot", `remote-control-${targetPeer}`);
   const chatArea = context.shadowRoot.querySelector(".chat-area");
   if (chatArea) {
     chatArea.insertAdjacentElement("afterbegin", remoteControl);
   } else {
-    context.shadowRoot.appendChild(remoteControl);
+    context.appendChild(remoteControl);
   }
+  return remoteControl;
 }
 __name(insertRemoteControl, "insertRemoteControl");
 var getProtocol = /* @__PURE__ */ __name(function(type) {
@@ -2237,6 +2238,14 @@ var getProtocol = /* @__PURE__ */ __name(function(type) {
       return "/chat/1.0.0";
   }
 }, "getProtocol");
+function moveSlotToEnd(messages2) {
+  const slotIndex = messages2.findIndex((item) => item.type === "slot");
+  if (slotIndex !== -1) {
+    messages2.push(...messages2.splice(slotIndex, 1));
+  }
+  return messages2;
+}
+__name(moveSlotToEnd, "moveSlotToEnd");
 
 // public/components/chat-manager/template/index.mjs
 function defaultTemplate({ state = {} } = {}) {
@@ -16605,6 +16614,26 @@ var ChatManager = class extends BaseComponent {
       throw error;
     }
   }
+  async sendMessageToInterface({ messageData, remotePeer: remotePeer2, type = "sent" }) {
+    const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+    const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer2;
+    if (isActiveChat && chatInterface) {
+      await chatInterface.addMessage({
+        text: JSON.stringify(messageData),
+        to: remotePeer2,
+        from: this.state.peerId,
+        type,
+        timestamp: messageData.timestamp,
+        isPrivate: true
+      });
+    } else {
+      if (!this.state.unreadCounts) this.state.unreadCounts = {};
+      this.state.unreadCounts[remotePeer2] = (this.state.unreadCounts[remotePeer2] || 0) + 1;
+      if (chatInterface?.updateMembersList) {
+        await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
+      }
+    }
+  }
   /**
    * Настраивает обработчик входящих сообщений
    */
@@ -16613,42 +16642,22 @@ var ChatManager = class extends BaseComponent {
       log6.error("Node not available for message handler setup");
       return;
     }
-    const sendMessageToInterface = /* @__PURE__ */ __name(async ({ messageData, remotePeer, type = "sent" }) => {
-      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-      const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
-      if (isActiveChat && chatInterface) {
-        await chatInterface.addMessage({
-          text: JSON.stringify(messageData),
-          to: remotePeer,
-          from: this.state.peerId,
-          type,
-          timestamp: messageData.timestamp,
-          isPrivate: true
-        });
-      } else {
-        if (!this.state.unreadCounts) this.state.unreadCounts = {};
-        this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
-        if (chatInterface?.updateMembersList) {
-          await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
-        }
-      }
-    }, "sendMessageToInterface");
     try {
       await this.node.handle("/remote-control/1.0.0", async (stream, connection) => {
         try {
           const lp = lpStream(stream);
-          const remotePeer = connection.remotePeer.toString();
-          log6("Remote control stream established from: %s", remotePeer);
+          const remotePeer2 = connection.remotePeer.toString();
+          log6("Remote control stream established from: %s", remotePeer2);
           let messageData = void 0;
           while (true) {
             try {
               const message2 = await lp.read();
               if (!message2 || message2.length === 0) {
-                log6("Empty message received from %s, continuing...", remotePeer);
+                log6("Empty message received from %s, continuing...", remotePeer2);
                 continue;
               }
               const messageText = toString2(message2.subarray());
-              log6("Received length-prefixed message from %s: %s", remotePeer, messageText);
+              log6("Received length-prefixed message from %s: %s", remotePeer2, messageText);
               try {
                 messageData = JSON.parse(messageText);
               } catch (e2) {
@@ -16657,30 +16666,30 @@ var ChatManager = class extends BaseComponent {
               }
               console.log("----------------- INCOMING handle(/remote-control/1.0.0) -----------------", messageData?.payload ? messageData.payload : messageData);
               if (messageData?.type === "REMOTE_CONTROL_EVENT") {
-                await sendMessageToInterface({
+                await this.sendMessageToInterface({
                   messageData: messageData?.payload,
-                  remotePeer,
+                  remotePeer: remotePeer2,
                   type: "received"
                 });
                 const message3 = messageData?.payload;
                 if (message3.type === "VIDEO_SDP" && message3.sdpType === "offer") {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC offer \u043E\u0442 %s:", remotePeer, message3.sdp);
-                  const controllerId = `remote-control-${remotePeer}-controller`;
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC offer \u043E\u0442 %s:", remotePeer2, message3.sdp);
+                  const controllerId = `remote-control-${remotePeer2}-controller`;
                   const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
                   if (remoteControl && typeof remoteControl.negotiateWebRtcOffer === "function") {
                     await remoteControl.negotiateWebRtcOffer({
                       sdp: message3.sdp,
-                      from: remotePeer
+                      from: remotePeer2
                     });
                   } else {
                     log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (viewer) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcOffer");
                   }
                 }
                 if (message3.type === "VIDEO_SDP" && message3.sdpType === "answer") {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC answer \u043E\u0442 %s", remotePeer);
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC answer \u043E\u0442 %s", remotePeer2);
                   const remoteControl = await BaseComponent.getComponentAsync(
                     "remote-control",
-                    `remote-control-${remotePeer}-viewer`,
+                    `remote-control-${remotePeer2}-viewer`,
                     3e3
                   );
                   if (remoteControl && typeof remoteControl.handleWebRtcAnswer === "function") {
@@ -16692,16 +16701,15 @@ var ChatManager = class extends BaseComponent {
                   }
                 }
                 if (message3.type === "VIDEO_ICE_CANDIDATE") {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u043E\u0442 %s", remotePeer);
-                  const controllerId = `remote-control-${remotePeer}-${message3.mode}`;
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u043E\u0442 %s", remotePeer2);
+                  const controllerId = `remote-control-${remotePeer2}-${message3.mode}`;
                   const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
-                  console.log("remoteControl: ------------------", remoteControl, controllerId);
                   if (remoteControl && typeof remoteControl.handleIceCandidate === "function") {
                     await remoteControl.handleIceCandidate({
                       candidate: message3.candidate.candidate,
                       sdpMid: message3.candidate.sdpMid,
                       sdpMLineIndex: message3.candidate.sdpMLineIndex,
-                      from: remotePeer
+                      from: remotePeer2
                     });
                   } else {
                     log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleIceCandidate");
@@ -16709,12 +16717,12 @@ var ChatManager = class extends BaseComponent {
                 }
               }
               if (messageData?.type === "video_stream_start") {
-                await sendMessageToInterface({
+                await this.sendMessageToInterface({
                   messageData,
-                  remotePeer,
+                  remotePeer: remotePeer2,
                   type: "received"
                 });
-                const viewerId = `remote-control-${remotePeer}-viewer`;
+                const viewerId = `remote-control-${remotePeer2}-viewer`;
                 const remoteControl = await BaseComponent.getComponentAsync("remote-control", viewerId, 3e3);
                 if (remoteControl) {
                   await remoteControl._actions.startScreenShare();
@@ -16743,16 +16751,16 @@ var ChatManager = class extends BaseComponent {
         log6("Incoming chat stream established from: %s", connection.remotePeer?.toString());
         try {
           const lp = lpStream(stream);
-          const remotePeer = connection.remotePeer.toString();
+          const remotePeer2 = connection.remotePeer.toString();
           while (true) {
             try {
               const message2 = await lp.read();
               if (!message2 || message2.length === 0) {
-                log6("Empty message received from %s, continuing...", remotePeer);
+                log6("Empty message received from %s, continuing...", remotePeer2);
                 continue;
               }
               const messageText = toString2(message2.subarray());
-              log6("Received length-prefixed message from %s: %s", remotePeer, messageText);
+              log6("Received length-prefixed message from %s: %s", remotePeer2, messageText);
               let messageData;
               try {
                 messageData = JSON.parse(messageText);
@@ -16769,27 +16777,27 @@ var ChatManager = class extends BaseComponent {
               if (messageData.type === "private_message") {
                 await this.addMessageToPrivateHistory({
                   text: messageData.text,
-                  from: remotePeer,
+                  from: remotePeer2,
                   to: this.state.peerId,
                   type: "received",
                   timestamp: messageData.timestamp || Date.now(),
                   isPrivate: true
                 });
                 const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-                const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+                const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer2;
                 if (isActiveChat && chatInterface) {
                   await chatInterface.postMessage({
                     type: "INCOMING_PRIVATE_MESSAGE",
                     data: {
                       text: messageData.text,
-                      from: remotePeer,
+                      from: remotePeer2,
                       timestamp: messageData.timestamp,
                       isPrivate: true
                     }
                   });
                 } else {
                   if (!this.state.unreadCounts) this.state.unreadCounts = {};
-                  this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                  this.state.unreadCounts[remotePeer2] = (this.state.unreadCounts[remotePeer2] || 0) + 1;
                   if (chatInterface?.updateMembersList) {
                     await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
                   }
@@ -16801,7 +16809,7 @@ var ChatManager = class extends BaseComponent {
                 if (myPeerId === targetPeer) {
                   await this.addMessageToPrivateHistory({
                     text: JSON.stringify(messageData),
-                    from: remotePeer,
+                    from: remotePeer2,
                     to: this.state.peerId,
                     type: "received",
                     timestamp: messageData.timestamp || Date.now(),
@@ -16809,26 +16817,35 @@ var ChatManager = class extends BaseComponent {
                   });
                   const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
                   if (chatInterface) {
-                    const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+                    const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer2;
                     if (isActiveChat) {
                       await chatInterface.postMessage({
                         type: "INCOMING_PRIVATE_MESSAGE",
                         data: {
                           text: JSON.stringify(messageData),
-                          from: remotePeer,
+                          from: remotePeer2,
                           timestamp: messageData.timestamp,
                           isPrivate: true
                         }
                       });
                     } else {
                       if (!this.state.unreadCounts) this.state.unreadCounts = {};
-                      this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                      this.state.unreadCounts[remotePeer2] = (this.state.unreadCounts[remotePeer2] || 0) + 1;
                       if (chatInterface?.updateMembersList) {
                         await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
                       }
                     }
                   }
-                  await insertRemoteControl(chatInterface, messageData.from, "viewer");
+                  const remoteControl = await insertRemoteControl(chatInterface, messageData.from, "viewer");
+                  await this.sendMessageToInterface({
+                    slot: remoteControl,
+                    remotePeer: remotePeer2,
+                    messageData: {
+                      text: "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430",
+                      timestamp: Date.now()
+                    },
+                    type: "sent"
+                  });
                   await this.postMessage({
                     type: "SEND_PRIVATE_MESSAGE",
                     data: {
@@ -16851,10 +16868,10 @@ var ChatManager = class extends BaseComponent {
                 const { initiator } = messageData.payload;
                 const myPeerId = this.state.peerId;
                 if (myPeerId === initiator) {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442 %s", remotePeer);
+                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442 %s", remotePeer2);
                   await this.addMessageToPrivateHistory({
                     text: JSON.stringify(messageData),
-                    from: remotePeer,
+                    from: remotePeer2,
                     to: this.state.peerId,
                     type: "received",
                     timestamp: messageData.timestamp || Date.now(),
@@ -16863,27 +16880,27 @@ var ChatManager = class extends BaseComponent {
                   try {
                     const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
                     if (chatInterface) {
-                      const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer;
+                      const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === remotePeer2;
                       if (isActiveChat) {
                         await chatInterface.postMessage({
                           type: "INCOMING_PRIVATE_MESSAGE",
                           data: {
                             text: JSON.stringify(messageData),
-                            from: remotePeer,
+                            from: remotePeer2,
                             timestamp: messageData.timestamp,
                             isPrivate: true
                           }
                         });
                       } else {
                         if (!this.state.unreadCounts) this.state.unreadCounts = {};
-                        this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+                        this.state.unreadCounts[remotePeer2] = (this.state.unreadCounts[remotePeer2] || 0) + 1;
                         if (chatInterface?.updateMembersList) {
                           await chatInterface.updateMembersList({ unreadCounts: this.state.unreadCounts });
                         }
                       }
                       await insertRemoteControl(chatInterface, messageData.from, "controller");
                     }
-                    const controllerId = `remote-control-${remotePeer}-controller`;
+                    const controllerId = `remote-control-${remotePeer2}-controller`;
                     const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
                     if (remoteControl && typeof remoteControl.createPeerConnection === "function") {
                       await remoteControl?.createPeerConnection();
@@ -16891,8 +16908,8 @@ var ChatManager = class extends BaseComponent {
                       log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u0440\u0441 \u043D\u0435 \u0441\u043E\u0437\u0434\u0430\u043D");
                     }
                     const connectedPeers = await this.getConnectedPeers();
-                    const targetPeerInfo = connectedPeers.find((p2) => p2.id === remotePeer);
-                    let dialAddress = remotePeer;
+                    const targetPeerInfo = connectedPeers.find((p2) => p2.id === remotePeer2);
+                    let dialAddress = remotePeer2;
                     if (targetPeerInfo?.connections?.length > 0) {
                       const conn = targetPeerInfo.connections.find((c2) => c2.remoteAddr);
                       if (conn?.remoteAddr) {
@@ -16910,21 +16927,21 @@ var ChatManager = class extends BaseComponent {
                       from: this.state.peerId,
                       timestamp: Date.now()
                     };
-                    await sendMessageToInterface({
+                    await this.sendMessageToInterface({
                       messageData,
-                      remotePeer,
+                      remotePeer: remotePeer2,
                       type: "sent"
                     });
                     await lp2.write(fromString2(JSON.stringify(messageData)));
                     await stream2.close();
                   } catch (err) {
-                    log6.error("Failed to establish remote control stream to %s: %o", remotePeer, err);
+                    log6.error("Failed to establish remote control stream to %s: %o", remotePeer2, err);
                   }
                 } else {
                   log6.debug("REMOTE_CONTROL_ACCEPTED ignored: not for this peer (initiator: %s, me: %s)", initiator, myPeerId);
                 }
               } else {
-                await this.handleIncomingStreamMessage(messageData, remotePeer);
+                await this.handleIncomingStreamMessage(messageData, remotePeer2);
               }
             } catch (readError) {
               if (readError.message === "Stream read timeout") {
@@ -17222,23 +17239,6 @@ var ChatManager = class extends BaseComponent {
             payload: eventData
           }), targetPeer);
           break;
-        case "REMOTE_CONTROL_REQUEST":
-          const { initiator } = event.data;
-          targetPeer = event.data.targetPeer;
-          const myPeerId = this.state.peerId;
-          if (myPeerId === targetPeer) {
-            const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
-            if (chatInterface) {
-              debugger;
-              console.log("!!!!!!!!!!!!!!!!!!!!! insertRemoteControl - \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u043E !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            }
-            await this.postMessage({
-              type: "REMOTE_CONTROL_ACK",
-              data: { from: myPeerId, to: initiator }
-            });
-          } else if (myPeerId === initiator) {
-          }
-          break;
         case "UPDATE_CHAT_HEADER":
           if (event.data?.isPrivateChat && event.data.activeMember) {
             this.state.isPrivateChat = true;
@@ -17383,33 +17383,165 @@ __export(template_exports2, {
   renderTypingIndicator: () => renderTypingIndicator
 });
 function defaultTemplate2({ state = {} } = {}) {
-  return `    <div class="chat-interface">        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->        <header class="chat-header">            <div class="header-content">                <div class="chat-info">                    <div class="chat-avatar">                        ${getChatAvatar(state.currentGroup)}                    </div>                    <div class="chat-details">                        <h3 class="chat-name">${getGroupName2(state.currentGroup)}</h3>                        <div class="chat-status">                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>                            <span class="status-text">${getStatusText(state)}</span>                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}                        </div>                    </div>                </div>                <div class="chat-actions">                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>                    </button>                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">                        <span class="btn-icon">\u{1F50D}</span>                    </button>                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">                        <span class="btn-icon">\u{1F465}</span>                    </button>                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">                        <span class="btn-icon">\u2699\uFE0F</span>                    </button>                </div>            </div>        </header>
-        <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->        <div class="connection-status" id="connection-status">            ${renderConnectionStatus({ state })}        </div>
-        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->        <main class="chat-main">            <!-- \u0411\u043E\u043A\u043E\u0432\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 -->            <aside class="members-sidebar" id="members-panel">                <div class="sidebar-header">                    <h4>\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438</h4>                    <button class="close-sidebar" id="close-members">\u2715</button>                </div>                <div class="members-list">                    ${renderMembersList({ state })}                </div>            </aside>
-            <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0447\u0430\u0442\u0430 -->            <section class="chat-content">                <!-- \u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 -->                <div class="messages-container">                    <div class="messages-list" id="messages-list">                        ${renderMessages2({ state })}                    </div>                </div>
-                <!-- \u0418\u043D\u0434\u0438\u043A\u0430\u0442\u043E\u0440 \u043D\u0430\u0431\u043E\u0440\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->                ${state.isTyping ? renderTypingIndicator({ state }) : ""}            </section>        </main>
-        <!-- \u041F\u0430\u043D\u0435\u043B\u044C \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->        <footer class="chat-input">            <div class="input-container">                <div class="input-actions">                    <button class="input-action-btn" id="attach-file" title="\u041F\u0440\u0438\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u0444\u0430\u0439\u043B">                        <span class="btn-icon">\u{1F4CE}</span>                    </button>                    <button class="input-action-btn" id="emoji-picker" title="\u042D\u043C\u043E\u0434\u0437\u0438">                        <span class="btn-icon">\u{1F60A}</span>                    </button>                    <button class="input-action-btn" id="format-text" title="\u0424\u043E\u0440\u043C\u0430\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435">                        <span class="btn-icon">\u{1D400}</span>                    </button>                </div>                <div class="message-input-wrapper">                    <textarea                         id="message-input"                         class="message-input"                         placeholder="${getInputPlaceholder2(state)}"                        rows="1"                    ></textarea>                    <button                         id="send-button"                         class="send-button"                        title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"                    >                        <span class="send-icon">\u2708\uFE0F</span>                    </button>                </div>            </div>        </footer>
-        <!-- \u041E\u0432\u0435\u0440\u043B\u0435\u0439 \u043F\u043E\u0438\u0441\u043A\u0430 -->        ${state.showSearch ? renderSearchOverlay({ state }) : ""}    </div>    `;
+  return `
+    <div class="chat-interface">
+        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0447\u0430\u0442\u0430 -->
+        <header class="chat-header">
+            <div class="header-content">
+                <div class="chat-info">
+                    <div class="chat-avatar">
+                        ${getChatAvatar(state.currentGroup)}
+                    </div>
+                    <div class="chat-details">
+                        <h3 class="chat-name">${getGroupName2(state.currentGroup)}</h3>
+                        <div class="chat-status">
+                            <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
+                            <span class="status-text">${getStatusText(state)}</span>
+                            ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
+                        <span class="btn-icon">\u{1F5D1}\uFE0F</span>
+                    </button>
+                    <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
+                        <span class="btn-icon">\u{1F50D}</span>
+                    </button>
+                    <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
+                        <span class="btn-icon">\u{1F465}</span>
+                    </button>
+                    <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
+                        <span class="btn-icon">\u2699\uFE0F</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->
+        <div class="connection-status" id="connection-status">
+            ${renderConnectionStatus({ state })}
+        </div>
+
+        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435 -->
+        <main class="chat-main">
+            <!-- \u0411\u043E\u043A\u043E\u0432\u0430\u044F \u043F\u0430\u043D\u0435\u043B\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 -->
+            <aside class="members-sidebar" id="members-panel">
+                <div class="sidebar-header">
+                    <h4>\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438</h4>
+                    <button class="close-sidebar" id="close-members">\u2715</button>
+                </div>
+                <div class="members-list">
+                    ${renderMembersList({ state })}
+                </div>
+            </aside>
+
+            <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043E\u0431\u043B\u0430\u0441\u0442\u044C \u0447\u0430\u0442\u0430 -->
+            <section class="chat-content">
+                <!-- \u041A\u043E\u043D\u0442\u0435\u0439\u043D\u0435\u0440 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 -->
+                <div class="messages-container">
+                    <div class="messages-list" id="messages-list">
+                        ${renderMessages2({ state })}
+                    </div>
+                </div>
+
+                <!-- \u0418\u043D\u0434\u0438\u043A\u0430\u0442\u043E\u0440 \u043D\u0430\u0431\u043E\u0440\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
+                ${state.isTyping ? renderTypingIndicator({ state }) : ""}
+            </section>
+        </main>
+
+        <!-- \u041F\u0430\u043D\u0435\u043B\u044C \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F -->
+        <footer class="chat-input">
+            <div class="input-container">
+                <div class="input-actions">
+                    <button class="input-action-btn" id="attach-file" title="\u041F\u0440\u0438\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u0444\u0430\u0439\u043B">
+                        <span class="btn-icon">\u{1F4CE}</span>
+                    </button>
+                    <button class="input-action-btn" id="emoji-picker" title="\u042D\u043C\u043E\u0434\u0437\u0438">
+                        <span class="btn-icon">\u{1F60A}</span>
+                    </button>
+                    <button class="input-action-btn" id="format-text" title="\u0424\u043E\u0440\u043C\u0430\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435">
+                        <span class="btn-icon">\u{1D400}</span>
+                    </button>
+                </div>
+                <div class="message-input-wrapper">
+                    <textarea 
+                        id="message-input" 
+                        class="message-input" 
+                        placeholder="${getInputPlaceholder2(state)}"
+                        rows="1"
+                    ></textarea>
+                    <button 
+                        id="send-button" 
+                        class="send-button"
+                        title="\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435"
+                    >
+                        <span class="send-icon">\u2708\uFE0F</span>
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+        <!-- \u041E\u0432\u0435\u0440\u043B\u0435\u0439 \u043F\u043E\u0438\u0441\u043A\u0430 -->
+        ${state.showSearch ? renderSearchOverlay({ state }) : ""}
+    </div>
+    `;
 }
 __name(defaultTemplate2, "defaultTemplate");
 function renderConnectionStatus({ state = {} } = {}) {
   if (!state.connected) {
-    return `        <div class="status-message disconnected">            <span class="status-icon">\u{1F534}</span>            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>        </div>        `;
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043A P2P \u0441\u0435\u0442\u0438</span>
+            <button class="status-action" id="reconnect">\u041F\u0435\u0440\u0435\u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u044C\u0441\u044F</button>
+        </div>
+        `;
   }
   if (!state.currentGroup) {
-    return `        <div class="status-message info">            <span class="status-icon">\u2139\uFE0F</span>            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>        </div>        `;
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
+        </div>
+        `;
   }
-  return `    <div class="status-message connected">        <span class="status-icon">\u{1F7E2}</span>        <span class="status-text">            \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}            ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}        </span>        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}        ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}    </div>    `;
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">
+            \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}
+            ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}
+        </span>
+        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}
+        ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}
+    </div>
+    `;
 }
 __name(renderConnectionStatus, "renderConnectionStatus");
 function renderStatus({ state = {} } = {}) {
   if (!state.connected) {
-    return `        <div class="status-message disconnected">            <span class="status-icon">\u{1F534}</span>            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>        </div>        `;
+    return `
+        <div class="status-message disconnected">
+            <span class="status-icon">\u{1F534}</span>
+            <span class="status-text">\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E</span>
+        </div>
+        `;
   }
   if (!state.currentGroup) {
-    return `        <div class="status-message info">            <span class="status-icon">\u2139\uFE0F</span>            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>        </div>        `;
+    return `
+        <div class="status-message info">
+            <span class="status-icon">\u2139\uFE0F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443</span>
+        </div>
+        `;
   }
-  return `    <div class="status-message connected">        <span class="status-icon">\u{1F7E2}</span>        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${getGroupName2(state.currentGroup)}</span>    </div>    `;
+  return `
+    <div class="status-message connected">
+        <span class="status-icon">\u{1F7E2}</span>
+        <span class="status-text">\u0412 \u0441\u0435\u0442\u0438: ${getGroupName2(state.currentGroup)}</span>
+    </div>
+    `;
 }
 __name(renderStatus, "renderStatus");
 function renderMembersList({ state = {} } = {}) {
@@ -17496,48 +17628,180 @@ function renderMessages2({ state = {} } = {}) {
       emptyTitle = "\u041D\u0435\u0442 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439";
       emptyDescription = "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u0443\u0441\u0442\u0430. \u041E\u0442\u043F\u0440\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435!";
     }
-    return `        <div class="empty-chat">            <div class="empty-content">                <div class="empty-icon">\u{1F4AC}</div>                <h3 class="empty-title">${emptyTitle}</h3>                <p class="empty-description">${emptyDescription}</p>            </div>        </div>        `;
+    return `
+        <div class="empty-chat">
+            <div class="empty-content">
+                <div class="empty-icon">\u{1F4AC}</div>
+                <h3 class="empty-title">${emptyTitle}</h3>
+                <p class="empty-description">${emptyDescription}</p>
+            </div>
+        </div>
+        `;
   }
-  return `    <div class="messages-content">        ${messages2.map((message2) => renderMessage({ message: message2 })).join("")}    </div>    `;
+  const messagesFilter = moveSlotToEnd(messages2);
+  return `
+    <div class="messages-content">
+        ${messagesFilter.map((message2) => renderMessage({ message: message2 })).join("")}
+    </div>
+    `;
 }
 __name(renderMessages2, "renderMessages");
 function renderMessage({ message: message2 = {} } = {}) {
-  const messageClass = message2.type === "sent" ? "message-sent" : "message-received";
+  const messageClass = message2.type === "sent" ? "message-sent" : message2.type === "slot" ? "message-slot" : "message-received";
   const time = new Date(message2.timestamp).toLocaleTimeString("ru-RU", {
     hour: "2-digit",
     minute: "2-digit"
   });
+  if (message2.type === "slot") {
+    return `<div class="message-item ${messageClass}">${message2.text}</div>`;
+  }
   const topicBadge = message2.topic ? `<span class="message-topic-badge">#${parseChatGroupStringRegex(message2.topic)}</span>` : "";
-  return `    <div class="message-item ${messageClass}" data-message-id="${message2.id}" data-topic="${message2.topic || ""}">        <div class="message-bubble">            ${message2.type === "received" ? `            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>            ` : ""}            <div class="message-content">                ${topicBadge}                ${escapeHtml2(message2.text)}            </div>            <div class="message-meta">                <span class="message-time">${time}</span>                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}            </div>        </div>    </div>    `;
+  return `
+    <div class="message-item ${messageClass}" data-message-id="${message2.id}" data-topic="${message2.topic || ""}">
+        <div class="message-bubble">
+            ${message2.type === "received" ? `
+            <div class="message-sender">${message2.from ? message2.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
+            ` : ""}
+            <div class="message-content">
+                ${topicBadge}
+                ${escapeHtml2(message2.text)}
+            </div>
+            <div class="message-meta">
+                <span class="message-time">${time}</span>
+                ${message2.status === "sent" ? '<span class="message-status">\u2713</span>' : ""}
+                ${message2.status === "delivered" ? '<span class="message-status">\u2713\u2713</span>' : ""}
+            </div>
+        </div>
+    </div>
+    `;
 }
 __name(renderMessage, "renderMessage");
 function renderTypingIndicator({ state = {} } = {}) {
-  return `    <div class="typing-indicator">        <div class="typing-avatar">            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : "??"}        </div>        <div class="typing-content">            <div class="typing-name">${getPeerName(state.typingUser) || "\u041A\u0442\u043E-\u0442\u043E"} \u043F\u0435\u0447\u0430\u0442\u0430\u0435\u0442</div>            <div class="typing-dots">                <span class="typing-dot"></span>                <span class="typing-dot"></span>                <span class="typing-dot"></span>            </div>        </div>    </div>    `;
+  return `
+    <div class="typing-indicator">
+        <div class="typing-avatar">
+            ${state.typingUser?.id ? state.typingUser.id.substring(2, 4).toUpperCase() : "??"}
+        </div>
+        <div class="typing-content">
+            <div class="typing-name">${getPeerName(state.typingUser) || "\u041A\u0442\u043E-\u0442\u043E"} \u043F\u0435\u0447\u0430\u0442\u0430\u0435\u0442</div>
+            <div class="typing-dots">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    </div>
+    `;
 }
 __name(renderTypingIndicator, "renderTypingIndicator");
 function renderSearchOverlay({ state = {} } = {}) {
-  return `    <div class="search-overlay" id="search-overlay">        <div class="search-header">            <h3>\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>            <button class="close-search" id="close-search">\u2715</button>        </div>        <div class="search-content">            <div class="search-input-container">                <input                     type="text"                     id="search-messages-input"                     class="search-input"                     placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430..."                    value="${state.searchQuery || ""}"                >                <button class="search-action" id="perform-search">                    <span class="btn-icon">\u{1F50D}</span>                </button>            </div>            <div class="search-results" id="search-results">                ${renderSearchResults({ state })}            </div>        </div>    </div>    `;
+  return `
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-header">
+            <h3>\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</h3>
+            <button class="close-search" id="close-search">\u2715</button>
+        </div>
+        <div class="search-content">
+            <div class="search-input-container">
+                <input 
+                    type="text" 
+                    id="search-messages-input" 
+                    class="search-input" 
+                    placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430..."
+                    value="${state.searchQuery || ""}"
+                >
+                <button class="search-action" id="perform-search">
+                    <span class="btn-icon">\u{1F50D}</span>
+                </button>
+            </div>
+            <div class="search-results" id="search-results">
+                ${renderSearchResults({ state })}
+            </div>
+        </div>
+    </div>
+    `;
 }
 __name(renderSearchOverlay, "renderSearchOverlay");
 function renderSearchResults({ state = {} } = {}) {
   if (!state.searchQuery) {
-    return `        <div class="search-empty">            <div class="empty-icon">\u{1F50D}</div>            <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</p>        </div>        `;
+    return `
+        <div class="search-empty">
+            <div class="empty-icon">\u{1F50D}</div>
+            <p>\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0437\u0430\u043F\u0440\u043E\u0441 \u0434\u043B\u044F \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439</p>
+        </div>
+        `;
   }
   const results = state.searchResults || [];
   if (results.length === 0) {
-    return `        <div class="search-empty">            <div class="empty-icon">\u{1F614}</div>            <p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>            <p class="empty-hint">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441</p>        </div>        `;
+    return `
+        <div class="search-empty">
+            <div class="empty-icon">\u{1F614}</div>
+            <p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B</p>
+            <p class="empty-hint">\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441</p>
+        </div>
+        `;
   }
-  return `    <div class="results-list">        ${results.map((result) => `        <div class="search-result-item" data-message-id="${result.id}">            <div class="result-message">                <div class="result-sender">${result.from ? result.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>                <div class="result-time">${new Date(result.timestamp).toLocaleString("ru-RU")}</div>            </div>        </div>        `).join("")}    </div>    `;
+  return `
+    <div class="results-list">
+        ${results.map((result) => `
+        <div class="search-result-item" data-message-id="${result.id}">
+            <div class="result-message">
+                <div class="result-sender">${result.from ? result.from.substring(0, 12) + "..." : "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439"}</div>
+                <div class="result-text">${highlightSearchText(result.text, state.searchQuery)}</div>
+                <div class="result-time">${new Date(result.timestamp).toLocaleString("ru-RU")}</div>
+            </div>
+        </div>
+        `).join("")}
+    </div>
+    `;
 }
 __name(renderSearchResults, "renderSearchResults");
 function renderChatHeader({ state = {} } = {}) {
   if (state.isPrivateChat && state.activeMember) {
-    return `        <div class="chat-info">            <div class="chat-avatar">                <span class="avatar-icon">\u{1F464}</span>            </div>            <div class="chat-details">                <h3 class="chat-name">${getPeerName(state.activeMember)}</h3>                <div class="chat-status">                    <span class="status-indicator connected"></span>                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>                </div>            </div>        </div>        `;
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F464}</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">${getPeerName(state.activeMember)}</h3>
+                <div class="chat-status">
+                    <span class="status-indicator connected"></span>
+                    <span class="status-text">\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442</span>
+                </div>
+            </div>
+        </div>
+        `;
   }
   if (!state.currentGroup) {
-    return `        <div class="chat-info">            <div class="chat-avatar">                <span class="avatar-icon">\u{1F4AC}</span>            </div>            <div class="chat-details">                <h3 class="chat-name">\u0427\u0430\u0442</h3>                <div class="chat-status">                    <span class="status-indicator disconnected"></span>                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>                </div>            </div>        </div>        `;
+    return `
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <span class="avatar-icon">\u{1F4AC}</span>
+            </div>
+            <div class="chat-details">
+                <h3 class="chat-name">\u0427\u0430\u0442</h3>
+                <div class="chat-status">
+                    <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
+                </div>
+            </div>
+        </div>
+        `;
   }
-  return `    <div class="chat-info">        <div class="chat-avatar">            ${getChatAvatar(state.currentGroup)}        </div>        <div class="chat-details">            <h3 class="chat-name">${getGroupName2(state.currentGroup)}</h3>            <div class="chat-status">                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>                <span class="status-text">${getStatusText(state)}</span>                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}            </div>        </div>    </div>    `;
+  return `
+    <div class="chat-info">
+        <div class="chat-avatar">
+            ${getChatAvatar(state.currentGroup)}
+        </div>
+        <div class="chat-details">
+            <h3 class="chat-name">${getGroupName2(state.currentGroup)}</h3>
+            <div class="chat-status">
+                <span class="status-indicator ${state.connected ? "connected" : "disconnected"}"></span>
+                <span class="status-text">${getStatusText(state)}</span>
+                ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}            </div>
+        </div>
+    </div>
+    `;
 }
 __name(renderChatHeader, "renderChatHeader");
 function getGroupName2(group) {
@@ -17588,7 +17852,7 @@ function highlightSearchText(text, query) {
 }
 __name(highlightSearchText, "highlightSearchText");
 function escapeRegex(string2) {
-  return string2.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+  return string2.replace(/[.*+?^${}()|[]\\]/g, "\\$&");
 }
 __name(escapeRegex, "escapeRegex");
 
@@ -17788,6 +18052,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         }
         const peerId = e2.currentTarget.getAttribute("data-peer-id");
         const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
+        console.log("@@@@@@@@@@@@@@@@@@@@@@ peerId groupTopic @@@@@@@@@@@@@@@@@@@@@@", peerId, groupTopic, e2.currentTarget);
         try {
           if (peerId) {
             const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
@@ -17801,6 +18066,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const groupManager = await context.getComponentAsync("group-manager", "group-manager");
             const allGroups = groupManager.allGroups.all;
             const group = allGroups.find((g) => g.topic === groupTopic);
+            console.log("@@@@@@@@@@@@@@@@@@@@@@ group @@@@@@@@@@@@@@@@@@@@@@", group, allGroups);
             if (group) {
               const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
               log11("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
@@ -25780,14 +26046,14 @@ var ConnectionPruner = class {
     }
     const peerValues = new PeerMap();
     for (const connection of connections) {
-      const remotePeer = connection.remotePeer;
-      if (peerValues.has(remotePeer)) {
+      const remotePeer2 = connection.remotePeer;
+      if (peerValues.has(remotePeer2)) {
         continue;
       }
-      peerValues.set(remotePeer, 0);
+      peerValues.set(remotePeer2, 0);
       try {
-        const peer = await this.peerStore.get(remotePeer);
-        peerValues.set(remotePeer, [...peer.tags.values()].reduce((acc, curr) => {
+        const peer = await this.peerStore.get(remotePeer2);
+        peerValues.set(remotePeer2, [...peer.tags.values()].reduce((acc, curr) => {
           return acc + curr.value;
         }, 0));
       } catch (err) {
@@ -28757,30 +29023,30 @@ var Registrar = class {
    * Remove a disconnected peer from the record
    */
   async _onDisconnect(evt) {
-    const remotePeer = evt.detail;
+    const remotePeer2 = evt.detail;
     const options = {
       signal: AbortSignal.timeout(5e3)
     };
     try {
-      const peer = await this.components.peerStore.get(remotePeer, options);
+      const peer = await this.components.peerStore.get(remotePeer2, options);
       for (const protocol of peer.protocols) {
         const topologies = this.topologies.get(protocol);
         if (topologies == null) {
           continue;
         }
         await Promise.all([...topologies.values()].map(async (topology) => {
-          if (topology.filter?.has(remotePeer) === false) {
+          if (topology.filter?.has(remotePeer2) === false) {
             return;
           }
-          topology.filter?.remove(remotePeer);
-          await topology.onDisconnect?.(remotePeer);
+          topology.filter?.remove(remotePeer2);
+          await topology.onDisconnect?.(remotePeer2);
         }));
       }
     } catch (err) {
       if (err.name === "NotFoundError") {
         return;
       }
-      this.log.error("could not inform topologies of disconnecting peer %p - %e", remotePeer, err);
+      this.log.error("could not inform topologies of disconnecting peer %p - %e", remotePeer2, err);
     }
   }
   /**
@@ -29805,7 +30071,7 @@ var Upgrader = class {
   }
   async _performUpgrade(maConn, direction, opts) {
     let stream = maConn;
-    let remotePeer;
+    let remotePeer2;
     let muxerFactory;
     let muxer;
     let cryptoProtocol;
@@ -29826,7 +30092,7 @@ var Upgrader = class {
           throw new InvalidMultiaddrError(`${direction} connection that skipped encryption must have a peer id`);
         }
         cryptoProtocol = "native";
-        remotePeer = opts.remotePeer;
+        remotePeer2 = opts.remotePeer;
       } else {
         const peerIdString = maConn.remoteAddr.getComponents().findLast((c2) => c2.code === CODE_P2P)?.value;
         let remotePeerFromMultiaddr;
@@ -29836,7 +30102,7 @@ var Upgrader = class {
         opts?.onProgress?.(new CustomProgressEvent(`upgrader:encrypt-${direction}-connection`));
         ({
           connection: stream,
-          remotePeer,
+          remotePeer: remotePeer2,
           protocol: cryptoProtocol,
           streamMuxer: muxerFactory
         } = await (direction === "inbound" ? this._encryptInbound(stream, {
@@ -29847,12 +30113,12 @@ var Upgrader = class {
           remotePeer: remotePeerFromMultiaddr
         })));
       }
-      if (remotePeer.equals(this.components.peerId)) {
+      if (remotePeer2.equals(this.components.peerId)) {
         const err = new InvalidPeerIdError("Can not dial self");
         maConn.abort(err);
         throw err;
       }
-      await this.shouldBlockConnection(direction === "inbound" ? "denyInboundEncryptedConnection" : "denyOutboundEncryptedConnection", remotePeer, maConn);
+      await this.shouldBlockConnection(direction === "inbound" ? "denyInboundEncryptedConnection" : "denyOutboundEncryptedConnection", remotePeer2, maConn);
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory;
       } else if (muxerFactory == null && this.streamMuxers.size > 0) {
@@ -29867,7 +30133,7 @@ var Upgrader = class {
       maConn.log("create muxer %s", muxerFactory.protocol);
       muxer = muxerFactory.createStreamMuxer(stream);
     }
-    await this.shouldBlockConnection(direction === "inbound" ? "denyInboundUpgradedConnection" : "denyOutboundUpgradedConnection", remotePeer, maConn);
+    await this.shouldBlockConnection(direction === "inbound" ? "denyInboundUpgradedConnection" : "denyOutboundUpgradedConnection", remotePeer2, maConn);
     const conn = this._createConnection({
       id,
       cryptoProtocol,
@@ -29875,7 +30141,7 @@ var Upgrader = class {
       maConn,
       stream,
       muxer,
-      remotePeer,
+      remotePeer: remotePeer2,
       limits: opts?.limits,
       closeTimeout: this.connectionCloseTimeout
     });
@@ -35945,16 +36211,16 @@ function resolveOnConnected(pc, promise) {
 }
 __name(resolveOnConnected, "resolveOnConnected");
 function getRemotePeer(ma) {
-  let remotePeer;
+  let remotePeer2;
   for (const component of ma.getComponents()) {
     if (component.name === "p2p") {
-      remotePeer = peerIdFromString(component.value ?? "");
+      remotePeer2 = peerIdFromString(component.value ?? "");
     }
   }
-  if (remotePeer == null) {
+  if (remotePeer2 == null) {
     throw new InvalidMultiaddrError("Remote peerId must be present in multiaddr");
   }
-  return remotePeer;
+  return remotePeer2;
 }
 __name(getRemotePeer, "getRemotePeer");
 
@@ -36204,12 +36470,12 @@ async function handleIncomingStream(stream, connection, { peerConnection, signal
       log11("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
     }
   }
-  const remotePeer = getRemotePeer(connection.remoteAddr);
-  const remoteAddress = multiaddr(`/webrtc/p2p/${remotePeer}`);
+  const remotePeer2 = getRemotePeer(connection.remoteAddr);
+  const remoteAddress = multiaddr(`/webrtc/p2p/${remotePeer2}`);
   log11.trace("recipient connected to remote address %s", remoteAddress);
   return {
     remoteAddress,
-    remotePeer
+    remotePeer: remotePeer2
   };
 }
 __name(handleIncomingStream, "handleIncomingStream");
@@ -36346,7 +36612,7 @@ var WebRTCTransport = class {
       dataChannelOptions: this.init.dataChannel
     });
     try {
-      const { remoteAddress, remotePeer } = await handleIncomingStream(stream, connection, {
+      const { remoteAddress, remotePeer: remotePeer2 } = await handleIncomingStream(stream, connection, {
         peerConnection,
         signal,
         log: this.log
@@ -36365,7 +36631,7 @@ var WebRTCTransport = class {
       await this.components.upgrader.upgradeInbound(webRTCConn, {
         skipEncryption: true,
         skipProtection: true,
-        remotePeer,
+        remotePeer: remotePeer2,
         muxerFactory,
         signal
       });
@@ -37248,7 +37514,6 @@ async function createActions4(context) {
      * @async
      */
     async updateAddressList() {
-      console.log("!!!!!!!!!!!! updateAddressList !!!!!!!!!!!!!!!!");
       if (!libp2p || !context.state) {
         log11.error("updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
@@ -38002,20 +38267,7 @@ function defaultTemplate5({ state = {} } = {}) {
     <h3 class="control-title">
       ${mode === "controller" ? "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u044D\u043A\u0440\u0430\u043D\u043E\u043C" : "\u0423\u0434\u0430\u043B\u0451\u043D\u043D\u044B\u0439 \u044D\u043A\u0440\u0430\u043D"}
     </h3>
-    ${isConnected ? '<span class="status-indicator connected">\u{1F7E2}</span>' : '<span class="status-indicator disconnected">\u{1F534}</span>'}
   </div>
-
-  ${mode === "controller" ? `
-    <div class="control-actions">
-      <button id="toggle-video" class="video-toggle-btn">
-        ${videoEnabled ? "\u23F9\uFE0F \u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0438\u0434\u0435\u043E" : "\u25B6\uFE0F \u0412\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0438\u0434\u0435\u043E"}
-      </button>
-      <label class="focus-cursor-toggle">
-        <input type="checkbox" id="focus-cursor" ${focusOnCursor ? "checked" : ""}>
-        <span>\u0421\u043B\u0435\u0434\u0438\u0442\u044C \u0437\u0430 \u043A\u0443\u0440\u0441\u043E\u0440\u043E\u043C</span>
-      </label>
-    </div>
-  ` : ""}
 
   <div class="screen" id="remote-screen">
     ${mode === "controller" || mode === "viewer" ? `
@@ -38183,11 +38435,6 @@ var controller5 = /* @__PURE__ */ __name(async (context) => {
         add2(screen, "mousemove", mouseMoveHandler);
         add2(screen, "mousedown", mouseDownHandler);
         add2(screen, "mouseup", mouseUpHandler);
-        const videoBtn = context.shadowRoot.querySelector("#toggle-video");
-        if (videoBtn) {
-          videoBtn.addEventListener("click", toggleVideoHandler);
-          eventListeners.push({ element: videoBtn, handler: toggleVideoHandler });
-        }
         log8("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043C\u044B\u0448\u0438 \u0438 \u0432\u0438\u0434\u0435\u043E \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
       } else {
       }
@@ -38466,26 +38713,51 @@ var RemoteControl = class extends BaseComponent {
       return false;
     }
   }
+  async setSlotToChatInterface() {
+    const mode = this.getAttribute("mode");
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", mode);
+    if (mode === "controller") {
+      const targetPeer = this.getAttribute("target-peer");
+      const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
+      const isActiveChat = chatInterface?.state?.isPrivateChat && chatInterface.state.activeMember?.id === targetPeer;
+      if (isActiveChat && chatInterface) {
+        await chatInterface.addMessage({
+          text: `<slot name="remote-control-${targetPeer}"></slot>`,
+          to: targetPeer,
+          type: "slot",
+          timestamp: Date.now(),
+          isPrivate: true
+        });
+      } else {
+        const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager) {
+          if (!chatManager.state.unreadCounts) chatManager.state.unreadCounts = {};
+          chatManager.state.unreadCounts[remotePeer] = (chatManager.state.unreadCounts[remotePeer] || 0) + 1;
+          if (chatInterface?.updateMembersList) {
+            await chatInterface.updateMembersList({ unreadCounts: chatManager.state.unreadCounts });
+          }
+        }
+      }
+    }
+  }
   _events(pc) {
-    pc.ontrack = (event) => {
-      console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+    pc.ontrack = async (event) => {
       const remoteVideo = this.shadowRoot.querySelector("#remote-video");
       if (remoteVideo) {
         remoteVideo.srcObject = event.streams[0];
         log10("\u0412\u0438\u0434\u0435\u043E \u043E\u0442 viewer \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0438 \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044F");
+        await this.setSlotToChatInterface();
       }
     };
     pc.onicecandidateerror = (event) => {
       console.log("########### \u041E\u0428\u0418\u0411\u041A\u0410 \u041A\u0410\u041D\u0414\u0418\u0414\u0410\u0422\u0410 ###################", event);
     };
     pc.oniceconnectionstatechange = () => {
-      console.log("############### oniceconnectionstatechange #######################");
       this._handleIceConnectionState(pc.iceConnectionState);
     };
     pc.onicecandidate = (e2) => {
       if (e2.candidate) {
         const mode = this.getAttribute("mode");
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!! CANDIDATE !!!!!!!!!!!!!!!!!!!!!!!!!!!!", mode);
         log10("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u043B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0439 ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442:", e2.candidate);
         this._actions.sendInputEvent({
           type: "VIDEO_ICE_CANDIDATE",
@@ -38616,7 +38888,6 @@ var RemoteControl = class extends BaseComponent {
    * @param {Object} answerData - { sdp: string }
    */
   async handleWebRtcAnswer(answerData) {
-    console.log("||||||||||||| ANSWER |||||||||||||", this._videoPeerConnection);
     const log11 = logger("remote-control:webrtc");
     try {
       if (!this._videoPeerConnection) {
@@ -57093,13 +57364,19 @@ var doc = document.createElement("div");
 var slotRemoteControl = document.createElement("slot");
 var slotChatInterface = document.createElement("slot");
 var slotPeerConnection = document.createElement("slot");
+var slotChatManager = document.createElement("slot");
+var slotGroupManager = document.createElement("slot");
 slotChatInterface.name = "chat-interface";
 slotRemoteControl.name = "remote-control";
 slotPeerConnection.name = "peer-connection";
+slotChatManager.name = "chat-manager";
+slotGroupManager.name = "group-manager";
 doc.classList.add("container");
 doc.appendChild(slotPeerConnection);
 doc.appendChild(slotChatInterface);
 doc.appendChild(slotRemoteControl);
+doc.appendChild(slotChatManager);
+doc.appendChild(slotGroupManager);
 container.shadowRoot.appendChild(doc);
 /*!
 * The buffer module from node.js, for the browser.

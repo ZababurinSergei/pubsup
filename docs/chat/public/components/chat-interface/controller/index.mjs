@@ -250,7 +250,7 @@ export const controller = async (context) => {
 
                 const peerId = e.currentTarget.getAttribute('data-peer-id');
                 const groupTopic = e.currentTarget.getAttribute('data-group-topic');
-
+                console.log('@@@@@@@@@@@@@@@@@@@@@@ peerId groupTopic @@@@@@@@@@@@@@@@@@@@@@', peerId, groupTopic, e.currentTarget)
                 try {
                     // Обработка приватного чата с пиром
                     if (peerId) {
@@ -268,6 +268,7 @@ export const controller = async (context) => {
                         const allGroups = (groupManager.allGroups).all
                         // Ищем группу по топику в активных группах
                         const group = allGroups.find(g => g.topic === groupTopic)
+                        console.log('@@@@@@@@@@@@@@@@@@@@@@ group @@@@@@@@@@@@@@@@@@@@@@', group, allGroups)
                             // context.state.activeGroups?.find(g => g.topic === groupTopic) ||
                             // context.state.groups?.find(g => g.topic === groupTopic) ||
                             // context.state.discoveredGroups?.find(g => g.topic === groupTopic);

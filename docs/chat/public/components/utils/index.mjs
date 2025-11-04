@@ -46,15 +46,16 @@ export async function insertRemoteControl(context, targetPeer, mode) {
     remoteControl.id = componentId; // ← обязательный уникальный id
     remoteControl.setAttribute('target-peer', targetPeer);
     remoteControl.setAttribute('mode', mode);
-    remoteControl.setAttribute('slot', "remote-control");
+    remoteControl.setAttribute('slot', `remote-control-${targetPeer}`);
     // Вставляем в область чата (например, над полем ввода)
     const chatArea = context.shadowRoot.querySelector('.chat-area');
     if (chatArea) {
         chatArea.insertAdjacentElement('afterbegin', remoteControl);
     } else {
-        context.shadowRoot.appendChild(remoteControl);
+        context.appendChild(remoteControl);
     }
 
+    return remoteControl
     // Опционально: скрываем обычные сообщения на время сессии
     // context.shadowRoot.querySelector('.messages-container')?.classList.add('hidden-during-rc');
 }
@@ -66,4 +67,12 @@ export const getProtocol = function (type) {
         default:
             return '/chat/1.0.0'
     }
+}
+
+export function moveSlotToEnd(messages) {
+    const slotIndex = messages.findIndex(item => item.type === 'slot');
+    if (slotIndex !== -1) {
+        messages.push(...messages.splice(slotIndex, 1));
+    }
+    return messages;
 }

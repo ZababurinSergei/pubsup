@@ -689,6 +689,30 @@ export class ChatManager extends BaseComponent {
     }
 
 
+    async sendMessageToInterface({messageData, remotePeer, type = 'sent'}){
+        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
+        const isActiveChat = chatInterface?.state?.isPrivateChat &&
+            chatInterface.state.activeMember?.id === remotePeer;
+
+        if (isActiveChat && chatInterface) {
+
+            await chatInterface.addMessage({
+                text: JSON.stringify(messageData),
+                to: remotePeer,
+                from: this.state.peerId,
+                type: type,
+                timestamp: messageData.timestamp,
+                isPrivate: true
+            });
+        } else {
+            if (!this.state.unreadCounts) this.state.unreadCounts = {};
+            this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
+            if (chatInterface?.updateMembersList) {
+                await chatInterface.updateMembersList({unreadCounts: this.state.unreadCounts});
+            }
+        }
+    }
+
     /**
      * Настраивает обработчик входящих сообщений
      */
@@ -696,29 +720,6 @@ export class ChatManager extends BaseComponent {
         if (!this.node) {
             log.error('Node not available for message handler setup');
             return;
-        }
-
-        const sendMessageToInterface = async ({messageData, remotePeer, type = 'sent'}) => {
-            const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
-            const isActiveChat = chatInterface?.state?.isPrivateChat &&
-                chatInterface.state.activeMember?.id === remotePeer;
-
-            if (isActiveChat && chatInterface) {
-                await chatInterface.addMessage({
-                    text: JSON.stringify(messageData),
-                    to: remotePeer,
-                    from: this.state.peerId,
-                    type: type,
-                    timestamp: messageData.timestamp,
-                    isPrivate: true
-                });
-            } else {
-                if (!this.state.unreadCounts) this.state.unreadCounts = {};
-                this.state.unreadCounts[remotePeer] = (this.state.unreadCounts[remotePeer] || 0) + 1;
-                if (chatInterface?.updateMembersList) {
-                    await chatInterface.updateMembersList({unreadCounts: this.state.unreadCounts});
-                }
-            }
         }
 
         try {
@@ -752,7 +753,7 @@ export class ChatManager extends BaseComponent {
                             console.log('----------------- INCOMING handle(/remote-control/1.0.0) -----------------', messageData?.payload ? messageData.payload: messageData);
 
                             if (messageData?.type === "REMOTE_CONTROL_EVENT") {
-                                await sendMessageToInterface({
+                                await this.sendMessageToInterface({
                                     messageData: messageData?.payload,
                                     remotePeer,
                                     type: 'received'
@@ -801,7 +802,6 @@ export class ChatManager extends BaseComponent {
                                     const controllerId = `remote-control-${remotePeer}-${message.mode}`;
                                     const remoteControl = await this.getComponentAsync('remote-control', controllerId, 3000);
 
-                                    console.log('remoteControl: ------------------', remoteControl, controllerId)
                                     if (remoteControl && typeof remoteControl.handleIceCandidate === 'function') {
                                         await remoteControl.handleIceCandidate({
                                             candidate: message.candidate.candidate,
@@ -816,7 +816,7 @@ export class ChatManager extends BaseComponent {
                             }
 
                             if (messageData?.type === "video_stream_start") {
-                                await sendMessageToInterface({
+                                await this.sendMessageToInterface({
                                     messageData,
                                     remotePeer,
                                     type: 'received'
@@ -958,8 +958,17 @@ export class ChatManager extends BaseComponent {
                                         }
                                     }
 
-                                    await insertRemoteControl(chatInterface, messageData.from, 'viewer'); // правильно
+                                   const remoteControl = await insertRemoteControl(chatInterface, messageData.from, 'viewer'); // правильно
 
+                                    await this.sendMessageToInterface({
+                                        slot: remoteControl,
+                                        remotePeer,
+                                        messageData: {
+                                            text: 'Добавление компонента',
+                                            timestamp: Date.now()
+                                        },
+                                        type: 'sent'
+                                    })
                                     // Отправляем подтверждение с указанием initiator
                                     await this.postMessage({
                                         type: 'SEND_PRIVATE_MESSAGE',
@@ -1055,7 +1064,7 @@ export class ChatManager extends BaseComponent {
                                             timestamp: Date.now()
                                         };
 
-                                        await sendMessageToInterface({
+                                        await this.sendMessageToInterface({
                                             messageData,
                                             remotePeer,
                                             type: 'sent'
@@ -1451,31 +1460,6 @@ export class ChatManager extends BaseComponent {
                         type: 'REMOTE_CONTROL_EVENT',
                         payload: eventData
                     }), targetPeer);
-                    break;
-                case 'REMOTE_CONTROL_REQUEST':
-                    const {initiator} = event.data;
-                    targetPeer = event.data.targetPeer
-
-                    const myPeerId = this.state.peerId;
-
-                    // Я — получатель?
-                    if (myPeerId === targetPeer) {
-                        // Отображаем remote-control в режиме viewer
-                        const chatInterface = await this.getComponentAsync('chat-interface', 'main-chat');
-                        if (chatInterface) {
-                            debugger
-                            console.log('!!!!!!!!!!!!!!!!!!!!! insertRemoteControl - отключенно !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                            // await insertRemoteControl(chatInterface, initiator, 'viewer');
-                        }
-
-                        // Подтверждаем получение (опционально)
-                        await this.postMessage({
-                            type: 'REMOTE_CONTROL_ACK',
-                            data: {from: myPeerId, to: initiator}
-                        });
-                    } else if (myPeerId === initiator) {
-                        // Инициатор — ничего не делаем (уже отобразили выше)
-                    }
                     break;
                 case 'UPDATE_CHAT_HEADER':
                     // Синхронизируем состояние с chat-interface, если нужно

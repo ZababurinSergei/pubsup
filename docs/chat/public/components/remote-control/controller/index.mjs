@@ -183,13 +183,6 @@ export const  controller = async (context) => {
                 add(screen, 'mousedown', mouseDownHandler);
                 add(screen, 'mouseup', mouseUpHandler);
 
-                // Обработчик кнопки видео
-                const videoBtn = context.shadowRoot.querySelector('#toggle-video');
-                if (videoBtn) {
-                    videoBtn.addEventListener('click', toggleVideoHandler);
-                    eventListeners.push({ element: videoBtn, handler: toggleVideoHandler });
-                }
-
                 log('Обработчики мыши и видео установлены для режима controller');
             } else {
 
