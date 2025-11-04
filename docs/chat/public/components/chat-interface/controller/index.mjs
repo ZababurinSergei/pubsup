@@ -248,9 +248,11 @@ export const controller = async (context) => {
                     return;
                 }
 
-                const peerId = e.currentTarget.getAttribute('data-peer-id');
-                const groupTopic = e.currentTarget.getAttribute('data-group-topic');
-                console.log('@@@@@@@@@@@@@@@@@@@@@@ peerId groupTopic @@@@@@@@@@@@@@@@@@@@@@', peerId, groupTopic, e.currentTarget)
+                const peerId = e.currentTarget.dataset.peerId;
+                const groupTopic = e.currentTarget.dataset.groupTopic;
+
+                // const peerId = e.currentTarget.getAttribute('data-peer-id');
+                // const groupTopic = e.currentTarget.getAttribute('data-group-topic');
                 try {
                     // Обработка приватного чата с пиром
                     if (peerId) {
@@ -278,6 +280,9 @@ export const controller = async (context) => {
                             log('выбор группы для чата: %s', group.name || groupTopic);
                             chatManager.callback.handlersSetupGroup({
                                 currentTarget: {
+                                    closest: () => {
+                                        return false
+                                    },
                                     getAttribute: (type) => {
                                         switch (type) {
                                             case 'data-group-id':

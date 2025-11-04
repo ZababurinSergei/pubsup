@@ -225,7 +225,7 @@ export function renderMembersList({ state = {} } = {}) {
             const showUnread = unreadCount > 0;
 
             return `
-            <div class="member-item ${isActiveGroup ? 'active' : ''}" data-peer-id="${item.id}">
+            <div class="member-item ${isActiveGroup ? 'active' : ''}" data-group-topic="${item.id}">
               <div class="member-avatar group">${item.name.charAt(0).toUpperCase()}</div>
               <div class="member-info">
                 <div class="member-name">${item.name}</div>

@@ -2667,19 +2667,17 @@ var controller = /* @__PURE__ */ __name(async (context) => {
           return;
         }
         const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
+        console.log("@@@@@@@@ isSubscribed @@@@@@@@@@", isSubscribed);
         if (isSubscribed) {
           try {
             context.state.groups = await context._actions.discoverGroups();
             context.state.currentGroup = group;
-            const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
             let history = [];
-            if (chatManager?.state?.topicHistories?.[group.topic]) {
+            if (context?.state?.topicHistories?.[group.topic]) {
               history = [...chatManager.state.topicHistories[group.topic]];
             }
             console.log("22222222222222222222222222222222222222222222222222222222222222222222222222222", group, history);
-            if (chatManager) {
-              chatManager.state.messages = history;
-            }
+            context.state.messages = history;
             await context.renderPart({
               partName: "renderMyGroups",
               state: context.state,
@@ -2694,8 +2692,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             await groupManager.joinGroup(group);
             let activeGroups = [];
             if (groupManager?.state) {
-              activeGroups = [.../* @__PURE__ */ new Set([...groupManager.state.groups || [], ...groupManager.state.joinedGroups || []])];
+              activeGroups = groupManager.state.joinedGroups;
             }
+            console.log("dddddddddddddddddddddddddddddddddddd", activeGroups);
             const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
             if (chatInterface) {
               await chatInterface.postMessage({
@@ -2758,7 +2757,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         }
       }, "activateGroup");
       const handlersSetupGroup = /* @__PURE__ */ __name(async (e2) => {
-        if (e2.target.closest(".group-actions")) {
+        if (e2.currentTarget.closest(".group-actions")) {
           return;
         }
         const groupId = e2.currentTarget.getAttribute("data-group-id");
@@ -17576,7 +17575,7 @@ function renderMembersList({ state = {} } = {}) {
       const unreadCount2 = state.unreadCounts?.[item.id] || 0;
       const showUnread2 = unreadCount2 > 0;
       return `
-            <div class="member-item ${isActiveGroup ? "active" : ""}" data-peer-id="${item.id}">
+            <div class="member-item ${isActiveGroup ? "active" : ""}" data-group-topic="${item.id}">
               <div class="member-avatar group">${item.name.charAt(0).toUpperCase()}</div>
               <div class="member-info">
                 <div class="member-name">${item.name}</div>
@@ -17873,10 +17872,10 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
       if (sendMessageBtn && messageInput) {
         const sendMessageHandler = /* @__PURE__ */ __name(async () => {
           if (messageInput.value.trim() && context.state.currentGroup) {
-            const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-            if (chatManager) {
+            const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+            if (chatManager2) {
               log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
-              await chatManager.postMessage({
+              await chatManager2.postMessage({
                 type: "SEND_MESSAGE",
                 data: {
                   message: messageInput.value.trim(),
@@ -17906,8 +17905,8 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const peerId = button.closest(".member-item")?.dataset.peerId;
             if (!peerId) return;
             try {
-              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-              if (!chatManager) {
+              const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+              if (!chatManager2) {
                 throw new Error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
               }
               console.log("-------------- click button ------------------", {
@@ -17925,7 +17924,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
                   })
                 }
               });
-              await chatManager.postMessage({
+              await chatManager2.postMessage({
                 type: "SEND_PRIVATE_MESSAGE",
                 data: {
                   peerId,
@@ -18050,9 +18049,8 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
         if (e2.target.closest(".member-actions")) {
           return;
         }
-        const peerId = e2.currentTarget.getAttribute("data-peer-id");
-        const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
-        console.log("@@@@@@@@@@@@@@@@@@@@@@ peerId groupTopic @@@@@@@@@@@@@@@@@@@@@@", peerId, groupTopic, e2.currentTarget);
+        const peerId = e2.currentTarget.dataset.peerId;
+        const groupTopic = e2.currentTarget.dataset.groupTopic;
         try {
           if (peerId) {
             const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
@@ -18068,10 +18066,13 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const group = allGroups.find((g) => g.topic === groupTopic);
             console.log("@@@@@@@@@@@@@@@@@@@@@@ group @@@@@@@@@@@@@@@@@@@@@@", group, allGroups);
             if (group) {
-              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+              const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
               log11("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
-              chatManager.callback.handlersSetupGroup({
+              chatManager2.callback.handlersSetupGroup({
                 currentTarget: {
+                  closest: /* @__PURE__ */ __name(() => {
+                    return false;
+                  }, "closest"),
                   getAttribute: /* @__PURE__ */ __name((type) => {
                     switch (type) {
                       case "data-group-id":
@@ -18363,10 +18364,10 @@ async function sendMessage(message2, topic) {
       });
       return;
     }
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager) {
+    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager2) {
       log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0432 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
-      await chatManager.postMessage({
+      await chatManager2.postMessage({
         type: "SEND_MESSAGE",
         data: { message: message2, topic }
       });
@@ -18475,10 +18476,10 @@ async function setActiveGroup(group) {
       selector: "#messages-list",
       replace: true
     });
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
     let history = [];
-    if (chatManager?.state?.topicHistories?.[group.topic]) {
-      history = [...chatManager.state.topicHistories[group.topic]];
+    if (chatManager2?.state?.topicHistories?.[group.topic]) {
+      history = [...chatManager2.state.topicHistories[group.topic]];
     }
     this.state.currentGroup = safeGroup;
     this.state.messages = history;
@@ -18575,11 +18576,11 @@ async function setActiveMember(member) {
     this.state.isPrivateChat = true;
     await this.updateMembersList();
     await this.updateChatHeader();
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager) {
-      const history = chatManager?.state.privateHistories[member.id] || [];
+    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager2) {
+      const history = chatManager2?.state.privateHistories[member.id] || [];
       this.state.messages = [...history];
-      await chatManager.postMessage({
+      await chatManager2.postMessage({
         type: "UPDATE_CHAT_HEADER",
         data: {
           isPrivateChat: true,
@@ -18625,10 +18626,10 @@ async function sendPrivateMessage(message2, peerId) {
       });
       return;
     }
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager) {
+    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager2) {
       log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
-      await chatManager.postMessage({
+      await chatManager2.postMessage({
         type: "SEND_PRIVATE_MESSAGE",
         data: { peerId, message: message2 }
       });
@@ -18748,10 +18749,10 @@ var ChatInterface = class extends BaseComponent {
     if (this.state.messages.length > 100) {
       this.state.messages = this.state.messages.slice(-100);
     }
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager) {
+    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager2) {
       if (message2.isPrivate && message2.from === this.state.peerId) {
-        await chatManager.addMessageToPrivateHistory({
+        await chatManager2.addMessageToPrivateHistory({
           text: message2.text,
           from: message2.from,
           to: message2.to,
@@ -18760,7 +18761,7 @@ var ChatInterface = class extends BaseComponent {
           isPrivate: true
         });
       } else if (message2.topic) {
-        await chatManager.addMessageToTopicHistory({
+        await chatManager2.addMessageToTopicHistory({
           text: message2.text,
           topic: message2.topic,
           from: message2.from,
@@ -18794,15 +18795,15 @@ var ChatInterface = class extends BaseComponent {
     this.state.currentGroup = safeGroup;
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
-    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
     let history = [];
-    if (chatManager?.state?.topicHistories?.[safeGroup.topic]) {
-      history = [...chatManager.state.topicHistories[safeGroup.topic]];
+    if (chatManager2?.state?.topicHistories?.[safeGroup.topic]) {
+      history = [...chatManager2.state.topicHistories[safeGroup.topic]];
     }
     this.state.messages = history;
     this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s, \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %d", safeGroup.name, history.length);
-    if (chatManager) {
-      await chatManager.postMessage({
+    if (chatManager2) {
+      await chatManager2.postMessage({
         type: "UPDATE_CHAT_HEADER",
         data: { currentGroup: safeGroup }
       });
@@ -19026,9 +19027,9 @@ var ChatInterface = class extends BaseComponent {
       this.state.activeMember = memberWithName;
       this.state.isPrivateChat = true;
       await this.updateChatHeader();
-      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager) {
-        await chatManager.postMessage({
+      const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager2) {
+        await chatManager2.postMessage({
           type: "UPDATE_CHAT_HEADER",
           data: {
             isPrivateChat: true,
@@ -19036,7 +19037,7 @@ var ChatInterface = class extends BaseComponent {
           }
         });
         const peerId = member.id;
-        const history = chatManager.state.privateHistories?.[peerId] || [];
+        const history = chatManager2.state.privateHistories?.[peerId] || [];
         this.state.messages = [...history];
       } else {
         this.state.messages = [];
@@ -19550,9 +19551,9 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                       } else {
                         await context.fullRender(context.state);
                       }
-                      const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-                      if (chatManager) {
-                        await chatManager.postMessage({
+                      const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+                      if (chatManager2) {
+                        await chatManager2.postMessage({
                           type: "GROUP_CREATED",
                           data: group
                         });
@@ -19653,9 +19654,9 @@ var controller3 = /* @__PURE__ */ __name(async (context) => {
                 try {
                   await context.joinGroup(group);
                   log11("successfully joined group: %s", group.name);
-                  const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-                  if (chatManager) {
-                    await chatManager.postMessage({
+                  const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+                  if (chatManager2) {
+                    await chatManager2.postMessage({
                       type: "JOIN_GROUP",
                       data: group
                     });
@@ -19851,9 +19852,9 @@ async function createActions3(context) {
       }
       context.state.discoveredGroups.sort((a2, b) => b.lastUpdated - a2.lastUpdated);
       await this.safeUpdateDiscoveredGroupsUI();
-      const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager) {
-        await chatManager.postMessage({
+      const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager2) {
+        await chatManager2.postMessage({
           type: "GROUPS_DISCOVERED",
           data: { groups: context.state.discoveredGroups }
         });
@@ -20010,9 +20011,9 @@ async function createActions3(context) {
         }
         context.state.discoveredGroups = discoveredGroups;
         await this.safeUpdateDiscoveredGroupsUI();
-        const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-        if (chatManager) {
-          await chatManager.postMessage({
+        const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager2) {
+          await chatManager2.postMessage({
             type: "GROUPS_DISCOVERED",
             data: { groups: discoveredGroups }
           });
@@ -20716,9 +20717,9 @@ var GroupManager = class extends BaseComponent {
         ...this.state.groups || [],
         ...this.state.joinedGroups || []
       ];
-      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager) {
-        await chatManager.postMessage({
+      const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager2) {
+        await chatManager2.postMessage({
           type: "GROUP_CREATED",
           data: group
         });
@@ -37645,9 +37646,9 @@ async function createActions4(context) {
     async notifyComponentsNodeReady() {
       const log12 = logger("peer-connection:actions:notifyNodeReady");
       try {
-        const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-        if (chatManager) {
-          await chatManager.postMessage({
+        const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager2) {
+          await chatManager2.postMessage({
             type: "NODE_RESTARTED",
             data: {
               peerId: context.state.peerId,
@@ -37679,10 +37680,10 @@ async function createActions4(context) {
           log12("\u041E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0438\u043D\u0442\u0435\u0440\u0432\u0430\u043B \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432");
         }
         try {
-          const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-          if (chatManager && chatManager._actions) {
+          const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+          if (chatManager2 && chatManager2._actions) {
             log12("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C ChatManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
-            await chatManager.postMessage({
+            await chatManager2.postMessage({
               type: "NODE_SHUTDOWN",
               data: {
                 peerId: libp2p?.peerId?.toString(),
@@ -37743,13 +37744,13 @@ async function createActions4(context) {
         await this.cleanup();
         await new Promise((resolve) => setTimeout(resolve, 1e3));
         try {
-          const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-          if (chatManager) {
+          const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+          if (chatManager2) {
             log12("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C ChatManager...");
-            chatManager.state.messages = [];
-            chatManager.state.currentGroup = null;
-            chatManager.state.connected = false;
-            await chatManager.initializeFromPeerConnection();
+            chatManager2.state.messages = [];
+            chatManager2.state.currentGroup = null;
+            chatManager2.state.connected = false;
+            await chatManager2.initializeFromPeerConnection();
             log12("ChatManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
           }
         } catch (error) {
@@ -38485,8 +38486,8 @@ async function createActions5(context) {
       log9.error("\u041D\u0435\u0442 \u0446\u0435\u043B\u0435\u0432\u043E\u0433\u043E \u043F\u0438\u0440\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430");
       return;
     }
-    const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
-    if (!chatManager) {
+    const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
+    if (!chatManager2) {
       log9.error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 REMOTE_CONTROL_EVENT");
       return;
     }
@@ -38498,7 +38499,7 @@ async function createActions5(context) {
       }
     };
     try {
-      await chatManager.sendPrivateMessage(targetPeer, JSON.stringify(message2));
+      await chatManager2.sendPrivateMessage(targetPeer, JSON.stringify(message2));
       log9("\u0421\u043E\u0431\u044B\u0442\u0438\u0435 \u0432\u0432\u043E\u0434\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E: %s", eventData.type);
     } catch (error) {
       log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430: %o", error);
@@ -38729,12 +38730,12 @@ var RemoteControl = class extends BaseComponent {
           isPrivate: true
         });
       } else {
-        const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-        if (chatManager) {
-          if (!chatManager.state.unreadCounts) chatManager.state.unreadCounts = {};
-          chatManager.state.unreadCounts[remotePeer] = (chatManager.state.unreadCounts[remotePeer] || 0) + 1;
+        const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager2) {
+          if (!chatManager2.state.unreadCounts) chatManager2.state.unreadCounts = {};
+          chatManager2.state.unreadCounts[remotePeer] = (chatManager2.state.unreadCounts[remotePeer] || 0) + 1;
           if (chatInterface?.updateMembersList) {
-            await chatInterface.updateMembersList({ unreadCounts: chatManager.state.unreadCounts });
+            await chatInterface.updateMembersList({ unreadCounts: chatManager2.state.unreadCounts });
           }
         }
       }
@@ -38841,9 +38842,9 @@ var RemoteControl = class extends BaseComponent {
       );
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (!chatManager) throw new Error("chat-manager \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
-      await chatManager.sendPrivateMessage(offerData.from, JSON.stringify({
+      const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (!chatManager2) throw new Error("chat-manager \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+      await chatManager2.sendPrivateMessage(offerData.from, JSON.stringify({
         type: "REMOTE_CONTROL_EVENT",
         payload: {
           type: "VIDEO_SDP",

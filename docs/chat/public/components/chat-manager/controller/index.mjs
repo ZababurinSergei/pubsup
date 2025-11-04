@@ -314,23 +314,24 @@ export const controller = async (context) => {
                 // Проверяем, подписан ли пользователь на топик
                 const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
 
+                console.log('@@@@@@@@ isSubscribed @@@@@@@@@@', isSubscribed)
                 if (isSubscribed) {
                     try {
                         // Обновляем список групп (опционально)
                         context.state.groups = await context._actions.discoverGroups();
                         context.state.currentGroup = group;
 
-                        // ✅ Подгружаем историю из chat-manager
-                        const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
+
                         let history = [];
-                        if (chatManager?.state?.topicHistories?.[group.topic]) {
+                        if (context?.state?.topicHistories?.[group.topic]) {
                             history = [...chatManager.state.topicHistories[group.topic]];
                         }
+
                         console.log('22222222222222222222222222222222222222222222222222222222222222222222222222222', group, history)
                         // Устанавливаем историю в состояние chat-manager (для синхронизации)
-                        if (chatManager) {
-                            chatManager.state.messages = history;
-                        }
+                        // if (chatManager) {
+                            context.state.messages = history;
+                        // }
 
                         // Рендерим заголовок и список групп
                         await context.renderPart({
@@ -344,16 +345,18 @@ export const controller = async (context) => {
                             state: context.state,
                             selector: '.chat-header'
                         });
-
-                        // Получаем актуальные активные группы из group-manager
+                        //
+                        // // Получаем актуальные активные группы из group-manager
                         const groupManager = await context.getComponentAsync('group-manager', 'group-manager');
                         await groupManager.joinGroup(group); // гарантируем, что группа в joinedGroups
 
                         let activeGroups = [];
                         if (groupManager?.state) {
-                            activeGroups = [...new Set([...(groupManager.state.groups  || []), ...(groupManager.state.joinedGroups || [])])];
+                            activeGroups = groupManager.state.joinedGroups
+                            // activeGroups = [...new Set([...(groupManager.state.groups  || []), ...(groupManager.state.joinedGroups || [])])];
                         }
 
+                        console.log('dddddddddddddddddddddddddddddddddddd', activeGroups)
                         // Уведомляем chat-interface
                         const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
                         if (chatInterface) {
@@ -425,7 +428,7 @@ export const controller = async (context) => {
 
             const handlersSetupGroup =  async (e) => {
                 // Предотвращаем срабатывание на кнопках действий
-                if (e.target.closest('.group-actions')) {
+                if (e.currentTarget.closest('.group-actions')) {
                     return;
                 }
 
