@@ -140,6 +140,22 @@ export default function defaultTemplate({state = {}} = {}) {
                     </div>\
                 </div>\
             </section>\
+            
+              <!-- Секция подключенных пиров для renderPart -->\
+            <section class=\"grid-card connected-peers-section\" style=\"display: none;\">\
+                <div class=\"card-header\">\
+                    <h3 class=\"card-title\">\
+                        <span class=\"card-icon\">🔗</span>\
+                        DHT\
+                        <span class=\"card-badge\">${state.connectedPeers ? state.connectedPeers.length : 0}</span>\
+                    </h3>\
+                </div>\
+                <div class=\"card-content\">\
+                    <div id=\"connected-peers-list\">\
+                        ${renderDHTControls({state})}\
+                    </div>\
+                </div>\
+            </section>\
         </main>\
 \
         <!-- Футер с дополнительной информацией -->\
@@ -159,6 +175,46 @@ export default function defaultTemplate({state = {}} = {}) {
             </div>\
         </footer>\
     </div>\
+    `;
+}
+
+/**
+ * Шаблон для управления DHT
+ */
+export function renderDHTControls({state = {}} = {}) {
+    return `
+    <div class="control-group">
+        <label class="control-label">DHT сети</label>
+        <div class="settings-group">
+            <label class="setting-toggle">
+                <input 
+                    type="checkbox" 
+                    id="dht-lan-toggle" 
+                    ${state.dhtEnabled?.lan ? 'checked' : ''}
+                >
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">LAN DHT</span>
+            </label>
+            <label class="setting-toggle">
+                <input 
+                    type="checkbox" 
+                    id="dht-amino-toggle" 
+                    ${state.dhtEnabled?.amino ? 'checked' : ''}
+                >
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Amino DHT</span>
+            </label>
+            <label class="setting-toggle">
+                <input 
+                    type="checkbox" 
+                    id="dht-universe-toggle" 
+                    ${state.dhtEnabled?.universe ? 'checked' : ''}
+                >
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Universe DHT</span>
+            </label>
+        </div>
+    </div>
     `;
 }
 
@@ -464,7 +520,7 @@ export function renderQuickActions({state = {}} = {}) {
 }
 
 /**
- * Шаблон для статистики
+ * Шаблон для статистики с DHT
  */
 export function renderStatistics({state = {}} = {}) {
     const peersCount = state.connectedPeers ? state.connectedPeers.length : 0;
@@ -472,25 +528,28 @@ export function renderStatistics({state = {}} = {}) {
     const connectionCount = state.connectedPeers ?
         state.connectedPeers.reduce((total, peer) => total + (peer.connections ? peer.connections.length : 1), 0) : 0;
 
-    return `\
-    <div class=\"stats-grid\">\
-        <div class=\"stat-item\">\
-            <div class=\"stat-value\">${peersCount}</div>\
-            <div class=\"stat-label\">Пиров</div>\
-        </div>\
-        <div class=\"stat-item\">\
-            <div class=\"stat-value\">${connectionCount}</div>\
-            <div class=\"stat-label\">Соединений</div>\
-        </div>\
-        <div class=\"stat-item\">\
-            <div class=\"stat-value\">${addressesCount}</div>\
-            <div class=\"stat-label\">Адресов</div>\
-        </div>\
-        <div class=\"stat-item\">\
-            <div class=\"stat-value\">${state.mode === 'listener' ? 'Входящие' : 'Исходящие'}</div>\
-            <div class=\"stat-label\">Тип подключений</div>\
-        </div>\
-    </div>\
+    const dhtPeersCount = state.dhtPeers ?
+        Object.values(state.dhtPeers).flat().length : 0;
+
+    return `
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-value">${peersCount}</div>
+            <div class="stat-label">Пиров</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${connectionCount}</div>
+            <div class="stat-label">Соединений</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${addressesCount}</div>
+            <div class="stat-label">Адресов</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${dhtPeersCount}</div>
+            <div class="stat-label">DHT пиров</div>
+        </div>
+    </div>
     `;
 }
 

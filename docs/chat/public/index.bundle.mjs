@@ -799,8 +799,8 @@ var require_eventemitter3 = __commonJS({
         }
         listeners.fn.apply(listeners.context, args);
       } else {
-        var length3 = listeners.length, j;
-        for (i2 = 0; i2 < length3; i2++) {
+        var length4 = listeners.length, j;
+        for (i2 = 0; i2 < length4; i2++) {
           if (listeners[i2].once) this.removeListener(event, listeners[i2].fn, void 0, true);
           switch (len) {
             case 1:
@@ -844,7 +844,7 @@ var require_eventemitter3 = __commonJS({
           clearEvent(this, evt);
         }
       } else {
-        for (var i2 = 0, events = [], length3 = listeners.length; i2 < length3; i2++) {
+        for (var i2 = 0, events = [], length4 = listeners.length; i2 < length4; i2++) {
           if (listeners[i2].fn !== fn || once && !listeners[i2].once || context && listeners[i2].context !== context) {
             events.push(listeners[i2]);
           }
@@ -960,7 +960,7 @@ function base(ALPHABET, name3) {
       return "";
     }
     var zeroes = 0;
-    var length3 = 0;
+    var length4 = 0;
     var pbegin = 0;
     var pend = source.length;
     while (pbegin !== pend && source[pbegin] === 0) {
@@ -972,7 +972,7 @@ function base(ALPHABET, name3) {
     while (pbegin !== pend) {
       var carry = source[pbegin];
       var i3 = 0;
-      for (var it1 = size - 1; (carry !== 0 || i3 < length3) && it1 !== -1; it1--, i3++) {
+      for (var it1 = size - 1; (carry !== 0 || i3 < length4) && it1 !== -1; it1--, i3++) {
         carry += 256 * b58[it1] >>> 0;
         b58[it1] = carry % BASE >>> 0;
         carry = carry / BASE >>> 0;
@@ -980,10 +980,10 @@ function base(ALPHABET, name3) {
       if (carry !== 0) {
         throw new Error("Non-zero carry");
       }
-      length3 = i3;
+      length4 = i3;
       pbegin++;
     }
-    var it2 = size - length3;
+    var it2 = size - length4;
     while (it2 !== size && b58[it2] === 0) {
       it2++;
     }
@@ -1006,7 +1006,7 @@ function base(ALPHABET, name3) {
       return;
     }
     var zeroes = 0;
-    var length3 = 0;
+    var length4 = 0;
     while (source[psz] === LEADER) {
       zeroes++;
       psz++;
@@ -1019,7 +1019,7 @@ function base(ALPHABET, name3) {
         return;
       }
       var i3 = 0;
-      for (var it3 = size - 1; (carry !== 0 || i3 < length3) && it3 !== -1; it3--, i3++) {
+      for (var it3 = size - 1; (carry !== 0 || i3 < length4) && it3 !== -1; it3--, i3++) {
         carry += BASE * b256[it3] >>> 0;
         b256[it3] = carry % 256 >>> 0;
         carry = carry / 256 >>> 0;
@@ -1027,13 +1027,13 @@ function base(ALPHABET, name3) {
       if (carry !== 0) {
         throw new Error("Non-zero carry");
       }
-      length3 = i3;
+      length4 = i3;
       psz++;
     }
     if (source[psz] === " ") {
       return;
     }
-    var it4 = size - length3;
+    var it4 = size - length4;
     while (it4 !== size && b256[it4] === 0) {
       it4++;
     }
@@ -1446,7 +1446,7 @@ __name(logger, "logger");
 
 // public/base/base-component.mjs
 var exclusion = [];
-var log2 = logger("base-component");
+var log = logger("base-component");
 var BaseComponent = class _BaseComponent extends HTMLElement {
   static {
     __name(this, "BaseComponent");
@@ -1480,7 +1480,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     this.getTemplate = () => "<div>\u0428\u0430\u0431\u043B\u043E\u043D \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0435\u043D</div>";
     this._id = this.constructor.generateId();
     this._isLoading = false;
-    log2(`\u0421\u043E\u0437\u0434\u0430\u043D \u044D\u043A\u0437\u0435\u043C\u043F\u043B\u044F\u0440 ${this.constructor.name} \u0441 ID: ${this._id}`);
+    log(`\u0421\u043E\u0437\u0434\u0430\u043D \u044D\u043A\u0437\u0435\u043C\u043F\u043B\u044F\u0440 ${this.constructor.name} \u0441 ID: ${this._id}`);
   }
   // Приватные поля
   #templateImported = false;
@@ -1504,7 +1504,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     if (_BaseComponent.errorStore.length > _BaseComponent.ERROR_STORE_LIMIT) {
       _BaseComponent.errorStore = _BaseComponent.errorStore.slice(0, _BaseComponent.ERROR_STORE_LIMIT);
     }
-    log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0430 \u0432 \u0445\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0435. \u0412\u0441\u0435\u0433\u043E \u0437\u0430\u043F\u0438\u0441\u0435\u0439: ${_BaseComponent.errorStore.length}`, errorEntry);
+    log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0430 \u0432 \u0445\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0435. \u0412\u0441\u0435\u0433\u043E \u0437\u0430\u043F\u0438\u0441\u0435\u0439: ${_BaseComponent.errorStore.length}`, errorEntry);
   }
   /**
    * Получает копию текущего хранилища ошибок.
@@ -1518,7 +1518,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
    */
   static clearErrors() {
     _BaseComponent.errorStore = [];
-    log2("\u0425\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0435 \u043E\u0448\u0438\u0431\u043E\u043A \u043E\u0447\u0438\u0449\u0435\u043D\u043E.");
+    log("\u0425\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0435 \u043E\u0448\u0438\u0431\u043E\u043A \u043E\u0447\u0438\u0449\u0435\u043D\u043E.");
   }
   /**
    * Отображает универсальное модальное окно.
@@ -1582,7 +1582,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
               try {
                 btnConfig.action();
               } catch (e2) {
-                log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0435 \u043A\u043D\u043E\u043F\u043A\u0438 \u043C\u043E\u0434\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u043E\u043A\u043D\u0430:", e2);
+                log.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0435 \u043A\u043D\u043E\u043F\u043A\u0438 \u043C\u043E\u0434\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u043E\u043A\u043D\u0430:", e2);
               }
             }
             closeModal();
@@ -1627,12 +1627,12 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
    */
   async connectedCallback() {
     try {
-      log2(`${this.constructor.name} \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u0442\u0441\u044F \u043A DOM.`);
+      log(`${this.constructor.name} \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u0442\u0441\u044F \u043A DOM.`);
       await this.#initComponent(this.state);
       this.#isReady = true;
-      log2(`${this.constructor.name} \u0433\u043E\u0442\u043E\u0432.`);
+      log(`${this.constructor.name} \u0433\u043E\u0442\u043E\u0432.`);
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 connectedCallback \u0434\u043B\u044F ${this.constructor.name}:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0432 connectedCallback \u0434\u043B\u044F ${this.constructor.name}:`, error);
       await this.#render({ error: error.message });
     }
   }
@@ -1640,7 +1640,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
    * @private
    */
   async disconnectedCallback() {
-    log2(`${this.constructor.name} \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043E\u0442 DOM.`);
+    log(`${this.constructor.name} \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043E\u0442 DOM.`);
     this.#isReady = false;
     await this._componentDisconnected();
   }
@@ -1648,7 +1648,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
    * @private
    */
   async adoptedCallback() {
-    log2(`${this.constructor.name} \u043F\u0435\u0440\u0435\u043C\u0435\u0449\u0435\u043D \u0432 \u043D\u043E\u0432\u044B\u0439 \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442.`);
+    log(`${this.constructor.name} \u043F\u0435\u0440\u0435\u043C\u0435\u0449\u0435\u043D \u0432 \u043D\u043E\u0432\u044B\u0439 \u0434\u043E\u043A\u0443\u043C\u0435\u043D\u0442.`);
     await this._componentAdopted();
   }
   /**
@@ -1658,14 +1658,14 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     if (oldValue === newValue) return;
     if (this.#templateImported) {
       await this._componentAttributeChanged(name3, oldValue, newValue);
-      log2(`\u0410\u0442\u0440\u0438\u0431\u0443\u0442 ${name3} \u0438\u0437\u043C\u0435\u043D\u0438\u043B\u0441\u044F \u0441 '${oldValue}' \u043D\u0430 '${newValue}'.`);
+      log(`\u0410\u0442\u0440\u0438\u0431\u0443\u0442 ${name3} \u0438\u0437\u043C\u0435\u043D\u0438\u043B\u0441\u044F \u0441 '${oldValue}' \u043D\u0430 '${newValue}'.`);
     }
   }
   async #initComponent(state) {
     const type = this.dataset.type;
     if (!exclusion.includes(this.tagName)) {
       this.#templateImported = true;
-      if (type !== "server") {
+      if (type !== "server" && !this.hasAttribute("data-no-render")) {
         await this.#loadComponentStyles();
         await this.showSkeleton({
           selector: "#connection-status",
@@ -1683,9 +1683,9 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       const style = document.createElement("style");
       style.textContent = `@import url('${cssPath.pathname}');`;
       this.shadowRoot.appendChild(style);
-      log2(`\u0421\u0442\u0438\u043B\u0438 \u0434\u043B\u044F ${this.constructor.name} \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u044B \u0438\u0437 ${cssPath}`);
+      log(`\u0421\u0442\u0438\u043B\u0438 \u0434\u043B\u044F ${this.constructor.name} \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u044B \u0438\u0437 ${cssPath}`);
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0442\u0438\u043B\u0435\u0439 \u0434\u043B\u044F ${this.constructor.name}:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438 \u0441\u0442\u0438\u043B\u0435\u0439 \u0434\u043B\u044F ${this.constructor.name}:`, error);
     }
   }
   /**
@@ -1845,9 +1845,9 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         container2.innerHTML = skeletonHtml;
         this.shadowRoot.appendChild(container2);
       }
-      log2(`\u0421\u043A\u0435\u043B\u0435\u0442\u043E\u043D-\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430 \u0434\u043B\u044F ${this.constructor.name}`);
+      log(`\u0421\u043A\u0435\u043B\u0435\u0442\u043E\u043D-\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430 \u0434\u043B\u044F ${this.constructor.name}`);
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043A\u0430\u0437\u0430 \u0441\u043A\u0435\u043B\u0435\u0442\u043E\u043D\u0430:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043A\u0430\u0437\u0430 \u0441\u043A\u0435\u043B\u0435\u0442\u043E\u043D\u0430:`, error);
     }
   }
   /**
@@ -1864,9 +1864,9 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       skeletonElements.forEach((element) => {
         element.remove();
       });
-      log2(`\u0421\u043A\u0435\u043B\u0435\u0442\u043E\u043D-\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0441\u043A\u0440\u044B\u0442\u0430 \u0434\u043B\u044F ${this.constructor.name}`);
+      log(`\u0421\u043A\u0435\u043B\u0435\u0442\u043E\u043D-\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0441\u043A\u0440\u044B\u0442\u0430 \u0434\u043B\u044F ${this.constructor.name}`);
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043A\u0440\u044B\u0442\u0438\u044F \u0441\u043A\u0435\u043B\u0435\u0442\u043E\u043D\u0430:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043A\u0440\u044B\u0442\u0438\u044F \u0441\u043A\u0435\u043B\u0435\u0442\u043E\u043D\u0430:`, error);
     }
   }
   /**
@@ -1883,10 +1883,10 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         state,
         context: this
       });
-      log2(`\u041F\u043E\u043B\u043D\u044B\u0439 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D \u0434\u043B\u044F ${this.constructor.name}`);
+      log(`\u041F\u043E\u043B\u043D\u044B\u0439 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D \u0434\u043B\u044F ${this.constructor.name}`);
       return true;
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u043D\u043E\u0433\u043E \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u043D\u043E\u0433\u043E \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430:`, error);
       return false;
     }
   }
@@ -1902,16 +1902,16 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
   async renderPart({ partName = "defaultTemplate", state = {}, selector, method = "innerHTML" } = {}) {
     try {
       if (!this._templateMethods || !this._templateMethods[partName]) {
-        log2.error(`\u041C\u0435\u0442\u043E\u0434 \u0448\u0430\u0431\u043B\u043E\u043D\u0430 '${partName}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0432 ${this.constructor.name}`);
+        log.error(`\u041C\u0435\u0442\u043E\u0434 \u0448\u0430\u0431\u043B\u043E\u043D\u0430 '${partName}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0432 ${this.constructor.name}`);
         return false;
       }
       if (!selector) {
-        log2.error(`\u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440 \u0434\u043B\u044F \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}'`);
+        log.error(`\u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440 \u0434\u043B\u044F \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}'`);
         return false;
       }
       const targetElement = this.shadowRoot.querySelector(selector);
       if (!targetElement) {
-        log2.error(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D`);
+        log.error(`\u042D\u043B\u0435\u043C\u0435\u043D\u0442 \u0441 \u0441\u0435\u043B\u0435\u043A\u0442\u043E\u0440\u043E\u043C '${selector}' \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D`);
         return false;
       }
       const htmlContent = await this._templateMethods[partName]({
@@ -1935,15 +1935,15 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
           targetElement.insertAdjacentHTML("afterend", htmlContent);
           break;
         default:
-          log2.error(`\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u043C\u0435\u0442\u043E\u0434 \u0432\u0441\u0442\u0430\u0432\u043A\u0438: ${method}`);
+          log.error(`\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u043C\u0435\u0442\u043E\u0434 \u0432\u0441\u0442\u0430\u0432\u043A\u0438: ${method}`);
           return false;
       }
-      log2(`\u0427\u0430\u0441\u0442\u044C '${partName}' \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D\u0430 \u0432 '${selector}' \u043C\u0435\u0442\u043E\u0434\u043E\u043C '${method}'`);
+      log(`\u0427\u0430\u0441\u0442\u044C '${partName}' \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D\u0430 \u0432 '${selector}' \u043C\u0435\u0442\u043E\u0434\u043E\u043C '${method}'`);
       await this.#waitForDOMUpdate();
       await this.#setupEventListeners();
       return true;
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}':`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0447\u0430\u0441\u0442\u0438 '${partName}':`, error);
       this.addError({
         componentName: this.constructor.name,
         source: "renderPart",
@@ -2068,12 +2068,12 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         await this.#waitForDOMUpdate();
         await this.#setupEventListeners();
         await this.hideSkeleton();
-        log2(`${this.constructor.name} \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D \u0441 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435\u043C:`, mergedState);
+        log(`${this.constructor.name} \u043E\u0442\u0440\u0435\u043D\u0434\u0435\u0440\u0435\u043D \u0441 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435\u043C:`, mergedState);
       } else {
-        log2.error(`${this.constructor.name} \u0442\u0435\u043C\u043F\u043B\u0435\u0439\u0442 \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0435\u043D`);
+        log.error(`${this.constructor.name} \u0442\u0435\u043C\u043F\u043B\u0435\u0439\u0442 \u043D\u0435 \u043E\u043F\u0440\u0435\u0434\u0435\u043B\u0435\u043D`);
       }
     } catch (error) {
-      log2.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0434\u043B\u044F ${this.constructor.name}:`, error);
+      log.error(`\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430 \u0434\u043B\u044F ${this.constructor.name}:`, error);
       this.shadowRoot.innerHTML = `<p style="color:red;">\u041E\u0448\u0438\u0431\u043A\u0430 \u0440\u0435\u043D\u0434\u0435\u0440\u0438\u043D\u0433\u0430: ${error.message}</p>`;
     }
   }
@@ -2100,22 +2100,22 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     if (this?._controller?.init) {
       this._controller.init();
     }
-    log2(`${this.constructor.name} \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432 \u0441\u043E\u0431\u044B\u0442\u0438\u0439 (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
+    log(`${this.constructor.name} \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432 \u0441\u043E\u0431\u044B\u0442\u0438\u0439 (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
   }
   async #registerComponent() {
     try {
       if (!this.id) {
-        log2.error("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0436\u0435\u043B\u0430\u0442\u0435\u043B\u044C\u043D\u043E \u0438\u043C\u0435\u0435\u0442 ID \u0434\u043B\u044F \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438");
+        log.error("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0436\u0435\u043B\u0430\u0442\u0435\u043B\u044C\u043D\u043E \u0438\u043C\u0435\u0435\u0442 ID \u0434\u043B\u044F \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0438");
         throw new Error("\u042F\u0422\u041E-ID1: \u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0442\u0440\u0435\u0431\u0443\u0435\u0442 ID");
         return;
       }
       const key = `${this.tagName.toLowerCase()}:${this.id}`;
       _BaseComponent.pendingRequests.set(key, this);
       if (this.tagName.toLowerCase() === "navigation-manager" || this.tagName.toLowerCase() === "navigation-sections") {
-        log2(`${this.constructor.name} \u0441 ID ${this.id} \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D.`);
+        log(`${this.constructor.name} \u0441 ID ${this.id} \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D.`);
       }
     } catch (e2) {
-      log2.error(e2.toString(), this.tagName.toLowerCase());
+      log.error(e2.toString(), this.tagName.toLowerCase());
     }
   }
   /**
@@ -2137,7 +2137,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       const timeoutId = setTimeout(() => {
         if (!resolved) {
           resolved = true;
-          log2.error(`\u0422\u0430\u0439\u043C\u0430\u0443\u0442 \u043E\u0436\u0438\u0434\u0430\u043D\u0438\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430 '${key}'.`);
+          log.error(`\u0422\u0430\u0439\u043C\u0430\u0443\u0442 \u043E\u0436\u0438\u0434\u0430\u043D\u0438\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430 '${key}'.`);
           resolve(null);
         }
       }, timeout);
@@ -2147,7 +2147,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         if (component) {
           clearTimeout(timeoutId);
           resolved = true;
-          log2(`\u0410\u0441\u0438\u043D\u0445\u0440\u043E\u043D\u043D\u043E \u043D\u0430\u0439\u0434\u0435\u043D \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0439 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 '${key}'.`);
+          log(`\u0410\u0441\u0438\u043D\u0445\u0440\u043E\u043D\u043D\u043E \u043D\u0430\u0439\u0434\u0435\u043D \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0439 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 '${key}'.`);
           resolve(component);
         } else {
           setTimeout(checkComponent, _BaseComponent.MAX_POLLING_INTERVAL);
@@ -2157,19 +2157,19 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
     });
   }
   async postMessage(event) {
-    log2(`\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430 ${this.constructor.name} \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043D\u043E.`);
+    log(`\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0434\u043B\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u0430 ${this.constructor.name} \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043D\u043E.`);
   }
   async _componentReady() {
-    log2(`${this.constructor.name} \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0433\u043E\u0442\u043E\u0432 (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
+    log(`${this.constructor.name} \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u0433\u043E\u0442\u043E\u0432 (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
   }
   async _componentAttributeChanged() {
-    log2(`${this.constructor.name} \u0410\u0442\u0440\u0438\u0431\u0443\u0442\u044B \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u044B (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
+    log(`${this.constructor.name} \u0410\u0442\u0440\u0438\u0431\u0443\u0442\u044B \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u044B (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
   }
   async _componentAdopted() {
-    log2(`${this.constructor.name} \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u043C\u0435\u0449\u0435\u043D (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
+    log(`${this.constructor.name} \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u043F\u0435\u0440\u0435\u043C\u0435\u0449\u0435\u043D (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
   }
   async _componentDisconnected() {
-    log2(`${this.constructor.name} \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
+    log(`${this.constructor.name} \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D (\u0431\u0430\u0437\u043E\u0432\u0430\u044F \u0440\u0435\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F).`);
   }
 };
 
@@ -2444,7 +2444,7 @@ function escapeHtml(text) {
 __name(escapeHtml, "escapeHtml");
 
 // public/components/chat-manager/controller/index.mjs
-var log3 = logger("chat-manager:controller");
+var log2 = logger("chat-manager:controller");
 var controller = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
   return {
@@ -2453,7 +2453,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
-      log3("ChatManager controller initializing...");
+      log2("ChatManager controller initializing...");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode");
       if (listenerBtn) {
@@ -2485,9 +2485,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
                 console.log("sendHandler -> sendGroupMessage");
                 await context.sendGroupMessage(message2);
                 messageInput2.value = "";
-                log3("\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
+                log2("\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
               } catch (error) {
-                log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+                log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
@@ -2506,9 +2506,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
           }, "enterHandler");
           messageInput2.addEventListener("keypress", enterHandler);
           eventListeners.push({ element: messageInput2, handler: enterHandler });
-          log3("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+          log2("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
         } else {
-          log3("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B");
+          log2("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B");
         }
       }, "setupSendMessageHandler");
       const joinGroupHandler = /* @__PURE__ */ __name(async (event) => {
@@ -2540,7 +2540,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
       if (discoverGroupsBtn) {
         const discoverHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log3("ChatManager: \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F...");
+            log2("ChatManager: \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F...");
             const groupManager = await context.getComponentAsync("group-manager", "group-manager");
             if (groupManager && groupManager.discoverGroups) {
               await groupManager.discoverGroups();
@@ -2554,7 +2554,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               throw new Error("GroupManager \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
             }
           } catch (error) {
-            log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F \u0432 ChatManager: %o", error);
+            log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F \u0432 ChatManager: %o", error);
             await context.showModal({
               title: "\u041E\u0448\u0438\u0431\u043A\u0430",
               content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
@@ -2609,7 +2609,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               });
             }
           } catch (error) {
-            log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
+            log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
             await context.showModal({
               title: "\u041E\u0448\u0438\u0431\u043A\u0430",
               content: `<p>${error.message}</p>`,
@@ -2630,7 +2630,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               copyPeerIdBtn.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
               setTimeout(() => copyPeerIdBtn.textContent = original, 2e3);
             } catch (err) {
-              log3.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID: %o", err);
+              log2.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID: %o", err);
             }
           }
         }, "handler");
@@ -2663,7 +2663,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
       }
       const activateGroup = /* @__PURE__ */ __name(async function activateGroup2(group) {
         if (!group || !group.topic) {
-          log3.error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:", group);
+          log2.error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:", group);
           return;
         }
         const isSubscribed = context.node?.services?.pubsub?.getTopics()?.includes(group.topic);
@@ -2674,9 +2674,8 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             context.state.currentGroup = group;
             let history = [];
             if (context?.state?.topicHistories?.[group.topic]) {
-              history = [...chatManager.state.topicHistories[group.topic]];
+              history = [...context.state.topicHistories[group.topic]];
             }
-            console.log("22222222222222222222222222222222222222222222222222222222222222222222222222222", group, history);
             context.state.messages = history;
             await context.renderPart({
               partName: "renderMyGroups",
@@ -2703,9 +2702,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               });
               await chatInterface.setCurrentGroup(group);
             }
-            log3("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
+            log2("\u0413\u0440\u0443\u043F\u043F\u0430 \u0430\u043A\u0442\u0438\u0432\u0438\u0440\u043E\u0432\u0430\u043D\u0430: %s", group.name);
           } catch (error) {
-            log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+            log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u0438 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "group-activate",
@@ -2721,7 +2720,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               {
                 text: "\u041E\u0442\u043C\u0435\u043D\u0430",
                 type: "secondary",
-                action: /* @__PURE__ */ __name(() => log3("\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
+                action: /* @__PURE__ */ __name(() => log2("\u041F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430"), "action")
               },
               {
                 text: "\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F",
@@ -2731,12 +2730,12 @@ var controller = /* @__PURE__ */ __name(async (context) => {
                     const success = await context._actions.subscribeToGroup(group.topic);
                     if (success) {
                       await context.callback.activateGroup(group);
-                      log3("\u0423\u0441\u043F\u0435\u0448\u043D\u0430\u044F \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %s", group.name);
+                      log2("\u0423\u0441\u043F\u0435\u0448\u043D\u0430\u044F \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u0430\u0446\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %s", group.name);
                     } else {
                       throw new Error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u0442\u044C\u0441\u044F \u043D\u0430 \u0442\u043E\u043F\u0438\u043A");
                     }
                   } catch (error) {
-                    log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: %o", error);
+                    log2.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443: %o", error);
                     context.addError({
                       componentName: context.constructor.name,
                       source: "group-subscribe",
@@ -2763,7 +2762,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         const groupId = e2.currentTarget.getAttribute("data-group-id");
         const groupTopic = e2.currentTarget.getAttribute("data-group-topic");
         if (!groupId && !groupTopic) {
-          log3.error("\u041A\u043B\u0438\u043A \u043F\u043E \u0433\u0440\u0443\u043F\u043F\u0435 \u0431\u0435\u0437 data-group-id \u0438\u043B\u0438 data-group-topic");
+          log2.error("\u041A\u043B\u0438\u043A \u043F\u043E \u0433\u0440\u0443\u043F\u043F\u0435 \u0431\u0435\u0437 data-group-id \u0438\u043B\u0438 data-group-topic");
           return;
         }
         const topic = groupTopic || groupId;
@@ -2771,7 +2770,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         const allGroups = groupManager.allGroups.all;
         const group = allGroups.find((g) => g.id === topic || g.topic === topic);
         if (!group) {
-          log3.error("\u0413\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443/ID:", topic);
+          log2.error("\u0413\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443/ID:", topic);
           return;
         }
         await activateGroup(group);
@@ -2795,9 +2794,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
               if (group) {
                 try {
                   await context.joinGroup(group);
-                  log3("Successfully joined group: %s", group.name);
+                  log2("Successfully joined group: %s", group.name);
                 } catch (error) {
-                  log3.error("Error joining group: %o", error);
+                  log2.error("Error joining group: %o", error);
                   await context.showModal({
                     title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                     content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
@@ -2817,9 +2816,9 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             if (groupId) {
               try {
                 await context.leaveGroup(groupId);
-                log3("Successfully left group: %s", groupId);
+                log2("Successfully left group: %s", groupId);
               } catch (error) {
-                log3.error("Error leaving group: %o", error);
+                log2.error("Error leaving group: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -2854,7 +2853,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
           messageInput.focus();
         }, 100);
       }
-      log3("ChatManager controller initialized");
+      log2("ChatManager controller initialized");
       return {
         handlersSetupGroup,
         activateGroup
@@ -2865,7 +2864,7 @@ var controller = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async destroy() {
-      log3("ChatManager controller destroying...");
+      log2("ChatManager controller destroying...");
       eventListeners.forEach(({ element, handler }) => {
         element.removeEventListener("click", handler);
         element.removeEventListener("keypress", handler);
@@ -2875,14 +2874,14 @@ var controller = /* @__PURE__ */ __name(async (context) => {
         context._groupObserver.disconnect();
         context._groupObserver = null;
       }
-      log3("Removed %d event listeners", eventListeners.length);
-      log3("ChatManager controller destroyed");
+      log2("Removed %d event listeners", eventListeners.length);
+      log2("ChatManager controller destroyed");
     }
   };
 }, "controller");
 
 // public/components/chat-manager/actions/index.mjs
-var log4 = logger("chat-manager:actions");
+var log3 = logger("chat-manager:actions");
 async function createActions(context) {
   let isGlobalHandlerRegistered = false;
   return {
@@ -2895,7 +2894,7 @@ async function createActions(context) {
           if (topic.startsWith("chat-group-")) {
             try {
               const text = new TextDecoder().decode(data);
-              log4("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u0442\u043E\u043F\u0438\u043A\u0430 %s: %s", topic, text);
+              log3("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u0442\u043E\u043F\u0438\u043A\u0430 %s: %s", topic, text);
               const isOwnMessage = from4 && context.node.peerId && from4.toString() === context.node.peerId.toString();
               const messageType = isOwnMessage ? "sent" : "received";
               const messageFrom = isOwnMessage ? context.state.peerId : from4.toString();
@@ -2935,14 +2934,14 @@ async function createActions(context) {
                 }
               }
             } catch (error) {
-              log4.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0438\u0437 \u0442\u043E\u043F\u0438\u043A\u0430 %s: %o", topic, error);
+              log3.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0438\u0437 \u0442\u043E\u043F\u0438\u043A\u0430 %s: %o", topic, error);
             }
           }
         });
         isGlobalHandlerRegistered = true;
-        log4("\u0413\u043B\u043E\u0431\u0430\u043B\u044C\u043D\u044B\u0439 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A PubSub-\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D");
+        log3("\u0413\u043B\u043E\u0431\u0430\u043B\u044C\u043D\u044B\u0439 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A PubSub-\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D");
       } catch (error) {
-        log4.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u043B\u043E\u0431\u0430\u043B\u044C\u043D\u044B\u0439 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A: %o", error);
+        log3.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u043B\u043E\u0431\u0430\u043B\u044C\u043D\u044B\u0439 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A: %o", error);
       }
     },
     /**
@@ -2954,10 +2953,10 @@ async function createActions(context) {
       if (context.node) {
         try {
           await context.node.services.pubsub.subscribe(topic);
-          log4("Subscribed to group: %s", topic);
+          log3("Subscribed to group: %s", topic);
           return true;
         } catch (error) {
-          log4.error("Error subscribing to group %s: %o", topic, error);
+          log3.error("Error subscribing to group %s: %o", topic, error);
           return false;
         }
       }
@@ -2972,10 +2971,10 @@ async function createActions(context) {
       if (context.node) {
         try {
           await context.node.services.pubsub.unsubscribe(topic);
-          log4("Unsubscribed from group: %s", topic);
+          log3("Unsubscribed from group: %s", topic);
           return true;
         } catch (error) {
-          log4.error("Error unsubscribing from group %s: %o", topic, error);
+          log3.error("Error unsubscribing from group %s: %o", topic, error);
           return false;
         }
       }
@@ -2991,10 +2990,10 @@ async function createActions(context) {
       if (context.node) {
         try {
           await context.node.services.pubsub.publish(topic, new TextEncoder().encode(messageText));
-          log4("Message sent to topic %s: %s", topic, messageText);
+          log3("Message sent to topic %s: %s", topic, messageText);
           return true;
         } catch (error) {
-          log4.error("Error sending message to topic %s: %o", topic, error);
+          log3.error("Error sending message to topic %s: %o", topic, error);
           return false;
         }
       }
@@ -3029,7 +3028,7 @@ async function createActions(context) {
         }
         return groups;
       } catch (error) {
-        log4.error("Error discovering groups: %o", error);
+        log3.error("Error discovering groups: %o", error);
         return [];
       }
     }
@@ -3542,7 +3541,7 @@ function base2(ALPHABET, name3) {
       return "";
     }
     var zeroes = 0;
-    var length3 = 0;
+    var length4 = 0;
     var pbegin = 0;
     var pend = source.length;
     while (pbegin !== pend && source[pbegin] === 0) {
@@ -3554,7 +3553,7 @@ function base2(ALPHABET, name3) {
     while (pbegin !== pend) {
       var carry = source[pbegin];
       var i3 = 0;
-      for (var it1 = size - 1; (carry !== 0 || i3 < length3) && it1 !== -1; it1--, i3++) {
+      for (var it1 = size - 1; (carry !== 0 || i3 < length4) && it1 !== -1; it1--, i3++) {
         carry += 256 * b58[it1] >>> 0;
         b58[it1] = carry % BASE >>> 0;
         carry = carry / BASE >>> 0;
@@ -3562,10 +3561,10 @@ function base2(ALPHABET, name3) {
       if (carry !== 0) {
         throw new Error("Non-zero carry");
       }
-      length3 = i3;
+      length4 = i3;
       pbegin++;
     }
-    var it2 = size - length3;
+    var it2 = size - length4;
     while (it2 !== size && b58[it2] === 0) {
       it2++;
     }
@@ -3588,7 +3587,7 @@ function base2(ALPHABET, name3) {
       return;
     }
     var zeroes = 0;
-    var length3 = 0;
+    var length4 = 0;
     while (source[psz] === LEADER) {
       zeroes++;
       psz++;
@@ -3601,7 +3600,7 @@ function base2(ALPHABET, name3) {
         return;
       }
       var i3 = 0;
-      for (var it3 = size - 1; (carry !== 0 || i3 < length3) && it3 !== -1; it3--, i3++) {
+      for (var it3 = size - 1; (carry !== 0 || i3 < length4) && it3 !== -1; it3--, i3++) {
         carry += BASE * b256[it3] >>> 0;
         b256[it3] = carry % 256 >>> 0;
         carry = carry / 256 >>> 0;
@@ -3609,13 +3608,13 @@ function base2(ALPHABET, name3) {
       if (carry !== 0) {
         throw new Error("Non-zero carry");
       }
-      length3 = i3;
+      length4 = i3;
       psz++;
     }
     if (source[psz] === " ") {
       return;
     }
-    var it4 = size - length3;
+    var it4 = size - length4;
     while (it4 !== size && b256[it4] === 0) {
       it4++;
     }
@@ -4001,8 +4000,8 @@ var varint_default = _brrp_varint;
 
 // node_modules/multiformats/dist/src/varint.js
 function decode4(data, offset = 0) {
-  const code3 = varint_default.decode(data, offset);
-  return [code3, varint_default.decode.bytes];
+  const code4 = varint_default.decode(data, offset);
+  return [code4, varint_default.decode.bytes];
 }
 __name(decode4, "decode");
 function encodeTo(int, target, offset = 0) {
@@ -4016,26 +4015,26 @@ function encodingLength(int) {
 __name(encodingLength, "encodingLength");
 
 // node_modules/multiformats/dist/src/hashes/digest.js
-function create(code3, digest2) {
+function create(code4, digest2) {
   const size = digest2.byteLength;
-  const sizeOffset = encodingLength(code3);
+  const sizeOffset = encodingLength(code4);
   const digestOffset = sizeOffset + encodingLength(size);
   const bytes = new Uint8Array(digestOffset + size);
-  encodeTo(code3, bytes, 0);
+  encodeTo(code4, bytes, 0);
   encodeTo(size, bytes, sizeOffset);
   bytes.set(digest2, digestOffset);
-  return new Digest(code3, size, digest2, bytes);
+  return new Digest(code4, size, digest2, bytes);
 }
 __name(create, "create");
 function decode5(multihash) {
   const bytes = coerce2(multihash);
-  const [code3, sizeOffset] = decode4(bytes);
+  const [code4, sizeOffset] = decode4(bytes);
   const [size, digestOffset] = decode4(bytes.subarray(sizeOffset));
   const digest2 = bytes.subarray(sizeOffset + digestOffset);
   if (digest2.byteLength !== size) {
     throw new Error("Incorrect length");
   }
-  return new Digest(code3, size, digest2, bytes);
+  return new Digest(code4, size, digest2, bytes);
 }
 __name(decode5, "decode");
 function equals2(a2, b) {
@@ -4058,8 +4057,8 @@ var Digest = class {
   /**
    * Creates a multihash digest.
    */
-  constructor(code3, size, digest2, bytes) {
-    this.code = code3;
+  constructor(code4, size, digest2, bytes) {
+    this.code = code4;
     this.size = size;
     this.digest = digest2;
     this.bytes = bytes;
@@ -4102,8 +4101,8 @@ var CID = class _CID {
    * @param code - Code of the codec content is encoded in, see https://github.com/multiformats/multicodec/blob/master/table.csv
    * @param multihash - (Multi)hash of the of the content.
    */
-  constructor(version2, code3, multihash, bytes) {
-    this.code = code3;
+  constructor(version2, code4, multihash, bytes) {
+    this.code = code4;
     this.version = version2;
     this.multihash = multihash;
     this.bytes = bytes;
@@ -4132,8 +4131,8 @@ var CID = class _CID {
         return this;
       }
       case 1: {
-        const { code: code3, multihash } = this;
-        if (code3 !== DAG_PB_CODE) {
+        const { code: code4, multihash } = this;
+        if (code4 !== DAG_PB_CODE) {
           throw new Error("Cannot convert a non dag-pb CID to CIDv0");
         }
         if (multihash.code !== SHA_256_CODE) {
@@ -4149,8 +4148,8 @@ var CID = class _CID {
   toV1() {
     switch (this.version) {
       case 0: {
-        const { code: code3, digest: digest2 } = this.multihash;
-        const multihash = create(code3, digest2);
+        const { code: code4, digest: digest2 } = this.multihash;
+        const multihash = create(code4, digest2);
         return _CID.createV1(this.code, multihash);
       }
       case 1: {
@@ -4200,12 +4199,12 @@ var CID = class _CID {
     if (value2 instanceof _CID) {
       return value2;
     } else if (value2["/"] != null && value2["/"] === value2.bytes || value2.asCID === value2) {
-      const { version: version2, code: code3, multihash, bytes } = value2;
-      return new _CID(version2, code3, multihash, bytes ?? encodeCID(version2, code3, multihash.bytes));
+      const { version: version2, code: code4, multihash, bytes } = value2;
+      return new _CID(version2, code4, multihash, bytes ?? encodeCID(version2, code4, multihash.bytes));
     } else if (value2[cidSymbol] === true) {
-      const { version: version2, multihash, code: code3 } = value2;
+      const { version: version2, multihash, code: code4 } = value2;
       const digest2 = decode5(multihash);
-      return _CID.create(version2, code3, digest2);
+      return _CID.create(version2, code4, digest2);
     } else {
       return null;
     }
@@ -4215,8 +4214,8 @@ var CID = class _CID {
    * @param code - Code of the codec content is encoded in, see https://github.com/multiformats/multicodec/blob/master/table.csv
    * @param digest - (Multi)hash of the of the content.
    */
-  static create(version2, code3, digest2) {
-    if (typeof code3 !== "number") {
+  static create(version2, code4, digest2) {
+    if (typeof code4 !== "number") {
       throw new Error("String codecs are no longer supported");
     }
     if (!(digest2.bytes instanceof Uint8Array)) {
@@ -4224,15 +4223,15 @@ var CID = class _CID {
     }
     switch (version2) {
       case 0: {
-        if (code3 !== DAG_PB_CODE) {
+        if (code4 !== DAG_PB_CODE) {
           throw new Error(`Version 0 CID must use dag-pb (code: ${DAG_PB_CODE}) block encoding`);
         } else {
-          return new _CID(version2, code3, digest2, digest2.bytes);
+          return new _CID(version2, code4, digest2, digest2.bytes);
         }
       }
       case 1: {
-        const bytes = encodeCID(version2, code3, digest2.bytes);
-        return new _CID(version2, code3, digest2, bytes);
+        const bytes = encodeCID(version2, code4, digest2.bytes);
+        return new _CID(version2, code4, digest2, bytes);
       }
       default: {
         throw new Error("Invalid version");
@@ -4251,8 +4250,8 @@ var CID = class _CID {
    * @param code - Content encoding format code.
    * @param digest - Multihash of the content.
    */
-  static createV1(code3, digest2) {
-    return _CID.create(1, code3, digest2);
+  static createV1(code4, digest2) {
+    return _CID.create(1, code4, digest2);
   }
   /**
    * Decoded a CID from its binary representation. The byte array must contain
@@ -4301,8 +4300,8 @@ var CID = class _CID {
   static inspectBytes(initialBytes) {
     let offset = 0;
     const next = /* @__PURE__ */ __name(() => {
-      const [i2, length3] = decode4(initialBytes.subarray(offset));
-      offset += length3;
+      const [i2, length4] = decode4(initialBytes.subarray(offset));
+      offset += length4;
       return i2;
     }, "next");
     let version2 = next();
@@ -4399,12 +4398,12 @@ function toStringV1(bytes, cache3, base3) {
 __name(toStringV1, "toStringV1");
 var DAG_PB_CODE = 112;
 var SHA_256_CODE = 18;
-function encodeCID(version2, code3, multihash) {
+function encodeCID(version2, code4, multihash) {
   const codeOffset = encodingLength(version2);
-  const hashOffset = codeOffset + encodingLength(code3);
+  const hashOffset = codeOffset + encodingLength(code4);
   const bytes = new Uint8Array(hashOffset + multihash.byteLength);
   encodeTo(version2, bytes, 0);
-  encodeTo(code3, bytes, codeOffset);
+  encodeTo(code4, bytes, codeOffset);
   bytes.set(multihash, hashOffset);
   return bytes;
 }
@@ -4465,11 +4464,11 @@ function asUint8Array(buf) {
 __name(asUint8Array, "asUint8Array");
 
 // node_modules/uint8arrays/dist/src/concat.js
-function concat(arrays, length3) {
-  if (length3 == null) {
-    length3 = arrays.reduce((acc, curr) => acc + curr.length, 0);
+function concat(arrays, length4) {
+  if (length4 == null) {
+    length4 = arrays.reduce((acc, curr) => acc + curr.length, 0);
   }
-  const output = allocUnsafe(length3);
+  const output = allocUnsafe(length4);
   let offset = 0;
   for (const arr of arrays) {
     output.set(arr, offset);
@@ -4533,19 +4532,19 @@ var Uint8ArrayList = class _Uint8ArrayList {
    * Add all `bufs` to the end of this Uint8ArrayList
    */
   appendAll(bufs) {
-    let length3 = 0;
+    let length4 = 0;
     for (const buf of bufs) {
       if (buf instanceof Uint8Array) {
-        length3 += buf.byteLength;
+        length4 += buf.byteLength;
         this.bufs.push(buf);
       } else if (isUint8ArrayList(buf)) {
-        length3 += buf.byteLength;
+        length4 += buf.byteLength;
         this.bufs.push(...buf.bufs);
       } else {
         throw new Error("Could not append value, must be an Uint8Array or a Uint8ArrayList");
       }
     }
-    this.length += length3;
+    this.length += length4;
   }
   /**
    * Add one or more `bufs` to the start of this Uint8ArrayList
@@ -4557,19 +4556,19 @@ var Uint8ArrayList = class _Uint8ArrayList {
    * Add all `bufs` to the start of this Uint8ArrayList
    */
   prependAll(bufs) {
-    let length3 = 0;
+    let length4 = 0;
     for (const buf of bufs.reverse()) {
       if (buf instanceof Uint8Array) {
-        length3 += buf.byteLength;
+        length4 += buf.byteLength;
         this.bufs.unshift(buf);
       } else if (isUint8ArrayList(buf)) {
-        length3 += buf.byteLength;
+        length4 += buf.byteLength;
         this.bufs.unshift(...buf.bufs);
       } else {
         throw new Error("Could not prepend value, must be an Uint8Array or a Uint8ArrayList");
       }
     }
-    this.length += length3;
+    this.length += length4;
   }
   /**
    * Read the value at `index`
@@ -4633,8 +4632,8 @@ var Uint8ArrayList = class _Uint8ArrayList {
    * - note this is different to the behaviour of Node Buffers.
    */
   slice(beginInclusive, endExclusive) {
-    const { bufs, length: length3 } = this._subList(beginInclusive, endExclusive);
-    return concat(bufs, length3);
+    const { bufs, length: length4 } = this._subList(beginInclusive, endExclusive);
+    return concat(bufs, length4);
   }
   /**
    * Returns a alloc from the given start and end element index.
@@ -4643,11 +4642,11 @@ var Uint8ArrayList = class _Uint8ArrayList {
    * internally this is a no-copy operation otherwise it is a copy operation.
    */
   subarray(beginInclusive, endExclusive) {
-    const { bufs, length: length3 } = this._subList(beginInclusive, endExclusive);
+    const { bufs, length: length4 } = this._subList(beginInclusive, endExclusive);
     if (bufs.length === 1) {
       return bufs[0];
     }
-    return concat(bufs, length3);
+    return concat(bufs, length4);
   }
   /**
    * Returns a allocList from the given start and end element index.
@@ -4655,9 +4654,9 @@ var Uint8ArrayList = class _Uint8ArrayList {
    * This is a no-copy operation.
    */
   sublist(beginInclusive, endExclusive) {
-    const { bufs, length: length3 } = this._subList(beginInclusive, endExclusive);
+    const { bufs, length: length4 } = this._subList(beginInclusive, endExclusive);
     const list = new _Uint8ArrayList();
-    list.length = length3;
+    list.length = length4;
     list.bufs = [...bufs];
     return list;
   }
@@ -4900,13 +4899,13 @@ var Uint8ArrayList = class _Uint8ArrayList {
    * Create a Uint8ArrayList from a pre-existing list of Uint8Arrays.  Use this
    * method if you know the total size of all the Uint8Arrays ahead of time.
    */
-  static fromUint8Arrays(bufs, length3) {
+  static fromUint8Arrays(bufs, length4) {
     const list = new _Uint8ArrayList();
     list.bufs = bufs;
-    if (length3 == null) {
-      length3 = bufs.reduce((acc, curr) => acc + curr.byteLength, 0);
+    if (length4 == null) {
+      length4 = bufs.reduce((acc, curr) => acc + curr.byteLength, 0);
     }
-    list.length = length3;
+    list.length = length4;
     return list;
   }
 };
@@ -5062,6 +5061,9 @@ var identity2 = from2({
 var textEncoder = new TextEncoder();
 var textDecoder = new TextDecoder();
 
+// node_modules/multiformats/dist/src/codecs/raw.js
+var code2 = 85;
+
 // node_modules/multiformats/dist/src/hashes/sha2-browser.js
 var sha2_browser_exports = {};
 __export(sha2_browser_exports, {
@@ -5071,8 +5073,8 @@ __export(sha2_browser_exports, {
 
 // node_modules/multiformats/dist/src/hashes/hasher.js
 var DEFAULT_MIN_DIGEST_LENGTH = 20;
-function from3({ name: name3, code: code3, encode: encode9, minDigestLength, maxDigestLength }) {
-  return new Hasher(name3, code3, encode9, minDigestLength, maxDigestLength);
+function from3({ name: name3, code: code4, encode: encode9, minDigestLength, maxDigestLength }) {
+  return new Hasher(name3, code4, encode9, minDigestLength, maxDigestLength);
 }
 __name(from3, "from");
 var Hasher = class {
@@ -5084,9 +5086,9 @@ var Hasher = class {
   encode;
   minDigestLength;
   maxDigestLength;
-  constructor(name3, code3, encode9, minDigestLength, maxDigestLength) {
+  constructor(name3, code4, encode9, minDigestLength, maxDigestLength) {
     this.name = name3;
-    this.code = code3;
+    this.code = code4;
     this.encode = encode9;
     this.minDigestLength = minDigestLength ?? DEFAULT_MIN_DIGEST_LENGTH;
     this.maxDigestLength = maxDigestLength;
@@ -5111,14 +5113,14 @@ var Hasher = class {
     }
   }
 };
-function createDigest(digest2, code3, truncate) {
+function createDigest(digest2, code4, truncate) {
   if (truncate != null && truncate !== digest2.byteLength) {
     if (truncate > digest2.byteLength) {
       throw new Error(`Invalid truncate option, must be less than or equal to ${digest2.byteLength}`);
     }
     digest2 = digest2.subarray(0, truncate);
   }
-  return create(code3, digest2);
+  return create(code4, digest2);
 }
 __name(createDigest, "createDigest");
 
@@ -5236,7 +5238,7 @@ function decodeDer(buf, context = { offset: 0 }) {
 }
 __name(decodeDer, "decodeDer");
 function readLength(buf, context) {
-  let length3 = 0;
+  let length4 = 0;
   if ((buf[context.offset] & LONG_LENGTH_MASK) === LONG_LENGTH_MASK) {
     const count = buf[context.offset] & LONG_LENGTH_BYTES_MASK;
     let str = "0x";
@@ -5244,12 +5246,12 @@ function readLength(buf, context) {
     for (let i2 = 0; i2 < count; i2++, context.offset++) {
       str += buf[context.offset].toString(16).padStart(2, "0");
     }
-    length3 = parseInt(str, 16);
+    length4 = parseInt(str, 16);
   } else {
-    length3 = buf[context.offset];
+    length4 = buf[context.offset];
     context.offset++;
   }
-  return length3;
+  return length4;
 }
 __name(readLength, "readLength");
 function readSequence(buf, context) {
@@ -5269,9 +5271,9 @@ function readSequence(buf, context) {
 }
 __name(readSequence, "readSequence");
 function readInteger(buf, context) {
-  const length3 = readLength(buf, context);
+  const length4 = readLength(buf, context);
   const start2 = context.offset;
-  const end = context.offset + length3;
+  const end = context.offset + length4;
   const vals = [];
   for (let i2 = start2; i2 < end; i2++) {
     if (i2 === start2 && buf[i2] === 0) {
@@ -5279,7 +5281,7 @@ function readInteger(buf, context) {
     }
     vals.push(buf[i2]);
   }
-  context.offset += length3;
+  context.offset += length4;
   return Uint8Array.from(vals);
 }
 __name(readInteger, "readInteger");
@@ -5325,11 +5327,11 @@ function readNull(buf, context) {
 }
 __name(readNull, "readNull");
 function readBitString(buf, context) {
-  const length3 = readLength(buf, context);
+  const length4 = readLength(buf, context);
   const unusedBits = buf[context.offset];
   context.offset++;
-  const bytes = buf.subarray(context.offset, context.offset + length3 - 1);
-  context.offset += length3;
+  const bytes = buf.subarray(context.offset, context.offset + length4 - 1);
+  context.offset += length4;
   if (unusedBits !== 0) {
     throw new Error("Unused bits in bit string is unimplemented");
   }
@@ -5337,9 +5339,9 @@ function readBitString(buf, context) {
 }
 __name(readBitString, "readBitString");
 function readOctetString(buf, context) {
-  const length3 = readLength(buf, context);
-  const bytes = buf.subarray(context.offset, context.offset + length3);
-  context.offset += length3;
+  const length4 = readLength(buf, context);
+  const bytes = buf.subarray(context.offset, context.offset + length4);
+  context.offset += length4;
   return bytes;
 }
 __name(readOctetString, "readOctetString");
@@ -5359,10 +5361,10 @@ function encodeLength(bytes) {
   if (bytes.byteLength < 128) {
     return Uint8Array.from([bytes.byteLength]);
   }
-  const length3 = encodeNumber(bytes.byteLength);
+  const length4 = encodeNumber(bytes.byteLength);
   return new Uint8ArrayList(Uint8Array.from([
-    length3.byteLength | LONG_LENGTH_MASK
-  ]), length3);
+    length4.byteLength | LONG_LENGTH_MASK
+  ]), length4);
 }
 __name(encodeLength, "encodeLength");
 function encodeInteger(value2) {
@@ -5424,7 +5426,7 @@ async function hashAndSign(key, msg, options) {
 }
 __name(hashAndSign, "hashAndSign");
 async function hashAndVerify(key, sig, msg, options) {
-  const publicKey = await crypto.subtle.importKey("jwk", key, {
+  const publicKey2 = await crypto.subtle.importKey("jwk", key, {
     name: "ECDSA",
     namedCurve: key.crv ?? "P-256"
   }, false, ["verify"]);
@@ -5434,7 +5436,7 @@ async function hashAndVerify(key, sig, msg, options) {
     hash: {
       name: "SHA-256"
     }
-  }, publicKey, sig, msg.subarray());
+  }, publicKey2, sig, msg.subarray());
   options?.signal?.throwIfAborted();
   return result;
 }
@@ -5520,15 +5522,15 @@ function privateKeyToPKIMessage(privateKey) {
   ]).subarray();
 }
 __name(privateKeyToPKIMessage, "privateKeyToPKIMessage");
-function publicKeyToPKIMessage(publicKey) {
+function publicKeyToPKIMessage(publicKey2) {
   return encodeSequence([
     encodeInteger(Uint8Array.from([1])),
     // header
     encodeSequence([
-      getOID(publicKey.crv)
+      getOID(publicKey2.crv)
     ], 160),
     encodeSequence([
-      encodeBitString(new Uint8ArrayList(Uint8Array.from([4]), fromString2(publicKey.x ?? "", "base64url"), fromString2(publicKey.y ?? "", "base64url")))
+      encodeBitString(new Uint8ArrayList(Uint8Array.from([4]), fromString2(publicKey2.x ?? "", "base64url"), fromString2(publicKey2.y ?? "", "base64url")))
     ], 161)
   ]).subarray();
 }
@@ -5636,13 +5638,13 @@ function anumber(n2, title = "") {
   }
 }
 __name(anumber, "anumber");
-function abytes(value2, length3, title = "") {
+function abytes(value2, length4, title = "") {
   const bytes = isBytes(value2);
   const len = value2?.length;
-  const needsLen = length3 !== void 0;
-  if (!bytes || needsLen && len !== length3) {
+  const needsLen = length4 !== void 0;
+  if (!bytes || needsLen && len !== length4) {
     const prefix = title && `"${title}" `;
-    const ofLen = needsLen ? ` of length ${length3}` : "";
+    const ofLen = needsLen ? ` of length ${length4}` : "";
     const got = bytes ? `length=${len}` : `type=${typeof value2}`;
     throw new Error(prefix + "expected Uint8Array" + ofLen + ", got " + got);
   }
@@ -5865,12 +5867,12 @@ var HashMD = class {
   _cloneInto(to) {
     to ||= new this.constructor();
     to.set(...this.get());
-    const { blockLen, buffer, length: length3, finished, destroyed, pos } = this;
+    const { blockLen, buffer, length: length4, finished, destroyed, pos } = this;
     to.destroyed = destroyed;
     to.finished = finished;
-    to.length = length3;
+    to.length = length4;
     to.pos = pos;
-    if (length3 % blockLen)
+    if (length4 % blockLen)
       to.buffer.set(buffer);
     return to;
   }
@@ -6457,13 +6459,13 @@ function validateObject(object, fields = {}, optFields = {}) {
 }
 __name(validateObject, "validateObject");
 function memoized(fn) {
-  const map = /* @__PURE__ */ new WeakMap();
+  const map2 = /* @__PURE__ */ new WeakMap();
   return (arg, ...args) => {
-    const val = map.get(arg);
+    const val = map2.get(arg);
     if (val !== void 0)
       return val;
     const computed = fn(arg, ...args);
-    map.set(arg, computed);
+    map2.set(arg, computed);
     return computed;
   };
 }
@@ -6647,9 +6649,9 @@ function validateField(field) {
     BYTES: "number",
     BITS: "number"
   };
-  const opts = FIELD_FIELDS.reduce((map, val) => {
-    map[val] = "function";
-    return map;
+  const opts = FIELD_FIELDS.reduce((map2, val) => {
+    map2[val] = "function";
+    return map2;
   }, initial);
   validateObject(field, opts);
   return field;
@@ -6860,8 +6862,8 @@ function getFieldBytesLength(fieldOrder) {
 }
 __name(getFieldBytesLength, "getFieldBytesLength");
 function getMinHashLength(fieldOrder) {
-  const length3 = getFieldBytesLength(fieldOrder);
-  return length3 + Math.ceil(length3 / 2);
+  const length4 = getFieldBytesLength(fieldOrder);
+  return length4 + Math.ceil(length4 / 2);
 }
 __name(getMinHashLength, "getMinHashLength");
 function mapHashToField(key, fieldOrder, isLE2 = false) {
@@ -7469,12 +7471,12 @@ function eddsa(Point, cHash, eddsaOpts = {}) {
   }
   __name(sign, "sign");
   const verifyOpts = { zip215: true };
-  function verify(sig, msg, publicKey, options = verifyOpts) {
+  function verify(sig, msg, publicKey2, options = verifyOpts) {
     const { context, zip215 } = options;
     const len = lengths.signature;
     sig = abytes(sig, len, "signature");
     msg = abytes(msg, void 0, "message");
-    publicKey = abytes(publicKey, lengths.publicKey, "publicKey");
+    publicKey2 = abytes(publicKey2, lengths.publicKey, "publicKey");
     if (zip215 !== void 0)
       abool(zip215, "zip215");
     if (prehash)
@@ -7484,7 +7486,7 @@ function eddsa(Point, cHash, eddsaOpts = {}) {
     const s2 = bytesToNumberLE(sig.subarray(mid, len));
     let A, R, SB;
     try {
-      A = Point.fromBytes(publicKey, zip215);
+      A = Point.fromBytes(publicKey2, zip215);
       R = Point.fromBytes(r2, zip215);
       SB = BASE.multiplyUnsafe(s2);
     } catch (error) {
@@ -7534,8 +7536,8 @@ function eddsa(Point, cHash, eddsaOpts = {}) {
      *   - `(u, v) = ((y-1)/(y+1), sqrt(156324)*u/x)`
      *   - `(x, y) = (sqrt(156324)*u/v, (1+u)/(1-u))`
      */
-    toMontgomery(publicKey) {
-      const { y } = Point.fromBytes(publicKey);
+    toMontgomery(publicKey2) {
+      const { y } = Point.fromBytes(publicKey2);
       const size = lengths.publicKey;
       const is25519 = size === 32;
       if (!is25519 && size !== 57)
@@ -7783,11 +7785,11 @@ var webCryptoEd25519SupportedPromise = (async () => {
 })();
 function generateKey() {
   const privateKeyRaw = ed25519.utils.randomSecretKey();
-  const publicKey = ed25519.getPublicKey(privateKeyRaw);
-  const privateKey = concatKeys(privateKeyRaw, publicKey);
+  const publicKey2 = ed25519.getPublicKey(privateKeyRaw);
+  const privateKey = concatKeys(privateKeyRaw, publicKey2);
   return {
     privateKey,
-    publicKey
+    publicKey: publicKey2
   };
 }
 __name(generateKey, "generateKey");
@@ -7826,34 +7828,34 @@ async function hashAndSign2(privateKey, msg) {
   return hashAndSignNoble(privateKey, msg);
 }
 __name(hashAndSign2, "hashAndSign");
-async function hashAndVerifyWebCrypto(publicKey, sig, msg) {
-  if (publicKey.buffer instanceof ArrayBuffer) {
-    const key = await webcrypto_default.get().subtle.importKey("raw", publicKey.buffer, { name: "Ed25519" }, false, ["verify"]);
+async function hashAndVerifyWebCrypto(publicKey2, sig, msg) {
+  if (publicKey2.buffer instanceof ArrayBuffer) {
+    const key = await webcrypto_default.get().subtle.importKey("raw", publicKey2.buffer, { name: "Ed25519" }, false, ["verify"]);
     const isValid2 = await webcrypto_default.get().subtle.verify({ name: "Ed25519" }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray());
     return isValid2;
   }
   throw new TypeError("WebCrypto does not support SharedArrayBuffer for Ed25519 keys");
 }
 __name(hashAndVerifyWebCrypto, "hashAndVerifyWebCrypto");
-function hashAndVerifyNoble(publicKey, sig, msg) {
-  return ed25519.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey);
+function hashAndVerifyNoble(publicKey2, sig, msg) {
+  return ed25519.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey2);
 }
 __name(hashAndVerifyNoble, "hashAndVerifyNoble");
-async function hashAndVerify2(publicKey, sig, msg) {
+async function hashAndVerify2(publicKey2, sig, msg) {
   if (ed25519Supported == null) {
     ed25519Supported = await webCryptoEd25519SupportedPromise;
   }
   if (ed25519Supported) {
-    return hashAndVerifyWebCrypto(publicKey, sig, msg);
+    return hashAndVerifyWebCrypto(publicKey2, sig, msg);
   }
-  return hashAndVerifyNoble(publicKey, sig, msg);
+  return hashAndVerifyNoble(publicKey2, sig, msg);
 }
 __name(hashAndVerify2, "hashAndVerify");
-function concatKeys(privateKeyRaw, publicKey) {
+function concatKeys(privateKeyRaw, publicKey2) {
   const privateKey = new Uint8Array(PRIVATE_KEY_BYTE_LENGTH);
   for (let i2 = 0; i2 < KEYS_BYTE_LENGTH; i2++) {
     privateKey[i2] = privateKeyRaw[i2];
-    privateKey[KEYS_BYTE_LENGTH + i2] = publicKey[i2];
+    privateKey[KEYS_BYTE_LENGTH + i2] = publicKey2[i2];
   }
   return privateKey;
 }
@@ -7914,9 +7916,9 @@ var Ed25519PrivateKey = class {
   publicKey;
   // key       - 64 byte Uint8Array containing private key
   // publicKey - 32 byte Uint8Array containing public key
-  constructor(key, publicKey) {
+  constructor(key, publicKey2) {
     this.raw = ensureEd25519Key(key, PRIVATE_KEY_BYTE_LENGTH);
-    this.publicKey = new Ed25519PublicKey(publicKey);
+    this.publicKey = new Ed25519PublicKey(publicKey2);
   }
   equals(key) {
     if (key == null || !(key.raw instanceof Uint8Array)) {
@@ -7945,14 +7947,14 @@ function unmarshalEd25519PublicKey(bytes) {
 }
 __name(unmarshalEd25519PublicKey, "unmarshalEd25519PublicKey");
 async function generateEd25519KeyPair() {
-  const { privateKey, publicKey } = generateKey();
-  return new Ed25519PrivateKey(privateKey, publicKey);
+  const { privateKey, publicKey: publicKey2 } = generateKey();
+  return new Ed25519PrivateKey(privateKey, publicKey2);
 }
 __name(generateEd25519KeyPair, "generateEd25519KeyPair");
-function ensureEd25519Key(key, length3) {
+function ensureEd25519Key(key, length4) {
   key = Uint8Array.from(key ?? []);
-  if (key.length !== length3) {
-    throw new InvalidParametersError(`Key must be a Uint8Array of length ${length3}, got ${key.length}`);
+  if (key.length !== length4) {
+    throw new InvalidParametersError(`Key must be a Uint8Array of length ${length4}, got ${key.length}`);
   }
   return key;
 }
@@ -8594,13 +8596,13 @@ var Uint8ArrayReader = class {
    * Reads a sequence of bytes preceded by its length as a varint
    */
   bytes() {
-    const length3 = this.uint32();
+    const length4 = this.uint32();
     const start2 = this.pos;
-    const end = this.pos + length3;
+    const end = this.pos + length4;
     if (end > this.len) {
-      throw indexOutOfRange(this, length3);
+      throw indexOutOfRange(this, length4);
     }
-    this.pos += length3;
+    this.pos += length4;
     return start2 === end ? new Uint8Array(0) : this.buf.subarray(start2, end);
   }
   /**
@@ -8613,12 +8615,12 @@ var Uint8ArrayReader = class {
   /**
    * Skips the specified number of bytes if specified, otherwise skips a varint
    */
-  skip(length3) {
-    if (typeof length3 === "number") {
-      if (this.pos + length3 > this.len) {
-        throw indexOutOfRange(this, length3);
+  skip(length4) {
+    if (typeof length4 === "number") {
+      if (this.pos + length4 > this.len) {
+        throw indexOutOfRange(this, length4);
       }
-      this.pos += length3;
+      this.pos += length4;
     } else {
       do {
         if (this.pos >= this.len) {
@@ -9372,9 +9374,9 @@ var PublicKey;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -9424,9 +9426,9 @@ var PrivateKey;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -9458,11 +9460,11 @@ var PrivateKey;
 })(PrivateKey || (PrivateKey = {}));
 
 // node_modules/@libp2p/crypto/dist/src/random-bytes.js
-function randomBytes2(length3) {
-  if (isNaN(length3) || length3 <= 0) {
+function randomBytes2(length4) {
+  if (isNaN(length4) || length4 <= 0) {
     throw new InvalidParametersError("random bytes length must be a Number bigger than 0");
   }
-  return randomBytes(length3);
+  return randomBytes(length4);
 }
 __name(randomBytes2, "randomBytes");
 
@@ -9531,9 +9533,9 @@ var RSAPrivateKey = class {
   jwk;
   _raw;
   publicKey;
-  constructor(jwk, publicKey) {
+  constructor(jwk, publicKey2) {
     this.jwk = jwk;
-    this.publicKey = publicKey;
+    this.publicKey = publicKey2;
   }
   get raw() {
     if (this._raw == null) {
@@ -9742,12 +9744,12 @@ async function hashAndSign3(key, msg, options) {
 }
 __name(hashAndSign3, "hashAndSign");
 async function hashAndVerify3(key, sig, msg, options) {
-  const publicKey = await webcrypto_default.get().subtle.importKey("jwk", key, {
+  const publicKey2 = await webcrypto_default.get().subtle.importKey("jwk", key, {
     name: "RSASSA-PKCS1-v1_5",
     hash: { name: "SHA-256" }
   }, false, ["verify"]);
   options?.signal?.throwIfAborted();
-  const result = await webcrypto_default.get().subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, publicKey, sig, msg instanceof Uint8Array ? msg : msg.subarray());
+  const result = await webcrypto_default.get().subtle.verify({ name: "RSASSA-PKCS1-v1_5" }, publicKey2, sig, msg instanceof Uint8Array ? msg : msg.subarray());
   options?.signal?.throwIfAborted();
   return result;
 }
@@ -9925,9 +9927,9 @@ var DER = {
         throw new E("tlv.decode: wrong tlv");
       const first = data[pos++];
       const isLong = !!(first & 128);
-      let length3 = 0;
+      let length4 = 0;
       if (!isLong)
-        length3 = first;
+        length4 = first;
       else {
         const lenLen = first & 127;
         if (!lenLen)
@@ -9940,15 +9942,15 @@ var DER = {
         if (lengthBytes[0] === 0)
           throw new E("tlv.decode(long): zero leftmost byte");
         for (const b of lengthBytes)
-          length3 = length3 << 8 | b;
+          length4 = length4 << 8 | b;
         pos += lenLen;
-        if (length3 < 128)
+        if (length4 < 128)
           throw new E("tlv.decode(long): not minimal encoding");
       }
-      const v = data.subarray(pos, pos + length3);
-      if (v.length !== length3)
+      const v = data.subarray(pos, pos + length4);
+      if (v.length !== length4)
         throw new E("tlv.decode: wrong value length");
-      return { v, l: data.subarray(pos + length3) };
+      return { v, l: data.subarray(pos + length4) };
     }
   },
   // https://crypto.stackexchange.com/a/57734 Leftmost bit of first byte is 'negative' flag,
@@ -10042,10 +10044,10 @@ function weierstrass(params, extraOpts = {}) {
   function pointFromBytes(bytes) {
     abytes(bytes, void 0, "Point");
     const { publicKey: comp, publicKeyUncompressed: uncomp } = lengths;
-    const length3 = bytes.length;
+    const length4 = bytes.length;
     const head = bytes[0];
     const tail = bytes.subarray(1);
-    if (length3 === comp && (head === 2 || head === 3)) {
+    if (length4 === comp && (head === 2 || head === 3)) {
       const x = Fp.fromBytes(tail);
       if (!Fp.isValid(x))
         throw new Error("bad point: is not on curve, wrong x");
@@ -10063,7 +10065,7 @@ function weierstrass(params, extraOpts = {}) {
       if (evenH !== evenY)
         y = Fp.neg(y);
       return { x, y };
-    } else if (length3 === uncomp && head === 4) {
+    } else if (length4 === uncomp && head === 4) {
       const L = Fp.BYTES;
       const x = Fp.fromBytes(tail.subarray(0, L));
       const y = Fp.fromBytes(tail.subarray(L, L * 2));
@@ -10071,7 +10073,7 @@ function weierstrass(params, extraOpts = {}) {
         throw new Error("bad point: is not on curve");
       return { x, y };
     } else {
-      throw new Error(`bad point: got length ${length3}, expected compressed=${comp} or uncompressed=${uncomp}`);
+      throw new Error(`bad point: got length ${length4}, expected compressed=${comp} or uncompressed=${uncomp}`);
     }
   }
   __name(pointFromBytes, "pointFromBytes");
@@ -10465,15 +10467,15 @@ function ecdh(Point, ecdhOpts = {}) {
     }
   }
   __name(isValidSecretKey, "isValidSecretKey");
-  function isValidPublicKey(publicKey, isCompressed) {
+  function isValidPublicKey(publicKey2, isCompressed) {
     const { publicKey: comp, publicKeyUncompressed } = lengths;
     try {
-      const l2 = publicKey.length;
+      const l2 = publicKey2.length;
       if (isCompressed === true && l2 !== comp)
         return false;
       if (isCompressed === false && l2 !== publicKeyUncompressed)
         return false;
-      return !!Point.fromBytes(publicKey);
+      return !!Point.fromBytes(publicKey2);
     } catch (error) {
       return false;
     }
@@ -10488,13 +10490,13 @@ function ecdh(Point, ecdhOpts = {}) {
   }
   __name(getPublicKey, "getPublicKey");
   function isProbPub(item) {
-    const { secretKey, publicKey, publicKeyUncompressed } = lengths;
+    const { secretKey, publicKey: publicKey2, publicKeyUncompressed } = lengths;
     if (!isBytes(item))
       return void 0;
-    if ("_lengths" in Fn && Fn._lengths || secretKey === publicKey)
+    if ("_lengths" in Fn && Fn._lengths || secretKey === publicKey2)
       return void 0;
     const l2 = abytes(item, void 0, "key").length;
-    return l2 === publicKey || l2 === publicKeyUncompressed;
+    return l2 === publicKey2 || l2 === publicKeyUncompressed;
   }
   __name(isProbPub, "isProbPub");
   function getSharedSecret(secretKeyA, publicKeyB, isCompressed = true) {
@@ -10713,9 +10715,9 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     return sig.toBytes(opts.format);
   }
   __name(sign, "sign");
-  function verify(signature, message2, publicKey, opts = {}) {
+  function verify(signature, message2, publicKey2, opts = {}) {
     const { lowS, prehash, format: format2 } = validateSigOpts(opts, defaultSigOpts);
-    publicKey = abytes(publicKey, void 0, "publicKey");
+    publicKey2 = abytes(publicKey2, void 0, "publicKey");
     message2 = validateMsgAndHash(message2, prehash);
     if (!isBytes(signature)) {
       const end = signature instanceof Signature ? ", use sig.toBytes()" : "";
@@ -10724,7 +10726,7 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     validateSigLength(signature, format2);
     try {
       const sig = Signature.fromBytes(signature, format2);
-      const P = Point.fromBytes(publicKey);
+      const P = Point.fromBytes(publicKey2);
       if (lowS && sig.hasHighS())
         return false;
       const { r: r2, s: s2 } = sig;
@@ -10905,9 +10907,9 @@ var Secp256k1PrivateKey = class {
   type = "secp256k1";
   raw;
   publicKey;
-  constructor(key, publicKey) {
+  constructor(key, publicKey2) {
     this.raw = validateSecp256k1PrivateKey(key);
-    this.publicKey = new Secp256k1PublicKey(publicKey ?? computeSecp256k1PublicKey(key));
+    this.publicKey = new Secp256k1PublicKey(publicKey2 ?? computeSecp256k1PublicKey(key));
   }
   equals(key) {
     if (key == null || !(key.raw instanceof Uint8Array)) {
@@ -12223,10 +12225,10 @@ var AbortError2 = class extends Error {
   }
   type;
   code;
-  constructor(message2, code3) {
+  constructor(message2, code4) {
     super(message2 ?? "The operation was aborted");
     this.type = "aborted";
-    this.code = code3 ?? "ABORT_ERR";
+    this.code = code4 ?? "ABORT_ERR";
   }
 };
 function pushable(options = {}) {
@@ -13746,9 +13748,9 @@ var AbstractStream = class extends AbstractMessageStream {
 
 // node_modules/any-signal/dist/src/index.js
 function anySignal(signals) {
-  const controller6 = new globalThis.AbortController();
+  const controller5 = new globalThis.AbortController();
   function onAbort() {
-    controller6.abort();
+    controller5.abort();
     for (const signal2 of signals) {
       if (signal2?.removeEventListener != null) {
         signal2.removeEventListener("abort", onAbort);
@@ -13773,7 +13775,7 @@ function anySignal(signals) {
     }
   }
   __name(clear, "clear");
-  const signal = controller6.signal;
+  const signal = controller5.signal;
   signal.clear = clear;
   return signal;
 }
@@ -14188,8 +14190,8 @@ var Registry = class {
       this.protocolsByName.set(alias, codec);
     });
   }
-  removeProtocol(code3) {
-    const codec = this.protocolsByCode.get(code3);
+  removeProtocol(code4) {
+    const codec = this.protocolsByCode.get(code4);
     if (codec == null) {
       return;
     }
@@ -14400,9 +14402,9 @@ function bytesToComponents(bytes) {
   const components = [];
   let i2 = 0;
   while (i2 < bytes.length) {
-    const code3 = decode7(bytes, i2);
-    const codec = registry.getProtocol(code3);
-    const codeLength = encodingLength2(code3);
+    const code4 = decode7(bytes, i2);
+    const codec = registry.getProtocol(code4);
+    const codeLength = encodingLength2(code4);
     const size = sizeForAddr(codec, bytes, i2 + codeLength);
     let sizeLength = 0;
     if (size > 0 && codec.size === V) {
@@ -14410,7 +14412,7 @@ function bytesToComponents(bytes) {
     }
     const componentLength = codeLength + sizeLength + size;
     const component = {
-      code: code3,
+      code: code4,
       name: codec.name,
       bytes: bytes.subarray(i2, i2 + componentLength)
     };
@@ -14426,7 +14428,7 @@ function bytesToComponents(bytes) {
 }
 __name(bytesToComponents, "bytesToComponents");
 function componentsToBytes(components) {
-  let length3 = 0;
+  let length4 = 0;
   const bytes = [];
   for (const component of components) {
     if (component.bytes == null) {
@@ -14456,9 +14458,9 @@ function componentsToBytes(components) {
       component.bytes = bytes2;
     }
     bytes.push(component.bytes);
-    length3 += component.bytes.byteLength;
+    length4 += component.bytes.byteLength;
   }
-  return concat(bytes, length3);
+  return concat(bytes, length4);
 }
 __name(componentsToBytes, "componentsToBytes");
 function stringToComponents(string2) {
@@ -14628,10 +14630,10 @@ var Multiaddr = class _Multiaddr {
       validate: false
     });
   }
-  decapsulateCode(code3) {
+  decapsulateCode(code4) {
     let index;
     for (let i2 = this.#components.length - 1; i2 > -1; i2--) {
-      if (this.#components[i2].code === code3) {
+      if (this.#components[i2].code === code4) {
         index = i2;
         break;
       }
@@ -14687,11 +14689,11 @@ var AbortError4 = class extends Error {
   }
   type;
   code;
-  constructor(message2, code3, name3) {
+  constructor(message2, code4, name3) {
     super(message2 ?? "The operation was aborted");
     this.type = "aborted";
     this.name = name3 ?? "AbortError";
-    this.code = code3 ?? "ABORT_ERR";
+    this.code = code4 ?? "ABORT_ERR";
   }
 };
 async function raceSignal2(promise, signal, opts) {
@@ -14838,14 +14840,14 @@ async function addAllToPushable(sources, output, signal) {
 }
 __name(addAllToPushable, "addAllToPushable");
 async function* mergeSources(sources) {
-  const controller6 = new AbortController();
+  const controller5 = new AbortController();
   const output = queuelessPushable();
-  addAllToPushable(sources, output, controller6.signal).catch(() => {
+  addAllToPushable(sources, output, controller5.signal).catch(() => {
   });
   try {
     yield* output;
   } finally {
-    controller6.abort();
+    controller5.abort();
   }
 }
 __name(mergeSources, "mergeSources");
@@ -14869,6 +14871,86 @@ function merge(...sources) {
 }
 __name(merge, "merge");
 var src_default = merge;
+
+// node_modules/it-pipe/dist/src/index.js
+function pipe(first, ...rest) {
+  if (first == null) {
+    throw new Error("Empty pipeline");
+  }
+  if (isDuplex(first)) {
+    const duplex = first;
+    first = /* @__PURE__ */ __name(() => duplex.source, "first");
+  } else if (isIterable(first) || isAsyncIterable2(first)) {
+    const source = first;
+    first = /* @__PURE__ */ __name(() => source, "first");
+  }
+  const fns = [first, ...rest];
+  if (fns.length > 1) {
+    if (isDuplex(fns[fns.length - 1])) {
+      fns[fns.length - 1] = fns[fns.length - 1].sink;
+    }
+  }
+  if (fns.length > 2) {
+    for (let i2 = 1; i2 < fns.length - 1; i2++) {
+      if (isDuplex(fns[i2])) {
+        fns[i2] = duplexPipelineFn(fns[i2]);
+      }
+    }
+  }
+  return rawPipe(...fns);
+}
+__name(pipe, "pipe");
+var rawPipe = /* @__PURE__ */ __name((...fns) => {
+  let res;
+  while (fns.length > 0) {
+    res = fns.shift()(res);
+  }
+  return res;
+}, "rawPipe");
+var isAsyncIterable2 = /* @__PURE__ */ __name((obj) => {
+  return obj?.[Symbol.asyncIterator] != null;
+}, "isAsyncIterable");
+var isIterable = /* @__PURE__ */ __name((obj) => {
+  return obj?.[Symbol.iterator] != null;
+}, "isIterable");
+var isDuplex = /* @__PURE__ */ __name((obj) => {
+  if (obj == null) {
+    return false;
+  }
+  return obj.sink != null && obj.source != null;
+}, "isDuplex");
+var duplexPipelineFn = /* @__PURE__ */ __name((duplex) => {
+  return (source) => {
+    const p2 = duplex.sink(source);
+    if (p2?.then != null) {
+      const stream = pushable({
+        objectMode: true
+      });
+      p2.then(() => {
+        stream.end();
+      }, (err) => {
+        stream.end(err);
+      });
+      let sourceWrap;
+      const source2 = duplex.source;
+      if (isAsyncIterable2(source2)) {
+        sourceWrap = /* @__PURE__ */ __name(async function* () {
+          yield* source2;
+          stream.end();
+        }, "sourceWrap");
+      } else if (isIterable(source2)) {
+        sourceWrap = /* @__PURE__ */ __name(function* () {
+          yield* source2;
+          stream.end();
+        }, "sourceWrap");
+      } else {
+        throw new Error("Unknown duplex source type - must be Iterable or AsyncIterable");
+      }
+      return src_default(stream, sourceWrap());
+    }
+    return duplex.source;
+  };
+}, "duplexPipelineFn");
 
 // node_modules/@libp2p/utils/dist/src/stream-utils.js
 var DEFAULT_MAX_BUFFER_SIZE = 4194304;
@@ -15550,7 +15632,7 @@ function formatArgs(args) {
   args.splice(lastC, 0, c2);
 }
 __name(formatArgs, "formatArgs");
-var log5 = console.debug ?? console.log ?? (() => {
+var log4 = console.debug ?? console.log ?? (() => {
 });
 function save(namespaces) {
   try {
@@ -15592,7 +15674,7 @@ function setupFormatters(formatters) {
   };
 }
 __name(setupFormatters, "setupFormatters");
-var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log: log5 });
+var browser_default = setup({ formatArgs, save, load, useColors, setupFormatters, colors, storage, log: log4 });
 
 // node_modules/weald/dist/src/index.js
 var src_default2 = browser_default;
@@ -15910,25 +15992,25 @@ var TrackedMap = class extends Map {
 };
 function trackedMap(config) {
   const { name: name3, metrics } = config;
-  let map;
+  let map2;
   if (metrics != null) {
-    map = new TrackedMap({ name: name3, metrics });
+    map2 = new TrackedMap({ name: name3, metrics });
   } else {
-    map = /* @__PURE__ */ new Map();
+    map2 = /* @__PURE__ */ new Map();
   }
-  return map;
+  return map2;
 }
 __name(trackedMap, "trackedMap");
 
 // node_modules/@multiformats/multiaddr-matcher/dist/src/utils.js
-var code2 = /* @__PURE__ */ __name((code3) => {
+var code3 = /* @__PURE__ */ __name((code4) => {
   return {
     match: /* @__PURE__ */ __name((vals) => {
       const component = vals[0];
       if (component == null) {
         return false;
       }
-      if (component.code !== code3) {
+      if (component.code !== code4) {
         return false;
       }
       if (component.value != null) {
@@ -15938,11 +16020,11 @@ var code2 = /* @__PURE__ */ __name((code3) => {
     }, "match")
   };
 }, "code");
-var value = /* @__PURE__ */ __name((code3, value2) => {
+var value = /* @__PURE__ */ __name((code4, value2) => {
   return {
     match: /* @__PURE__ */ __name((vals) => {
       const component = vals[0];
-      if (component?.code !== code3) {
+      if (component?.code !== code4) {
         return false;
       }
       if (component.value == null) {
@@ -16071,29 +16153,29 @@ var _TCP = and(_IP_OR_DOMAIN, value(CODE_TCP));
 var _UDP = and(_IP_OR_DOMAIN, value(CODE_UDP));
 var TCP = fmt(and(_TCP, optional(value(CODE_P2P))));
 var UDP = fmt(_UDP);
-var _QUIC = and(_UDP, code2(CODE_QUIC), optional(value(CODE_P2P)));
-var _QUIC_V1 = and(_UDP, code2(CODE_QUIC_V1), optional(value(CODE_P2P)));
+var _QUIC = and(_UDP, code3(CODE_QUIC), optional(value(CODE_P2P)));
+var _QUIC_V1 = and(_UDP, code3(CODE_QUIC_V1), optional(value(CODE_P2P)));
 var QUIC_V0_OR_V1 = or3(_QUIC, _QUIC_V1);
 var QUIC = fmt(_QUIC);
 var QUIC_V1 = fmt(_QUIC_V1);
 var _WEB = or3(_IP_OR_DOMAIN, _TCP, _UDP, _QUIC, _QUIC_V1);
-var _WebSockets = or3(and(_WEB, code2(CODE_WS), optional(value(CODE_P2P))));
+var _WebSockets = or3(and(_WEB, code3(CODE_WS), optional(value(CODE_P2P))));
 var WebSockets = fmt(_WebSockets);
-var _WebSocketsSecure = or3(and(_WEB, code2(CODE_WSS), optional(value(CODE_P2P))), and(_WEB, code2(CODE_TLS), optional(value(CODE_SNI)), code2(CODE_WS), optional(value(CODE_P2P))));
+var _WebSocketsSecure = or3(and(_WEB, code3(CODE_WSS), optional(value(CODE_P2P))), and(_WEB, code3(CODE_TLS), optional(value(CODE_SNI)), code3(CODE_WS), optional(value(CODE_P2P))));
 var WebSocketsSecure = fmt(_WebSocketsSecure);
-var _WebRTCDirect = and(_UDP, code2(CODE_WEBRTC_DIRECT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
+var _WebRTCDirect = and(_UDP, code3(CODE_WEBRTC_DIRECT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
 var WebRTCDirect = fmt(_WebRTCDirect);
-var _WebTransport = and(_QUIC_V1, code2(CODE_WEBTRANSPORT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
+var _WebTransport = and(_QUIC_V1, code3(CODE_WEBTRANSPORT), optional(value(CODE_CERTHASH)), optional(value(CODE_CERTHASH)), optional(value(CODE_P2P)));
 var WebTransport = fmt(_WebTransport);
 var _P2P = or3(_WebSockets, _WebSocketsSecure, and(_TCP, optional(value(CODE_P2P))), and(QUIC_V0_OR_V1, optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, optional(value(CODE_P2P))), _WebRTCDirect, _WebTransport, value(CODE_P2P));
 var P2P = fmt(_P2P);
-var _Circuit = and(optional(_P2P), code2(CODE_P2P_CIRCUIT), not(code2(CODE_WEBRTC)), optional(value(CODE_P2P)));
+var _Circuit = and(optional(_P2P), code3(CODE_P2P_CIRCUIT), not(code3(CODE_WEBRTC)), optional(value(CODE_P2P)));
 var Circuit = fmt(_Circuit);
-var _WebRTC = or3(and(_P2P, code2(CODE_P2P_CIRCUIT), code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(_P2P, code2(CODE_WEBRTC), optional(value(CODE_P2P))), and(code2(CODE_WEBRTC), optional(value(CODE_P2P))));
+var _WebRTC = or3(and(_P2P, code3(CODE_P2P_CIRCUIT), code3(CODE_WEBRTC), optional(value(CODE_P2P))), and(_P2P, code3(CODE_WEBRTC), optional(value(CODE_P2P))), and(code3(CODE_WEBRTC), optional(value(CODE_P2P))));
 var WebRTC = fmt(_WebRTC);
-var _HTTP = or3(and(_IP_OR_DOMAIN, value(CODE_TCP), code2(CODE_HTTP), optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, code2(CODE_HTTP), optional(value(CODE_P2P))));
+var _HTTP = or3(and(_IP_OR_DOMAIN, value(CODE_TCP), code3(CODE_HTTP), optional(value(CODE_P2P))), and(_IP_OR_DOMAIN, code3(CODE_HTTP), optional(value(CODE_P2P))));
 var HTTP = fmt(_HTTP);
-var _HTTPS = and(_IP_OR_DOMAIN, or3(and(value(CODE_TCP, "443"), code2(CODE_HTTP)), and(value(CODE_TCP), code2(CODE_HTTPS)), and(value(CODE_TCP), code2(CODE_TLS), code2(CODE_HTTP)), and(code2(CODE_TLS), code2(CODE_HTTP)), code2(CODE_TLS), code2(CODE_HTTPS)), optional(value(CODE_P2P)));
+var _HTTPS = and(_IP_OR_DOMAIN, or3(and(value(CODE_TCP, "443"), code3(CODE_HTTP)), and(value(CODE_TCP), code3(CODE_HTTPS)), and(value(CODE_TCP), code3(CODE_TLS), code3(CODE_HTTP)), and(code3(CODE_TLS), code3(CODE_HTTP)), code3(CODE_TLS), code3(CODE_HTTPS)), optional(value(CODE_P2P)));
 var HTTPS = fmt(_HTTPS);
 var _Memory = or3(and(value(CODE_MEMORY), optional(value(CODE_P2P))));
 var Memory = fmt(_Memory);
@@ -16102,7 +16184,7 @@ var Unix = fmt(_Unix);
 
 // public/components/chat-manager/index.mjs
 var GROUPS_ANNOUNCEMENT_TOPIC = "chat-groups-announcements";
-var log6 = logger("chat-manager");
+var log5 = logger("chat-manager");
 var ChatManager = class extends BaseComponent {
   static {
     __name(this, "ChatManager");
@@ -16135,7 +16217,7 @@ var ChatManager = class extends BaseComponent {
     this.activeStreams = /* @__PURE__ */ new Map();
   }
   async _componentReady() {
-    log6("ChatManager component ready");
+    log5("ChatManager component ready");
     this._controller = await controller(this);
     this._actions = await createActions(this);
     this.callback = await this._controller.init();
@@ -16146,7 +16228,7 @@ var ChatManager = class extends BaseComponent {
     try {
       const peerConnection = await this.getComponentAsync("peer-connection", "peer-connection");
       if (!peerConnection) {
-        log6.error("PeerConnection component not found");
+        log5.error("PeerConnection component not found");
         return;
       }
       let attempts = 0;
@@ -16158,7 +16240,7 @@ var ChatManager = class extends BaseComponent {
           this.state.connected = true;
           this.state.peerId = this.node.peerId.toString();
           this.state.mode = peerConnection.state.mode;
-          log6("Node obtained from PeerConnection: %o", {
+          log5("Node obtained from PeerConnection: %o", {
             peerId: this.state.peerId,
             mode: this.state.mode,
             connected: this.state.connected
@@ -16167,13 +16249,13 @@ var ChatManager = class extends BaseComponent {
           await this.fullRender(this.state);
           return;
         }
-        log6("Waiting for PeerConnection node... (attempt %d/%d)", attempts + 1, maxAttempts);
+        log5("Waiting for PeerConnection node... (attempt %d/%d)", attempts + 1, maxAttempts);
         await new Promise((resolve) => setTimeout(resolve, 1e3));
         attempts++;
       }
       throw new Error("PeerConnection node not ready after maximum attempts");
     } catch (error) {
-      log6.error("Failed to initialize from PeerConnection: %o", error);
+      log5.error("Failed to initialize from PeerConnection: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "initializeFromPeerConnection",
@@ -16187,10 +16269,10 @@ var ChatManager = class extends BaseComponent {
    */
   async handleIncomingStreamMessage(messageData, peerId) {
     try {
-      log6("Processing incoming stream message from %s: %o", peerId, messageData);
+      log5("Processing incoming stream message from %s: %o", peerId, messageData);
       const actualPeerId = peerId || messageData.from;
       if (!actualPeerId) {
-        log6.error("Cannot determine sender peer ID for message: %o", messageData);
+        log5.error("Cannot determine sender peer ID for message: %o", messageData);
         return;
       }
       if (messageData.type === "private_message") {
@@ -16209,7 +16291,7 @@ var ChatManager = class extends BaseComponent {
         });
       }
     } catch (error) {
-      log6.error("Error handling incoming stream message: %o", error);
+      log5.error("Error handling incoming stream message: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "handleIncomingStreamMessage",
@@ -16235,7 +16317,6 @@ var ChatManager = class extends BaseComponent {
       timestamp: message2.timestamp,
       id: generateMessageId(message2.text, message2.timestamp)
     });
-    console.log("----------------- addMessage --------------------------", this.state.messages);
     await this.renderPart({
       partName: "renderMessages",
       state: this.state,
@@ -16249,7 +16330,7 @@ var ChatManager = class extends BaseComponent {
    */
   async announceGroupCreation(group) {
     if (!this.node?.services?.pubsub) {
-      log6.error("\u041D\u0435\u0432\u043E\u0437\u043C\u043E\u0436\u043D\u043E \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: PubSub \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+      log5.error("\u041D\u0435\u0432\u043E\u0437\u043C\u043E\u0436\u043D\u043E \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: PubSub \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
       return false;
     }
     try {
@@ -16272,10 +16353,10 @@ var ChatManager = class extends BaseComponent {
         GROUPS_ANNOUNCEMENT_TOPIC,
         new TextEncoder().encode(JSON.stringify(announcement))
       );
-      log6("\u0410\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u043F\u0443\u0431\u043B\u0438\u043A\u043E\u0432\u0430\u043D \u0432 \u0442\u043E\u043F\u0438\u043A\u0435 %s: %s", GROUPS_ANNOUNCEMENT_TOPIC, group.name);
+      log5("\u0410\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u043F\u0443\u0431\u043B\u0438\u043A\u043E\u0432\u0430\u043D \u0432 \u0442\u043E\u043F\u0438\u043A\u0435 %s: %s", GROUPS_ANNOUNCEMENT_TOPIC, group.name);
       return true;
     } catch (error) {
-      log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+      log5.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "announceGroupCreation",
@@ -16321,7 +16402,7 @@ var ChatManager = class extends BaseComponent {
     if (groupManager) {
       await groupManager.createGroup(groupName);
     }
-    log6("Group created: %s (%s)", groupName);
+    log5("Group created: %s (%s)", groupName);
     return groupName;
   }
   async joinGroup(topic, groupName = null) {
@@ -16344,14 +16425,14 @@ var ChatManager = class extends BaseComponent {
     if (chatInterface) {
       await chatInterface.setCurrentGroup(this.state.currentGroup);
     }
-    log6("Joined group: %s (%s)", groupName || topic, topic);
+    log5("Joined group: %s (%s)", groupName || topic, topic);
   }
   /**
    * Настройка стрима для группы с использованием lpStream
    */
   async setupGroupStream(topic) {
     if (!this.node) {
-      log6.error("Node not available for stream setup");
+      log5.error("Node not available for stream setup");
       return;
     }
     try {
@@ -16365,10 +16446,10 @@ var ChatManager = class extends BaseComponent {
         const lp = lpStream(stream);
         this.activeStreams.set(`${topic}-${peer.toString()}`, { stream, lp, peer });
         await this.streamToChat(lp, peer.toString(), topic);
-        log6("Stream setup for peer %s in topic %s", peer.toString(), topic);
+        log5("Stream setup for peer %s in topic %s", peer.toString(), topic);
       }
     } catch (error) {
-      log6.error("Error setting up group stream: %o", error);
+      log5.error("Error setting up group stream: %o", error);
     }
   }
   /**
@@ -16379,11 +16460,11 @@ var ChatManager = class extends BaseComponent {
       while (true) {
         const message2 = await lp.read();
         if (!message2 || message2.length === 0) {
-          log6("Empty message from %s, continuing...", peerId);
+          log5("Empty message from %s, continuing...", peerId);
           continue;
         }
         const text = toString2(message2.subarray());
-        log6("Message from %s in %s: %s", peerId, topic, text);
+        log5("Message from %s in %s: %s", peerId, topic, text);
         let messageData;
         try {
           messageData = JSON.parse(text);
@@ -16405,9 +16486,9 @@ var ChatManager = class extends BaseComponent {
       }
     } catch (error) {
       if (error.message.includes("stream closed") || error.code === "ERR_STREAM_RESET" || error.message.includes("Unexpected EOF")) {
-        log6("Stream closed for peer %s: %s", peerId, error.message);
+        log5("Stream closed for peer %s: %s", peerId, error.message);
       } else {
-        log6.error("Error reading from stream for peer %s: %o", peerId, error);
+        log5.error("Error reading from stream for peer %s: %o", peerId, error);
       }
       this.activeStreams.delete(`${topic}-${peerId}`);
     }
@@ -16417,7 +16498,7 @@ var ChatManager = class extends BaseComponent {
    */
   async sendMessageViaStream(topic, messageText) {
     if (!this.node || !this.state.currentGroup) {
-      log6.error("Node or current group not available");
+      log5.error("Node or current group not available");
       return false;
     }
     try {
@@ -16440,9 +16521,9 @@ var ChatManager = class extends BaseComponent {
           await lp.write(fromString2(JSON.stringify(messageData)));
           await stream.close();
           sent = true;
-          log6("Message sent via stream to %s", peer.toString());
+          log5("Message sent via stream to %s", peer.toString());
         } catch (error) {
-          log6.error("Error sending to peer %s: %o", peer.toString(), error);
+          log5.error("Error sending to peer %s: %o", peer.toString(), error);
         }
       }
       if (this._actions && this._actions.sendMessage) {
@@ -16450,7 +16531,7 @@ var ChatManager = class extends BaseComponent {
       }
       return sent;
     } catch (error) {
-      log6.error("Error sending message via stream: %o", error);
+      log5.error("Error sending message via stream: %o", error);
       return false;
     }
   }
@@ -16479,7 +16560,7 @@ var ChatManager = class extends BaseComponent {
   }
   async sendPrivateMessage(peerId, messageText) {
     if (!this.node || !this.state.connected) {
-      log6.error("Node not available for private message");
+      log5.error("Node not available for private message");
       throw new Error("P2P \u043D\u043E\u0434\u0430 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430");
     }
     try {
@@ -16494,28 +16575,26 @@ var ChatManager = class extends BaseComponent {
           if (connection.remoteAddr) {
             try {
               targetAddress = connection.remoteAddr;
-              log6("Using active connection address: %s", targetAddress);
+              log5("Using active connection address: %s", targetAddress);
               break;
             } catch (error) {
-              log6.error("Error parsing connection address: %o", error);
+              log5.error("Error parsing connection address: %o", error);
             }
           }
         }
       }
       if (!targetAddress) {
-        log6("No specific address found, using peer ID for dial: %s", peerId);
+        log5("No specific address found, using peer ID for dial: %s", peerId);
         targetAddress = peerId;
       }
-      log6("Attempting to dial: %s", targetAddress);
+      log5("Attempting to dial: %s", targetAddress);
       const ma = multiaddr(targetAddress);
       let messageData;
       let lp;
       let stream;
+      let protocol;
       try {
         const parsed = JSON.parse(messageText);
-        const IS_REMOTE_CONTROL_EVENT = parsed.type === "REMOTE_CONTROL_EVENT";
-        stream = await this.node.dialProtocol(ma, IS_REMOTE_CONTROL_EVENT ? "/remote-control/1.0.0" : "/chat/1.0.0");
-        lp = lpStream(stream);
         if (parsed && typeof parsed === "object" && parsed.type) {
           messageData = {
             ...parsed,
@@ -16540,16 +16619,17 @@ var ChatManager = class extends BaseComponent {
           isPrivate: true
         };
       }
+      protocol = getProtocol(messageData.type);
+      stream = await this.node.dialProtocol(ma, protocol);
+      lp = lpStream(stream);
       let request = "";
       if (messageData.payload) {
         request = JSON.stringify(messageData);
       } else {
         request = JSON.stringify(messageData);
       }
-      const protocol = getProtocol(messageData.type);
-      stream = await this.node.dialProtocol(ma, protocol);
       const messageBytes = fromString2(request);
-      console.log(`----------------------- SEND PRIVATE_MESSAGE dialProtocol(ma, ${protocol}) -----------------------`, messageData.payload ? messageData.payload : messageData);
+      console.log(`----------------------- SEND PRIVATE_MESSAGE dialProtocol(ma, ${protocol}) -----------------------`, request);
       await lp.write(messageBytes);
       if (messageData.type === "private_message") {
         await this.addMessage({
@@ -16561,7 +16641,7 @@ var ChatManager = class extends BaseComponent {
           isPrivate: true
         });
       } else if (messageData.type === "REMOTE_CONTROL_REQUEST") {
-        log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
+        log5("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
         const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
         if (chatInterface) {
           await chatInterface.addMessage({
@@ -16574,7 +16654,7 @@ var ChatManager = class extends BaseComponent {
           });
         }
       } else if (messageData.type === "REMOTE_CONTROL_ACCEPTED") {
-        log6("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
+        log5("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043A: %s", peerId);
         const chatInterface = await this.getComponentAsync("chat-interface", "main-chat");
         if (chatInterface) {
           await chatInterface.addMessage({
@@ -16599,11 +16679,11 @@ var ChatManager = class extends BaseComponent {
           });
         }
       }
-      log6('\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0442\u0438\u043F\u0430 "%s" \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s', messageData.type, peerId);
+      log5('\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0442\u0438\u043F\u0430 "%s" \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s', messageData.type, peerId);
       await stream.close();
       return true;
     } catch (error) {
-      log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+      log5.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "sendPrivateMessage",
@@ -16638,7 +16718,7 @@ var ChatManager = class extends BaseComponent {
    */
   async setupMessageHandler() {
     if (!this.node) {
-      log6.error("Node not available for message handler setup");
+      log5.error("Node not available for message handler setup");
       return;
     }
     try {
@@ -16646,21 +16726,21 @@ var ChatManager = class extends BaseComponent {
         try {
           const lp = lpStream(stream);
           const remotePeer2 = connection.remotePeer.toString();
-          log6("Remote control stream established from: %s", remotePeer2);
+          log5("Remote control stream established from: %s", remotePeer2);
           let messageData = void 0;
           while (true) {
             try {
               const message2 = await lp.read();
               if (!message2 || message2.length === 0) {
-                log6("Empty message received from %s, continuing...", remotePeer2);
+                log5("Empty message received from %s, continuing...", remotePeer2);
                 continue;
               }
               const messageText = toString2(message2.subarray());
-              log6("Received length-prefixed message from %s: %s", remotePeer2, messageText);
+              log5("Received length-prefixed message from %s: %s", remotePeer2, messageText);
               try {
                 messageData = JSON.parse(messageText);
               } catch (e2) {
-                log6("Non-JSON message received, treating as plain text: %s", messageText);
+                log5("Non-JSON message received, treating as plain text: %s", messageText);
                 messageData = null;
               }
               console.log("----------------- INCOMING handle(/remote-control/1.0.0) -----------------", messageData?.payload ? messageData.payload : messageData);
@@ -16672,7 +16752,7 @@ var ChatManager = class extends BaseComponent {
                 });
                 const message3 = messageData?.payload;
                 if (message3.type === "VIDEO_SDP" && message3.sdpType === "offer") {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC offer \u043E\u0442 %s:", remotePeer2, message3.sdp);
+                  log5("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC offer \u043E\u0442 %s:", remotePeer2, message3.sdp);
                   const controllerId = `remote-control-${remotePeer2}-controller`;
                   const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
                   if (remoteControl && typeof remoteControl.negotiateWebRtcOffer === "function") {
@@ -16681,11 +16761,11 @@ var ChatManager = class extends BaseComponent {
                       from: remotePeer2
                     });
                   } else {
-                    log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (viewer) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcOffer");
+                    log5.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (viewer) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcOffer");
                   }
                 }
                 if (message3.type === "VIDEO_SDP" && message3.sdpType === "answer") {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC answer \u043E\u0442 %s", remotePeer2);
+                  log5("\u041F\u043E\u043B\u0443\u0447\u0435\u043D WebRTC answer \u043E\u0442 %s", remotePeer2);
                   const remoteControl = await BaseComponent.getComponentAsync(
                     "remote-control",
                     `remote-control-${remotePeer2}-viewer`,
@@ -16696,11 +16776,11 @@ var ChatManager = class extends BaseComponent {
                       sdp: message3.sdp
                     });
                   } else {
-                    log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcAnswer");
+                    log5.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleWebRtcAnswer");
                   }
                 }
                 if (message3.type === "VIDEO_ICE_CANDIDATE") {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u043E\u0442 %s", remotePeer2);
+                  log5("\u041F\u043E\u043B\u0443\u0447\u0435\u043D ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u043E\u0442 %s", remotePeer2);
                   const controllerId = `remote-control-${remotePeer2}-${message3.mode}`;
                   const remoteControl = await this.getComponentAsync("remote-control", controllerId, 3e3);
                   if (remoteControl && typeof remoteControl.handleIceCandidate === "function") {
@@ -16711,7 +16791,7 @@ var ChatManager = class extends BaseComponent {
                       from: remotePeer2
                     });
                   } else {
-                    log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleIceCandidate");
+                    log5.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0438\u043B\u0438 \u043D\u0435 \u043F\u043E\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 handleIceCandidate");
                   }
                 }
               }
@@ -16734,12 +16814,12 @@ var ChatManager = class extends BaseComponent {
               if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed")) {
                 break;
               }
-              log6.error("Error reading from lpStream: %o", readError);
+              log5.error("Error reading from lpStream: %o", readError);
               break;
             }
           }
         } catch (err) {
-          log6.error("Error in /remote-control/1.0.0 handler: %o", err);
+          log5.error("Error in /remote-control/1.0.0 handler: %o", err);
           try {
             await stream.close();
           } catch {
@@ -16747,7 +16827,7 @@ var ChatManager = class extends BaseComponent {
         }
       });
       await this.node.handle("/chat/1.0.0", async (stream, connection) => {
-        log6("Incoming chat stream established from: %s", connection.remotePeer?.toString());
+        log5("Incoming chat stream established from: %s", connection.remotePeer?.toString());
         try {
           const lp = lpStream(stream);
           const remotePeer2 = connection.remotePeer.toString();
@@ -16755,16 +16835,16 @@ var ChatManager = class extends BaseComponent {
             try {
               const message2 = await lp.read();
               if (!message2 || message2.length === 0) {
-                log6("Empty message received from %s, continuing...", remotePeer2);
+                log5("Empty message received from %s, continuing...", remotePeer2);
                 continue;
               }
               const messageText = toString2(message2.subarray());
-              log6("Received length-prefixed message from %s: %s", remotePeer2, messageText);
+              log5("Received length-prefixed message from %s: %s", remotePeer2, messageText);
               let messageData;
               try {
                 messageData = JSON.parse(messageText);
               } catch (e2) {
-                log6("Non-JSON message received, treating as plain text: %s", messageText);
+                log5("Non-JSON message received, treating as plain text: %s", messageText);
                 messageData = {
                   text: messageText,
                   type: "group_message",
@@ -16804,7 +16884,7 @@ var ChatManager = class extends BaseComponent {
               } else if (messageData.type === "REMOTE_CONTROL_REQUEST") {
                 const { initiator, targetPeer, timestamp } = messageData.payload;
                 const myPeerId = this.state.peerId;
-                log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u0434\u043B\u044F %s", initiator, targetPeer);
+                log5("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u0434\u043B\u044F %s", initiator, targetPeer);
                 if (myPeerId === targetPeer) {
                   await this.addMessageToPrivateHistory({
                     text: JSON.stringify(messageData),
@@ -16859,15 +16939,15 @@ var ChatManager = class extends BaseComponent {
                       })
                     }
                   });
-                  log6("\u0421\u0435\u0441\u0441\u0438\u044F \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0430\u0447\u0430\u0442\u0430 \u043A\u0430\u043A viewer \u0441 %s", initiator);
+                  log5("\u0421\u0435\u0441\u0441\u0438\u044F \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0430\u0447\u0430\u0442\u0430 \u043A\u0430\u043A viewer \u0441 %s", initiator);
                 } else {
-                  log6("REMOTE_CONTROL_REQUEST \u043F\u0440\u043E\u0438\u0433\u043D\u043E\u0440\u0438\u0440\u043E\u0432\u0430\u043D: \u044F \u043D\u0435 \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C (\u043E\u0436\u0438\u0434\u0430\u043B %s, \u043F\u043E\u043B\u0443\u0447\u0438\u043B \u043E\u0442 %s)", myPeerId, targetPeer);
+                  log5("REMOTE_CONTROL_REQUEST \u043F\u0440\u043E\u0438\u0433\u043D\u043E\u0440\u0438\u0440\u043E\u0432\u0430\u043D: \u044F \u043D\u0435 \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C (\u043E\u0436\u0438\u0434\u0430\u043B %s, \u043F\u043E\u043B\u0443\u0447\u0438\u043B \u043E\u0442 %s)", myPeerId, targetPeer);
                 }
               } else if (messageData.type === "REMOTE_CONTROL_ACCEPTED") {
                 const { initiator } = messageData.payload;
                 const myPeerId = this.state.peerId;
                 if (myPeerId === initiator) {
-                  log6("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442 %s", remotePeer2);
+                  log5("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043E\u0442 %s", remotePeer2);
                   await this.addMessageToPrivateHistory({
                     text: JSON.stringify(messageData),
                     from: remotePeer2,
@@ -16904,7 +16984,7 @@ var ChatManager = class extends BaseComponent {
                     if (remoteControl && typeof remoteControl.createPeerConnection === "function") {
                       await remoteControl?.createPeerConnection();
                     } else {
-                      log6.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u0440\u0441 \u043D\u0435 \u0441\u043E\u0437\u0434\u0430\u043D");
+                      log5.error("\u041A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442 remote-control (controller) \u0440\u0441 \u043D\u0435 \u0441\u043E\u0437\u0434\u0430\u043D");
                     }
                     const connectedPeers = await this.getConnectedPeers();
                     const targetPeerInfo = connectedPeers.find((p2) => p2.id === remotePeer2);
@@ -16913,7 +16993,7 @@ var ChatManager = class extends BaseComponent {
                       const conn = targetPeerInfo.connections.find((c2) => c2.remoteAddr);
                       if (conn?.remoteAddr) {
                         dialAddress = conn.remoteAddr;
-                        log6("Using multiaddr for remote control dial: %s", dialAddress);
+                        log5("Using multiaddr for remote control dial: %s", dialAddress);
                       }
                     }
                     console.log("---------- SEND STREAM -------------------");
@@ -16934,10 +17014,10 @@ var ChatManager = class extends BaseComponent {
                     await lp2.write(fromString2(JSON.stringify(messageData)));
                     await stream2.close();
                   } catch (err) {
-                    log6.error("Failed to establish remote control stream to %s: %o", remotePeer2, err);
+                    log5.error("Failed to establish remote control stream to %s: %o", remotePeer2, err);
                   }
                 } else {
-                  log6.debug("REMOTE_CONTROL_ACCEPTED ignored: not for this peer (initiator: %s, me: %s)", initiator, myPeerId);
+                  log5.debug("REMOTE_CONTROL_ACCEPTED ignored: not for this peer (initiator: %s, me: %s)", initiator, myPeerId);
                 }
               } else {
                 await this.handleIncomingStreamMessage(messageData, remotePeer2);
@@ -16949,25 +17029,25 @@ var ChatManager = class extends BaseComponent {
               if (readError.code === "ERR_STREAM_RESET" || readError.message.includes("stream closed")) {
                 break;
               }
-              log6.error("Error reading from lpStream: %o", readError);
+              log5.error("Error reading from lpStream: %o", readError);
               break;
             }
           }
         } catch (error) {
           if (error.code !== "ERR_STREAM_RESET" && !error.message.includes("Stream read timeout") && !error.message.includes("Unexpected EOF")) {
-            log6.error("Error in stream handler for peer %s: %o", connection.remotePeer?.toString(), error);
+            log5.error("Error in stream handler for peer %s: %o", connection.remotePeer?.toString(), error);
           }
         } finally {
           try {
             await stream.close();
           } catch (closeError) {
-            log6.error("Error closing stream: %o", closeError);
+            log5.error("Error closing stream: %o", closeError);
           }
         }
       });
-      log6("Chat message handler registered for protocol /chat/1.0.0");
+      log5("Chat message handler registered for protocol /chat/1.0.0");
     } catch (error) {
-      log6.error("Error setting up message handler: %o", error);
+      log5.error("Error setting up message handler: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "setupMessageHandler",
@@ -16982,12 +17062,12 @@ var ChatManager = class extends BaseComponent {
    * @param {Object} messageData - Данные сообщения
    */
   async handleIncomingPrivateMessage(messageData) {
-    const log11 = logger("chat-manager:actions:handleIncomingPrivateMessage");
+    const log10 = logger("chat-manager:actions:handleIncomingPrivateMessage");
     console.log("----------------- INCOMMING handleIncomingPrivateMessage -----------------", messageData);
     try {
-      log11("Incoming private message from: %s", messageData.from);
+      log10("Incoming private message from: %s", messageData.from);
       if (!messageData.text || !messageData.from) {
-        log11.error("Invalid private message data: %o", messageData);
+        log10.error("Invalid private message data: %o", messageData);
         return;
       }
       let parsed;
@@ -17014,11 +17094,11 @@ var ChatManager = class extends BaseComponent {
             }
           });
         }
-        log11("\u041E\u0431\u044B\u0447\u043D\u043E\u0435 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043E \u043E\u0442: %s", messageData.from);
+        log10("\u041E\u0431\u044B\u0447\u043D\u043E\u0435 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043E \u043E\u0442: %s", messageData.from);
         return;
       }
       if (parsed.type === "REMOTE_CONTROL_REQUEST") {
-        log11("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s", messageData.from);
+        log10("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442 %s", messageData.from);
         const confirmed = await this.showModal({
           title: "\u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435",
           content: `<p>\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${messageData.from} \u0437\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442 \u0434\u043E\u0441\u0442\u0443\u043F \u043A \u0432\u0430\u0448\u0435\u043C\u0443 \u044D\u043A\u0440\u0430\u043D\u0443.</p>`,
@@ -17028,7 +17108,7 @@ var ChatManager = class extends BaseComponent {
           ]
         });
         if (!confirmed) {
-          log11("\u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442\u043A\u043B\u043E\u043D\u0451\u043D");
+          log10("\u0417\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0435 \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043E\u0442\u043A\u043B\u043E\u043D\u0451\u043D");
           return;
         }
         await this.postMessage({
@@ -17041,7 +17121,7 @@ var ChatManager = class extends BaseComponent {
             })
           }
         });
-        log11("\u0421\u0435\u0441\u0441\u0438\u044F \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0430\u0447\u0430\u0442\u0430 \u043A\u0430\u043A viewer \u0441 %s", messageData.from);
+        log10("\u0421\u0435\u0441\u0441\u0438\u044F \u0443\u0434\u0430\u043B\u0451\u043D\u043D\u043E\u0433\u043E \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0430\u0447\u0430\u0442\u0430 \u043A\u0430\u043A viewer \u0441 %s", messageData.from);
         return;
       }
       if (parsed.type === "REMOTE_CONTROL_EVENT") {
@@ -17075,7 +17155,7 @@ var ChatManager = class extends BaseComponent {
         });
       }
     } catch (error) {
-      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+      log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "handleIncomingPrivateMessage",
@@ -17100,7 +17180,7 @@ var ChatManager = class extends BaseComponent {
    */
   async refreshGroupMembers() {
     if (!this.state.currentGroup?.topic) {
-      log6.error("\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432");
+      log5.error("\u041D\u0435\u0442 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432");
       return;
     }
     const topic = this.state.currentGroup.topic;
@@ -17115,7 +17195,7 @@ var ChatManager = class extends BaseComponent {
       state: this.state,
       selector: "#group-members-list"
     });
-    log6("\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B: %d", peers.size);
+    log5("\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B: %d", peers.size);
   }
   async updateGroupMembers(topic) {
     if (!this.node?.services?.pubsub) return [];
@@ -17181,9 +17261,9 @@ var ChatManager = class extends BaseComponent {
   }
   // В классе ChatManager добавляем метод для обработки событий ноды
   async handleNodeEvent(event) {
-    const log11 = logger("chat-manager:node-events");
+    const log10 = logger("chat-manager:node-events");
     try {
-      log11("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B: %s", event.type);
+      log10("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B: %s", event.type);
       switch (event.type) {
         case "NODE_SHUTDOWN":
           this.state.connected = false;
@@ -17191,16 +17271,16 @@ var ChatManager = class extends BaseComponent {
           this.state.messages = [];
           this.state.currentGroup = null;
           this.node = null;
-          log11("\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 ChatManager \u0441\u0431\u0440\u043E\u0448\u0435\u043D\u043E \u043F\u043E\u0441\u043B\u0435 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u043D\u043E\u0434\u044B");
+          log10("\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 ChatManager \u0441\u0431\u0440\u043E\u0448\u0435\u043D\u043E \u043F\u043E\u0441\u043B\u0435 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u043D\u043E\u0434\u044B");
           break;
         case "NODE_RESTARTED":
           await this.initializeFromPeerConnection();
-          log11("ChatManager \u043F\u0435\u0440\u0435\u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u043D\u043E\u0434\u044B");
+          log10("ChatManager \u043F\u0435\u0440\u0435\u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u043D\u043E\u0434\u044B");
           break;
       }
       await this.fullRender(this.state);
     } catch (error) {
-      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B: %o", error);
+      log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043D\u043E\u0434\u044B: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "handleNodeEvent",
@@ -17211,7 +17291,7 @@ var ChatManager = class extends BaseComponent {
   }
   async postMessage(event) {
     try {
-      log6("ChatManager received message: %s %o", event.type, event.data);
+      log5("ChatManager received message: %s %o", event.type, event.data);
       if (event.type === "NODE_SHUTDOWN" || event.type === "NODE_RESTARTED") {
         await this.handleNodeEvent(event);
         return;
@@ -17285,22 +17365,22 @@ var ChatManager = class extends BaseComponent {
           await this.updatePeerList(event.data.peers);
           break;
         case "GROUP_CREATED":
-          log6("GROUP_CREATED received in ChatManager: %o", event.data);
+          log5("GROUP_CREATED received in ChatManager: %o", event.data);
           await this.handleGroupCreated(event.data);
           break;
         case "PRIVATE_MESSAGE":
-          log6("PRIVATE_MESSAGE received in ChatManager: %o", event.data);
+          log5("PRIVATE_MESSAGE received in ChatManager: %o", event.data);
           await this.handleIncomingPrivateMessage(event.data);
           break;
         case "SEND_PRIVATE_MESSAGE":
-          log6("SEND_PRIVATE_MESSAGE received in ChatManager: %o", event.data);
+          log5("SEND_PRIVATE_MESSAGE received in ChatManager: %o", event.data);
           await this.sendPrivateMessage(event.data.peerId, event.data.message);
           break;
         default:
-          log6.error("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
+          log5.error("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
       }
     } catch (error) {
-      log6.error("Error processing message in ChatManager: %o", error);
+      log5.error("Error processing message in ChatManager: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "postMessage",
@@ -17315,7 +17395,7 @@ var ChatManager = class extends BaseComponent {
    */
   async handleGroupCreated(groupData) {
     try {
-      log6("Handling GROUP_CREATED in ChatManager: %o", groupData);
+      log5("Handling GROUP_CREATED in ChatManager: %o", groupData);
       const safeGroup = {
         ...groupData,
         id: groupData.id || groupData.topic || Math.random().toString(36).substring(2, 9),
@@ -17332,9 +17412,9 @@ var ChatManager = class extends BaseComponent {
         state: this.state,
         selector: "#my-groups-container"
       });
-      log6("Successfully handled GROUP_CREATED and joined the group");
+      log5("Successfully handled GROUP_CREATED and joined the group");
     } catch (error) {
-      log6.error("Error handling GROUP_CREATED: %o", error);
+      log5.error("Error handling GROUP_CREATED: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "handleGroupCreated",
@@ -17353,7 +17433,7 @@ var ChatManager = class extends BaseComponent {
       try {
         await streamData.stream.close();
       } catch (error) {
-        log6.error("Error closing stream %s: %o", key, error);
+        log5.error("Error closing stream %s: %o", key, error);
       }
     }
     this.activeStreams.clear();
@@ -17857,7 +17937,7 @@ __name(escapeRegex, "escapeRegex");
 
 // public/components/chat-interface/controller/index.mjs
 var controller2 = /* @__PURE__ */ __name(async (context) => {
-  const log11 = logger("chat-interface:controller");
+  const log10 = logger("chat-interface:controller");
   let eventListeners = [];
   let mentionMenu = null;
   return {
@@ -17866,16 +17946,16 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
-      log11("controller initializing");
+      log10("controller initializing");
       const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
       let messageInput = context.shadowRoot.querySelector("#message-input");
       if (sendMessageBtn && messageInput) {
         const sendMessageHandler = /* @__PURE__ */ __name(async () => {
           if (messageInput.value.trim() && context.state.currentGroup) {
-            const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-            if (chatManager2) {
-              log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
-              await chatManager2.postMessage({
+            const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+            if (chatManager) {
+              log10("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
+              await chatManager.postMessage({
                 type: "SEND_MESSAGE",
                 data: {
                   message: messageInput.value.trim(),
@@ -17905,8 +17985,8 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const peerId = button.closest(".member-item")?.dataset.peerId;
             if (!peerId) return;
             try {
-              const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-              if (!chatManager2) {
+              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+              if (!chatManager) {
                 throw new Error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
               }
               console.log("-------------- click button ------------------", {
@@ -17924,7 +18004,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
                   })
                 }
               });
-              await chatManager2.postMessage({
+              await chatManager.postMessage({
                 type: "SEND_PRIVATE_MESSAGE",
                 data: {
                   peerId,
@@ -17956,7 +18036,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
       const clearChatBtn = context.shadowRoot.querySelector("#clear-chat");
       if (clearChatBtn) {
         const clearChatHandler = /* @__PURE__ */ __name(async () => {
-          log11("\u043E\u0447\u0438\u0441\u0442\u043A\u0430 \u0447\u0430\u0442\u0430 \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
+          log10("\u043E\u0447\u0438\u0441\u0442\u043A\u0430 \u0447\u0430\u0442\u0430 \u0447\u0435\u0440\u0435\u0437 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440");
           await context.clearMessages();
         }, "clearChatHandler");
         clearChatBtn.addEventListener("click", clearChatHandler);
@@ -17973,9 +18053,9 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
               setTimeout(() => {
                 copyChatIdBtn.textContent = originalText;
               }, 2e3);
-              log11("ID \u0447\u0430\u0442\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D: %s", context.state.currentGroup.topic);
+              log10("ID \u0447\u0430\u0442\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D: %s", context.state.currentGroup.topic);
             } catch (err) {
-              log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F ID \u0447\u0430\u0442\u0430: %o", err);
+              log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F ID \u0447\u0430\u0442\u0430: %o", err);
             }
           }
         }, "copyChatIdHandler");
@@ -17990,7 +18070,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const isVisible = membersPanel.style.display !== "none";
             membersPanel.style.display = isVisible ? "none" : "block";
             toggleMembersBtn.textContent = isVisible ? "\u0421\u043A\u0440\u044B\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432" : "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432";
-            log11("\u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u0438 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0430: %s", isVisible ? "\u0441\u043A\u0440\u044B\u0442\u0430" : "\u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430");
+            log10("\u0432\u0438\u0434\u0438\u043C\u043E\u0441\u0442\u044C \u043F\u0430\u043D\u0435\u043B\u0438 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0430: %s", isVisible ? "\u0441\u043A\u0440\u044B\u0442\u0430" : "\u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430");
           }
         }, "toggleMembersHandler");
         toggleMembersBtn.addEventListener("click", toggleMembersHandler);
@@ -18008,9 +18088,9 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
               if (group) {
                 try {
                   await context.joinGroup(group);
-                  log11("Successfully joined group: %s", group.name);
+                  log10("Successfully joined group: %s", group.name);
                 } catch (error) {
-                  log11.error("Error joining group: %o", error);
+                  log10.error("Error joining group: %o", error);
                   await context.showModal({
                     title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                     content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
@@ -18030,9 +18110,9 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             if (groupId) {
               try {
                 await context.leaveGroup(groupId);
-                log11("Successfully left group: %s", groupId);
+                log10("Successfully left group: %s", groupId);
               } catch (error) {
-                log11.error("Error leaving group: %o", error);
+                log10.error("Error leaving group: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
@@ -18055,7 +18135,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           if (peerId) {
             const member = context.state.connectedPeers.find((p2) => p2.id === peerId);
             if (member && !member.isCurrentUser) {
-              log11("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name || member.id);
+              log10("\u0432\u044B\u0431\u043E\u0440 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430: %s", member.name || member.id);
               await context.setActiveMember(member);
             }
             return;
@@ -18066,9 +18146,9 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const group = allGroups.find((g) => g.topic === groupTopic);
             console.log("@@@@@@@@@@@@@@@@@@@@@@ group @@@@@@@@@@@@@@@@@@@@@@", group, allGroups);
             if (group) {
-              const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-              log11("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
-              chatManager2.callback.handlersSetupGroup({
+              const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+              log10("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
+              chatManager.callback.handlersSetupGroup({
                 currentTarget: {
                   closest: /* @__PURE__ */ __name(() => {
                     return false;
@@ -18089,13 +18169,13 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
                 }
               });
             } else {
-              log11.error("\u0433\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443: %s", groupTopic);
+              log10.error("\u0433\u0440\u0443\u043F\u043F\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430 \u043F\u043E \u0442\u043E\u043F\u0438\u043A\u0443: %s", groupTopic);
             }
             return;
           }
-          log11.error("\u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u043D\u0438 data-peer-id, \u043D\u0438 data-group-topic");
+          log10.error("\u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u0441\u043E\u0434\u0435\u0440\u0436\u0438\u0442 \u043D\u0438 data-peer-id, \u043D\u0438 data-group-topic");
         } catch (error) {
-          log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0432\u044B\u0431\u043E\u0440\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430: %o", error);
+          log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0432\u044B\u0431\u043E\u0440\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u0430: %o", error);
         }
       }, "handlerSetupMemberClick");
       const setupMemberClickHandlers = /* @__PURE__ */ __name(() => {
@@ -18233,7 +18313,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
                 }
                 messageInput2.value = "";
               } catch (error) {
-                log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+                log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
                 await context.showModal({
                   title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438",
                   content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: ${error.message}</p>`,
@@ -18252,20 +18332,20 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           }, "enterHandler");
           messageInput2.addEventListener("keypress", enterHandler);
           eventListeners.push({ element: messageInput2, handler: enterHandler });
-          log11("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u0434\u043B\u044F \u043A\u043D\u043E\u043F\u043A\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+          log10("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u0434\u043B\u044F \u043A\u043D\u043E\u043F\u043A\u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
         } else {
-          log11("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B #send-button \u0438\u043B\u0438 #message-input \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B");
+          log10("\u042D\u043B\u0435\u043C\u0435\u043D\u0442\u044B #send-button \u0438\u043B\u0438 #message-input \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B");
         }
       }, "setupSendButtonHandler");
       setupSendButtonHandler();
-      log11("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      log11("Total event listeners: %d", eventListeners.length);
+      log10("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log10("Total event listeners: %d", eventListeners.length);
       const memberItems = context.shadowRoot.querySelectorAll(".member-item");
-      log11("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u043E\u0432 .member-item: %d", memberItems.length);
+      log10("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u043E\u0432 .member-item: %d", memberItems.length);
       messageInput = context.shadowRoot.querySelector("#message-input");
-      log11("\u043F\u043E\u043B\u0435 \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %s", !!messageInput);
+      log10("\u043F\u043E\u043B\u0435 \u0432\u0432\u043E\u0434\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %s", !!messageInput);
       const sendButton = context.shadowRoot.querySelector("#send-button");
-      log11("\u043A\u043D\u043E\u043F\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 #send-button \u043D\u0430\u0439\u0434\u0435\u043D\u0430: %s", !!sendButton);
+      log10("\u043A\u043D\u043E\u043F\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 #send-button \u043D\u0430\u0439\u0434\u0435\u043D\u0430: %s", !!sendButton);
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
@@ -18281,7 +18361,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
           element.removeEventListener("input", handler);
         }
       });
-      log11("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D, \u0443\u0434\u0430\u043B\u0435\u043D\u043E \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
+      log10("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D, \u0443\u0434\u0430\u043B\u0435\u043D\u043E \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u043E\u0432: %d", eventListeners.length);
       eventListeners = [];
     }
   };
@@ -18289,7 +18369,7 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
 
 // public/components/chat-interface/actions/index.mjs
 async function createActions2(context) {
-  const log11 = logger("chat-interface:actions");
+  const log10 = logger("chat-interface:actions");
   return {
     /**
      * Отправка сообщения в чат
@@ -18344,10 +18424,10 @@ async function createActions2(context) {
 }
 __name(createActions2, "createActions");
 async function sendMessage(message2, topic) {
-  const log11 = logger("chat-interface:actions:sendMessage");
+  const log10 = logger("chat-interface:actions:sendMessage");
   try {
     if (!message2.trim()) {
-      log11.error("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
+      log10.error("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
@@ -18356,7 +18436,7 @@ async function sendMessage(message2, topic) {
       return;
     }
     if (!topic) {
-      log11.error("\u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438");
+      log10.error("\u043D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438</p>",
@@ -18364,10 +18444,10 @@ async function sendMessage(message2, topic) {
       });
       return;
     }
-    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager2) {
-      log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0432 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
-      await chatManager2.postMessage({
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
+      log10("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0432 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
+      await chatManager.postMessage({
         type: "SEND_MESSAGE",
         data: { message: message2, topic }
       });
@@ -18375,13 +18455,13 @@ async function sendMessage(message2, topic) {
       if (messageInput) {
         messageInput.value = "";
       }
-      log11("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0443\u0441\u043F\u0435\u0448\u043D\u043E");
+      log10("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0443\u0441\u043F\u0435\u0448\u043D\u043E");
     } else {
-      log11.error("\u0447\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+      log10.error("\u0447\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
       throw new Error("\u0427\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
     }
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "sendMessage",
@@ -18397,10 +18477,10 @@ async function sendMessage(message2, topic) {
 }
 __name(sendMessage, "sendMessage");
 async function handleIncomingMessage(messageData) {
-  const log11 = logger("chat-interface:actions:handleIncomingMessage");
+  const log10 = logger("chat-interface:actions:handleIncomingMessage");
   try {
     if (this.state.currentGroup && messageData.topic === this.state.currentGroup.topic) {
-      log11("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0434\u043B\u044F \u0442\u0435\u043A\u0443\u0449\u0435\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s", messageData.topic);
+      log10("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u0434\u043B\u044F \u0442\u0435\u043A\u0443\u0449\u0435\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s", messageData.topic);
       await this.addMessage({
         text: messageData.text,
         from: messageData.from,
@@ -18413,10 +18493,10 @@ async function handleIncomingMessage(messageData) {
         this.showNotification(`\u041D\u043E\u0432\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 ${groupName}`);
       }
     } else if (!this.state.currentGroup && messageData.type === "received") {
-      log11("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u043D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B %s: %s", messageData.topic, messageData.text);
+      log10("\u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0438\u0437 \u043D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B %s: %s", messageData.topic, messageData.text);
     }
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "handleIncomingMessage",
@@ -18427,9 +18507,9 @@ async function handleIncomingMessage(messageData) {
 }
 __name(handleIncomingMessage, "handleIncomingMessage");
 async function clearChatHistory() {
-  const log11 = logger("chat-interface:actions:clearChatHistory");
+  const log10 = logger("chat-interface:actions:clearChatHistory");
   try {
-    log11("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0443 \u0438\u0441\u0442\u043E\u0440\u0438\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
+    log10("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0443 \u0438\u0441\u0442\u043E\u0440\u0438\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
     await this.showModal({
       title: "\u041F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u0435",
       content: "<p>\u0412\u044B \u0443\u0432\u0435\u0440\u0435\u043D\u044B, \u0447\u0442\u043E \u0445\u043E\u0442\u0438\u0442\u0435 \u043E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0438\u0441\u0442\u043E\u0440\u0438\u044E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439?</p>",
@@ -18437,20 +18517,20 @@ async function clearChatHistory() {
         {
           text: "\u041E\u0442\u043C\u0435\u043D\u0430",
           type: "secondary",
-          action: /* @__PURE__ */ __name(() => log11("\u043E\u0447\u0438\u0441\u0442\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C"), "action")
+          action: /* @__PURE__ */ __name(() => log10("\u043E\u0447\u0438\u0441\u0442\u043A\u0430 \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u0430 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C"), "action")
         },
         {
           text: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C",
           type: "primary",
           action: /* @__PURE__ */ __name(async () => {
             await this.clearMessages();
-            log11("\u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
+            log10("\u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043E\u0447\u0438\u0449\u0435\u043D\u0430");
           }, "action")
         }
       ]
     });
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0447\u0438\u0441\u0442\u043A\u0438 \u0438\u0441\u0442\u043E\u0440\u0438\u0438: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "clearChatHistory",
@@ -18461,25 +18541,25 @@ async function clearChatHistory() {
 }
 __name(clearChatHistory, "clearChatHistory");
 async function setActiveGroup(group) {
-  const log11 = logger("chat-interface:actions:setActiveGroup");
+  const log10 = logger("chat-interface:actions:setActiveGroup");
   try {
     if (!group || !group.topic) {
-      log11.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B: %o", group);
+      log10.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B: %o", group);
       throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B");
     }
     const safeName = typeof group.name === "string" ? group.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430";
     const safeGroup = { ...group, name: safeName };
-    log11("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s (%s)", safeName, group.topic);
+    log10("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %s (%s)", safeName, group.topic);
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
     await this.showSkeleton({
       selector: "#messages-list",
       replace: true
     });
-    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
     let history = [];
-    if (chatManager2?.state?.topicHistories?.[group.topic]) {
-      history = [...chatManager2.state.topicHistories[group.topic]];
+    if (chatManager?.state?.topicHistories?.[group.topic]) {
+      history = [...chatManager.state.topicHistories[group.topic]];
     }
     this.state.currentGroup = safeGroup;
     this.state.messages = history;
@@ -18495,9 +18575,9 @@ async function setActiveGroup(group) {
     if (messagesContainer) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
-    log11("\u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E: %s (%s)", safeName, group.topic);
+    log10("\u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0443 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u043E: %s (%s)", safeName, group.topic);
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
     await this.hideSkeleton();
     this.addError({
       componentName: this.constructor.name,
@@ -18514,11 +18594,11 @@ async function setActiveGroup(group) {
 }
 __name(setActiveGroup, "setActiveGroup");
 async function searchMessages(query) {
-  const log11 = logger("chat-interface:actions:searchMessages");
+  const log10 = logger("chat-interface:actions:searchMessages");
   try {
-    log11("\u043F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %s", query);
+    log10("\u043F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %s", query);
     if (!query.trim()) {
-      log11("\u043F\u0443\u0441\u0442\u043E\u0439 \u0437\u0430\u043F\u0440\u043E\u0441 - \u043F\u043E\u043A\u0430\u0437 \u0432\u0441\u0435\u0445 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
+      log10("\u043F\u0443\u0441\u0442\u043E\u0439 \u0437\u0430\u043F\u0440\u043E\u0441 - \u043F\u043E\u043A\u0430\u0437 \u0432\u0441\u0435\u0445 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
       await this.renderPart({
         partName: "renderMessages",
         state: this.state,
@@ -18538,7 +18618,7 @@ async function searchMessages(query) {
     });
     this.state.messages = originalMessages;
     const resultsCount = filteredMessages.length;
-    log11("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %d", resultsCount);
+    log10("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %d", resultsCount);
     await this.showModal({
       title: "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430",
       content: `<p>\u041D\u0430\u0439\u0434\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: ${resultsCount}</p>`,
@@ -18546,7 +18626,7 @@ async function searchMessages(query) {
       closeOnBackdropClick: true
     });
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "searchMessages",
@@ -18557,30 +18637,30 @@ async function searchMessages(query) {
 }
 __name(searchMessages, "searchMessages");
 async function setActiveMember(member) {
-  const log11 = logger("chat-interface:actions:setActiveMember");
+  const log10 = logger("chat-interface:actions:setActiveMember");
   debugger;
   try {
     if (!member || !member.id) {
-      log11.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
+      log10.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
       return;
     }
     if (member.isCurrentUser) {
-      log11("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
+      log10("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
       return;
     }
     const displayName = member.name || this.generatePeerName(member.id);
     const memberWithName = { ...member, name: displayName };
-    log11("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
+    log10("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
     this.state.activeMember = memberWithName;
     this.state.currentGroup = null;
     this.state.isPrivateChat = true;
     await this.updateMembersList();
     await this.updateChatHeader();
-    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager2) {
-      const history = chatManager2?.state.privateHistories[member.id] || [];
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
+      const history = chatManager?.state.privateHistories[member.id] || [];
       this.state.messages = [...history];
-      await chatManager2.postMessage({
+      await chatManager.postMessage({
         type: "UPDATE_CHAT_HEADER",
         data: {
           isPrivateChat: true,
@@ -18593,9 +18673,9 @@ async function setActiveMember(member) {
       state: this.state,
       selector: "#messages-list"
     });
-    log11("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", displayName);
+    log10("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", displayName);
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "setActiveMember",
@@ -18606,10 +18686,10 @@ async function setActiveMember(member) {
 }
 __name(setActiveMember, "setActiveMember");
 async function sendPrivateMessage(message2, peerId) {
-  const log11 = logger("chat-interface:actions:sendPrivateMessage");
+  const log10 = logger("chat-interface:actions:sendPrivateMessage");
   try {
     if (!message2.trim()) {
-      log11.error("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
+      log10.error("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0443\u0441\u0442\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043F\u0443\u0441\u0442\u044B\u043C</p>",
@@ -18618,7 +18698,7 @@ async function sendPrivateMessage(message2, peerId) {
       return;
     }
     if (!peerId) {
-      log11.error("\u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C");
+      log10.error("\u043D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C");
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
         content: "<p>\u041D\u0435 \u0443\u043A\u0430\u0437\u0430\u043D \u043F\u043E\u043B\u0443\u0447\u0430\u0442\u0435\u043B\u044C \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F</p>",
@@ -18626,10 +18706,10 @@ async function sendPrivateMessage(message2, peerId) {
       });
       return;
     }
-    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager2) {
-      log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
-      await chatManager2.postMessage({
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
+      log10("\u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0430 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044E: %s", peerId);
+      await chatManager.postMessage({
         type: "SEND_PRIVATE_MESSAGE",
         data: { peerId, message: message2 }
       });
@@ -18645,13 +18725,13 @@ async function sendPrivateMessage(message2, peerId) {
       if (messageInput) {
         messageInput.value = "";
       }
-      log11("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E");
+      log10("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E");
     } else {
-      log11.error("chat-manager \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0445 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
+      log10.error("chat-manager \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0445 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439");
       throw new Error("\u0427\u0430\u0442 \u043C\u0435\u043D\u0435\u0434\u0436\u0435\u0440 \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
     }
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "sendPrivateMessage",
@@ -18667,12 +18747,12 @@ async function sendPrivateMessage(message2, peerId) {
 }
 __name(sendPrivateMessage, "sendPrivateMessage");
 async function handleIncomingPrivateMessage(messageData) {
-  const log11 = logger("chat-interface:actions:handleIncomingPrivateMessage");
+  const log10 = logger("chat-interface:actions:handleIncomingPrivateMessage");
   try {
     const isForActiveChat = this.state.isPrivateChat && this.state.activeMember && messageData.from === this.state.activeMember.id;
     const shouldActivateChat = !this.state.isPrivateChat && messageData.isPrivate;
     if (isForActiveChat || shouldActivateChat) {
-      log11("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
+      log10("\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F \u043E\u0442: %s", messageData.from);
       if (shouldActivateChat) {
         const senderMember = this.state.connectedPeers.find((p2) => p2.id === messageData.from);
         if (senderMember) {
@@ -18692,10 +18772,10 @@ async function handleIncomingPrivateMessage(messageData) {
         this.showNotification(`\u041F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 ${senderName}`);
       }
     } else if (messageData.isPrivate) {
-      log11("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u043D\u0435 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430", messageData.from);
+      log10("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u043E\u0442 %s \u043D\u0435 \u0434\u043B\u044F \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u0447\u0430\u0442\u0430", messageData.from);
     }
   } catch (error) {
-    log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+    log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0432\u0445\u043E\u0434\u044F\u0449\u0435\u0433\u043E \u043F\u0440\u0438\u0432\u0430\u0442\u043D\u043E\u0433\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
     this.addError({
       componentName: this.constructor.name,
       source: "handleIncomingPrivateMessage",
@@ -18749,10 +18829,10 @@ var ChatInterface = class extends BaseComponent {
     if (this.state.messages.length > 100) {
       this.state.messages = this.state.messages.slice(-100);
     }
-    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-    if (chatManager2) {
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+    if (chatManager) {
       if (message2.isPrivate && message2.from === this.state.peerId) {
-        await chatManager2.addMessageToPrivateHistory({
+        await chatManager.addMessageToPrivateHistory({
           text: message2.text,
           from: message2.from,
           to: message2.to,
@@ -18761,7 +18841,7 @@ var ChatInterface = class extends BaseComponent {
           isPrivate: true
         });
       } else if (message2.topic) {
-        await chatManager2.addMessageToTopicHistory({
+        await chatManager.addMessageToTopicHistory({
           text: message2.text,
           topic: message2.topic,
           from: message2.from,
@@ -18795,15 +18875,15 @@ var ChatInterface = class extends BaseComponent {
     this.state.currentGroup = safeGroup;
     this.state.activeMember = null;
     this.state.isPrivateChat = false;
-    const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
+    const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
     let history = [];
-    if (chatManager2?.state?.topicHistories?.[safeGroup.topic]) {
-      history = [...chatManager2.state.topicHistories[safeGroup.topic]];
+    if (chatManager?.state?.topicHistories?.[safeGroup.topic]) {
+      history = [...chatManager.state.topicHistories[safeGroup.topic]];
     }
     this.state.messages = history;
     this._log("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u0430 \u0442\u0435\u043A\u0443\u0449\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s, \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439: %d", safeGroup.name, history.length);
-    if (chatManager2) {
-      await chatManager2.postMessage({
+    if (chatManager) {
+      await chatManager.postMessage({
         type: "UPDATE_CHAT_HEADER",
         data: { currentGroup: safeGroup }
       });
@@ -18860,10 +18940,44 @@ var ChatInterface = class extends BaseComponent {
       });
     }
   }
+  /**
+   * Обрабатывает обновление DHT пиров
+   * @async
+   * @param {Object} data - Данные DHT пиров
+   */
+  async handleDHTPeersUpdate(data) {
+    try {
+      this._log("\u{1F465} \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F DHT \u043F\u0438\u0440\u043E\u0432: %o", data);
+      const dhtPeers = data.peers || [];
+      const existingPeerIds = new Set(this.state.connectedPeers.map((p2) => p2.id));
+      const newDHTPeers = dhtPeers.filter(
+        (peer) => !existingPeerIds.has(peer.id) && peer.id !== this.state.peerId
+      );
+      if (newDHTPeers.length > 0) {
+        this.state.connectedPeers = [
+          ...this.state.connectedPeers,
+          ...newDHTPeers.map((peer) => ({
+            id: peer.id,
+            name: this.generatePeerName(peer.id),
+            online: true,
+            discoveredVia: peer.dhtType || "DHT",
+            isDHT: true
+          }))
+        ];
+        this._log("\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u043E %d \u043D\u043E\u0432\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0438\u0437 DHT", newDHTPeers.length);
+        await this.updateMembersList();
+      }
+    } catch (error) {
+      this._log.error("\u274C \u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 DHT \u043F\u0438\u0440\u043E\u0432: %o", error);
+    }
+  }
   async postMessage(event) {
     try {
       this._log("\u{1F4E8} \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s %o", event.type, event.data);
       switch (event.type) {
+        case "DHT_PEERS_UPDATE":
+          await this.handleDHTPeersUpdate(event.data);
+          break;
         case "ACTIVE_GROUPS_UPDATED":
           this.state.activeGroups = event.data.activeGroups || [];
           await this.updateMembersList();
@@ -19011,25 +19125,25 @@ var ChatInterface = class extends BaseComponent {
    * @this {HTMLElement} Контекст компонента
    */
   async setActiveMember(member) {
-    const log11 = logger("chat-interface:actions:setActiveMember");
+    const log10 = logger("chat-interface:actions:setActiveMember");
     try {
       if (!member || !member.id) {
-        log11.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
+        log10.error("\u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", member);
         return;
       }
       if (member.isCurrentUser) {
-        log11("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
+        log10("\u043F\u043E\u043F\u044B\u0442\u043A\u0430 \u0432\u044B\u0431\u0440\u0430\u0442\u044C \u0441\u0435\u0431\u044F - \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C");
         return;
       }
       const displayName = member.name || this.generatePeerName(member.id);
       const memberWithName = { ...member, name: displayName };
-      log11("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
+      log10("\u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %s (%s)", displayName, member.id);
       this.state.activeMember = memberWithName;
       this.state.isPrivateChat = true;
       await this.updateChatHeader();
-      const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager2) {
-        await chatManager2.postMessage({
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager) {
+        await chatManager.postMessage({
           type: "UPDATE_CHAT_HEADER",
           data: {
             isPrivateChat: true,
@@ -19037,7 +19151,7 @@ var ChatInterface = class extends BaseComponent {
           }
         });
         const peerId = member.id;
-        const history = chatManager2.state.privateHistories?.[peerId] || [];
+        const history = chatManager.state.privateHistories?.[peerId] || [];
         this.state.messages = [...history];
       } else {
         this.state.messages = [];
@@ -19051,9 +19165,9 @@ var ChatInterface = class extends BaseComponent {
         state: this.state,
         selector: "#messages-list"
       });
-      log11("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", displayName);
+      log10("\u043F\u0440\u0438\u0432\u0430\u0442\u043D\u044B\u0439 \u0447\u0430\u0442 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0441 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0435\u043C: %s", displayName);
     } catch (error) {
-      log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
+      log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F: %o", error);
       this.addError({
         componentName: this.constructor.name,
         source: "setActiveMember",
@@ -19093,9 +19207,9 @@ var ChatInterface = class extends BaseComponent {
   }
   // В класс ChatInterface добавьте метод:
   showNotification(message2) {
-    const log11 = this._log;
+    const log10 = this._log;
     if (!("Notification" in window)) {
-      log11("Browser notifications not supported");
+      log10("Browser notifications not supported");
       return;
     }
     if (Notification.permission === "granted") {
@@ -19105,7 +19219,7 @@ var ChatInterface = class extends BaseComponent {
           icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
         });
       } catch (error) {
-        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F: %o", error);
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F: %o", error);
       }
     } else if (Notification.permission !== "denied") {
       Notification.requestPermission().then((permission) => {
@@ -19141,621 +19255,12 @@ if (!customElements.get("chat-interface")) {
   customElements.define("chat-interface", ChatInterface);
 }
 
-// public/components/group-manager/template/index.mjs
-var template_exports3 = {};
-__export(template_exports3, {
-  default: () => defaultTemplate3,
-  renderDiscoveredGroups: () => renderDiscoveredGroups2,
-  renderHeader: () => renderHeader,
-  renderJoinedGroups: () => renderJoinedGroups2,
-  renderMainContent: () => renderMainContent,
-  renderMyGroups: () => renderMyGroups2,
-  renderNodeStatus: () => renderNodeStatus,
-  renderQuickActions: () => renderQuickActions2,
-  renderSearch: () => renderSearch,
-  renderSearchResults: () => renderSearchResults2
-});
-function defaultTemplate3({ state = {} } = {}) {
-  const { groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = state;
-  return `
-        <div class="group-manager">
-            ${renderHeader({ groups, discoveredGroups, joinedGroups, nodeReady })}
-            ${renderSearch({ searchQuery })}
-            ${renderNodeStatus({ state })}
-            ${renderMainContent({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady })}
-        </div>
-    `;
-}
-__name(defaultTemplate3, "defaultTemplate");
-function renderHeader({ groups = [], discoveredGroups = [], joinedGroups = [], nodeReady = false } = {}) {
-  return `
-        <header class="manager-header">
-            <div class="header-content">
-                <h1 class="manager-title">\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438</h1>
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">\u041C\u043E\u0438</span>
-                        <span class="stat-value">${groups.length}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.</span>
-                        <span class="stat-value">${joinedGroups.length}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">\u041D\u0430\u0439\u0434\u0435\u043D\u043E</span>
-                        <span class="stat-value">${discoveredGroups.length}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">\u0421\u0435\u0442\u044C</span>
-                        <span class="stat-value ${nodeReady ? "connected" : "disconnected"}">
-                            ${nodeReady ? "\u{1F7E2}" : "\u{1F7E0}"}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </header>
-    `;
-}
-__name(renderHeader, "renderHeader");
-function renderSearch({ searchQuery = "" } = {}) {
-  return `
-        <section class="search-section">
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    id="group-search-input" 
-                    class="search-input" 
-                    placeholder="\u041F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F..."
-                    value="${escapeHtml3(searchQuery)}"
-                >
-                <button class="search-btn" id="search-groups">
-                    <span>\u{1F50D}</span>
-                    \u041F\u043E\u0438\u0441\u043A
-                </button>
-            </div>
-        </section>
-    `;
-}
-__name(renderSearch, "renderSearch");
-function renderNodeStatus({ state = {} } = {}) {
-  return `
-    <section class="node-status-section">
-        <div class="status-item ${state.nodeReady ? "connected" : "disconnected"}">
-            <div class="status-icon ${state.nodeReady ? "connected" : "disconnected"}">
-                ${state.nodeReady ? "\u{1F7E2}" : "\u{1F7E0}"}
-            </div>
-            <div class="status-info">
-                <span class="status-label">P2P \u0421\u0435\u0442\u044C</span>
-                <span class="status-value">${state.nodeReady ? "\u0413\u043E\u0442\u043E\u0432\u0430" : "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u0442\u0441\u044F..."}</span>
-            </div>
-        </div>
-    </section>
-    `;
-}
-__name(renderNodeStatus, "renderNodeStatus");
-function renderMainContent({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = {}) {
-  return `
-        <main class="manager-main">
-            <div class="content-grid">
-                ${renderMyGroups2({ groups, nodeReady })}
-                ${renderDiscoveredGroups2({ discoveredGroups, nodeReady, state: { discoveredGroups, nodeReady } })}
-                ${renderJoinedGroups2({ joinedGroups, nodeReady })}
-                ${renderQuickActions2({ state: { nodeReady } })}
-                ${searchQuery ? renderSearchResults2({ groups, discoveredGroups, joinedGroups, searchQuery, nodeReady }) : ""}
-            </div>
-        </main>
-    `;
-}
-__name(renderMainContent, "renderMainContent");
-function renderMyGroups2({ groups = [], nodeReady = false } = {}) {
-  return `
-        <section class="section-card" id="my-groups-list">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <span class="card-icon">\u{1F3E0}</span>
-                    \u041C\u043E\u0438 \u0433\u0440\u0443\u043F\u043F\u044B
-                </h3>
-                <span class="card-badge">${groups.length}</span>
-            </div>
-            <div class="card-content">
-                <div>
-                    ${groups.length > 0 ? renderGroupsList(groups, "my", nodeReady) : renderEmptyState("my", nodeReady)}
-                </div>
-            </div>
-        </section>
-    `;
-}
-__name(renderMyGroups2, "renderMyGroups");
-function renderDiscoveredGroups2({ discoveredGroups = [], nodeReady = false, state = {} } = {}) {
-  discoveredGroups = state.discoveredGroups || [];
-  nodeReady = state.nodeReady;
-  return `
-        <section class="section-card" id="discovered-groups-list">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <span class="card-icon">\u{1F310}</span>
-                    \u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043D\u044B\u0435
-                </h3>
-                <span class="card-badge">${discoveredGroups.length}</span>
-            </div>
-            <div class="card-content">
-                ${discoveredGroups.length > 0 ? renderGroupsList(discoveredGroups, "discovered", nodeReady) : renderEmptyState("discovered", nodeReady)}
-            </div>
-        </section>
-    `;
-}
-__name(renderDiscoveredGroups2, "renderDiscoveredGroups");
-function renderJoinedGroups2({ joinedGroups = [], nodeReady = false } = {}) {
-  return `
-        <section class="section-card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <span class="card-icon">\u{1F465}</span>
-                    \u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0435
-                </h3>
-                <span class="card-badge">${joinedGroups.length}</span>
-            </div>
-            <div class="card-content">
-                <div id="joined-groups-list">
-                    ${joinedGroups.length > 0 ? renderGroupsList(joinedGroups, "joined", nodeReady) : renderEmptyState("joined", nodeReady)}
-                </div>
-            </div>
-        </section>
-    `;
-}
-__name(renderJoinedGroups2, "renderJoinedGroups");
-function renderSearchResults2({ groups = [], discoveredGroups = [], joinedGroups = [], searchQuery = "", nodeReady = false } = {}) {
-  const allGroups = [...groups, ...discoveredGroups, ...joinedGroups];
-  const filteredGroups = allGroups.filter(
-    (group) => typeof group.name === "string" && group.name.toLowerCase().includes(searchQuery.toLowerCase()) || typeof group.topic === "string" && group.topic.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  return `
-        <section class="section-card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <span class="card-icon">\u{1F50D}</span>
-                    \u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442\u044B \u043F\u043E\u0438\u0441\u043A\u0430
-                </h3>
-                <span class="card-badge">${filteredGroups.length}</span>
-            </div>
-            <div class="card-content">
-                <div id="search-results">
-                    ${filteredGroups.length > 0 ? renderGroupsList(filteredGroups, "search", nodeReady) : renderEmptyState("search", nodeReady, searchQuery)}
-                </div>
-            </div>
-        </section>
-    `;
-}
-__name(renderSearchResults2, "renderSearchResults");
-function renderQuickActions2({ state = {} } = {}) {
-  return `
-    <section class="section-card quick-actions">
-        <div class="card-header">
-            <h3 class="card-title">
-                <span class="card-icon">\u{1F680}</span>
-                \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F
-            </h3>
-        </div>
-        <div class="card-content">
-                <button class="action-btn primary" id="create-group" ${!state.nodeReady ? "disabled" : ""}>
-                    <span class="btn-icon">\u2795</span>
-                    <span class="btn-text">${state.nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0441\u0435\u0442\u0438..."}</span>
-                </button>
-                
-                <button class="action-btn secondary" id="discover-groups" ${!state.nodeReady ? "disabled" : ""}>
-                    <span class="btn-icon">\u{1F50D}</span>
-                    <span class="btn-text">\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C</span>
-                </button>
-                
-                <button class="action-btn secondary" id="check-status">
-                    <span class="btn-icon">\u{1F504}</span>
-                    <span class="btn-text">\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441</span>
-                </button>
-        </div>
-    </section>
-    `;
-}
-__name(renderQuickActions2, "renderQuickActions");
-function renderGroupsList(groups, type, nodeReady = false) {
-  return `
-        <div class="groups-list">
-            ${groups.map((group) => renderGroupItem(group, type, nodeReady)).join("")}
-        </div>
-    `;
-}
-__name(renderGroupsList, "renderGroupsList");
-function renderGroupItem(group, type, nodeReady = false) {
-  const name3 = typeof group.name === "string" ? group.name : "\u0411\u0435\u0437\u044B\u043C\u044F\u043D\u043D\u0430\u044F";
-  const { id, topic, memberCount = 1 } = group;
-  return `
-        <div class="group-item" data-group-id="${id}" data-group-topic="${topic}">
-            <div class="group-avatar">
-                ${getFirstChar(name3)}
-            </div>
-            <div class="group-info">
-                <div class="group-name">${escapeHtml3(name3)}</div>
-                <div class="group-meta">
-                    <span class="meta-item">\u{1F465} ${memberCount}</span>
-                    <span class="meta-item">${getGroupTypeLabel(type)}</span>
-                </div>
-            </div>
-            <div class="group-actions">
-                ${renderGroupActions(type, id, topic, nodeReady)}
-            </div>
-        </div>
-    `;
-}
-__name(renderGroupItem, "renderGroupItem");
-function renderGroupActions(type, groupId, topic, nodeReady = false) {
-  switch (type) {
-    case "my":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
-                    \u{1F4AC}
-                </button>
-                <button class="action-btn leave" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C">
-                    \u{1F5D1}\uFE0F
-                </button>
-            `;
-    case "discovered":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" ${!nodeReady ? "disabled" : ""} title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
-                    \u2795
-                </button>
-            `;
-    case "joined":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u0412\u043E\u0439\u0442\u0438 \u0432 \u0447\u0430\u0442">
-                    \u{1F4AC}
-                </button>
-                <button class="action-btn leave" data-group-id="${groupId}" ${!nodeReady ? "disabled" : ""} title="\u041F\u043E\u043A\u0438\u043D\u0443\u0442\u044C">
-                    \u{1F6AA}
-                </button>
-            `;
-    case "search":
-      return `
-                <button class="action-btn join" data-group-id="${groupId}" data-topic="${topic}" ${!nodeReady ? "disabled" : ""} title="\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F">
-                    \u2795
-                </button>
-            `;
-    default:
-      return "";
-  }
-}
-__name(renderGroupActions, "renderGroupActions");
-function renderEmptyState(type, nodeReady = false, searchQuery = "") {
-  const states = {
-    my: {
-      icon: "\u{1F3E0}",
-      title: "\u041D\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
-      description: nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0441\u0435\u0442\u0438...",
-      action: nodeReady ? "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443" : "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
-      disabled: !nodeReady
-    },
-    discovered: {
-      icon: "\u{1F310}",
-      title: "\u0413\u0440\u0443\u043F\u043F\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B",
-      description: nodeReady ? "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u044C\u0442\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0432 \u0441\u0435\u0442\u0438" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0441\u0435\u0442\u0438...",
-      action: nodeReady ? "\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0438\u0442\u044C" : "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
-      disabled: !nodeReady
-    },
-    joined: {
-      icon: "\u{1F91D}",
-      title: "\u041D\u0435\u0442 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u043D\u044B\u0445 \u0433\u0440\u0443\u043F\u043F",
-      description: nodeReady ? "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0430\u043C \u0434\u043B\u044F \u043E\u0431\u0449\u0435\u043D\u0438\u044F" : "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0441\u0435\u0442\u0438...",
-      action: nodeReady ? "\u041D\u0430\u0439\u0442\u0438 \u0433\u0440\u0443\u043F\u043F\u044B" : "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
-      disabled: !nodeReady
-    },
-    search: {
-      icon: "\u{1F50D}",
-      title: `\u041F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 "${searchQuery}" \u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E`,
-      description: "\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A\u043E\u0432\u044B\u0439 \u0437\u0430\u043F\u0440\u043E\u0441",
-      action: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A",
-      disabled: false
-    }
-  };
-  const state = states[type] || states.my;
-  return `
-        <div class="empty-state">
-            <div class="empty-icon">${state.icon}</div>
-            <p class="empty-text">${state.title}</p>
-            <p class="empty-description">${state.description}</p>
-            <button class="empty-action" id="${type}-action" ${state.disabled ? "disabled" : ""}>
-                ${state.action}
-            </button>
-        </div>
-    `;
-}
-__name(renderEmptyState, "renderEmptyState");
-function getGroupTypeLabel(type) {
-  const labels = {
-    my: "\u041C\u043E\u044F",
-    discovered: "\u041F\u0443\u0431\u043B\u0438\u0447\u043D\u0430\u044F",
-    joined: "\u041F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D.",
-    search: "\u041D\u0430\u0439\u0434\u0435\u043D\u0430"
-  };
-  return labels[type] || "\u0413\u0440\u0443\u043F\u043F\u0430";
-}
-__name(getGroupTypeLabel, "getGroupTypeLabel");
-function escapeHtml3(text) {
-  if (typeof text !== "string") return "";
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-__name(escapeHtml3, "escapeHtml");
-function getFirstChar(str) {
-  if (typeof str !== "string" || !str) return "G";
-  return str.charAt(0).toUpperCase();
-}
-__name(getFirstChar, "getFirstChar");
-
-// public/components/group-manager/controller/index.mjs
-var controller3 = /* @__PURE__ */ __name(async (context) => {
-  let eventListeners = [];
-  const log11 = logger("group-manager:controller");
-  return {
-    /**
-     * Инициализирует контроллер компонента GroupManager
-     * @async
-     */
-    async init() {
-      log11("controller initializing");
-      const createGroupBtn = context.shadowRoot.querySelector("#create-group-btn");
-      const createFirstGroupBtn = context.shadowRoot.querySelector("#create-first-group");
-      const createGroupActionBtn = context.shadowRoot.querySelector("#create-group");
-      const createGroupHandler = /* @__PURE__ */ __name(async () => {
-        try {
-          if (!context.state.nodeReady) {
-            await context.showModal({
-              title: "\u0421\u0435\u0442\u044C \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430",
-              content: `                                <div style="padding: 1rem 0;">                                    <p>P2P \u0441\u0435\u0442\u044C \u0435\u0449\u0435 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u0440\u0430\u0431\u043E\u0442\u0435.</p>                                    <p>\u041F\u043E\u0436\u0430\u043B\u0443\u0439\u0441\u0442\u0430, \u043F\u043E\u0434\u043E\u0436\u0434\u0438\u0442\u0435 \u043D\u0435\u043C\u043D\u043E\u0433\u043E \u0438 \u043F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0441\u043D\u043E\u0432\u0430.</p>                                    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,193,7,0.1);                                                 border-radius: 8px; border: 1px solid rgba(255,193,7,0.3);">                                        <strong>\u0421\u0442\u0430\u0442\u0443\u0441:</strong> \u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 \u0441\u0435\u0442\u0438...                                    </div>                                </div>                            `,
-              buttons: [
-                {
-                  text: "\u041F\u0440\u043E\u0432\u0435\u0440\u0438\u0442\u044C \u0441\u0442\u0430\u0442\u0443\u0441",
-                  type: "primary",
-                  action: /* @__PURE__ */ __name(async () => {
-                    await context.checkNodeStatus();
-                  }, "action")
-                },
-                {
-                  text: "\u0417\u0430\u043A\u0440\u044B\u0442\u044C",
-                  type: "secondary"
-                }
-              ]
-            });
-            return;
-          }
-          await context.showModal({
-            title: "\u0421\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u043D\u043E\u0432\u043E\u0439 \u0433\u0440\u0443\u043F\u043F\u044B",
-            content: `                            <div style="padding: 1rem 0;">                                <label for="group-name-input" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">                                    \u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B:                                </label>                                <input                                     type="text"                                     id="group-name-input"                                     placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u043D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B..."                                    style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2);                                            border-radius: 8px; background: rgba(255,255,255,0.05);                                            color: var(--cosmic-primary); font-size: 1rem;"                                >                                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--cosmic-primary);">                                    \u0413\u0440\u0443\u043F\u043F\u0430 \u0431\u0443\u0434\u0435\u0442 \u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0438 \u0441\u0442\u0430\u043D\u0435\u0442 \u0432\u0438\u0434\u0438\u043C\u043E\u0439 \u0434\u043B\u044F \u0434\u0440\u0443\u0433\u0438\u0445 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0441\u0435\u0442\u0438.                                </div>                            </div>                        `,
-            buttons: [
-              {
-                text: "\u041E\u0442\u043C\u0435\u043D\u0430",
-                type: "secondary",
-                action: /* @__PURE__ */ __name(() => log11("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u043E\u0442\u043C\u0435\u043D\u0435\u043D\u043E"), "action")
-              },
-              {
-                text: "\u0421\u043E\u0437\u0434\u0430\u0442\u044C",
-                type: "primary",
-                action: /* @__PURE__ */ __name(async () => {
-                  const groupNameInput = document.querySelector("#group-name-input");
-                  if (groupNameInput && groupNameInput.value.trim()) {
-                    const groupName = groupNameInput.value.trim();
-                    log11("creating group: %s", groupName);
-                    try {
-                      const group = await context.createGroup(groupName);
-                      log11("group created successfully: %o", group);
-                      if (context.forceUpdateMyGroups) {
-                        await context.forceUpdateMyGroups();
-                      } else {
-                        await context.fullRender(context.state);
-                      }
-                      const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-                      if (chatManager2) {
-                        await chatManager2.postMessage({
-                          type: "GROUP_CREATED",
-                          data: group
-                        });
-                      }
-                      const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
-                      if (chatInterface) {
-                        await chatInterface.postMessage({
-                          type: "GROUP_CREATED",
-                          data: group
-                        });
-                      }
-                    } catch (error) {
-                      log11.error("error creating group: %o", error);
-                      await context.showModal({
-                        title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-                        content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043E\u0437\u0434\u0430\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
-                        buttons: [{ text: "OK", type: "primary" }]
-                      });
-                    }
-                  }
-                }, "action")
-              }
-            ],
-            closeOnBackdropClick: true
-          });
-        } catch (error) {
-          log11.error("error in create group handler: %o", error);
-        }
-      }, "createGroupHandler");
-      [createGroupBtn, createFirstGroupBtn, createGroupActionBtn].forEach((btn) => {
-        if (btn) {
-          btn.addEventListener("click", createGroupHandler);
-          eventListeners.push({ element: btn, handler: createGroupHandler });
-        }
-      });
-      const checkStatusBtn = context.shadowRoot.querySelector("#check-status");
-      if (checkStatusBtn) {
-        const checkStatusHandler = /* @__PURE__ */ __name(async () => {
-          try {
-            await context.checkNodeStatus();
-          } catch (error) {
-            log11.error("error checking node status: %o", error);
-          }
-        }, "checkStatusHandler");
-        checkStatusBtn.addEventListener("click", checkStatusHandler);
-        eventListeners.push({ element: checkStatusBtn, handler: checkStatusHandler });
-      }
-      const searchInput = context.shadowRoot.querySelector("#group-search-input");
-      if (searchInput) {
-        const searchHandler = /* @__PURE__ */ __name((e2) => {
-          context.searchGroups(e2.target.value);
-        }, "searchHandler");
-        searchInput.addEventListener("input", searchHandler);
-        eventListeners.push({ element: searchInput, handler: searchHandler });
-      }
-      const discoverGroupsHandler = /* @__PURE__ */ __name(async () => {
-        try {
-          log11("\u0437\u0430\u043F\u0443\u0441\u043A \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
-          await context.showSkeleton({
-            selector: "#discovered-groups-list",
-            replace: true
-          });
-          await context._actions.discoverGroupsActive();
-          setTimeout(async () => {
-            await context.hideSkeleton();
-          }, 2e3);
-        } catch (error) {
-          log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
-          await context.hideSkeleton();
-          await context.showModal({
-            title: "\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0438\u0441\u043A\u0430",
-            content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0432\u044B\u043F\u043E\u043B\u043D\u0438\u0442\u044C \u043F\u043E\u0438\u0441\u043A \u0433\u0440\u0443\u043F\u043F: ${error.message}</p>`,
-            buttons: [{ text: "OK", type: "primary" }]
-          });
-        }
-      }, "discoverGroupsHandler");
-      const discoverButtons = [
-        context.shadowRoot.querySelector("#discover-groups-btn"),
-        context.shadowRoot.querySelector("#discover-groups"),
-        context.shadowRoot.querySelector("#discover-groups-action")
-      ];
-      discoverButtons.forEach((btn) => {
-        if (btn) {
-          btn.addEventListener("click", discoverGroupsHandler);
-          eventListeners.push({ element: btn, handler: discoverGroupsHandler });
-        }
-      });
-      const setupJoinButtons = /* @__PURE__ */ __name(() => {
-        const joinButtons = context.shadowRoot.querySelectorAll(".join-group-btn");
-        joinButtons.forEach((button) => {
-          const handler = /* @__PURE__ */ __name(async (e2) => {
-            const groupId = e2.target.dataset.groupId || e2.target.closest(".join-group-btn")?.dataset.groupId;
-            const groupTopic = e2.target.dataset.topic || e2.target.closest(".join-group-btn")?.dataset.topic;
-            if (groupId || groupTopic) {
-              const topic = groupTopic || groupId;
-              const group = context.state.discoveredGroups?.find((g) => g.id === topic) || context.state.groups?.find((g) => g.id === topic);
-              if (group) {
-                try {
-                  await context.joinGroup(group);
-                  log11("successfully joined group: %s", group.name);
-                  const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-                  if (chatManager2) {
-                    await chatManager2.postMessage({
-                      type: "JOIN_GROUP",
-                      data: group
-                    });
-                  }
-                  const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
-                  if (chatInterface) {
-                    await chatInterface.postMessage({
-                      type: "JOIN_GROUP",
-                      data: group
-                    });
-                  }
-                } catch (error) {
-                  log11.error("error joining group: %o", error);
-                  await context.showModal({
-                    title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-                    content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u0442\u044C\u0441\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: ${error.message}</p>`,
-                    buttons: [{ text: "OK", type: "primary" }]
-                  });
-                }
-              }
-            }
-          }, "handler");
-          button.addEventListener("click", handler);
-          eventListeners.push({ element: button, handler });
-        });
-      }, "setupJoinButtons");
-      const setupLeaveButtons = /* @__PURE__ */ __name(() => {
-        const leaveButtons = context.shadowRoot.querySelectorAll(".leave-group-btn");
-        leaveButtons.forEach((button) => {
-          const handler = /* @__PURE__ */ __name(async (e2) => {
-            const groupId = e2.target.dataset.groupId || e2.target.closest(".leave-group-btn")?.dataset.groupId;
-            if (groupId) {
-              try {
-                await context.leaveGroup(groupId);
-                log11("successfully left group: %s", groupId);
-              } catch (error) {
-                log11.error("error leaving group: %o", error);
-                await context.showModal({
-                  title: "\u041E\u0448\u0438\u0431\u043A\u0430",
-                  content: `<p>\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u043F\u043E\u043A\u0438\u043D\u0443\u0442\u044C \u0433\u0440\u0443\u043F\u043F\u0443: ${error.message}</p>`,
-                  buttons: [{ text: "OK", type: "primary" }]
-                });
-              }
-            }
-          }, "handler");
-          button.addEventListener("click", handler);
-          eventListeners.push({ element: button, handler });
-        });
-      }, "setupLeaveButtons");
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === "childList") {
-            setupJoinButtons();
-            setupLeaveButtons();
-          }
-        });
-      });
-      observer.observe(context.shadowRoot, {
-        childList: true,
-        subtree: true
-      });
-      context._groupObserver = observer;
-      setTimeout(() => {
-        setupJoinButtons();
-        setupLeaveButtons();
-      }, 100);
-      log11("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-    },
-    /**
-     * Уничтожает контроллер и очищает ресурсы
-     * @async
-     */
-    async destroy() {
-      log11("controller destroying");
-      eventListeners.forEach(({ element, handler }) => {
-        try {
-          element.removeEventListener("click", handler);
-          element.removeEventListener("input", handler);
-        } catch (error) {
-          log11.error("error removing event listener: %o", error);
-        }
-      });
-      if (context._groupObserver) {
-        context._groupObserver.disconnect();
-        context._groupObserver = null;
-      }
-      log11("removed %d event listeners", eventListeners.length);
-      eventListeners = [];
-      log11("\u043A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
-    }
-  };
-}, "controller");
-
 // public/components/group-manager/actions/index.mjs
 async function createActions3(context) {
   let libp2p = null;
   let discoveredGroupsInterval = null;
   const GROUPS_ANNOUNCEMENT_TOPIC2 = "chat-groups-announcements";
-  const log11 = logger("group-manager:actions");
+  const log10 = logger("group-manager:actions");
   function normalizeGroupName(name3) {
     if (typeof name3 === "string" && name3.trim()) {
       return name3.trim();
@@ -19779,7 +19284,7 @@ async function createActions3(context) {
       libp2p = libp2pInstance;
       await this.subscribeToGroupsAnnouncements();
       await this.startGroupDiscovery();
-      log11("libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
+      log10("libp2p \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0434\u043B\u044F \u0443\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438");
     }, "initializeLibp2p"),
     /**
      * Подписывается на топик анонсов групп
@@ -19799,14 +19304,13 @@ async function createActions3(context) {
                 this.handleDiscoveryRequest(event.detail);
               }
             } catch (error) {
-              log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+              log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
             }
-          } else {
           }
         });
-        log11("\u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %s", GROUPS_ANNOUNCEMENT_TOPIC2);
+        log10("\u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %s", GROUPS_ANNOUNCEMENT_TOPIC2);
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A \u0430\u043D\u043E\u043D\u0441\u043E\u0432: %o", error);
       }
     },
     /**
@@ -19820,10 +19324,10 @@ async function createActions3(context) {
           const groupInfo = announcement.data;
           groupInfo.name = normalizeGroupName(groupInfo.name);
           await this.updateDiscoveredGroups(groupInfo);
-          log11("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
+          log10("\u043F\u043E\u043B\u0443\u0447\u0435\u043D \u0430\u043D\u043E\u043D\u0441 \u0433\u0440\u0443\u043F\u043F\u044B: %s", groupInfo.name);
         }
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0430\u043D\u043E\u043D\u0441\u0430 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
       }
     },
     /**
@@ -19851,36 +19355,12 @@ async function createActions3(context) {
         });
       }
       context.state.discoveredGroups.sort((a2, b) => b.lastUpdated - a2.lastUpdated);
-      await this.safeUpdateDiscoveredGroupsUI();
-      const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager2) {
-        await chatManager2.postMessage({
+      const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager) {
+        await chatManager.postMessage({
           type: "GROUPS_DISCOVERED",
           data: { groups: context.state.discoveredGroups }
         });
-      }
-    },
-    /**
-     * Безопасно обновляет UI списка обнаруженных групп
-     */
-    async safeUpdateDiscoveredGroupsUI() {
-      try {
-        if (!context.renderPart) {
-          log11.error("renderPart method not available in actions");
-          return;
-        }
-        const discoveredGroupsElement = context.shadowRoot?.querySelector("#discovered-groups-list");
-        if (!discoveredGroupsElement) {
-          log11.error("discovered groups list element not found");
-          return;
-        }
-        await context.renderPart({
-          partName: "renderDiscoveredGroups",
-          state: context.state,
-          selector: "#discovered-groups-list"
-        });
-      } catch (error) {
-        log11.error("error updating discovered groups UI: %o", error);
       }
     },
     /**
@@ -19892,7 +19372,6 @@ async function createActions3(context) {
         clearInterval(discoveredGroupsInterval);
       }
       await this.discoverGroups();
-      await this.discoverGroups();
     }, "startGroupDiscovery"),
     /**
      * Активный поиск групп через анонсы
@@ -19903,7 +19382,7 @@ async function createActions3(context) {
         throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
       }
       try {
-        log11("\u0437\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
+        log10("\u0437\u0430\u043F\u0443\u0441\u043A \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F");
         const discoveryRequest = {
           type: "GROUPS_DISCOVERY_REQUEST",
           data: {
@@ -19916,11 +19395,11 @@ async function createActions3(context) {
           GROUPS_ANNOUNCEMENT_TOPIC2,
           new TextEncoder().encode(JSON.stringify(discoveryRequest))
         );
-        log11("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
+        log10("\u0437\u0430\u043F\u0440\u043E\u0441 \u043D\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D");
         await this.discoverGroups();
         return true;
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0433\u043E \u043F\u043E\u0438\u0441\u043A\u0430 \u0433\u0440\u0443\u043F\u043F: %o", error);
         throw error;
       }
     },
@@ -19945,7 +19424,7 @@ async function createActions3(context) {
               GROUPS_ANNOUNCEMENT_TOPIC2,
               new TextEncoder().encode(JSON.stringify(response))
             );
-            log11("\u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 %d \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438", myGroups.length);
+            log10("\u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D \u043E\u0442\u0432\u0435\u0442 \u0441 %d \u0433\u0440\u0443\u043F\u043F\u0430\u043C\u0438", myGroups.length);
           }
         }
         if (request.type === "GROUPS_DISCOVERY_RESPONSE") {
@@ -19954,10 +19433,10 @@ async function createActions3(context) {
             group.name = normalizeGroupName(group.name);
             await this.updateDiscoveredGroups(group);
           }
-          log11("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
+          log10("\u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F \u043E\u0442 %s", discoveredGroups.length, request.data.responder);
         }
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 \u0437\u0430\u043F\u0440\u043E\u0441\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F: %o", error);
       }
     },
     /**
@@ -19966,7 +19445,7 @@ async function createActions3(context) {
      */
     discoverGroups: /* @__PURE__ */ __name(async function() {
       if (!libp2p) {
-        log11.error("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        log10.error("libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         return;
       }
       try {
@@ -19975,7 +19454,7 @@ async function createActions3(context) {
         const groupTopics = topics.filter(
           (topic) => topic.startsWith("chat-group-") || topic.startsWith("universe-chat-") || topic.startsWith("chat-groups-")
         );
-        log11("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0442\u043E\u043F\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %d", groupTopics.length);
+        log10("\u043D\u0430\u0439\u0434\u0435\u043D\u043E \u0442\u043E\u043F\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F: %d", groupTopics.length);
         const discoveredGroups = [];
         for (const topic of groupTopics) {
           try {
@@ -20006,21 +19485,20 @@ async function createActions3(context) {
             };
             discoveredGroups.push(groupInfo);
           } catch (error) {
-            log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
+            log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0433\u0440\u0443\u043F\u043F\u0435 %s: %o", topic, error);
           }
         }
         context.state.discoveredGroups = discoveredGroups;
-        await this.safeUpdateDiscoveredGroupsUI();
-        const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-        if (chatManager2) {
-          await chatManager2.postMessage({
+        const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager) {
+          await chatManager.postMessage({
             type: "GROUPS_DISCOVERED",
             data: { groups: discoveredGroups }
           });
         }
-        log11("\u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: %d", discoveredGroups.length);
+        log10("\u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E \u0433\u0440\u0443\u043F\u043F: %d", discoveredGroups.length);
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "discoverGroups",
@@ -20055,18 +19533,17 @@ async function createActions3(context) {
           tags: options.tags || ["general"],
           language: options.language || "ru"
         };
-        log11("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0441 \u0442\u043E\u043F\u0438\u043A\u043E\u043C: %s", topic);
+        log10("\u0441\u043E\u0437\u0434\u0430\u043D\u0438\u0435 \u0433\u0440\u0443\u043F\u043F\u044B \u0441 \u0442\u043E\u043F\u0438\u043A\u043E\u043C: %s", topic);
         await libp2p.services.pubsub.subscribe(topic);
         await this.announceGroupCreation(group);
         if (!context.state.groups) {
           context.state.groups = [];
         }
         context.state.groups.push(group);
-        log11("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", safeGroupName, topic);
-        await this.safeUpdateMyGroupsUI();
+        log10("\u0441\u043E\u0437\u0434\u0430\u043D\u0430 \u0433\u0440\u0443\u043F\u043F\u0430: %s (%s)", safeGroupName, topic);
         return group;
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "createGroup",
@@ -20076,39 +19553,6 @@ async function createActions3(context) {
         throw error;
       }
     }, "createGroup"),
-    /**
-     * Безопасно обновляет UI списка моих групп
-     */
-    async safeUpdateMyGroupsUI() {
-      try {
-        if (!context.renderPart) {
-          log11.error("renderPart method not available for my groups");
-          if (context.fullRender) {
-            await context.fullRender(context.state);
-          }
-          return;
-        }
-        const myGroupsElement = context.shadowRoot?.querySelector("#my-groups-list");
-        if (!myGroupsElement) {
-          log11.error("my groups list element not found, using full render");
-          if (context.fullRender) {
-            await context.fullRender(context.state);
-          }
-          return;
-        }
-        await context.renderPart({
-          partName: "renderMyGroups",
-          state: context.state,
-          selector: "#my-groups-list"
-        });
-        log11.trace("My groups UI updated successfully");
-      } catch (error) {
-        log11.error("Error updating my groups UI: %o", error);
-        if (context.fullRender) {
-          await context.fullRender(context.state);
-        }
-      }
-    },
     /**
      * Анонсирование создания новой группы
      * @async
@@ -20139,9 +19583,9 @@ async function createActions3(context) {
           GROUPS_ANNOUNCEMENT_TOPIC2,
           new TextEncoder().encode(JSON.stringify(announcement))
         );
-        log11("\u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group.name);
+        log10("\u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0430 \u0441\u043E\u0437\u0434\u0430\u043D\u043D\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430: %s", group.name);
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0430\u043D\u043E\u043D\u0441\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "announceGroupCreation",
@@ -20186,11 +19630,10 @@ async function createActions3(context) {
         })) {
           context.state.joinedGroups.push(group);
         }
-        log11("\u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %s (%s)", group.name, topic);
-        await this.safeUpdateJoinedGroupsUI();
+        log10("\u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0438\u043B\u0438\u0441\u044C \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %s (%s)", group.name, topic);
         return group;
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438\u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F \u043A \u0433\u0440\u0443\u043F\u043F\u0435: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "joinGroup",
@@ -20200,29 +19643,6 @@ async function createActions3(context) {
         throw error;
       }
     }, "joinGroup"),
-    /**
-     * Безопасно обновляет UI списка присоединенных групп
-     */
-    async safeUpdateJoinedGroupsUI() {
-      try {
-        if (!context.renderPart) {
-          log11.error("renderPart method not available for joined groups");
-          return;
-        }
-        const joinedGroupsElement = context.shadowRoot?.querySelector("#joined-groups-list");
-        if (!joinedGroupsElement) {
-          log11.error("joined groups list element not found");
-          return;
-        }
-        await context.renderPart({
-          partName: "renderJoinedGroups",
-          state: context.state,
-          selector: "#joined-groups-list"
-        });
-      } catch (error) {
-        log11.error("error updating joined groups UI: %o", error);
-      }
-    },
     /**
      * Выход из группы
      * @async
@@ -20237,10 +19657,9 @@ async function createActions3(context) {
         if (context.state.joinedGroups) {
           context.state.joinedGroups = context.state.joinedGroups.filter((g) => g.id !== topic);
         }
-        log11("\u043F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
-        await this.safeUpdateJoinedGroupsUI();
+        log10("\u043F\u043E\u043A\u0438\u043D\u0443\u043B\u0438 \u0433\u0440\u0443\u043F\u043F\u0443: %s", topic);
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u0432\u044B\u0445\u043E\u0434\u0430 \u0438\u0437 \u0433\u0440\u0443\u043F\u043F\u044B: %o", error);
         context.addError({
           componentName: "GroupManager",
           source: "leaveGroup",
@@ -20264,7 +19683,7 @@ async function createActions3(context) {
       const filteredGroups = (context.state.discoveredGroups || []).filter(
         (group) => group.name.toLowerCase().includes(searchTerm) || group.description && group.description.toLowerCase().includes(searchTerm) || group.topic.toLowerCase().includes(searchTerm) || group.tags && group.tags.some((tag) => tag.toLowerCase().includes(searchTerm))
       );
-      log11('\u043F\u043E\u0438\u0441\u043A "%s": \u043D\u0430\u0439\u0434\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F', query, filteredGroups.length);
+      log10('\u043F\u043E\u0438\u0441\u043A "%s": \u043D\u0430\u0439\u0434\u0435\u043D\u043E %d \u0433\u0440\u0443\u043F\u043F', query, filteredGroups.length);
       return filteredGroups;
     }, "searchGroups"),
     /**
@@ -20281,7 +19700,7 @@ async function createActions3(context) {
         const subscribers = libp2p.services.pubsub.getSubscribers(topic);
         return subscribers.map((peerId) => peerId.toString());
       } catch (error) {
-        log11.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
+        log10.error("\u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u043E\u0432 \u0433\u0440\u0443\u043F\u043F\u044B %s: %o", topic, error);
         return [];
       }
     }, "getGroupMembers"),
@@ -20325,7 +19744,7 @@ async function createActions3(context) {
         discoveredGroupsInterval = null;
       }
       libp2p = null;
-      log11("\u0440\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
+      log10("\u0440\u0435\u0441\u0443\u0440\u0441\u044B \u043E\u0447\u0438\u0449\u0435\u043D\u044B");
     }, "cleanup")
   };
 }
@@ -20338,30 +19757,23 @@ var GroupManager = class extends BaseComponent {
   }
   constructor() {
     super();
-    this._templateMethods = template_exports3;
     this.log = logger("group-manager");
     this.state = {
       groups: [],
       discoveredGroups: [],
-      searchQuery: "",
       joinedGroups: [],
       nodeReady: false,
       _initialized: false
-      // Флаг полной инициализации
     };
     this._nodeCheckInterval = null;
   }
   async _componentReady() {
     this.log("component ready");
-    this._controller = await controller3(this);
     this._actions = await createActions3(this);
-    this.log("controller and actions created: %o", {
-      hasController: !!this._controller,
+    this.log("actions created: %o", {
       hasActions: !!this._actions
     });
-    await this.fullRender(this.state);
     await this.startNodeInitialization();
-    await this._controller.init();
     this.state._initialized = true;
     setTimeout(async () => {
       if (this.state.nodeReady) {
@@ -20400,7 +19812,6 @@ var GroupManager = class extends BaseComponent {
       joinedGroups: this.state.joinedGroups
     };
   }
-  // ✅ ДОБАВЛЕНО: обработка события перезапуска ноды
   async postMessage(event) {
     if (event.type === "NODE_RESTARTED") {
       await this.handleNodeRestart();
@@ -20418,11 +19829,9 @@ var GroupManager = class extends BaseComponent {
         }
         break;
       default:
-        log.error("\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u044B\u0439 \u0442\u0438\u043F \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %s", event.type);
+        this.log("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043D\u0435\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s", event.type);
     }
-    this.log("\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u043D\u0435\u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0430\u043D\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435: %s", event.type);
   }
-  // В GroupManager улучшаем обработку перезапуска
   async handleNodeRestart() {
     this.log("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u043D\u043E\u0434\u044B \u0432 GroupManager");
     this.state.nodeReady = false;
@@ -20449,7 +19858,6 @@ var GroupManager = class extends BaseComponent {
             this._nodeCheckInterval = null;
           }
           this.log("node obtained from peer connection for group manager, pubsub is ready");
-          await this.safeUpdateUI();
           return true;
         } else {
           this.log("node found but pubsub not ready yet");
@@ -20459,57 +19867,6 @@ var GroupManager = class extends BaseComponent {
       return false;
     } catch (error) {
       this.log.error("failed to initialize from peer connection: %o", error);
-      return false;
-    }
-  }
-  async safeUpdateUI() {
-    try {
-      const updates = [];
-      const nodeStatusElement = this.shadowRoot.querySelector(".node-status-section");
-      if (nodeStatusElement && this.renderPart) {
-        updates.push(
-          this.renderPart({
-            partName: "renderNodeStatus",
-            state: this.state,
-            selector: ".node-status-section"
-          }).catch(() => {
-            this.log("node status element not available for renderPart");
-          })
-        );
-      }
-      const quickActionsElement = this.shadowRoot.querySelector(".quick-actions");
-      if (quickActionsElement && this.renderPart) {
-        updates.push(
-          this.renderPart({
-            partName: "renderQuickActions",
-            state: this.state,
-            selector: ".quick-actions"
-          }).catch(() => {
-            this.log("quick actions element not available for renderPart");
-          })
-        );
-      }
-      await Promise.allSettled(updates);
-    } catch (error) {
-      this.log("error in safeUpdateUI: %o", error);
-      await this.fullRender(this.state);
-    }
-  }
-  async safeRenderPart(options) {
-    try {
-      if (!this.renderPart) {
-        this.log("renderPart method not available");
-        return false;
-      }
-      const element = this.shadowRoot.querySelector(options.selector);
-      if (!element) {
-        this.log("element with selector %s not found", options.selector);
-        return false;
-      }
-      await this.renderPart(options);
-      return true;
-    } catch (error) {
-      this.log("error in safeRenderPart for %s: %o", options.selector, error);
       return false;
     }
   }
@@ -20539,69 +19896,16 @@ var GroupManager = class extends BaseComponent {
       } else {
         throw new Error("\u041D\u0435\u0432\u0435\u0440\u043D\u044B\u0439 \u0442\u0438\u043F \u0430\u0440\u0433\u0443\u043C\u0435\u043D\u0442\u0430: \u043E\u0436\u0438\u0434\u0430\u0435\u0442\u0441\u044F \u0441\u0442\u0440\u043E\u043A\u0430 \u0438\u043B\u0438 \u043E\u0431\u044A\u0435\u043A\u0442 \u0433\u0440\u0443\u043F\u043F\u044B");
       }
-      let uiUpdated = false;
-      try {
-        uiUpdated = await this.safeRenderPart({
-          partName: "renderMyGroups",
-          state: this.state,
-          selector: "#my-groups-list"
-        });
-        this.log("UI updated via renderPart: %s", uiUpdated);
-      } catch (error) {
-        this.log.error("Error updating via renderPart: %o", error);
-      }
-      if (!uiUpdated) {
-        this.log("Using full render as fallback");
-        await this.fullRender(this.state);
-        uiUpdated = true;
-      }
       await this.notifyGroupCreation(group);
-      this.log("Group operation completed, UI updated: %s", uiUpdated);
+      this.log("Group operation completed");
       return group;
     } catch (error) {
       this.log.error("error in createGroup: %o", error);
       if (error.message.includes("Pubsub has not started")) {
         this.state.nodeReady = false;
-        await this.safeUpdateUI();
         throw new Error("\u0421\u0435\u0440\u0432\u0438\u0441 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439 \u043D\u0435 \u0433\u043E\u0442\u043E\u0432. \u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0447\u0435\u0440\u0435\u0437 \u043D\u0435\u0441\u043A\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u043A\u0443\u043D\u0434.");
       }
       throw error;
-    }
-  }
-  /**
-   * Принудительно обновляет список моих групп
-   */
-  async forceUpdateMyGroups() {
-    try {
-      this.log("Force updating my groups list");
-      this.state = { ...this.state };
-      const success = await this.safeRenderPart({
-        partName: "renderMyGroups",
-        state: this.state,
-        selector: "#my-groups-list"
-      });
-      if (!success) {
-        await this.fullRender(this.state);
-      }
-      this.log("My groups list updated successfully");
-    } catch (error) {
-      this.log.error("Error in forceUpdateMyGroups: %o", error);
-      await this.fullRender(this.state);
-    }
-  }
-  async safeUpdateGroupsList() {
-    try {
-      const myGroupsUpdated = await this.safeRenderPart({
-        partName: "renderMyGroups",
-        state: this.state,
-        selector: "#my-groups-list"
-      });
-      if (!myGroupsUpdated) {
-        await this.fullRender(this.state);
-      }
-    } catch (error) {
-      this.log("error updating groups list: %o", error);
-      await this.fullRender(this.state);
     }
   }
   async discoverGroups() {
@@ -20610,37 +19914,15 @@ var GroupManager = class extends BaseComponent {
     }
     try {
       await this._actions.discoverGroups();
-      await this.safeUpdateDiscoveredGroups();
     } catch (error) {
       this.log.error("error discovering groups: %o", error);
       throw error;
     }
   }
-  async safeUpdateDiscoveredGroups() {
-    try {
-      const updated = await this.safeRenderPart({
-        partName: "renderDiscoveredGroups",
-        state: this.state,
-        selector: "#discovered-groups-list"
-      });
-      if (!updated) {
-        this.log("discovered groups list not found, using full render");
-        await this.fullRender(this.state);
-      }
-    } catch (error) {
-      this.log("error updating discovered groups: %o", error);
-      await this.fullRender(this.state);
-    }
-  }
   async searchGroups(query) {
     try {
       this.state.searchQuery = query;
-      const results = await this._actions.searchGroups(query);
-      await this.safeRenderPart({
-        partName: "renderSearchResults",
-        state: { ...this.state, searchResults: results },
-        selector: "#search-results"
-      });
+      return await this._actions.searchGroups(query);
     } catch (error) {
       this.log.error("error searching groups: %o", error);
       throw error;
@@ -20654,26 +19936,10 @@ var GroupManager = class extends BaseComponent {
       this.log("joining group: %s", group.name);
       const joinedGroup = await this._actions.joinGroup(group.topic || group.id);
       this.log("group joined: %o", joinedGroup);
-      await this.safeUpdateJoinedGroups();
       return joinedGroup;
     } catch (error) {
       this.log.error("error joining group: %o", error);
       throw error;
-    }
-  }
-  async safeUpdateJoinedGroups() {
-    try {
-      const updated = await this.safeRenderPart({
-        partName: "renderJoinedGroups",
-        state: this.state,
-        selector: "#joined-groups-list"
-      });
-      if (!updated) {
-        await this.fullRender(this.state);
-      }
-    } catch (error) {
-      this.log("error updating joined groups: %o", error);
-      await this.fullRender(this.state);
     }
   }
   async leaveGroup(groupId) {
@@ -20684,42 +19950,30 @@ var GroupManager = class extends BaseComponent {
       this.log("leaving group: %s", groupId);
       await this._actions.leaveGroup(groupId);
       this.log("group left: %s", groupId);
-      await this.safeUpdateJoinedGroups();
     } catch (error) {
       this.log.error("error leaving group: %o", error);
       throw error;
     }
   }
-  // Метод для принудительной проверки статуса ноды
   async checkNodeStatus() {
     try {
       const wasReady = this.state.nodeReady;
       await this.initializeFromPeerConnection();
-      if (!wasReady && this.state.nodeReady) {
-        await this.showModal({
-          title: "\u0413\u043E\u0442\u043E\u0432\u043E",
-          content: "<p>P2P \u043D\u043E\u0434\u0430 \u0433\u043E\u0442\u043E\u0432\u0430 \u043A \u0440\u0430\u0431\u043E\u0442\u0435!</p>",
-          buttons: [{ text: "OK", type: "primary" }]
-        });
-      }
       return this.state.nodeReady;
     } catch (error) {
       this.log.error("error checking node status: %o", error);
       return false;
     }
   }
-  /**
-   * Уведомляет другие компоненты о создании группы и передаёт список активных групп
-   */
   async notifyGroupCreation(group) {
     try {
       const activeGroups = [
         ...this.state.groups || [],
         ...this.state.joinedGroups || []
       ];
-      const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (chatManager2) {
-        await chatManager2.postMessage({
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (chatManager) {
+        await chatManager.postMessage({
           type: "GROUP_CREATED",
           data: group
         });
@@ -20745,13 +19999,9 @@ var GroupManager = class extends BaseComponent {
       clearInterval(this._nodeCheckInterval);
       this._nodeCheckInterval = null;
     }
-    if (this._controller && this._controller.destroy) {
-      await this._controller.destroy();
-    }
     if (this._actions && this._actions.cleanup) {
       await this._actions.cleanup();
     }
-    this._templateMethods = null;
   }
 };
 if (!customElements.get("group-manager")) {
@@ -20759,28 +20009,67 @@ if (!customElements.get("group-manager")) {
 }
 
 // public/components/peer-connection/template/index.mjs
-var template_exports4 = {};
-__export(template_exports4, {
-  default: () => defaultTemplate4,
+var template_exports3 = {};
+__export(template_exports3, {
+  default: () => defaultTemplate3,
   renderAddresses: () => renderAddresses,
   renderAddressesList: () => renderAddressesList,
   renderConnectedPeers: () => renderConnectedPeers,
   renderConnectedPeersDetailed: () => renderConnectedPeersDetailed,
   renderConnectionControls: () => renderConnectionControls,
+  renderDHTControls: () => renderDHTControls,
   renderPeersList: () => renderPeersList,
-  renderQuickActions: () => renderQuickActions3,
+  renderQuickActions: () => renderQuickActions2,
   renderStatistics: () => renderStatistics2,
   renderStatus: () => renderStatus2,
   renderSystemStatus: () => renderSystemStatus
 });
-function defaultTemplate4({ state = {} } = {}) {
+function defaultTemplate3({ state = {} } = {}) {
   return `    <div class="peer-connection">        <!-- \u0417\u0430\u0433\u043E\u043B\u043E\u0432\u043E\u043A \u0438 \u043E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F -->        <header class="connection-header">            <div class="header-main">                <h1 class="connection-title">                    <span class="title-icon">\u{1F310}</span>                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435                </h1>                <div class="connection-status ${state.connected ? "connected" : "disconnected"}">                    <span class="status-dot"></span>                    <span class="status-text">${state.connected ? "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E" : "\u041D\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E"}</span>                </div>            </div>            <div class="header-meta">                <div class="meta-item">                    <span class="meta-label">\u0420\u0435\u0436\u0438\u043C:</span>                    <span class="meta-value mode-${state.mode}">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>                </div>                <div class="meta-item">                    <span class="meta-label">Peer ID:</span>                    <span class="meta-value peer-id">${state.peerId ? state.peerId : "\u041D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D"}</span>                </div>                ${state.webRtcAddress ? `                <div class="meta-item">                    <span class="meta-label">WebRTC:</span>                    <span 
                         class="meta-value webRTC-address clickable" 
                         title="\u041A\u043B\u0438\u043A\u043D\u0438\u0442\u0435, \u0447\u0442\u043E\u0431\u044B \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C"
                         data-address="${state.webRtcAddress}"
-                    >${state.webRtcAddress}</span>                </div>                ` : ""}            </div>        </header>        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->        <main class="connection-grid">            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->            <section class="grid-card status-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CA}</span>                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B                    </h3>                </div>                <div class="card-content">                    ${renderSystemStatus({ state })}                </div>            </section>            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->            <section class="grid-card control-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u26A1</span>                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435                    </h3>                </div>                <div class="card-content">                    ${renderConnectionControls({ state })}                </div>            </section>            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->            <section class="grid-card peers-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F465}</span>                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    ${renderPeersList({ state })}                </div>            </section>            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->            <section class="grid-card addresses-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CD}</span>                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>                    </h3>                </div>                <div class="card-content">                     <div id="listening-addresses">                        ${renderAddressesList({ state })}                    </div>                </div>            </section>            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->            <section class="grid-card actions-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F680}</span>                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F                    </h3>                </div>                <div class="card-content">                    ${renderQuickActions3({ state })}                </div>            </section>            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->            <section class="grid-card stats-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4C8}</span>                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430                    </h3>                </div>                <div class="card-content">                    ${renderStatistics2({ state })}                </div>            </section>            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->            <section class="grid-card connected-peers-section" style="display: none;">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F517}</span>                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    <div id="connected-peers-list">                        ${renderConnectedPeersDetailed({ state })}                    </div>                </div>            </section>        </main>        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->        <footer class="connection-footer">            <div class="footer-content">                <div class="footer-info">                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>                    <span class="info-dot"></span>                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>                </div>                <div class="footer-actions">                    <button class="footer-btn" id="refresh-all">                        <span class="btn-icon">\u{1F504}</span>                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C                    </button>                </div>            </div>        </footer>    </div>    `;
+                    >${state.webRtcAddress}</span>                </div>                ` : ""}            </div>        </header>        <!-- \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u0441\u0435\u0442\u043A\u0430 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432 -->        <main class="connection-grid">            <!-- \u0421\u0442\u0430\u0442\u0443\u0441 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F -->            <section class="grid-card status-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CA}</span>                        \u0421\u0442\u0430\u0442\u0443\u0441 \u0441\u0438\u0441\u0442\u0435\u043C\u044B                    </h3>                </div>                <div class="card-content">                    ${renderSystemStatus({ state })}                </div>            </section>            <!-- \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435\u043C -->            <section class="grid-card control-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u26A1</span>                        \u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435                    </h3>                </div>                <div class="card-content">                    ${renderConnectionControls({ state })}                </div>            </section>            <!-- \u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F \u043E \u043F\u0438\u0440\u0430\u0445 -->            <section class="grid-card peers-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F465}</span>                        \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0435 \u043F\u0438\u0440\u044B                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    ${renderPeersList({ state })}                </div>            </section>            <!-- \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F -->            <section class="grid-card addresses-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4CD}</span>                        \u0410\u0434\u0440\u0435\u0441\u0430 \u043F\u0440\u043E\u0441\u043B\u0443\u0448\u0438\u0432\u0430\u043D\u0438\u044F                        <span class="card-badge">${state.listeningAddresses ? state.listeningAddresses.length : 0}</span>                    </h3>                </div>                <div class="card-content">                     <div id="listening-addresses">                        ${renderAddressesList({ state })}                    </div>                </div>            </section>            <!-- \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F -->            <section class="grid-card actions-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F680}</span>                        \u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u044F                    </h3>                </div>                <div class="card-content">                    ${renderQuickActions2({ state })}                </div>            </section>            <!-- \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430 -->            <section class="grid-card stats-card">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F4C8}</span>                        \u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430                    </h3>                </div>                <div class="card-content">                    ${renderStatistics2({ state })}                </div>            </section>            <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->            <section class="grid-card connected-peers-section" style="display: none;">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F517}</span>                        \u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    <div id="connected-peers-list">                        ${renderConnectedPeersDetailed({ state })}                    </div>                </div>            </section>            
+              <!-- \u0421\u0435\u043A\u0446\u0438\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043D\u044B\u0445 \u043F\u0438\u0440\u043E\u0432 \u0434\u043B\u044F renderPart -->            <section class="grid-card connected-peers-section" style="display: none;">                <div class="card-header">                    <h3 class="card-title">                        <span class="card-icon">\u{1F517}</span>                        DHT                        <span class="card-badge">${state.connectedPeers ? state.connectedPeers.length : 0}</span>                    </h3>                </div>                <div class="card-content">                    <div id="connected-peers-list">                        ${renderDHTControls({ state })}                    </div>                </div>            </section>        </main>        <!-- \u0424\u0443\u0442\u0435\u0440 \u0441 \u0434\u043E\u043F\u043E\u043B\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0439 \u0438\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0435\u0439 -->        <footer class="connection-footer">            <div class="footer-content">                <div class="footer-info">                    <span class="info-text">P2P \u0441\u0435\u0442\u044C</span>                    <span class="info-dot"></span>                    <span class="info-text">${state.relayEnabled ? "Relay \u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "Relay \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>                </div>                <div class="footer-actions">                    <button class="footer-btn" id="refresh-all">                        <span class="btn-icon">\u{1F504}</span>                        \u041E\u0431\u043D\u043E\u0432\u0438\u0442\u044C                    </button>                </div>            </div>        </footer>    </div>    `;
 }
-__name(defaultTemplate4, "defaultTemplate");
+__name(defaultTemplate3, "defaultTemplate");
+function renderDHTControls({ state = {} } = {}) {
+  return `
+    <div class="control-group">
+        <label class="control-label">DHT \u0441\u0435\u0442\u0438</label>
+        <div class="settings-group">
+            <label class="setting-toggle">
+                <input 
+                    type="checkbox" 
+                    id="dht-lan-toggle" 
+                    ${state.dhtEnabled?.lan ? "checked" : ""}
+                >
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">LAN DHT</span>
+            </label>
+            <label class="setting-toggle">
+                <input 
+                    type="checkbox" 
+                    id="dht-amino-toggle" 
+                    ${state.dhtEnabled?.amino ? "checked" : ""}
+                >
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Amino DHT</span>
+            </label>
+            <label class="setting-toggle">
+                <input 
+                    type="checkbox" 
+                    id="dht-universe-toggle" 
+                    ${state.dhtEnabled?.universe ? "checked" : ""}
+                >
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Universe DHT</span>
+            </label>
+        </div>
+    </div>
+    `;
+}
+__name(renderDHTControls, "renderDHTControls");
 function renderSystemStatus({ state = {} } = {}) {
   return `    <div class="status-grid">        <div class="status-item">            <div class="status-icon ${state.connected ? "connected" : "disconnected"}">                ${state.connected ? "\u{1F7E2}" : "\u{1F534}"}            </div>            <div class="status-info">                <span class="status-label">\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435</span>                <span class="status-value">${state.connected ? "\u0410\u043A\u0442\u0438\u0432\u043D\u043E" : "\u041D\u0435\u0430\u043A\u0442\u0438\u0432\u043D\u043E"}</span>            </div>        </div>        <div class="status-item">            <div class="status-icon">                \u{1F310}            </div>            <div class="status-info">                <span class="status-label">\u0420\u0435\u0436\u0438\u043C</span>                <span class="status-value">${state.mode === "listener" ? "\u0421\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0418\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"}</span>            </div>        </div>        <div class="status-item">            <div class="status-icon ${state.relayEnabled ? "enabled" : "disabled"}">                ${state.relayEnabled ? "\u{1F517}" : "\u26D3\uFE0F"}            </div>            <div class="status-info">                <span class="status-label">Relay</span>                <span class="status-value">${state.relayEnabled ? "\u0412\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0435\u043D"}</span>            </div>        </div>        <div class="status-item">            <div class="status-icon">                \u23F1\uFE0F            </div>            <div class="status-info">                <span class="status-label">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B</span>                <span class="status-value uptime-display">${state.uptime || "0:00"}</span>            </div>        </div>    </div>    `;
 }
@@ -20813,15 +20102,35 @@ function renderAddressesList({ state = {} } = {}) {
   return `    <div class="addresses-container">        ${addresses.map((address, index) => `        <div class="address-item" data-address="${address}">            <div class="address-index">${index + 1}</div>            <div class="address-content">                <div class="address-protocol">                    ${getProtocolIcon(address)}                    ${getProtocolName(address)}                </div>                <div class="address-value">${address}</div>            </div>            <button class="address-action copy" data-address="${address}">                <span class="action-icon">\u{1F4CB}</span>            </button>        </div>        `).join("")}    </div>    `;
 }
 __name(renderAddressesList, "renderAddressesList");
-function renderQuickActions3({ state = {} } = {}) {
+function renderQuickActions2({ state = {} } = {}) {
   return `    <div class="actions-grid">        <button class="action-btn primary" id="copy-peer-id" ${!state.peerId ? "disabled" : ""}>            <span class="btn-icon">\u{1F4CB}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C Peer ID</span>        </button>                <button class="action-btn secondary" id="copy-addresses" ${!state.listeningAddresses || state.listeningAddresses.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F310}</span>            <span class="btn-text">\u041A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u0430\u0434\u0440\u0435\u0441\u0430</span>        </button>                <button class="action-btn secondary" id="disconnect-all" ${!state.connectedPeers || state.connectedPeers.length === 0 ? "disabled" : ""}>            <span class="btn-icon">\u{1F6AB}</span>            <span class="btn-text">\u041E\u0442\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0432\u0441\u0435\u0445</span>        </button>                <button class="action-btn outline" id="restart-node">            <span class="btn-icon">\u{1F504}</span>            <span class="btn-text">\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0443\u0437\u0435\u043B</span>        </button>    </div>    `;
 }
-__name(renderQuickActions3, "renderQuickActions");
+__name(renderQuickActions2, "renderQuickActions");
 function renderStatistics2({ state = {} } = {}) {
   const peersCount = state.connectedPeers ? state.connectedPeers.length : 0;
   const addressesCount = state.listeningAddresses ? state.listeningAddresses.length : 0;
   const connectionCount = state.connectedPeers ? state.connectedPeers.reduce((total, peer) => total + (peer.connections ? peer.connections.length : 1), 0) : 0;
-  return `    <div class="stats-grid">        <div class="stat-item">            <div class="stat-value">${peersCount}</div>            <div class="stat-label">\u041F\u0438\u0440\u043E\u0432</div>        </div>        <div class="stat-item">            <div class="stat-value">${connectionCount}</div>            <div class="stat-label">\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</div>        </div>        <div class="stat-item">            <div class="stat-value">${addressesCount}</div>            <div class="stat-label">\u0410\u0434\u0440\u0435\u0441\u043E\u0432</div>        </div>        <div class="stat-item">            <div class="stat-value">${state.mode === "listener" ? "\u0412\u0445\u043E\u0434\u044F\u0449\u0438\u0435" : "\u0418\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435"}</div>            <div class="stat-label">\u0422\u0438\u043F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0439</div>        </div>    </div>    `;
+  const dhtPeersCount = state.dhtPeers ? Object.values(state.dhtPeers).flat().length : 0;
+  return `
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-value">${peersCount}</div>
+            <div class="stat-label">\u041F\u0438\u0440\u043E\u0432</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${connectionCount}</div>
+            <div class="stat-label">\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0439</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${addressesCount}</div>
+            <div class="stat-label">\u0410\u0434\u0440\u0435\u0441\u043E\u0432</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">${dhtPeersCount}</div>
+            <div class="stat-label">DHT \u043F\u0438\u0440\u043E\u0432</div>
+        </div>
+    </div>
+    `;
 }
 __name(renderStatistics2, "renderStatistics");
 function renderAddresses({ state = {} } = {}) {
@@ -20869,8 +20178,8 @@ function getConnectionProtocol(address) {
 __name(getConnectionProtocol, "getConnectionProtocol");
 
 // public/components/peer-connection/controller/index.mjs
-var controller4 = /* @__PURE__ */ __name(async (context) => {
-  const log11 = logger("peer-connection:controller");
+var controller3 = /* @__PURE__ */ __name(async (context) => {
+  const log10 = logger("peer-connection:controller");
   let eventListeners = [];
   return {
     /**
@@ -20878,7 +20187,26 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
      * @async
      */
     async init() {
-      log11("controller initializing...");
+      log10("controller initializing...");
+      const setupDHTHandlers = /* @__PURE__ */ __name(() => {
+        const dhtToggles = [
+          { id: "dht-lan-toggle", key: "lan" },
+          { id: "dht-amino-toggle", key: "amino" },
+          { id: "dht-universe-toggle", key: "universe" }
+        ];
+        dhtToggles.forEach(({ id, key }) => {
+          const toggle = context.shadowRoot.querySelector(`#${id}`);
+          if (toggle) {
+            const handler = /* @__PURE__ */ __name(async (e2) => {
+              const dhtSettings = { [key]: e2.target.checked };
+              await context.updateDHTSettings(dhtSettings);
+            }, "handler");
+            toggle.addEventListener("change", handler);
+            eventListeners.push({ element: toggle, handler });
+          }
+        });
+      }, "setupDHTHandlers");
+      setupDHTHandlers();
       const openDialerBtn = context.shadowRoot.querySelector("#open-dialer-mode");
       if (openDialerBtn) {
         const openDialerHandler = /* @__PURE__ */ __name(() => {
@@ -20911,7 +20239,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           const handler = /* @__PURE__ */ __name(async (e2) => {
             const peerId = e2.target.getAttribute("data-peer-id");
             if (peerId) {
-              log11.trace("Copying peer ID: %s", peerId);
+              log10.trace("Copying peer ID: %s", peerId);
               await context.copyToClipboard(peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           }, "handler");
@@ -20940,7 +20268,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       const peerAddressInput = context.shadowRoot.querySelector("#peer-address-input");
       const listenerBtn = context.shadowRoot.querySelector("#listener-mode-btn");
       const dialerBtn = context.shadowRoot.querySelector("#dialer-mode-btn");
-      log11.trace("Debug: button elements found: %o", {
+      log10.trace("Debug: button elements found: %o", {
         listenerBtn: !!listenerBtn,
         dialerBtn: !!dialerBtn,
         listenerBtnId: listenerBtn?.id,
@@ -20949,11 +20277,11 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (listenerBtn) {
         const listenerHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Listener mode button clicked");
+            log10("Listener mode button clicked");
             await context.switchMode("listener");
-            log11("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
+            log10("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C listener");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C listener: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "controller-listener",
@@ -20964,16 +20292,16 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "listenerHandler");
         listenerBtn.addEventListener("click", listenerHandler);
         eventListeners.push({ element: listenerBtn, handler: listenerHandler });
-        log11.trace("Listener button handler attached");
+        log10.trace("Listener button handler attached");
       }
       if (dialerBtn) {
         const dialerHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Dialer mode button clicked");
+            log10("Dialer mode button clicked");
             await context.switchMode("dialer");
-            log11("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
+            log10("\u041F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D \u0432 \u0440\u0435\u0436\u0438\u043C dialer");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432 \u0440\u0435\u0436\u0438\u043C dialer: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "controller-dialer",
@@ -20984,7 +20312,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "dialerHandler");
         dialerBtn.addEventListener("click", dialerHandler);
         eventListeners.push({ element: dialerBtn, handler: dialerHandler });
-        log11.trace("Dialer button handler attached");
+        log10.trace("Dialer button handler attached");
       }
       const modeSwitcher = context.shadowRoot.querySelector(".mode-switcher");
       if (modeSwitcher) {
@@ -20994,30 +20322,30 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
             event.preventDefault();
             event.stopPropagation();
             const mode = button.id === "listener-mode-btn" ? "listener" : "dialer";
-            log11.trace("Mode delegation handler triggered: %s", mode);
+            log10.trace("Mode delegation handler triggered: %s", mode);
             try {
               await context.switchMode(mode);
-              log11.trace("Mode switched via delegation: %s", mode);
+              log10.trace("Mode switched via delegation: %s", mode);
             } catch (error) {
-              log11.error("Error in mode delegation: %o", error);
+              log10.error("Error in mode delegation: %o", error);
             }
           }
         }, "modeDelegationHandler");
         modeSwitcher.addEventListener("click", modeDelegationHandler);
         eventListeners.push({ element: modeSwitcher, handler: modeDelegationHandler });
-        log11.trace("Mode switcher delegation handler attached");
+        log10.trace("Mode switcher delegation handler attached");
       }
       if (connectBtn && peerAddressInput) {
         const connectHandler = /* @__PURE__ */ __name(async () => {
           const address = peerAddressInput.value.trim();
           if (address) {
             try {
-              log11("Connecting to peer: %s", address);
+              log10("Connecting to peer: %s", address);
               await context.connectToPeer(address);
               peerAddressInput.value = "";
-              log11("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: %s", address);
+              log10("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u0435 \u043A \u043F\u0438\u0440\u0443 \u0438\u043D\u0438\u0446\u0438\u0438\u0440\u043E\u0432\u0430\u043D\u043E: %s", address);
             } catch (error) {
-              log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
+              log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
               context.addError({
                 componentName: context.constructor.name,
                 source: "controller-connect",
@@ -21026,7 +20354,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
               });
             }
           } else {
-            log11.error("\u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
+            log10.error("\u041F\u0443\u0441\u0442\u043E\u0439 \u0430\u0434\u0440\u0435\u0441 \u0434\u043B\u044F \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F");
           }
         }, "connectHandler");
         connectBtn.addEventListener("click", connectHandler);
@@ -21039,33 +20367,33 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "enterHandler");
         peerAddressInput.addEventListener("keypress", enterHandler);
         eventListeners.push({ element: peerAddressInput, handler: enterHandler });
-        log11.trace("Peer connection handlers attached");
+        log10.trace("Peer connection handlers attached");
       }
       const refreshBtn = context.shadowRoot.querySelector("#refresh-peers-btn");
       if (refreshBtn) {
         const refreshHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Refreshing peer list...");
+            log10("Refreshing peer list...");
             await context.updatePeerList();
-            log11("\u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
+            log10("\u0421\u043F\u0438\u0441\u043E\u043A \u043F\u0438\u0440\u043E\u0432 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432: %o", error);
           }
         }, "refreshHandler");
         refreshBtn.addEventListener("click", refreshHandler);
         eventListeners.push({ element: refreshBtn, handler: refreshHandler });
-        log11.trace("Refresh peers handler attached");
+        log10.trace("Refresh peers handler attached");
       }
       const copyAddressesBtn = context.shadowRoot.querySelector("#copy-addresses-btn");
       if (copyAddressesBtn) {
         const copyHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Copying addresses...");
+            log10("Copying addresses...");
             const addresses = await context.getRelayAddresses();
             const textToCopy = addresses.join("\n");
             await context.copyToClipboard(textToCopy, "\u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0430\u0434\u0440\u0435\u0441\u043E\u0432: %o", error);
             context.addError({
               componentName: context.constructor.name,
               source: "controller-copy-addresses",
@@ -21076,26 +20404,26 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
         }, "copyHandler");
         copyAddressesBtn.addEventListener("click", copyHandler);
         eventListeners.push({ element: copyAddressesBtn, handler: copyHandler });
-        log11.trace("Copy addresses handler attached");
+        log10.trace("Copy addresses handler attached");
       }
       const relayToggle = context.shadowRoot.querySelector("#relay-toggle");
       if (relayToggle) {
         const relayHandler = /* @__PURE__ */ __name((event) => {
           context.state.relayEnabled = event.target.checked;
-          log11("Relay %s", context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D");
+          log10("Relay %s", context.state.relayEnabled ? "\u0432\u043A\u043B\u044E\u0447\u0435\u043D" : "\u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D");
           context.renderPart({
             partName: "renderSystemStatus",
             state: context.state,
             selector: ".status-card .card-content"
-          }).catch((error) => log11.error("Error updating relay status: %o", error));
+          }).catch((error) => log10.error("Error updating relay status: %o", error));
         }, "relayHandler");
         relayToggle.addEventListener("change", relayHandler);
         eventListeners.push({ element: relayToggle, handler: relayHandler });
-        log11.trace("Relay toggle handler attached");
+        log10.trace("Relay toggle handler attached");
       }
       this.setupQuickActions(context, eventListeners);
-      log11("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
-      log11("Total event listeners: %d", eventListeners.length);
+      log10("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+      log10("Total event listeners: %d", eventListeners.length);
     },
     /**
      * Настраивает обработчики для быстрых действий
@@ -21111,7 +20439,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
               await context2.copyToClipboard(context2.state.peerId, "Peer ID \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F Peer ID: %o", error);
           }
         }, "copyPeerHandler");
         copyPeerIdBtn.addEventListener("click", copyPeerHandler);
@@ -21127,7 +20455,7 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
               await context2.copyToClipboard(textToCopy, "\u0412\u0441\u0435 \u0430\u0434\u0440\u0435\u0441\u0430 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u044B \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430");
             }
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u0430\u0434\u0440\u0435\u0441\u043E\u0432: %o", error);
           }
         }, "copyAllAddressesHandler");
         copyAllAddressesBtn.addEventListener("click", copyAllAddressesHandler);
@@ -21137,10 +20465,10 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (disconnectAllBtn) {
         const disconnectAllHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Disconnecting all peers...");
-            log11("\u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
+            log10("Disconnecting all peers...");
+            log10("\u0412\u0441\u0435 \u043F\u0438\u0440\u044B \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u044B");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u0432\u0441\u0435\u0445 \u043F\u0438\u0440\u043E\u0432: %o", error);
           }
         }, "disconnectAllHandler");
         disconnectAllBtn.addEventListener("click", disconnectAllHandler);
@@ -21150,11 +20478,11 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (restartNodeBtn) {
         const restartHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Restarting node...");
+            log10("Restarting node...");
             await context2.switchMode(context2.state.mode);
-            log11("\u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+            log10("\u0423\u0437\u0435\u043B \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 \u0443\u0437\u043B\u0430: %o", error);
           }
         }, "restartHandler");
         restartNodeBtn.addEventListener("click", restartHandler);
@@ -21164,24 +20492,24 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
       if (refreshAllBtn) {
         const refreshAllHandler = /* @__PURE__ */ __name(async () => {
           try {
-            log11("Refreshing all data...");
+            log10("Refreshing all data...");
             await context2.updatePeerList();
-            log11("\u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
+            log10("\u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B");
           } catch (error) {
-            log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445: %o", error);
+            log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u0434\u0430\u043D\u043D\u044B\u0445: %o", error);
           }
         }, "refreshAllHandler");
         refreshAllBtn.addEventListener("click", refreshAllHandler);
         eventListeners2.push({ element: refreshAllBtn, handler: refreshAllHandler });
       }
-      log11.trace("Quick actions handlers attached");
+      log10.trace("Quick actions handlers attached");
     },
     /**
      * Уничтожает контроллер и очищает ресурсы
      * @async
      */
     async destroy() {
-      log11("controller destroying...");
+      log10("controller destroying...");
       eventListeners.forEach(({ element, handler }) => {
         try {
           element.removeEventListener("click", handler);
@@ -21189,16 +20517,16 @@ var controller4 = /* @__PURE__ */ __name(async (context) => {
           element.removeEventListener("keypress", handler);
           element.removeEventListener("change", handler);
         } catch (error) {
-          log11.error("Error removing event listener: %o", error);
+          log10.error("Error removing event listener: %o", error);
         }
       });
       if (context._copyObserver) {
         context._copyObserver.disconnect();
         context._copyObserver = null;
       }
-      log11("Removed %d event listeners", eventListeners.length);
+      log10("Removed %d event listeners", eventListeners.length);
       eventListeners = [];
-      log11("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      log10("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
@@ -21367,21 +20695,21 @@ function peerIdFromString(str, decoder) {
   return peerIdFromMultihash(multihash);
 }
 __name(peerIdFromString, "peerIdFromString");
-function peerIdFromPublicKey(publicKey) {
-  if (publicKey.type === "Ed25519") {
+function peerIdFromPublicKey(publicKey2) {
+  if (publicKey2.type === "Ed25519") {
     return new Ed25519PeerId({
-      multihash: publicKey.toCID().multihash,
-      publicKey
+      multihash: publicKey2.toCID().multihash,
+      publicKey: publicKey2
     });
-  } else if (publicKey.type === "secp256k1") {
+  } else if (publicKey2.type === "secp256k1") {
     return new Secp256k1PeerId({
-      multihash: publicKey.toCID().multihash,
-      publicKey
+      multihash: publicKey2.toCID().multihash,
+      publicKey: publicKey2
     });
-  } else if (publicKey.type === "RSA") {
+  } else if (publicKey2.type === "RSA") {
     return new RSAPeerId({
-      multihash: publicKey.toCID().multihash,
-      publicKey
+      multihash: publicKey2.toCID().multihash,
+      publicKey: publicKey2
     });
   }
   throw new UnsupportedKeyTypeError();
@@ -21396,11 +20724,11 @@ function peerIdFromMultihash(multihash) {
     return new RSAPeerId({ multihash });
   } else if (isIdentityMultihash(multihash)) {
     try {
-      const publicKey = publicKeyFromMultihash(multihash);
-      if (publicKey.type === "Ed25519") {
-        return new Ed25519PeerId({ multihash, publicKey });
-      } else if (publicKey.type === "secp256k1") {
-        return new Secp256k1PeerId({ multihash, publicKey });
+      const publicKey2 = publicKeyFromMultihash(multihash);
+      if (publicKey2.type === "Ed25519") {
+        return new Ed25519PeerId({ multihash, publicKey: publicKey2 });
+      } else if (publicKey2.type === "secp256k1") {
+        return new Secp256k1PeerId({ multihash, publicKey: publicKey2 });
       }
     } catch (err) {
       const url = toString2(multihash.digest);
@@ -21529,7 +20857,7 @@ function notEmpty(str) {
 __name(notEmpty, "notEmpty");
 
 // node_modules/@libp2p/peer-collections/dist/src/util.js
-function mapIterable(iter, map) {
+function mapIterable(iter, map2) {
   const iterator = {
     [Symbol.iterator]: () => {
       return iterator;
@@ -21546,7 +20874,7 @@ function mapIterable(iter, map) {
       }
       return {
         done: false,
-        value: map(val)
+        value: map2(val)
       };
     }, "next")
   };
@@ -21565,10 +20893,10 @@ var PeerMap = class {
     __name(this, "PeerMap");
   }
   map;
-  constructor(map) {
+  constructor(map2) {
     this.map = /* @__PURE__ */ new Map();
-    if (map != null) {
-      for (const [key, value2] of map.entries()) {
+    if (map2 != null) {
+      for (const [key, value2] of map2.entries()) {
         this.map.set(key.toString(), { key, value: value2 });
       }
     }
@@ -21749,13 +21077,13 @@ var TrackedPeerMap = class extends PeerMap {
 };
 function trackedPeerMap(config) {
   const { name: name3, metrics } = config;
-  let map;
+  let map2;
   if (metrics != null) {
-    map = new TrackedPeerMap({ name: name3, metrics });
+    map2 = new TrackedPeerMap({ name: name3, metrics });
   } else {
-    map = new PeerMap();
+    map2 = new PeerMap();
   }
-  return map;
+  return map2;
 }
 __name(trackedPeerMap, "trackedPeerMap");
 
@@ -21788,14 +21116,14 @@ var Envelope;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           publicKey: alloc(0),
           payloadType: alloc(0),
           payload: alloc(0),
           signature: alloc(0)
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -21855,9 +21183,9 @@ var RecordEnvelope = class _RecordEnvelope {
    */
   static createFromProtobuf = /* @__PURE__ */ __name((data) => {
     const envelopeData = Envelope.decode(data);
-    const publicKey = publicKeyFromProtobuf(envelopeData.publicKey);
+    const publicKey2 = publicKeyFromProtobuf(envelopeData.publicKey);
     return new _RecordEnvelope({
-      publicKey,
+      publicKey: publicKey2,
       payloadType: envelopeData.payloadType,
       payload: envelopeData.payload,
       signature: envelopeData.signature
@@ -21905,8 +21233,8 @@ var RecordEnvelope = class _RecordEnvelope {
    * by a libp2p peer.
    */
   constructor(init) {
-    const { publicKey, payloadType, payload, signature } = init;
-    this.publicKey = publicKey;
+    const { publicKey: publicKey2, payloadType, payload, signature } = init;
+    this.publicKey = publicKey2;
     this.payloadType = payloadType;
     this.payload = payload;
     this.signature = signature;
@@ -21973,11 +21301,11 @@ var PeerRecord;
           if (opts.lengthDelimited !== false) {
             w.ldelim();
           }
-        }, (reader, length3, opts = {}) => {
+        }, (reader, length4, opts = {}) => {
           const obj = {
             multiaddr: alloc(0)
           };
-          const end = length3 == null ? reader.len : reader.pos + length3;
+          const end = length4 == null ? reader.len : reader.pos + length4;
           while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
@@ -22027,13 +21355,13 @@ var PeerRecord;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           peerId: alloc(0),
           seq: 0n,
           addresses: []
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -22149,12 +21477,12 @@ var PeerRecord2 = class _PeerRecord {
 };
 
 // node_modules/it-all/dist/src/index.js
-function isAsyncIterable2(thing) {
+function isAsyncIterable3(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable2, "isAsyncIterable");
+__name(isAsyncIterable3, "isAsyncIterable");
 function all(source) {
-  if (isAsyncIterable2(source)) {
+  if (isAsyncIterable3(source)) {
     return (async () => {
       const arr2 = [];
       for await (const entry of source) {
@@ -22272,11 +21600,11 @@ var AbortError6 = class extends Error {
   }
   type;
   code;
-  constructor(message2, code3, name3) {
+  constructor(message2, code4, name3) {
     super(message2 ?? "The operation was aborted");
     this.type = "aborted";
     this.name = name3 ?? "AbortError";
-    this.code = code3 ?? "ABORT_ERR";
+    this.code = code4 ?? "ABORT_ERR";
   }
 };
 async function raceSignal3(promise, signal, opts) {
@@ -23072,12 +22400,12 @@ var Peer;
           if (opts.lengthDelimited !== false) {
             w.ldelim();
           }
-        }, (reader, length3, opts = {}) => {
+        }, (reader, length4, opts = {}) => {
           const obj = {
             key: "",
             value: alloc(0)
           };
-          const end = length3 == null ? reader.len : reader.pos + length3;
+          const end = length4 == null ? reader.len : reader.pos + length4;
           while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
@@ -23127,11 +22455,11 @@ var Peer;
           if (opts.lengthDelimited !== false) {
             w.ldelim();
           }
-        }, (reader, length3, opts = {}) => {
+        }, (reader, length4, opts = {}) => {
           const obj = {
             key: ""
           };
-          const end = length3 == null ? reader.len : reader.pos + length3;
+          const end = length4 == null ? reader.len : reader.pos + length4;
           while (reader.pos < end) {
             const tag = reader.uint32();
             switch (tag >>> 3) {
@@ -23209,14 +22537,14 @@ var Peer;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           addresses: [],
           protocols: [],
           metadata: /* @__PURE__ */ new Map(),
           tags: /* @__PURE__ */ new Map()
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -23310,11 +22638,11 @@ var Address;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           multiaddr: alloc(0)
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -23368,11 +22696,11 @@ var Tag;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           value: 0
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -23412,8 +22740,8 @@ function populatePublicKey(peerId, protobuf) {
   if (peerId.type === "RSA") {
     digest2 = peerId.toMultihash();
   }
-  const publicKey = publicKeyFromProtobuf(protobuf.publicKey, digest2);
-  return peerIdFromPublicKey(publicKey);
+  const publicKey2 = publicKeyFromProtobuf(protobuf.publicKey, digest2);
+  return peerIdFromPublicKey(publicKey2);
 }
 __name(populatePublicKey, "populatePublicKey");
 function bytesToPeer(peerId, buf, maxAddressAge) {
@@ -24033,13 +23361,13 @@ async function toPeerPB(peerId, data, strategy, options) {
       peerRecordEnvelope2 = data.peerRecordEnvelope;
     }
   }
-  let publicKey;
+  let publicKey2;
   if (existingPeer?.id.publicKey != null) {
-    publicKey = publicKeyToProtobuf(existingPeer.id.publicKey);
+    publicKey2 = publicKeyToProtobuf(existingPeer.id.publicKey);
   } else if (data.publicKey != null) {
-    publicKey = publicKeyToProtobuf(data.publicKey);
+    publicKey2 = publicKeyToProtobuf(data.publicKey);
   } else if (peerId.publicKey != null) {
-    publicKey = publicKeyToProtobuf(peerId.publicKey);
+    publicKey2 = publicKeyToProtobuf(peerId.publicKey);
   }
   const output = {
     addresses: await dedupeFilterAndSortAddresses(peerId, options.addressFilter ?? (async () => true), addresses, options.existingPeer?.peerPB.addresses, options),
@@ -24048,7 +23376,7 @@ async function toPeerPB(peerId, data, strategy, options) {
     }),
     metadata,
     tags,
-    publicKey,
+    publicKey: publicKey2,
     peerRecordEnvelope: peerRecordEnvelope2
   };
   output.addresses.forEach((addr) => {
@@ -24482,12 +23810,12 @@ var NotFoundError2 = class _NotFoundError extends Error {
 };
 
 // node_modules/it-drain/dist/src/index.js
-function isAsyncIterable3(thing) {
+function isAsyncIterable4(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable3, "isAsyncIterable");
+__name(isAsyncIterable4, "isAsyncIterable");
 function drain(source) {
-  if (isAsyncIterable3(source)) {
+  if (isAsyncIterable4(source)) {
     return (async () => {
       for await (const _ of source) {
       }
@@ -24529,13 +23857,13 @@ __name(peekable, "peekable");
 var src_default5 = peekable;
 
 // node_modules/it-filter/dist/src/index.js
-function isAsyncIterable4(thing) {
+function isAsyncIterable5(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable4, "isAsyncIterable");
+__name(isAsyncIterable5, "isAsyncIterable");
 function filter(source, fn) {
   let index = 0;
-  if (isAsyncIterable4(source)) {
+  if (isAsyncIterable5(source)) {
     return (async function* () {
       for await (const entry of source) {
         if (await fn(entry, index++)) {
@@ -24579,12 +23907,12 @@ __name(filter, "filter");
 var src_default6 = filter;
 
 // node_modules/it-sort/dist/src/index.js
-function isAsyncIterable5(thing) {
+function isAsyncIterable6(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable5, "isAsyncIterable");
+__name(isAsyncIterable6, "isAsyncIterable");
 function sort(source, sorter) {
-  if (isAsyncIterable5(source)) {
+  if (isAsyncIterable6(source)) {
     return (async function* () {
       const arr = await src_default3(source);
       yield* arr.sort(sorter);
@@ -24599,12 +23927,12 @@ __name(sort, "sort");
 var src_default7 = sort;
 
 // node_modules/it-take/dist/src/index.js
-function isAsyncIterable6(thing) {
+function isAsyncIterable7(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable6, "isAsyncIterable");
+__name(isAsyncIterable7, "isAsyncIterable");
 function take(source, limit) {
-  if (isAsyncIterable6(source)) {
+  if (isAsyncIterable7(source)) {
     return (async function* () {
       let items = 0;
       if (limit < 1) {
@@ -29406,7 +28734,7 @@ async function select(stream, protocols, options = {}) {
   if (protocols.length === 0) {
     throw new Error("At least one protocol must be specified");
   }
-  const log11 = stream.log.newScope("mss:select");
+  const log10 = stream.log.newScope("mss:select");
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH
@@ -29415,29 +28743,29 @@ async function select(stream, protocols, options = {}) {
     const protocol = protocols[i2];
     let response;
     if (i2 === 0) {
-      log11.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
+      log10.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol);
       const p1 = fromString2(`${PROTOCOL_ID}
 `);
       const p2 = fromString2(`${protocol}
 `);
       await lp.writeV([p1, p2], options);
-      log11.trace("reading multistream-select header");
+      log10.trace("reading multistream-select header");
       response = await readString(lp, options);
-      log11.trace('read "%s"', response);
+      log10.trace('read "%s"', response);
       if (response !== PROTOCOL_ID) {
-        log11.error("did not read multistream-select header from response");
+        log10.error("did not read multistream-select header from response");
         break;
       }
     } else {
-      log11.trace('write "%s"', protocol);
+      log10.trace('write "%s"', protocol);
       await lp.write(fromString2(`${protocol}
 `), options);
     }
-    log11.trace("reading protocol response");
+    log10.trace("reading protocol response");
     response = await readString(lp, options);
-    log11.trace('read "%s"', response);
+    log10.trace('read "%s"', response);
     if (response === protocol) {
-      log11.trace('selected "%s" after negotiation', response);
+      log10.trace('selected "%s" after negotiation', response);
       lp.unwrap();
       return protocol;
     }
@@ -29481,10 +28809,10 @@ var UnexpectedEOFError2 = class extends Error {
 };
 
 // node_modules/@libp2p/multistream-select/node_modules/it-length-prefixed/dist/src/utils.js
-function isAsyncIterable7(thing) {
+function isAsyncIterable8(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable7, "isAsyncIterable");
+__name(isAsyncIterable8, "isAsyncIterable");
 
 // node_modules/@libp2p/multistream-select/node_modules/it-length-prefixed/dist/src/encode.js
 function validateMaxDataLength(chunk, maxDataLength) {
@@ -29493,10 +28821,10 @@ function validateMaxDataLength(chunk, maxDataLength) {
   }
 }
 __name(validateMaxDataLength, "validateMaxDataLength");
-var defaultEncoder = /* @__PURE__ */ __name((length3) => {
-  const lengthLength = encodingLength2(length3);
+var defaultEncoder = /* @__PURE__ */ __name((length4) => {
+  const lengthLength = encodingLength2(length4);
   const lengthBuf = allocUnsafe(lengthLength);
-  encode6(length3, lengthBuf);
+  encode6(length4, lengthBuf);
   defaultEncoder.bytes = lengthLength;
   return lengthBuf;
 }, "defaultEncoder");
@@ -29507,11 +28835,11 @@ function encode7(source, options) {
   const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH;
   function* maybeYield(chunk) {
     validateMaxDataLength(chunk, maxDataLength);
-    const length3 = encodeLength2(chunk.byteLength);
-    if (length3 instanceof Uint8Array) {
-      yield length3;
+    const length4 = encodeLength2(chunk.byteLength);
+    if (length4 instanceof Uint8Array) {
+      yield length4;
     } else {
-      yield* length3;
+      yield* length4;
     }
     if (chunk instanceof Uint8Array) {
       yield chunk;
@@ -29520,7 +28848,7 @@ function encode7(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable7(source)) {
+  if (isAsyncIterable8(source)) {
     return (async function* () {
       for await (const chunk of source) {
         yield* maybeYield(chunk);
@@ -29549,9 +28877,9 @@ var ReadMode;
   ReadMode3[ReadMode3["DATA"] = 1] = "DATA";
 })(ReadMode || (ReadMode = {}));
 var defaultDecoder = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode7(buf);
-  defaultDecoder.bytes = encodingLength2(length3);
-  return length3;
+  const length4 = decode7(buf);
+  defaultDecoder.bytes = encodingLength2(length4);
+  return length4;
 }, "defaultDecoder");
 defaultDecoder.bytes = 0;
 function decode8(source, options) {
@@ -29603,7 +28931,7 @@ function decode8(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable7(source)) {
+  if (isAsyncIterable8(source)) {
     return (async function* () {
       for await (const buf of source) {
         buffer.append(buf);
@@ -29659,7 +28987,7 @@ decode8.fromReader = (reader, options) => {
 // node_modules/@libp2p/multistream-select/dist/src/handle.js
 async function handle(stream, protocols, options = {}) {
   protocols = Array.isArray(protocols) ? protocols : [protocols];
-  const log11 = stream.log.newScope("mss:handle");
+  const log10 = stream.log.newScope("mss:handle");
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
@@ -29667,35 +28995,35 @@ async function handle(stream, protocols, options = {}) {
     // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
   });
   while (true) {
-    log11.trace("reading incoming string");
+    log10.trace("reading incoming string");
     const protocol = await readString(lp, options);
-    log11.trace('read "%s"', protocol);
+    log10.trace('read "%s"', protocol);
     if (protocol === PROTOCOL_ID) {
-      log11.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol);
+      log10.trace('respond with "%s" for "%s"', PROTOCOL_ID, protocol);
       await lp.write(fromString2(`${PROTOCOL_ID}
 `), options);
-      log11.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol);
+      log10.trace('responded with "%s" for "%s"', PROTOCOL_ID, protocol);
       continue;
     }
     if (protocols.includes(protocol)) {
-      log11.trace('respond with "%s" for "%s"', protocol, protocol);
+      log10.trace('respond with "%s" for "%s"', protocol, protocol);
       await lp.write(fromString2(`${protocol}
 `), options);
-      log11.trace('responded with "%s" for "%s"', protocol, protocol);
+      log10.trace('responded with "%s" for "%s"', protocol, protocol);
       lp.unwrap();
       return protocol;
     }
     if (protocol === "ls") {
       const protos = new Uint8ArrayList(...protocols.map((p2) => encode7.single(fromString2(`${p2}
 `))), fromString2("\n"));
-      log11.trace('respond with "%s" for %s', protocols, protocol);
+      log10.trace('respond with "%s" for %s', protocols, protocol);
       await lp.write(protos, options);
-      log11.trace('responded with "%s" for %s', protocols, protocol);
+      log10.trace('responded with "%s" for %s', protocols, protocol);
       continue;
     }
-    log11.trace('respond with "na" for "%s"', protocol);
+    log10.trace('respond with "na" for "%s"', protocol);
     await lp.write(fromString2("na\n"), options);
-    log11('responded with "na" for "%s"', protocol);
+    log10('responded with "na" for "%s"', protocol);
   }
 }
 __name(handle, "handle");
@@ -30509,11 +29837,11 @@ var Libp2p = class extends TypedEventEmitter {
       peer.toMultihash().bytes
     ]);
     const bytes = await this.contentRouting.get(peerKey, options);
-    const publicKey = publicKeyFromProtobuf(bytes);
+    const publicKey2 = publicKeyFromProtobuf(bytes);
     await this.peerStore.patch(peer, {
-      publicKey
+      publicKey: publicKey2
     }, options);
-    return publicKey;
+    return publicKey2;
   }
   async handle(protocols, handler, options) {
     if (!Array.isArray(protocols)) {
@@ -30599,13 +29927,13 @@ function anumber2(n2) {
     throw new Error("positive integer expected, got " + n2);
 }
 __name(anumber2, "anumber");
-function abytes2(value2, length3, title = "") {
+function abytes2(value2, length4, title = "") {
   const bytes = isBytes2(value2);
   const len = value2?.length;
-  const needsLen = length3 !== void 0;
-  if (!bytes || needsLen && len !== length3) {
+  const needsLen = length4 !== void 0;
+  if (!bytes || needsLen && len !== length4) {
     const prefix = title && `"${title}" `;
-    const ofLen = needsLen ? ` of length ${length3}` : "";
+    const ofLen = needsLen ? ` of length ${length4}` : "";
     const got = bytes ? `length=${len}` : `type=${typeof value2}`;
     throw new Error(prefix + "expected Uint8Array" + ofLen + ", got " + got);
   }
@@ -31349,13 +30677,13 @@ function extract(hash, ikm, salt) {
 __name(extract, "extract");
 var HKDF_COUNTER = /* @__PURE__ */ Uint8Array.of(0);
 var EMPTY_BUFFER = /* @__PURE__ */ Uint8Array.of();
-function expand(hash, prk, info, length3 = 32) {
+function expand(hash, prk, info, length4 = 32) {
   ahash(hash);
-  anumber(length3, "length");
+  anumber(length4, "length");
   const olen = hash.outputLen;
-  if (length3 > 255 * olen)
+  if (length4 > 255 * olen)
     throw new Error("Length must be <= 255*HashLen");
-  const blocks = Math.ceil(length3 / olen);
+  const blocks = Math.ceil(length4 / olen);
   if (info === void 0)
     info = EMPTY_BUFFER;
   else
@@ -31373,7 +30701,7 @@ function expand(hash, prk, info, length3 = 32) {
   HMAC.destroy();
   HMACTmp.destroy();
   clean(T, HKDF_COUNTER);
-  return okm.slice(0, length3);
+  return okm.slice(0, length4);
 }
 __name(expand, "expand");
 
@@ -31393,21 +30721,21 @@ var pureJsCrypto = {
   },
   generateX25519KeyPair() {
     const secretKey = x25519.utils.randomSecretKey();
-    const publicKey = x25519.getPublicKey(secretKey);
+    const publicKey2 = x25519.getPublicKey(secretKey);
     return {
-      publicKey,
+      publicKey: publicKey2,
       privateKey: secretKey
     };
   },
   generateX25519KeyPairFromSeed(seed) {
-    const publicKey = x25519.getPublicKey(seed);
+    const publicKey2 = x25519.getPublicKey(seed);
     return {
-      publicKey,
+      publicKey: publicKey2,
       privateKey: seed
     };
   },
-  generateX25519SharedKey(privateKey, publicKey) {
-    return x25519.getSharedSecret(privateKey.subarray(), publicKey.subarray());
+  generateX25519SharedKey(privateKey, publicKey2) {
+    return x25519.getSharedSecret(privateKey.subarray(), publicKey2.subarray());
   },
   chaCha20Poly1305Encrypt(plaintext, nonce, ad, k) {
     return chacha20poly1305(k, nonce, ad).encrypt(plaintext.subarray());
@@ -31424,7 +30752,7 @@ var defaultCrypto = pureJsCrypto;
 function wrapCrypto(crypto2) {
   return {
     generateKeypair: crypto2.generateX25519KeyPair,
-    dh: /* @__PURE__ */ __name((keypair, publicKey) => crypto2.generateX25519SharedKey(keypair.privateKey, publicKey).subarray(0, 32), "dh"),
+    dh: /* @__PURE__ */ __name((keypair, publicKey2) => crypto2.generateX25519SharedKey(keypair.privateKey, publicKey2).subarray(0, 32), "dh"),
     encrypt: crypto2.chaCha20Poly1305Encrypt,
     decrypt: crypto2.chaCha20Poly1305Decrypt,
     hash: crypto2.hashSHA256,
@@ -31532,6 +30860,19 @@ function logCipherState(cs1, cs2, keyLogger) {
   keyLogger(`CIPHER_STATE_2 ${cs2.n.getUint64()} ${cs2.k && toString2(cs2.k, "hex")}`);
 }
 __name(logCipherState, "logCipherState");
+
+// node_modules/uint8arrays/dist/src/xor.js
+function xor(a2, b) {
+  if (a2.length !== b.length) {
+    throw new Error("Inputs should have the same length");
+  }
+  const result = allocUnsafe(a2.length);
+  for (let i2 = 0; i2 < a2.length; i2++) {
+    result[i2] = a2[i2] ^ b[i2];
+  }
+  return asUint8Array(result);
+}
+__name(xor, "xor");
 
 // node_modules/@chainsafe/libp2p-noise/dist/src/errors.js
 var InvalidCryptoExchangeError2 = class _InvalidCryptoExchangeError extends Error {
@@ -31860,12 +31201,12 @@ var NoiseExtensions;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           webtransportCerthashes: [],
           streamMuxers: []
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -31925,12 +31266,12 @@ var NoiseHandshakePayload;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           identityKey: alloc(0),
           identitySig: alloc(0)
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -31980,15 +31321,15 @@ __name(createHandshakePayload, "createHandshakePayload");
 async function decodeHandshakePayload(payloadBytes, remoteStaticKey, remoteIdentityKey) {
   try {
     const payload = NoiseHandshakePayload.decode(payloadBytes);
-    const publicKey = publicKeyFromProtobuf(payload.identityKey);
-    if (remoteIdentityKey?.equals(publicKey) === false) {
-      throw new Error(`Payload identity key ${publicKey} does not match expected remote identity key ${remoteIdentityKey}`);
+    const publicKey2 = publicKeyFromProtobuf(payload.identityKey);
+    if (remoteIdentityKey?.equals(publicKey2) === false) {
+      throw new Error(`Payload identity key ${publicKey2} does not match expected remote identity key ${remoteIdentityKey}`);
     }
     if (!remoteStaticKey) {
       throw new Error("Remote static does not exist");
     }
     const signaturePayload = getSignaturePayload(remoteStaticKey);
-    if (!await publicKey.verify(signaturePayload, payload.identitySig)) {
+    if (!await publicKey2.verify(signaturePayload, payload.identitySig)) {
       throw new Error("Invalid payload signature");
     }
     return payload;
@@ -31997,13 +31338,13 @@ async function decodeHandshakePayload(payloadBytes, remoteStaticKey, remoteIdent
   }
 }
 __name(decodeHandshakePayload, "decodeHandshakePayload");
-function getSignaturePayload(publicKey) {
+function getSignaturePayload(publicKey2) {
   const prefix = fromString2("noise-libp2p-static-key:");
-  if (publicKey instanceof Uint8Array) {
-    return concat([prefix, publicKey], prefix.length + publicKey.length);
+  if (publicKey2 instanceof Uint8Array) {
+    return concat([prefix, publicKey2], prefix.length + publicKey2.length);
   }
-  publicKey.prepend(prefix);
-  return publicKey;
+  publicKey2.prepend(prefix);
+  return publicKey2;
 }
 __name(getSignaturePayload, "getSignaturePayload");
 var EncryptedMessageStream = class extends AbstractMessageStream {
@@ -32133,7 +31474,7 @@ __name(toMessageStream, "toMessageStream");
 
 // node_modules/@chainsafe/libp2p-noise/dist/src/performHandshake.js
 async function performHandshakeInitiator(init, options) {
-  const { log: log11, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log10, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto2,
@@ -32142,24 +31483,24 @@ async function performHandshakeInitiator(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log11);
-  log11.trace("Stage 0 - Initiator starting to send first message.");
+  logLocalStaticKeys(xx.s, log10);
+  log10.trace("Stage 0 - Initiator starting to send first message.");
   await connection.write(xx.writeMessageA(ZEROLEN), options);
-  log11.trace("Stage 0 - Initiator finished sending first message.");
-  logLocalEphemeralKeys(xx.e, log11);
-  log11.trace("Stage 1 - Initiator waiting to receive first message from responder...");
+  log10.trace("Stage 0 - Initiator finished sending first message.");
+  logLocalEphemeralKeys(xx.e, log10);
+  log10.trace("Stage 1 - Initiator waiting to receive first message from responder...");
   const plaintext = xx.readMessageB(await connection.read(options));
-  log11.trace("Stage 1 - Initiator received the message.");
-  logRemoteEphemeralKey(xx.re, log11);
-  logRemoteStaticKey(xx.rs, log11);
-  log11.trace("Initiator going to check remote's signature...");
+  log10.trace("Stage 1 - Initiator received the message.");
+  logRemoteEphemeralKey(xx.re, log10);
+  logRemoteStaticKey(xx.rs, log10);
+  log10.trace("Initiator going to check remote's signature...");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
-  log11.trace("All good with the signature!");
-  log11.trace("Stage 2 - Initiator sending third handshake message.");
+  log10.trace("All good with the signature!");
+  log10.trace("Stage 2 - Initiator sending third handshake message.");
   await connection.write(xx.writeMessageC(payload), options);
-  log11.trace("Stage 2 - Initiator sent message with signed payload.");
+  log10.trace("Stage 2 - Initiator sent message with signed payload.");
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log11);
+  logCipherState(cs1, cs2, log10);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs1.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -32168,7 +31509,7 @@ async function performHandshakeInitiator(init, options) {
 }
 __name(performHandshakeInitiator, "performHandshakeInitiator");
 async function performHandshakeResponder(init, options) {
-  const { log: log11, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
+  const { log: log10, connection, crypto: crypto2, privateKey, prologue, s: s2, remoteIdentityKey, extensions } = init;
   const payload = await createHandshakePayload(privateKey, s2.publicKey, extensions);
   const xx = new XXHandshakeState({
     crypto: crypto2,
@@ -32177,21 +31518,21 @@ async function performHandshakeResponder(init, options) {
     prologue,
     s: s2
   });
-  logLocalStaticKeys(xx.s, log11);
-  log11.trace("Stage 0 - Responder waiting to receive first message.");
+  logLocalStaticKeys(xx.s, log10);
+  log10.trace("Stage 0 - Responder waiting to receive first message.");
   xx.readMessageA(await connection.read(options));
-  log11.trace("Stage 0 - Responder received first message.");
-  logRemoteEphemeralKey(xx.re, log11);
-  log11.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
+  log10.trace("Stage 0 - Responder received first message.");
+  logRemoteEphemeralKey(xx.re, log10);
+  log10.trace("Stage 1 - Responder sending out first message with signed payload and static key.");
   await connection.write(xx.writeMessageB(payload), options);
-  log11.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
-  logLocalEphemeralKeys(xx.e, log11);
-  log11.trace("Stage 2 - Responder waiting for third handshake message...");
+  log10.trace("Stage 1 - Responder sent the second handshake message with signed payload.");
+  logLocalEphemeralKeys(xx.e, log10);
+  log10.trace("Stage 2 - Responder waiting for third handshake message...");
   const plaintext = xx.readMessageC(await connection.read(options));
-  log11.trace("Stage 2 - Responder received the message, finished handshake.");
+  log10.trace("Stage 2 - Responder received the message, finished handshake.");
   const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remoteIdentityKey);
   const [cs1, cs2] = xx.ss.split();
-  logCipherState(cs1, cs2, log11);
+  logCipherState(cs1, cs2, log10);
   return {
     payload: receivedPayload,
     encrypt: /* @__PURE__ */ __name((plaintext2) => cs2.encryptWithAd(ZEROLEN, plaintext2), "encrypt"),
@@ -32246,18 +31587,18 @@ var Noise = class {
    * @param options.signal - Used to abort the operation
    */
   async secureOutbound(connection, options) {
-    const log11 = connection.log?.newScope("noise") ?? this.log;
+    const log10 = connection.log?.newScope("noise") ?? this.log;
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
       lengthDecoder: uint16BEDecode,
       maxDataLength: NOISE_MSG_MAX_LENGTH_BYTES
     });
-    const handshake = await this.performHandshakeInitiator(wrappedConnection, this.components.privateKey, log11, options?.remotePeer?.publicKey, options);
-    const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey);
+    const handshake = await this.performHandshakeInitiator(wrappedConnection, this.components.privateKey, log10, options?.remotePeer?.publicKey, options);
+    const publicKey2 = publicKeyFromProtobuf(handshake.payload.identityKey);
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
       remoteExtensions: handshake.payload.extensions,
-      remotePeer: peerIdFromPublicKey(publicKey),
+      remotePeer: peerIdFromPublicKey(publicKey2),
       streamMuxer: options?.skipStreamMuxerNegotiation === true ? void 0 : this.getStreamMuxer(handshake.payload.extensions?.streamMuxers)
     };
   }
@@ -32287,25 +31628,25 @@ var Noise = class {
    * @param options.signal - Used to abort the operation
    */
   async secureInbound(connection, options) {
-    const log11 = connection.log?.newScope("noise") ?? this.log;
+    const log10 = connection.log?.newScope("noise") ?? this.log;
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
       lengthDecoder: uint16BEDecode,
       maxDataLength: NOISE_MSG_MAX_LENGTH_BYTES
     });
-    const handshake = await this.performHandshakeResponder(wrappedConnection, this.components.privateKey, log11, options?.remotePeer?.publicKey, options);
-    const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey);
+    const handshake = await this.performHandshakeResponder(wrappedConnection, this.components.privateKey, log10, options?.remotePeer?.publicKey, options);
+    const publicKey2 = publicKeyFromProtobuf(handshake.payload.identityKey);
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
       remoteExtensions: handshake.payload.extensions,
-      remotePeer: peerIdFromPublicKey(publicKey),
+      remotePeer: peerIdFromPublicKey(publicKey2),
       streamMuxer: options?.skipStreamMuxerNegotiation === true ? void 0 : this.getStreamMuxer(handshake.payload.extensions?.streamMuxers)
     };
   }
   /**
    * Perform XX handshake as initiator.
    */
-  async performHandshakeInitiator(connection, privateKey, log11, remoteIdentityKey, options) {
+  async performHandshakeInitiator(connection, privateKey, log10, remoteIdentityKey, options) {
     let result;
     const streamMuxers = options?.skipStreamMuxerNegotiation === true ? [] : [...this.components.upgrader.getStreamMuxers().keys()];
     try {
@@ -32313,7 +31654,7 @@ var Noise = class {
         connection,
         privateKey,
         remoteIdentityKey,
-        log: log11.newScope("xxhandshake"),
+        log: log10.newScope("xxhandshake"),
         crypto: this.crypto,
         prologue: this.prologue,
         s: this.staticKey,
@@ -32333,7 +31674,7 @@ var Noise = class {
   /**
    * Perform XX handshake as responder.
    */
-  async performHandshakeResponder(connection, privateKey, log11, remoteIdentityKey, options) {
+  async performHandshakeResponder(connection, privateKey, log10, remoteIdentityKey, options) {
     let result;
     const streamMuxers = options?.skipStreamMuxerNegotiation === true ? [] : [...this.components.upgrader.getStreamMuxers().keys()];
     try {
@@ -32341,7 +31682,7 @@ var Noise = class {
         connection,
         privateKey,
         remoteIdentityKey,
-        log: log11.newScope("xxhandshake"),
+        log: log10.newScope("xxhandshake"),
         crypto: this.crypto,
         prologue: this.prologue,
         s: this.staticKey,
@@ -33053,7 +32394,7 @@ var YamuxMuxer = class extends AbstractStreamMuxer {
     }
   }
   handleFrame(frame) {
-    const { streamID, type, length: length3 } = frame.header;
+    const { streamID, type, length: length4 } = frame.header;
     this.log.trace("received frame %o", debugFrame(frame.header));
     if (streamID === 0) {
       switch (type) {
@@ -33062,7 +32403,7 @@ var YamuxMuxer = class extends AbstractStreamMuxer {
           return;
         }
         case FrameType.GoAway: {
-          this.handleGoAway(length3);
+          this.handleGoAway(length4);
           return;
         }
         default:
@@ -33275,9 +32616,9 @@ var HopMessage;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33368,9 +32709,9 @@ var StopMessage;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33434,12 +32775,12 @@ var Peer2;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           id: alloc(0),
           addrs: []
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33498,12 +32839,12 @@ var Reservation;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           expire: 0n,
           addrs: []
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33562,9 +32903,9 @@ var Limit;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33647,13 +32988,13 @@ var ReservationVoucher;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           relay: alloc(0),
           peer: alloc(0),
           expiration: 0n
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33715,13 +33056,13 @@ var Envelope2;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           publicKey: alloc(0),
           payloadType: alloc(0),
           signature: alloc(0)
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -33832,8 +33173,8 @@ var LimitTracker = class {
     return output;
   }
 };
-var CircuitListen = fmt(and(P2P.matchers[0], code2(CODE_P2P_CIRCUIT)));
-var CircuitSearch = fmt(code2(CODE_P2P_CIRCUIT));
+var CircuitListen = fmt(and(P2P.matchers[0], code3(CODE_P2P_CIRCUIT)));
+var CircuitSearch = fmt(code3(CODE_P2P_CIRCUIT));
 
 // node_modules/@libp2p/circuit-relay-v2/dist/src/transport/discovery.js
 var RelayDiscovery = class extends TypedEventEmitter {
@@ -34821,7 +34162,7 @@ function extractTuple(name3, ma) {
 }
 __name(extractTuple, "extractTuple");
 function hasTLS(ma) {
-  return ma.some(({ code: code3 }) => code3 === CODE_TLS);
+  return ma.some(({ code: code4 }) => code4 === CODE_TLS);
 }
 __name(hasTLS, "hasTLS");
 function interpretNext(head, rest) {
@@ -35167,14 +34508,14 @@ __name(webSockets, "webSockets");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-public/pb/message.js
 var Message;
-(function(Message3) {
+(function(Message4) {
   let Flag2;
   (function(Flag3) {
     Flag3["FIN"] = "FIN";
     Flag3["STOP_SENDING"] = "STOP_SENDING";
     Flag3["RESET"] = "RESET";
     Flag3["FIN_ACK"] = "FIN_ACK";
-  })(Flag2 = Message3.Flag || (Message3.Flag = {}));
+  })(Flag2 = Message4.Flag || (Message4.Flag = {}));
   let __FlagValues;
   (function(__FlagValues2) {
     __FlagValues2[__FlagValues2["FIN"] = 0] = "FIN";
@@ -35186,9 +34527,9 @@ var Message;
     Flag3.codec = () => {
       return enumeration(__FlagValues);
     };
-  })(Flag2 = Message3.Flag || (Message3.Flag = {}));
+  })(Flag2 = Message4.Flag || (Message4.Flag = {}));
   let _codec;
-  Message3.codec = () => {
+  Message4.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -35196,7 +34537,7 @@ var Message;
         }
         if (obj.flag != null) {
           w.uint32(8);
-          Message3.Flag.codec().encode(obj.flag, w);
+          Message4.Flag.codec().encode(obj.flag, w);
         }
         if (obj.message != null) {
           w.uint32(18);
@@ -35205,14 +34546,14 @@ var Message;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
             case 1: {
-              obj.flag = Message3.Flag.codec().decode(reader);
+              obj.flag = Message4.Flag.codec().decode(reader);
               break;
             }
             case 2: {
@@ -35230,11 +34571,11 @@ var Message;
     }
     return _codec;
   };
-  Message3.encode = (obj) => {
-    return encodeMessage(obj, Message3.codec());
+  Message4.encode = (obj) => {
+    return encodeMessage(obj, Message4.codec());
   };
-  Message3.decode = (buf, opts) => {
-    return decodeMessage(buf, Message3.codec(), opts);
+  Message4.decode = (buf, opts) => {
+    return decodeMessage(buf, Message4.codec(), opts);
   };
 })(Message || (Message = {}));
 
@@ -35297,10 +34638,10 @@ var UnexpectedEOFError3 = class extends Error {
 };
 
 // node_modules/@libp2p/webrtc/node_modules/it-length-prefixed/dist/src/utils.js
-function isAsyncIterable8(thing) {
+function isAsyncIterable9(thing) {
   return thing[Symbol.asyncIterator] != null;
 }
-__name(isAsyncIterable8, "isAsyncIterable");
+__name(isAsyncIterable9, "isAsyncIterable");
 
 // node_modules/@libp2p/webrtc/node_modules/it-length-prefixed/dist/src/encode.js
 function validateMaxDataLength2(chunk, maxDataLength) {
@@ -35309,10 +34650,10 @@ function validateMaxDataLength2(chunk, maxDataLength) {
   }
 }
 __name(validateMaxDataLength2, "validateMaxDataLength");
-var defaultEncoder2 = /* @__PURE__ */ __name((length3) => {
-  const lengthLength = encodingLength2(length3);
+var defaultEncoder2 = /* @__PURE__ */ __name((length4) => {
+  const lengthLength = encodingLength2(length4);
   const lengthBuf = allocUnsafe(lengthLength);
-  encode6(length3, lengthBuf);
+  encode6(length4, lengthBuf);
   defaultEncoder2.bytes = lengthLength;
   return lengthBuf;
 }, "defaultEncoder");
@@ -35323,11 +34664,11 @@ function encode8(source, options) {
   const maxDataLength = options?.maxDataLength ?? MAX_DATA_LENGTH2;
   function* maybeYield(chunk) {
     validateMaxDataLength2(chunk, maxDataLength);
-    const length3 = encodeLength2(chunk.byteLength);
-    if (length3 instanceof Uint8Array) {
-      yield length3;
+    const length4 = encodeLength2(chunk.byteLength);
+    if (length4 instanceof Uint8Array) {
+      yield length4;
     } else {
-      yield* length3;
+      yield* length4;
     }
     if (chunk instanceof Uint8Array) {
       yield chunk;
@@ -35336,7 +34677,7 @@ function encode8(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable8(source)) {
+  if (isAsyncIterable9(source)) {
     return (async function* () {
       for await (const chunk of source) {
         yield* maybeYield(chunk);
@@ -35365,9 +34706,9 @@ var ReadMode2;
   ReadMode3[ReadMode3["DATA"] = 1] = "DATA";
 })(ReadMode2 || (ReadMode2 = {}));
 var defaultDecoder2 = /* @__PURE__ */ __name((buf) => {
-  const length3 = decode7(buf);
-  defaultDecoder2.bytes = encodingLength2(length3);
-  return length3;
+  const length4 = decode7(buf);
+  defaultDecoder2.bytes = encodingLength2(length4);
+  return length4;
 }, "defaultDecoder");
 defaultDecoder2.bytes = 0;
 function decode9(source, options) {
@@ -35419,7 +34760,7 @@ function decode9(source, options) {
     }
   }
   __name(maybeYield, "maybeYield");
-  if (isAsyncIterable8(source)) {
+  if (isAsyncIterable9(source)) {
     return (async function* () {
       for await (const buf of source) {
         buffer.append(buf);
@@ -36080,13 +35421,13 @@ var SDPHandshakeFailedError = class extends WebRTCTransportError {
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/pb/message.js
 var Message2;
-(function(Message3) {
+(function(Message4) {
   let Type;
   (function(Type2) {
     Type2["SDP_OFFER"] = "SDP_OFFER";
     Type2["SDP_ANSWER"] = "SDP_ANSWER";
     Type2["ICE_CANDIDATE"] = "ICE_CANDIDATE";
-  })(Type = Message3.Type || (Message3.Type = {}));
+  })(Type = Message4.Type || (Message4.Type = {}));
   let __TypeValues;
   (function(__TypeValues2) {
     __TypeValues2[__TypeValues2["SDP_OFFER"] = 0] = "SDP_OFFER";
@@ -36097,9 +35438,9 @@ var Message2;
     Type2.codec = () => {
       return enumeration(__TypeValues);
     };
-  })(Type = Message3.Type || (Message3.Type = {}));
+  })(Type = Message4.Type || (Message4.Type = {}));
   let _codec;
-  Message3.codec = () => {
+  Message4.codec = () => {
     if (_codec == null) {
       _codec = message((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
@@ -36107,7 +35448,7 @@ var Message2;
         }
         if (obj.type != null) {
           w.uint32(8);
-          Message3.Type.codec().encode(obj.type, w);
+          Message4.Type.codec().encode(obj.type, w);
         }
         if (obj.data != null) {
           w.uint32(18);
@@ -36116,14 +35457,14 @@ var Message2;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {};
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
             case 1: {
-              obj.type = Message3.Type.codec().decode(reader);
+              obj.type = Message4.Type.codec().decode(reader);
               break;
             }
             case 2: {
@@ -36141,11 +35482,11 @@ var Message2;
     }
     return _codec;
   };
-  Message3.encode = (obj) => {
-    return encodeMessage(obj, Message3.codec());
+  Message4.encode = (obj) => {
+    return encodeMessage(obj, Message4.codec());
   };
-  Message3.decode = (buf, opts) => {
-    return decodeMessage(buf, Message3.codec(), opts);
+  Message4.decode = (buf, opts) => {
+    return decodeMessage(buf, Message4.codec(), opts);
   };
 })(Message2 || (Message2 = {}));
 
@@ -36226,10 +35567,10 @@ function getRemotePeer(ma) {
 __name(getRemotePeer, "getRemotePeer");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/initiate-connection.js
-async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log11, logger: logger3, onProgress }) {
+async function initiateConnection({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log: log10, logger: logger3, onProgress }) {
   const { circuitAddress, targetPeer } = splitAddr(ma);
   metrics?.dialerEvents.increment({ open: true });
-  log11.trace("dialing circuit address: %a", circuitAddress);
+  log10.trace("dialing circuit address: %a", circuitAddress);
   const connections = connectionManager.getConnections(targetPeer);
   let connection;
   if (connections.length === 0) {
@@ -36267,81 +35608,81 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
     const channel = peerConnection.createDataChannel("init");
     peerConnection.onicecandidate = ({ candidate }) => {
       if (peerConnection.connectionState === "connected") {
-        log11.trace("ignore new ice candidate as peer connection is already connected");
+        log10.trace("ignore new ice candidate as peer connection is already connected");
         return;
       }
       if (candidate == null || candidate?.candidate === "") {
-        log11.trace("initiator detected end of ICE candidates");
+        log10.trace("initiator detected end of ICE candidates");
         return;
       }
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log11.trace("initiator sending ICE candidate %o", candidate);
+      log10.trace("initiator sending ICE candidate %o", candidate);
       void messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log11.error("error sending ICE candidate - %e", err);
+        log10.error("error sending ICE candidate - %e", err);
       });
     };
     peerConnection.onicecandidateerror = (event) => {
-      log11.error("initiator ICE candidate error", event);
+      log10.error("initiator ICE candidate error", event);
     };
     const offerSdp = await peerConnection.createOffer().catch((err) => {
-      log11.error("could not execute createOffer - %e", err);
+      log10.error("could not execute createOffer - %e", err);
       throw new SDPHandshakeFailedError("Failed to set createOffer");
     });
-    log11.trace("initiator send SDP offer %s", offerSdp.sdp);
+    log10.trace("initiator send SDP offer %s", offerSdp.sdp);
     onProgress?.(new CustomProgressEvent("webrtc:send-sdp-offer"));
     await messageStream.write({ type: Message2.Type.SDP_OFFER, data: offerSdp.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(offerSdp).catch((err) => {
-      log11.error("could not execute setLocalDescription - %e", err);
+      log10.error("could not execute setLocalDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set localDescription");
     });
     onProgress?.(new CustomProgressEvent("webrtc:read-sdp-answer"));
-    log11.trace("initiator read SDP answer");
+    log10.trace("initiator read SDP answer");
     const answerMessage = await messageStream.read({
       signal
     });
     if (answerMessage.type !== Message2.Type.SDP_ANSWER) {
       throw new SDPHandshakeFailedError("Remote should send an SDP answer");
     }
-    log11.trace("initiator received SDP answer %s", answerMessage.data);
+    log10.trace("initiator received SDP answer %s", answerMessage.data);
     const answerSdp = new RTCSessionDescription2({ type: "answer", sdp: answerMessage.data });
     await peerConnection.setRemoteDescription(answerSdp).catch((err) => {
-      log11.error("could not execute setRemoteDescription - %e", err);
+      log10.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
     });
-    log11.trace("initiator read candidates until connected");
+    log10.trace("initiator read candidates until connected");
     onProgress?.(new CustomProgressEvent("webrtc:read-ice-candidates"));
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "initiator",
       signal,
-      log: log11,
+      log: log10,
       onProgress
     });
-    log11.trace("initiator connected");
+    log10.trace("initiator connected");
     if (channel.readyState !== "open") {
-      log11.trace("wait for init channel to open");
+      log10.trace("wait for init channel to open");
       await pEvent(channel, "open", {
         signal
       });
     }
-    log11.trace("closing init channel");
+    log10.trace("closing init channel");
     channel.close();
-    log11.trace("waiting for init channel to close");
+    log10.trace("waiting for init channel to close");
     await pEvent(channel, "close", {
       signal
     });
     onProgress?.(new CustomProgressEvent("webrtc:close-signaling-stream"));
-    log11.trace("closing signaling channel");
+    log10.trace("closing signaling channel");
     await stream.close({
       signal
     });
-    log11.trace("initiator connected to remote address %s", ma);
+    log10.trace("initiator connected to remote address %s", ma);
     return {
       remoteAddress: ma,
       // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
@@ -36349,7 +35690,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
       muxerFactory
     };
   } catch (err) {
-    log11.error("outgoing signaling error - %e", err);
+    log10.error("outgoing signaling error - %e", err);
     peerConnection.close();
     stream.abort(err);
     throw err;
@@ -36361,7 +35702,7 @@ async function initiateConnection({ rtcConfiguration, dataChannel, signal, metri
 __name(initiateConnection, "initiateConnection");
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/listener.js
-var Circuit2 = fmt(P2P.matchers[0], code2(CODE_P2P_CIRCUIT));
+var Circuit2 = fmt(P2P.matchers[0], code3(CODE_P2P_CIRCUIT));
 var WebRTCPeerListener = class _WebRTCPeerListener extends TypedEventEmitter {
   static {
     __name(this, "WebRTCPeerListener");
@@ -36404,76 +35745,76 @@ var WebRTCPeerListener = class _WebRTCPeerListener extends TypedEventEmitter {
 };
 
 // node_modules/@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler.js
-async function handleIncomingStream(stream, connection, { peerConnection, signal, log: log11 }) {
-  log11.trace("new inbound signaling stream");
+async function handleIncomingStream(stream, connection, { peerConnection, signal, log: log10 }) {
+  log10.trace("new inbound signaling stream");
   const messageStream = pbStream(stream).pb(Message2);
   try {
     peerConnection.onicecandidate = ({ candidate }) => {
       if (peerConnection.connectionState === "connected") {
-        log11.trace("ignore new ice candidate as peer connection is already connected");
+        log10.trace("ignore new ice candidate as peer connection is already connected");
         return;
       }
       if (candidate == null || candidate?.candidate === "") {
-        log11.trace("recipient detected end of ICE candidates");
+        log10.trace("recipient detected end of ICE candidates");
         return;
       }
       const data = JSON.stringify(candidate?.toJSON() ?? null);
-      log11.trace("recipient sending ICE candidate %s", data);
+      log10.trace("recipient sending ICE candidate %s", data);
       messageStream.write({
         type: Message2.Type.ICE_CANDIDATE,
         data
       }, {
         signal
       }).catch((err) => {
-        log11.error("error sending ICE candidate - %e", err);
+        log10.error("error sending ICE candidate - %e", err);
       });
     };
-    log11.trace("recipient read SDP offer");
+    log10.trace("recipient read SDP offer");
     const pbOffer = await messageStream.read({
       signal
     });
     if (pbOffer.type !== Message2.Type.SDP_OFFER) {
       throw new SDPHandshakeFailedError(`expected message type SDP_OFFER, received: ${pbOffer.type ?? "undefined"} `);
     }
-    log11.trace("recipient received SDP offer %s", pbOffer.data);
+    log10.trace("recipient received SDP offer %s", pbOffer.data);
     const offer = new RTCSessionDescription2({
       type: "offer",
       sdp: pbOffer.data
     });
     await peerConnection.setRemoteDescription(offer).catch((err) => {
-      log11.error("could not execute setRemoteDescription - %e", err);
+      log10.error("could not execute setRemoteDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set remoteDescription");
     });
     const answer = await peerConnection.createAnswer().catch((err) => {
-      log11.error("could not execute createAnswer - %e", err);
+      log10.error("could not execute createAnswer - %e", err);
       throw new SDPHandshakeFailedError("Failed to create answer");
     });
-    log11.trace("recipient send SDP answer %s", answer.sdp);
+    log10.trace("recipient send SDP answer %s", answer.sdp);
     await messageStream.write({ type: Message2.Type.SDP_ANSWER, data: answer.sdp }, {
       signal
     });
     await peerConnection.setLocalDescription(answer).catch((err) => {
-      log11.error("could not execute setLocalDescription - %e", err);
+      log10.error("could not execute setLocalDescription - %e", err);
       throw new SDPHandshakeFailedError("Failed to set localDescription");
     });
-    log11.trace("recipient read candidates until connected");
+    log10.trace("recipient read candidates until connected");
     await readCandidatesUntilConnected(peerConnection, messageStream, {
       direction: "recipient",
       signal,
-      log: log11
+      log: log10
     });
   } catch (err) {
     if (peerConnection.connectionState !== "connected") {
-      log11.error("error while handling signaling stream from peer %a - %e", connection.remoteAddr, err);
+      log10.error("error while handling signaling stream from peer %a - %e", connection.remoteAddr, err);
       peerConnection.close();
       throw err;
     } else {
-      log11("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
+      log10("error while handling signaling stream from peer %a, ignoring as the RTCPeerConnection is already connected", connection.remoteAddr, err);
     }
   }
   const remotePeer2 = getRemotePeer(connection.remoteAddr);
   const remoteAddress = multiaddr(`/webrtc/p2p/${remotePeer2}`);
-  log11.trace("recipient connected to remote address %s", remoteAddress);
+  log10.trace("recipient connected to remote address %s", remoteAddress);
   return {
     remoteAddress,
     remotePeer: remotePeer2
@@ -36724,12 +36065,12 @@ var Identify;
         if (opts.lengthDelimited !== false) {
           w.ldelim();
         }
-      }, (reader, length3, opts = {}) => {
+      }, (reader, length4, opts = {}) => {
         const obj = {
           listenAddrs: [],
           protocols: []
         };
-        const end = length3 == null ? reader.len : reader.pos + length3;
+        const end = length4 == null ? reader.len : reader.pos + length4;
         while (reader.pos < end) {
           const tag = reader.uint32();
           switch (tag >>> 3) {
@@ -36808,8 +36149,8 @@ function getCleanMultiaddr(addr) {
   }
 }
 __name(getCleanMultiaddr, "getCleanMultiaddr");
-async function consumeIdentifyMessage(peerStore, events, log11, connection, message2) {
-  log11("received identify from %p", connection.remotePeer);
+async function consumeIdentifyMessage(peerStore, events, log10, connection, message2) {
+  log10("received identify from %p", connection.remotePeer);
   if (message2 == null) {
     throw new InvalidMessageError("message was null or undefined");
   }
@@ -36824,16 +36165,16 @@ async function consumeIdentifyMessage(peerStore, events, log11, connection, mess
     peer.protocols = message2.protocols;
   }
   if (message2.publicKey != null) {
-    const publicKey = publicKeyFromProtobuf(message2.publicKey);
-    const peerId = peerIdFromPublicKey(publicKey);
+    const publicKey2 = publicKeyFromProtobuf(message2.publicKey);
+    const peerId = peerIdFromPublicKey(publicKey2);
     if (!peerId.equals(connection.remotePeer)) {
       throw new InvalidMessageError("public key did not match remote PeerId");
     }
-    peer.publicKey = publicKey;
+    peer.publicKey = publicKey2;
   }
   let output;
   if (message2.signedPeerRecord != null) {
-    log11.trace("received signedPeerRecord from %p", connection.remotePeer);
+    log10.trace("received signedPeerRecord from %p", connection.remotePeer);
     let peerRecordEnvelope2 = message2.signedPeerRecord;
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope2, PeerRecord2.DOMAIN);
     let peerRecord = PeerRecord2.createFromProtobuf(envelope.payload);
@@ -36858,7 +36199,7 @@ async function consumeIdentifyMessage(peerStore, events, log11, connection, mess
         const storedEnvelope = RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope);
         const storedRecord = PeerRecord2.createFromProtobuf(storedEnvelope.payload);
         if (storedRecord.seqNumber >= peerRecord.seqNumber) {
-          log11("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
+          log10("sequence number was lower or equal to existing sequence number - stored: %d received: %d", storedRecord.seqNumber, peerRecord.seqNumber);
           peerRecord = storedRecord;
           peerRecordEnvelope2 = existingPeer.peerRecordEnvelope;
         }
@@ -36874,9 +36215,9 @@ async function consumeIdentifyMessage(peerStore, events, log11, connection, mess
       addresses: peerRecord.multiaddrs
     };
   } else {
-    log11("%p did not send a signed peer record", connection.remotePeer);
+    log10("%p did not send a signed peer record", connection.remotePeer);
   }
-  log11.trace("patching %p with", connection.remotePeer, peer);
+  log10.trace("patching %p with", connection.remotePeer, peer);
   await peerStore.patch(connection.remotePeer, peer);
   if (message2.agentVersion != null || message2.protocolVersion != null) {
     const metadata = {};
@@ -36886,7 +36227,7 @@ async function consumeIdentifyMessage(peerStore, events, log11, connection, mess
     if (message2.protocolVersion != null) {
       metadata.ProtocolVersion = fromString2(message2.protocolVersion);
     }
-    log11.trace("merging %p metadata", connection.remotePeer, metadata);
+    log10.trace("merging %p metadata", connection.remotePeer, metadata);
     await peerStore.merge(connection.remotePeer, {
       metadata
     });
@@ -36988,7 +36329,7 @@ var Identify2 = class extends AbstractIdentify {
   ];
   async _identify(connection, options = {}) {
     let stream;
-    let log11;
+    let log10;
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout);
       setMaxListeners(Infinity, signal);
@@ -37003,7 +36344,7 @@ var Identify2 = class extends AbstractIdentify {
         ...options,
         runOnLimitedConnection: this.runOnLimitedConnection
       });
-      log11 = stream.log.newScope("identify");
+      log10 = stream.log.newScope("identify");
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
       }).pb(Identify);
@@ -37011,18 +36352,18 @@ var Identify2 = class extends AbstractIdentify {
       await pb.unwrap().unwrap().close(options);
       return message2;
     } catch (err) {
-      log11?.error("identify failed - %e", err);
+      log10?.error("identify failed - %e", err);
       stream?.abort(err);
       throw err;
     }
   }
   async identify(connection, options = {}) {
     const message2 = await this._identify(connection, options);
-    const { publicKey, protocols, observedAddr } = message2;
-    if (publicKey == null) {
+    const { publicKey: publicKey2, protocols, observedAddr } = message2;
+    if (publicKey2 == null) {
       throw new InvalidMessageError("Public key was missing from identify message");
     }
-    const key = publicKeyFromProtobuf(publicKey);
+    const key = publicKeyFromProtobuf(publicKey2);
     const id = peerIdFromCID(key.toCID());
     if (!connection.remotePeer.equals(id)) {
       throw new InvalidMessageError("Identified peer does not match the expected peer");
@@ -37059,8 +36400,8 @@ var Identify2 = class extends AbstractIdentify {
    * to the requesting peer over the given `connection`
    */
   async handleProtocol(stream, connection) {
-    const log11 = stream.log.newScope("identify");
-    log11("responding to identify");
+    const log10 = stream.log.newScope("identify");
+    log10("responding to identify");
     const signal = AbortSignal.timeout(this.timeout);
     setMaxListeners(Infinity, signal);
     const peerData = await this.components.peerStore.get(this.components.peerId, {
@@ -37083,7 +36424,7 @@ var Identify2 = class extends AbstractIdentify {
       observedAddr = void 0;
     }
     const pb = pbStream(stream).pb(Identify);
-    log11("send response");
+    log10("send response");
     await pb.write({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
@@ -37095,7 +36436,7 @@ var Identify2 = class extends AbstractIdentify {
     }, {
       signal
     });
-    log11("close write");
+    log10("close write");
     await pb.unwrap().unwrap().close({
       signal
     });
@@ -37165,8 +36506,8 @@ var Ping = class {
    * A handler to register with Libp2p to process ping messages
    */
   async handlePing(stream, connection) {
-    const log11 = stream.log.newScope("ping");
-    log11.trace("ping from %p", connection.remotePeer);
+    const log10 = stream.log.newScope("ping");
+    log10.trace("ping from %p", connection.remotePeer);
     const signal = AbortSignal.timeout(this.timeout);
     setMaxListeners(Infinity, signal);
     signal.addEventListener("abort", () => {
@@ -37175,21 +36516,21 @@ var Ping = class {
     const start2 = Date.now();
     for await (const buf of stream) {
       if (stream.status !== "open") {
-        log11("stream status changed to %s", stream.status);
+        log10("stream status changed to %s", stream.status);
         break;
       }
       if (!stream.send(buf)) {
-        log11("waiting for stream to drain");
+        log10("waiting for stream to drain");
         await pEvent(stream, "drain", {
           rejectionEvents: [
             "close"
           ],
           signal
         });
-        log11("stream drained");
+        log10("stream drained");
       }
     }
-    log11("ping from %p complete in %dms", connection.remotePeer, Date.now() - start2);
+    log10("ping from %p complete in %dms", connection.remotePeer, Date.now() - start2);
     await stream.close({
       signal
     });
@@ -37203,7 +36544,7 @@ var Ping = class {
       runOnLimitedConnection: this.runOnLimitedConnection,
       ...options
     });
-    const log11 = stream.log.newScope("ping");
+    const log10 = stream.log.newScope("ping");
     try {
       const start2 = Date.now();
       const finished = Promise.withResolvers();
@@ -37232,7 +36573,7 @@ var Ping = class {
       await stream.close(options);
       return await raceSignal(finished.promise, options.signal);
     } catch (err) {
-      log11.error("error while pinging %o - %e", peer, err);
+      log10.error("error while pinging %o - %e", peer, err);
       stream?.abort(err);
       throw err;
     } finally {
@@ -37247,12 +36588,21055 @@ function ping(init = {}) {
 }
 __name(ping, "ping");
 
+// node_modules/@libp2p/kad-dht/dist/src/constants.js
+var second2 = 1e3;
+var minute2 = 60 * second2;
+var hour = 60 * minute2;
+var PROTOCOL = "/ipfs/kad/1.0.0";
+var PROVIDERS_VALIDITY = 48 * hour;
+var REPROVIDE_THRESHOLD = 24 * hour;
+var REPROVIDE_CONCURRENCY = 10;
+var REPROVIDE_MAX_QUEUE_SIZE = 16384;
+var REPROVIDE_INTERVAL = hour;
+var REPROVIDE_TIMEOUT = hour;
+var READ_MESSAGE_TIMEOUT = 10 * second2;
+var ON_PEER_CONNECT_TIMEOUT = 10 * second2;
+var K = 20;
+var ALPHA = 10;
+var QUERY_SELF_INTERVAL = 5 * minute2;
+var QUERY_SELF_INITIAL_INTERVAL = second2;
+var QUERY_SELF_TIMEOUT = 5 * second2;
+var TABLE_REFRESH_INTERVAL = 5 * minute2;
+var TABLE_REFRESH_QUERY_TIMEOUT = 30 * second2;
+var DEFAULT_QUERY_TIMEOUT = 180 * second2;
+var KEEP_ALIVE_TAG2 = `${KEEP_ALIVE}-kad-dht`;
+
+// node_modules/@libp2p/record/dist/src/record.js
+var Record;
+(function(Record3) {
+  let _codec;
+  Record3.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork();
+        }
+        if (obj.key != null && obj.key.byteLength > 0) {
+          w.uint32(10);
+          w.bytes(obj.key);
+        }
+        if (obj.value != null && obj.value.byteLength > 0) {
+          w.uint32(18);
+          w.bytes(obj.value);
+        }
+        if (obj.timeReceived != null && obj.timeReceived !== "") {
+          w.uint32(42);
+          w.string(obj.timeReceived);
+        }
+        if (opts.lengthDelimited !== false) {
+          w.ldelim();
+        }
+      }, (reader, length4, opts = {}) => {
+        const obj = {
+          key: alloc(0),
+          value: alloc(0),
+          timeReceived: ""
+        };
+        const end = length4 == null ? reader.len : reader.pos + length4;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1: {
+              obj.key = reader.bytes();
+              break;
+            }
+            case 2: {
+              obj.value = reader.bytes();
+              break;
+            }
+            case 5: {
+              obj.timeReceived = reader.string();
+              break;
+            }
+            default: {
+              reader.skipType(tag & 7);
+              break;
+            }
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  Record3.encode = (obj) => {
+    return encodeMessage(obj, Record3.codec());
+  };
+  Record3.decode = (buf, opts) => {
+    return decodeMessage(buf, Record3.codec(), opts);
+  };
+})(Record || (Record = {}));
+
+// node_modules/@libp2p/record/dist/src/utils.js
+function toRFC3339(time) {
+  const year = time.getUTCFullYear();
+  const month = String(time.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(time.getUTCDate()).padStart(2, "0");
+  const hour2 = String(time.getUTCHours()).padStart(2, "0");
+  const minute3 = String(time.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(time.getUTCSeconds()).padStart(2, "0");
+  const milliseconds = time.getUTCMilliseconds();
+  const nanoseconds = String(milliseconds * 1e3 * 1e3).padStart(9, "0");
+  return `${year}-${month}-${day}T${hour2}:${minute3}:${seconds}.${nanoseconds}Z`;
+}
+__name(toRFC3339, "toRFC3339");
+function parseRFC3339(time) {
+  const rfc3339Matcher = new RegExp(
+    // 2006-01-02T
+    "(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d+)Z"
+  );
+  const m2 = String(time).trim().match(rfc3339Matcher);
+  if (m2 == null) {
+    throw new Error("Invalid format");
+  }
+  const year = parseInt(m2[1], 10);
+  const month = parseInt(m2[2], 10) - 1;
+  const date = parseInt(m2[3], 10);
+  const hour2 = parseInt(m2[4], 10);
+  const minute3 = parseInt(m2[5], 10);
+  const second3 = parseInt(m2[6], 10);
+  const millisecond = parseInt(m2[7].slice(0, -6), 10);
+  return new Date(Date.UTC(year, month, date, hour2, minute3, second3, millisecond));
+}
+__name(parseRFC3339, "parseRFC3339");
+
+// node_modules/@libp2p/record/dist/src/index.js
+var Libp2pRecord = class _Libp2pRecord {
+  static {
+    __name(this, "Libp2pRecord");
+  }
+  key;
+  value;
+  timeReceived;
+  constructor(key, value2, timeReceived) {
+    if (!(key instanceof Uint8Array)) {
+      throw new Error("key must be a Uint8Array");
+    }
+    if (!(value2 instanceof Uint8Array)) {
+      throw new Error("value must be a Uint8Array");
+    }
+    this.key = key;
+    this.value = value2;
+    this.timeReceived = timeReceived;
+  }
+  serialize() {
+    return Record.encode(this.prepareSerialize());
+  }
+  /**
+   * Return the object format ready to be given to the protobuf library.
+   */
+  prepareSerialize() {
+    return {
+      key: this.key,
+      value: this.value,
+      timeReceived: toRFC3339(this.timeReceived)
+    };
+  }
+  /**
+   * Decode a protobuf encoded record
+   */
+  static deserialize(raw) {
+    const rec = Record.decode(raw);
+    return new _Libp2pRecord(rec.key, rec.value, new Date(rec.timeReceived));
+  }
+  /**
+   * Create a record from the raw object returned from the protobuf library
+   */
+  static fromDeserialized(obj) {
+    const receivedTime = parseRFC3339(obj.timeReceived);
+    if (obj.key == null) {
+      throw new Error("key missing from deserialized object");
+    }
+    if (obj.value == null) {
+      throw new Error("value missing from deserialized object");
+    }
+    const rec = new _Libp2pRecord(obj.key, obj.value, receivedTime);
+    return rec;
+  }
+};
+
+// node_modules/it-map/dist/src/index.js
+function isAsyncIterable10(thing) {
+  return thing[Symbol.asyncIterator] != null;
+}
+__name(isAsyncIterable10, "isAsyncIterable");
+function map(source, func) {
+  let index = 0;
+  if (isAsyncIterable10(source)) {
+    return (async function* () {
+      for await (const val of source) {
+        yield func(val, index++);
+      }
+    })();
+  }
+  const peekable2 = src_default5(source);
+  const { value: value2, done } = peekable2.next();
+  if (done === true) {
+    return (function* () {
+    })();
+  }
+  const res = func(value2, index++);
+  if (typeof res.then === "function") {
+    return (async function* () {
+      yield await res;
+      for (const val of peekable2) {
+        yield func(val, index++);
+      }
+    })();
+  }
+  const fn = func;
+  return (function* () {
+    yield res;
+    for (const val of peekable2) {
+      yield fn(val, index++);
+    }
+  })();
+}
+__name(map, "map");
+var src_default9 = map;
+
+// node_modules/@libp2p/kad-dht/dist/src/errors.js
+var QueryError = class extends Error {
+  static {
+    __name(this, "QueryError");
+  }
+  constructor(message2 = "Query error") {
+    super(message2);
+    this.name = "QueryError";
+  }
+};
+var InvalidRecordError = class extends Error {
+  static {
+    __name(this, "InvalidRecordError");
+  }
+  constructor(message2 = "Invalid record") {
+    super(message2);
+    this.name = "InvalidRecordError";
+  }
+};
+var MissingSelectorError = class extends Error {
+  static {
+    __name(this, "MissingSelectorError");
+  }
+  constructor(message2 = "No selector function configured for prefix") {
+    super(message2);
+    this.name = "MissingSelectorError";
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/message/dht.js
+var Record2;
+(function(Record3) {
+  let _codec;
+  Record3.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork();
+        }
+        if (obj.key != null) {
+          w.uint32(10);
+          w.bytes(obj.key);
+        }
+        if (obj.value != null) {
+          w.uint32(18);
+          w.bytes(obj.value);
+        }
+        if (obj.author != null) {
+          w.uint32(26);
+          w.bytes(obj.author);
+        }
+        if (obj.signature != null) {
+          w.uint32(34);
+          w.bytes(obj.signature);
+        }
+        if (obj.timeReceived != null) {
+          w.uint32(42);
+          w.string(obj.timeReceived);
+        }
+        if (opts.lengthDelimited !== false) {
+          w.ldelim();
+        }
+      }, (reader, length4, opts = {}) => {
+        const obj = {};
+        const end = length4 == null ? reader.len : reader.pos + length4;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1: {
+              obj.key = reader.bytes();
+              break;
+            }
+            case 2: {
+              obj.value = reader.bytes();
+              break;
+            }
+            case 3: {
+              obj.author = reader.bytes();
+              break;
+            }
+            case 4: {
+              obj.signature = reader.bytes();
+              break;
+            }
+            case 5: {
+              obj.timeReceived = reader.string();
+              break;
+            }
+            default: {
+              reader.skipType(tag & 7);
+              break;
+            }
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  Record3.encode = (obj) => {
+    return encodeMessage(obj, Record3.codec());
+  };
+  Record3.decode = (buf, opts) => {
+    return decodeMessage(buf, Record3.codec(), opts);
+  };
+})(Record2 || (Record2 = {}));
+var MessageType;
+(function(MessageType2) {
+  MessageType2["PUT_VALUE"] = "PUT_VALUE";
+  MessageType2["GET_VALUE"] = "GET_VALUE";
+  MessageType2["ADD_PROVIDER"] = "ADD_PROVIDER";
+  MessageType2["GET_PROVIDERS"] = "GET_PROVIDERS";
+  MessageType2["FIND_NODE"] = "FIND_NODE";
+  MessageType2["PING"] = "PING";
+})(MessageType || (MessageType = {}));
+var __MessageTypeValues;
+(function(__MessageTypeValues2) {
+  __MessageTypeValues2[__MessageTypeValues2["PUT_VALUE"] = 0] = "PUT_VALUE";
+  __MessageTypeValues2[__MessageTypeValues2["GET_VALUE"] = 1] = "GET_VALUE";
+  __MessageTypeValues2[__MessageTypeValues2["ADD_PROVIDER"] = 2] = "ADD_PROVIDER";
+  __MessageTypeValues2[__MessageTypeValues2["GET_PROVIDERS"] = 3] = "GET_PROVIDERS";
+  __MessageTypeValues2[__MessageTypeValues2["FIND_NODE"] = 4] = "FIND_NODE";
+  __MessageTypeValues2[__MessageTypeValues2["PING"] = 5] = "PING";
+})(__MessageTypeValues || (__MessageTypeValues = {}));
+(function(MessageType2) {
+  MessageType2.codec = () => {
+    return enumeration(__MessageTypeValues);
+  };
+})(MessageType || (MessageType = {}));
+var ConnectionType;
+(function(ConnectionType2) {
+  ConnectionType2["NOT_CONNECTED"] = "NOT_CONNECTED";
+  ConnectionType2["CONNECTED"] = "CONNECTED";
+  ConnectionType2["CAN_CONNECT"] = "CAN_CONNECT";
+  ConnectionType2["CANNOT_CONNECT"] = "CANNOT_CONNECT";
+})(ConnectionType || (ConnectionType = {}));
+var __ConnectionTypeValues;
+(function(__ConnectionTypeValues2) {
+  __ConnectionTypeValues2[__ConnectionTypeValues2["NOT_CONNECTED"] = 0] = "NOT_CONNECTED";
+  __ConnectionTypeValues2[__ConnectionTypeValues2["CONNECTED"] = 1] = "CONNECTED";
+  __ConnectionTypeValues2[__ConnectionTypeValues2["CAN_CONNECT"] = 2] = "CAN_CONNECT";
+  __ConnectionTypeValues2[__ConnectionTypeValues2["CANNOT_CONNECT"] = 3] = "CANNOT_CONNECT";
+})(__ConnectionTypeValues || (__ConnectionTypeValues = {}));
+(function(ConnectionType2) {
+  ConnectionType2.codec = () => {
+    return enumeration(__ConnectionTypeValues);
+  };
+})(ConnectionType || (ConnectionType = {}));
+var PeerInfo;
+(function(PeerInfo2) {
+  let _codec;
+  PeerInfo2.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork();
+        }
+        if (obj.id != null && obj.id.byteLength > 0) {
+          w.uint32(10);
+          w.bytes(obj.id);
+        }
+        if (obj.multiaddrs != null) {
+          for (const value2 of obj.multiaddrs) {
+            w.uint32(18);
+            w.bytes(value2);
+          }
+        }
+        if (obj.connection != null) {
+          w.uint32(24);
+          ConnectionType.codec().encode(obj.connection, w);
+        }
+        if (opts.lengthDelimited !== false) {
+          w.ldelim();
+        }
+      }, (reader, length4, opts = {}) => {
+        const obj = {
+          id: alloc(0),
+          multiaddrs: []
+        };
+        const end = length4 == null ? reader.len : reader.pos + length4;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1: {
+              obj.id = reader.bytes();
+              break;
+            }
+            case 2: {
+              if (opts.limits?.multiaddrs != null && obj.multiaddrs.length === opts.limits.multiaddrs) {
+                throw new MaxLengthError('Decode error - map field "multiaddrs" had too many elements');
+              }
+              obj.multiaddrs.push(reader.bytes());
+              break;
+            }
+            case 3: {
+              obj.connection = ConnectionType.codec().decode(reader);
+              break;
+            }
+            default: {
+              reader.skipType(tag & 7);
+              break;
+            }
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  PeerInfo2.encode = (obj) => {
+    return encodeMessage(obj, PeerInfo2.codec());
+  };
+  PeerInfo2.decode = (buf, opts) => {
+    return decodeMessage(buf, PeerInfo2.codec(), opts);
+  };
+})(PeerInfo || (PeerInfo = {}));
+var Message3;
+(function(Message4) {
+  let _codec;
+  Message4.codec = () => {
+    if (_codec == null) {
+      _codec = message((obj, w, opts = {}) => {
+        if (opts.lengthDelimited !== false) {
+          w.fork();
+        }
+        if (obj.type != null && __MessageTypeValues[obj.type] !== 0) {
+          w.uint32(8);
+          MessageType.codec().encode(obj.type, w);
+        }
+        if (obj.clusterLevel != null) {
+          w.uint32(80);
+          w.int32(obj.clusterLevel);
+        }
+        if (obj.key != null) {
+          w.uint32(18);
+          w.bytes(obj.key);
+        }
+        if (obj.record != null) {
+          w.uint32(26);
+          w.bytes(obj.record);
+        }
+        if (obj.closer != null) {
+          for (const value2 of obj.closer) {
+            w.uint32(66);
+            PeerInfo.codec().encode(value2, w);
+          }
+        }
+        if (obj.providers != null) {
+          for (const value2 of obj.providers) {
+            w.uint32(74);
+            PeerInfo.codec().encode(value2, w);
+          }
+        }
+        if (opts.lengthDelimited !== false) {
+          w.ldelim();
+        }
+      }, (reader, length4, opts = {}) => {
+        const obj = {
+          type: MessageType.PUT_VALUE,
+          closer: [],
+          providers: []
+        };
+        const end = length4 == null ? reader.len : reader.pos + length4;
+        while (reader.pos < end) {
+          const tag = reader.uint32();
+          switch (tag >>> 3) {
+            case 1: {
+              obj.type = MessageType.codec().decode(reader);
+              break;
+            }
+            case 10: {
+              obj.clusterLevel = reader.int32();
+              break;
+            }
+            case 2: {
+              obj.key = reader.bytes();
+              break;
+            }
+            case 3: {
+              obj.record = reader.bytes();
+              break;
+            }
+            case 8: {
+              if (opts.limits?.closer != null && obj.closer.length === opts.limits.closer) {
+                throw new MaxLengthError('Decode error - map field "closer" had too many elements');
+              }
+              obj.closer.push(PeerInfo.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.closer$
+              }));
+              break;
+            }
+            case 9: {
+              if (opts.limits?.providers != null && obj.providers.length === opts.limits.providers) {
+                throw new MaxLengthError('Decode error - map field "providers" had too many elements');
+              }
+              obj.providers.push(PeerInfo.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.providers$
+              }));
+              break;
+            }
+            default: {
+              reader.skipType(tag & 7);
+              break;
+            }
+          }
+        }
+        return obj;
+      });
+    }
+    return _codec;
+  };
+  Message4.encode = (obj) => {
+    return encodeMessage(obj, Message4.codec());
+  };
+  Message4.decode = (buf, opts) => {
+    return decodeMessage(buf, Message4.codec(), opts);
+  };
+})(Message3 || (Message3 = {}));
+
+// node_modules/@libp2p/kad-dht/dist/src/query/events.js
+function sendQueryEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "SEND_QUERY",
+    type: 0,
+    messageName: fields.type,
+    messageType: fields.type
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:send-query", { detail: event }));
+  return event;
+}
+__name(sendQueryEvent, "sendQueryEvent");
+function peerResponseEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "PEER_RESPONSE",
+    type: 1,
+    messageName: fields.messageType,
+    closer: fields.closer ?? [],
+    providers: fields.providers ?? []
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:peer-response", { detail: event }));
+  return event;
+}
+__name(peerResponseEvent, "peerResponseEvent");
+function finalPeerEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "FINAL_PEER",
+    type: 2
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:final-peer", { detail: event }));
+  return event;
+}
+__name(finalPeerEvent, "finalPeerEvent");
+function queryErrorEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "QUERY_ERROR",
+    type: 3
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:query-error", { detail: event }));
+  return event;
+}
+__name(queryErrorEvent, "queryErrorEvent");
+function providerEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "PROVIDER",
+    type: 4
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:provider", { detail: event }));
+  return event;
+}
+__name(providerEvent, "providerEvent");
+function valueEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "VALUE",
+    type: 5
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:value", { detail: event }));
+  return event;
+}
+__name(valueEvent, "valueEvent");
+function dialPeerEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "DIAL_PEER",
+    type: 7
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:dial-peer", { detail: event }));
+  return event;
+}
+__name(dialPeerEvent, "dialPeerEvent");
+function pathEndedEvent(fields, options = {}) {
+  const event = {
+    ...fields,
+    name: "PATH_ENDED",
+    type: 8
+  };
+  options.onProgress?.(new CustomEvent("kad-dht:query:path-ended", { detail: event }));
+  return event;
+}
+__name(pathEndedEvent, "pathEndedEvent");
+
+// node_modules/@libp2p/kad-dht/dist/src/record/selectors.js
+function bestRecord(selectors2, k, records) {
+  if (records.length === 0) {
+    throw new InvalidParametersError("No records given");
+  }
+  const kStr = toString2(k);
+  const parts = kStr.split("/");
+  if (parts.length < 3) {
+    throw new InvalidParametersError("Record key does not have a selector function");
+  }
+  const selector = selectors2[parts[1].toString()];
+  if (selector == null) {
+    throw new MissingSelectorError(`No selector function configured for key type "${parts[1]}"`);
+  }
+  if (records.length === 1) {
+    return 0;
+  }
+  return selector(k, records);
+}
+__name(bestRecord, "bestRecord");
+function publicKey(k, records) {
+  return 0;
+}
+__name(publicKey, "publicKey");
+var selectors = {
+  pk: publicKey
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/record/validators.js
+async function verifyRecord(validators2, record, options) {
+  const key = record.key;
+  const keyString = toString2(key);
+  const parts = keyString.split("/");
+  if (parts.length < 3) {
+    return;
+  }
+  const validator = validators2[parts[1].toString()];
+  if (validator == null) {
+    throw new InvalidParametersError(`No validator available for key type "${parts[1]}"`);
+  }
+  await validator(key, record.value, options);
+}
+__name(verifyRecord, "verifyRecord");
+var validatePublicKeyRecord = /* @__PURE__ */ __name(async (key, publicKey2, options) => {
+  if (!(key instanceof Uint8Array)) {
+    throw new InvalidParametersError('"key" must be a Uint8Array');
+  }
+  if (key.byteLength < 5) {
+    throw new InvalidParametersError("Invalid public key record");
+  }
+  const prefix = toString2(key.subarray(0, 4));
+  if (prefix !== "/pk/") {
+    throw new InvalidParametersError("key was not prefixed with /pk/");
+  }
+  const pubKey = publicKeyFromProtobuf(publicKey2);
+  const keyHash = key.slice(4);
+  if (!equals3(keyHash, pubKey.toMultihash().bytes)) {
+    throw new InvalidParametersError("public key does not match passed in key");
+  }
+}, "validatePublicKeyRecord");
+var validators = {
+  pk: validatePublicKeyRecord
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/utils.js
+var PK_PREFIX = fromString2("/pk/");
+function removePrivateAddressesMapper(peer) {
+  return {
+    ...peer,
+    multiaddrs: peer.multiaddrs.filter((multiaddr2) => {
+      return !isPrivate(multiaddr2);
+    })
+  };
+}
+__name(removePrivateAddressesMapper, "removePrivateAddressesMapper");
+async function convertBuffer(buf, options) {
+  const multihash = await sha2562.digest(buf);
+  options?.signal?.throwIfAborted();
+  return multihash.digest;
+}
+__name(convertBuffer, "convertBuffer");
+async function convertPeerId(peerId, options) {
+  return convertBuffer(peerId.toMultihash().bytes, options);
+}
+__name(convertPeerId, "convertPeerId");
+function bufferToRecordKey(prefix, buf) {
+  return new Key(`${prefix}/${toString2(buf, "base32")}`, false);
+}
+__name(bufferToRecordKey, "bufferToRecordKey");
+function keyForPublicKey(peerId) {
+  return concat([
+    PK_PREFIX,
+    peerId.toMultihash().bytes
+  ]);
+}
+__name(keyForPublicKey, "keyForPublicKey");
+function isPublicKeyKey(key) {
+  return toString2(key.subarray(0, 4)) === "/pk/";
+}
+__name(isPublicKeyKey, "isPublicKeyKey");
+function fromPublicKeyKey(key) {
+  const multihash = decode5(key.subarray(4));
+  return peerIdFromMultihash(multihash);
+}
+__name(fromPublicKeyKey, "fromPublicKeyKey");
+function createPutRecord(key, value2) {
+  const timeReceived = /* @__PURE__ */ new Date();
+  const rec = new Libp2pRecord(key, value2, timeReceived);
+  return rec.serialize();
+}
+__name(createPutRecord, "createPutRecord");
+function parseProviderKey(key) {
+  const parts = key.toString().split("/");
+  const peerIdStr = parts.pop();
+  const cidStr = parts.pop();
+  if (peerIdStr == null || cidStr == null) {
+    throw new Error(`incorrectly formatted provider entry key in datastore: ${key.toString()}`);
+  }
+  return {
+    cid: CID.createV1(code2, decode5(fromString2(cidStr, "base32"))),
+    peerId: peerIdFromString(peerIdStr)
+  };
+}
+__name(parseProviderKey, "parseProviderKey");
+function toProviderKey(prefix, cid, peerId) {
+  const cidStr = typeof cid === "string" ? cid : toString2(cid.multihash.bytes, "base32");
+  const parts = [
+    prefix,
+    cidStr
+  ];
+  if (peerId != null) {
+    parts.push(peerId.toString());
+  }
+  return new Key(parts.join("/"));
+}
+__name(toProviderKey, "toProviderKey");
+function readProviderTime(buf) {
+  return new Date(decode7(buf));
+}
+__name(readProviderTime, "readProviderTime");
+function timeOperationGenerator(fn, operationMetrics, type) {
+  return async function* (...args) {
+    const stopSuccessTimer = operationMetrics.queryTime?.timer(type);
+    const stopErrorTimer = operationMetrics.errorTime?.timer(type);
+    let errored = false;
+    try {
+      operationMetrics.queries?.increment({ [type]: true });
+      yield* fn(...args);
+    } catch (err) {
+      errored = true;
+      stopErrorTimer?.();
+      operationMetrics.errors?.increment({ [type]: true });
+      throw err;
+    } finally {
+      operationMetrics.queries?.decrement({ [type]: true });
+      if (!errored) {
+        stopSuccessTimer?.();
+      }
+    }
+  };
+}
+__name(timeOperationGenerator, "timeOperationGenerator");
+function timeOperationMethod(fn, operationMetrics, type) {
+  return async function(...args) {
+    const stopSuccessTimer = operationMetrics?.queryTime?.timer(type);
+    const stopErrorTimer = operationMetrics?.errorTime?.timer(type);
+    let errored = false;
+    try {
+      operationMetrics.queries?.increment({ [type]: true });
+      return await fn(...args);
+    } catch (err) {
+      errored = true;
+      stopErrorTimer?.();
+      operationMetrics.errors?.increment({ [type]: true });
+      throw err;
+    } finally {
+      operationMetrics.queries?.decrement({ [type]: true });
+      if (!errored) {
+        stopSuccessTimer?.();
+      }
+    }
+  };
+}
+__name(timeOperationMethod, "timeOperationMethod");
+
+// node_modules/@libp2p/kad-dht/dist/src/content-fetching/index.js
+var ContentFetching = class {
+  static {
+    __name(this, "ContentFetching");
+  }
+  log;
+  components;
+  validators;
+  selectors;
+  peerRouting;
+  queryManager;
+  network;
+  datastorePrefix;
+  constructor(components, init) {
+    const { validators: validators2, selectors: selectors2, peerRouting, queryManager, network, logPrefix } = init;
+    this.components = components;
+    this.log = components.logger.forComponent(`${logPrefix}:content-fetching`);
+    this.datastorePrefix = `${init.datastorePrefix}/record`;
+    this.validators = validators2;
+    this.selectors = selectors2;
+    this.peerRouting = peerRouting;
+    this.queryManager = queryManager;
+    this.network = network;
+    this.get = components.metrics?.traceFunction("libp2p.kadDHT.get", this.get.bind(this), {
+      optionsIndex: 1
+    }) ?? this.get;
+    this.put = components.metrics?.traceFunction("libp2p.kadDHT.put", this.put.bind(this), {
+      optionsIndex: 2
+    }) ?? this.put;
+  }
+  /**
+   * Attempt to retrieve the value for the given key from
+   * the local datastore
+   */
+  async getLocal(key, options) {
+    this.log("getLocal %b", key);
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key);
+    this.log("fetching record for key %k", dsKey);
+    const raw = await this.components.datastore.get(dsKey, options);
+    this.log("found %k in local datastore", dsKey);
+    const rec = Libp2pRecord.deserialize(raw);
+    await verifyRecord(this.validators, rec, options);
+    return rec;
+  }
+  /**
+   * Send the best record found to any peers that have an out of date record
+   */
+  async *sendCorrectionRecord(key, vals, best, options) {
+    this.log("sendCorrection for %b", key);
+    const fixupRec = createPutRecord(key, best);
+    for (const { value: value2, from: from4 } of vals) {
+      if (equals3(value2, best)) {
+        this.log("record was ok");
+        continue;
+      }
+      if (this.components.peerId.equals(from4)) {
+        try {
+          const dsKey = bufferToRecordKey(this.datastorePrefix, key);
+          this.log(`Storing corrected record for key ${dsKey.toString()}`);
+          await this.components.datastore.put(dsKey, fixupRec.subarray(), options);
+        } catch (err) {
+          this.log.error("failed error correcting self - %e", err);
+        }
+        continue;
+      }
+      let sentCorrection = false;
+      const request = {
+        type: MessageType.PUT_VALUE,
+        key,
+        record: fixupRec
+      };
+      for await (const event of this.network.sendRequest(from4, request, options)) {
+        if (event.name === "PEER_RESPONSE" && event.record != null && equals3(event.record.value, Libp2pRecord.deserialize(fixupRec).value)) {
+          sentCorrection = true;
+        }
+        yield event;
+      }
+      if (!sentCorrection) {
+        throw new QueryError("Could not send correction");
+      }
+      this.log.error("failed error correcting entry");
+    }
+  }
+  /**
+   * Store the given key/value pair in the DHT
+   */
+  async *put(key, value2, options) {
+    this.log("put key %b value %b", key, value2);
+    const record = createPutRecord(key, value2);
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key);
+    this.log(`storing record for key ${dsKey.toString()}`);
+    await this.components.datastore.put(dsKey, record.subarray(), options);
+    yield* pipe(this.peerRouting.getClosestPeers(key, {
+      ...options,
+      signal: options.signal
+    }), (source) => src_default9(source, (event) => {
+      return async () => {
+        if (event.name !== "FINAL_PEER") {
+          return [event];
+        }
+        const events = [];
+        const msg = {
+          type: MessageType.PUT_VALUE,
+          key,
+          record
+        };
+        this.log("send put to %p", event.peer.id);
+        for await (const putEvent of this.network.sendRequest(event.peer.id, msg, {
+          ...options,
+          path: event.path
+        })) {
+          events.push(putEvent);
+          if (putEvent.name !== "PEER_RESPONSE") {
+            continue;
+          }
+          if (!(putEvent.record != null && equals3(putEvent.record.value, Libp2pRecord.deserialize(record).value))) {
+            events.push(queryErrorEvent({
+              from: event.peer.id,
+              error: new QueryError("Value not put correctly"),
+              path: putEvent.path
+            }, options));
+          }
+        }
+        return events;
+      };
+    }), (source) => parallel(source, {
+      ordered: false,
+      concurrency: ALPHA
+    }), async function* (source) {
+      for await (const events of source) {
+        yield* events;
+      }
+    });
+  }
+  /**
+   * Get the value to the given key
+   */
+  async *get(key, options) {
+    this.log("get %b", key);
+    const vals = [];
+    for await (const event of this.getMany(key, options)) {
+      if (event.name === "VALUE") {
+        vals.push(event);
+        continue;
+      }
+      yield event;
+    }
+    if (vals.length === 0) {
+      return;
+    }
+    const records = vals.map((v) => v.value);
+    let i2 = 0;
+    try {
+      i2 = bestRecord(this.selectors, key, records);
+    } catch (err) {
+      if (err.name !== "InvalidParametersError") {
+        throw err;
+      }
+    }
+    const best = records[i2];
+    this.log("GetValue %b %b", key, best);
+    if (best == null) {
+      throw new NotFoundError("Best value was not found");
+    }
+    yield* this.sendCorrectionRecord(key, vals, best, {
+      ...options,
+      path: {
+        index: -1,
+        queued: 0,
+        running: 0,
+        total: 0
+      }
+    });
+    yield vals[i2];
+  }
+  /**
+   * Get the `n` values to the given key without sorting
+   */
+  async *getMany(key, options = {}) {
+    this.log("getMany values for %b", key);
+    try {
+      const localRec = await this.getLocal(key, options);
+      yield valueEvent({
+        value: localRec.value,
+        from: this.components.peerId,
+        path: {
+          index: -1,
+          running: 0,
+          queued: 0,
+          total: 0
+        }
+      }, options);
+    } catch (err) {
+      this.log("error getting local value for %b", key, err);
+    }
+    const self2 = this;
+    const getValueQuery = /* @__PURE__ */ __name(async function* ({ peer, signal, path }) {
+      for await (const event of self2.peerRouting.getValueOrPeers(peer.id, key, {
+        ...options,
+        signal,
+        path
+      })) {
+        yield event;
+        if (event.name === "PEER_RESPONSE" && event.record != null) {
+          yield valueEvent({
+            from: peer.id,
+            value: event.record.value,
+            path
+          }, options);
+        }
+      }
+    }, "getValueQuery");
+    yield* this.queryManager.run(key, getValueQuery, options);
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/message/utils.js
+function toPbPeerInfo(peer, connection) {
+  const output = {
+    id: peer.id.toMultihash().bytes,
+    multiaddrs: (peer.multiaddrs ?? []).map((m2) => m2.bytes),
+    connection
+  };
+  return output;
+}
+__name(toPbPeerInfo, "toPbPeerInfo");
+function fromPbPeerInfo(peer) {
+  if (peer.id == null) {
+    throw new Error("Invalid peer in message");
+  }
+  const multihash = decode5(peer.id);
+  return {
+    id: peerIdFromMultihash(multihash),
+    multiaddrs: (peer.multiaddrs ?? []).map((a2) => multiaddr(a2))
+  };
+}
+__name(fromPbPeerInfo, "fromPbPeerInfo");
+
+// node_modules/@libp2p/kad-dht/dist/src/content-routing/index.js
+var ContentRouting = class {
+  static {
+    __name(this, "ContentRouting");
+  }
+  log;
+  components;
+  network;
+  peerRouting;
+  queryManager;
+  routingTable;
+  providers;
+  constructor(components, init) {
+    const { network, peerRouting, queryManager, routingTable, providers, logPrefix } = init;
+    this.components = components;
+    this.log = components.logger.forComponent(`${logPrefix}:content-routing`);
+    this.network = network;
+    this.peerRouting = peerRouting;
+    this.queryManager = queryManager;
+    this.routingTable = routingTable;
+    this.providers = providers;
+    this.findProviders = components.metrics?.traceFunction("libp2p.kadDHT.findProviders", this.findProviders.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromYieldedValue: /* @__PURE__ */ __name((event, attrs) => {
+        if (event.name === "PROVIDER") {
+          attrs.providers ??= [];
+          attrs.providers.push(...event.providers.map((info) => info.id.toString()));
+        }
+        return attrs;
+      }, "getAttributesFromYieldedValue")
+    }) ?? this.findProviders;
+    this.provide = components.metrics?.traceFunction("libp2p.kadDHT.provide", this.provide.bind(this), {
+      optionsIndex: 1,
+      getAttributesFromYieldedValue: /* @__PURE__ */ __name((event, attrs) => {
+        if (event.name === "PEER_RESPONSE" && event.messageName === "ADD_PROVIDER") {
+          attrs.providers ??= [];
+          attrs.providers.push(event.from.toString());
+        }
+        return attrs;
+      }, "getAttributesFromYieldedValue")
+    }) ?? this.provide;
+  }
+  /**
+   * Announce to the network that we can provide the value for a given key and
+   * are contactable on the given multiaddrs
+   */
+  async *provide(key, multiaddrs, options = {}) {
+    this.log("provide %s", key);
+    const target = key.multihash.bytes;
+    await this.providers.addProvider(key, this.components.peerId, options);
+    const msg = {
+      type: MessageType.ADD_PROVIDER,
+      key: target,
+      providers: [
+        toPbPeerInfo({
+          id: this.components.peerId,
+          multiaddrs
+        })
+      ]
+    };
+    let sent = 0;
+    const self2 = this;
+    async function* publishProviderRecord(event) {
+      try {
+        self2.log("sending provider record for %s to %p", key, event.peer.id);
+        for await (const addProviderEvent of self2.network.sendMessage(event.peer.id, msg, {
+          ...options,
+          path: event.path
+        })) {
+          if (addProviderEvent.name === "PEER_RESPONSE") {
+            self2.log("sent provider record for %s to %p", key, event.peer.id);
+            sent++;
+          }
+          yield addProviderEvent;
+        }
+      } catch (err) {
+        self2.log.error("error sending provide record to peer %p - %e", event.peer.id, err);
+        yield queryErrorEvent({
+          from: event.peer.id,
+          error: err,
+          path: event.path
+        }, options);
+      }
+    }
+    __name(publishProviderRecord, "publishProviderRecord");
+    const events = pushable({
+      objectMode: true
+    });
+    const queue = new Queue({
+      concurrency: ALPHA
+    });
+    queue.addEventListener("idle", () => {
+      events.end();
+    });
+    queue.addEventListener("failure", (event) => {
+      this.log.error("error publishing provider record to peer - %e", event.detail.error);
+    });
+    queue.add(async () => {
+      const finalPeerEvents = [];
+      for await (const event of this.peerRouting.getClosestPeers(target, options)) {
+        events.push(event);
+        if (event.name !== "FINAL_PEER") {
+          continue;
+        }
+        finalPeerEvents.push(event);
+      }
+      finalPeerEvents.forEach((event) => {
+        queue.add(async () => {
+          for await (const notifyEvent of publishProviderRecord(event)) {
+            events.push(notifyEvent);
+          }
+        }).catch((err) => {
+          this.log.error("error publishing provider record to peer - %e", err);
+        });
+      });
+    }).catch((err) => {
+      events.end(err);
+    });
+    yield* events;
+    this.log("sent provider records to %d peers", sent);
+  }
+  /**
+   * Search the dht for up to `K` providers of the given CID.
+   */
+  async *findProviders(key, options) {
+    const toFind = this.routingTable.kBucketSize;
+    let found = 0;
+    const target = key.multihash.bytes;
+    const self2 = this;
+    this.log("findProviders %c", key);
+    const provs = await this.providers.getProviders(key, options);
+    if (provs.length > 0) {
+      const providers2 = [];
+      for (const peerId of provs.slice(0, toFind)) {
+        try {
+          const peer = await this.components.peerStore.get(peerId, options);
+          providers2.push({
+            id: peerId,
+            multiaddrs: peer.addresses.map(({ multiaddr: multiaddr2 }) => multiaddr2)
+          });
+        } catch (err) {
+          if (err.name !== "NotFoundError") {
+            throw err;
+          }
+          this.log("no peer store entry for %p", peerId);
+        }
+      }
+      yield peerResponseEvent({
+        from: this.components.peerId,
+        messageType: MessageType.GET_PROVIDERS,
+        providers: providers2,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }, options);
+      yield providerEvent({
+        from: this.components.peerId,
+        providers: providers2,
+        path: {
+          index: -1,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }, options);
+      found += providers2.length;
+      if (found >= toFind) {
+        return;
+      }
+    }
+    const findProvidersQuery = /* @__PURE__ */ __name(async function* ({ peer, signal, path }) {
+      const request = {
+        type: MessageType.GET_PROVIDERS,
+        key: target
+      };
+      yield* self2.network.sendRequest(peer.id, request, {
+        ...options,
+        signal,
+        path
+      });
+    }, "findProvidersQuery");
+    const providers = new PeerSet(provs);
+    for await (const event of this.queryManager.run(target, findProvidersQuery, options)) {
+      yield event;
+      if (event.name === "PEER_RESPONSE") {
+        this.log("Found %d provider entries for %c and %d closer peers", event.providers.length, key, event.closer.length);
+        const newProviders = [];
+        for (const peer of event.providers) {
+          if (providers.has(peer.id)) {
+            continue;
+          }
+          providers.add(peer.id);
+          newProviders.push(peer);
+        }
+        if (newProviders.length > 0) {
+          yield providerEvent({
+            from: event.from,
+            providers: newProviders,
+            path: event.path
+          }, options);
+          found += newProviders.length;
+          if (found >= toFind) {
+            return;
+          }
+        }
+      }
+    }
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/network.js
+var Network = class extends TypedEventEmitter {
+  static {
+    __name(this, "Network");
+  }
+  log;
+  protocol;
+  running;
+  components;
+  timeout;
+  metrics;
+  /**
+   * Create a new network
+   */
+  constructor(components, init) {
+    super();
+    this.components = components;
+    this.log = components.logger.forComponent(`${init.logPrefix}:network`);
+    this.running = false;
+    this.protocol = init.protocol;
+    this.timeout = new AdaptiveTimeout({
+      ...init.timeout ?? {},
+      metrics: components.metrics,
+      metricName: `${init.metricsPrefix}_network_message_send_times_milliseconds`
+    });
+    this.metrics = {
+      operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_outbound_rpc_errors_total`)
+    };
+    this.sendRequest = components.metrics?.traceFunction("libp2p.kadDHT.sendRequest", this.sendRequest.bind(this), {
+      optionsIndex: 2,
+      getAttributesFromArgs([to, message2], attrs) {
+        return {
+          ...attrs,
+          to: to.toString(),
+          "message type": `${message2.type}`
+        };
+      },
+      getAttributesFromYieldedValue: /* @__PURE__ */ __name((event, attrs) => {
+        if (event.name === "PEER_RESPONSE") {
+          if (event.providers.length > 0) {
+            event.providers.forEach((value2, index) => {
+              attrs[`providers-${index}`] = value2.id.toString();
+            });
+          }
+          if (event.closer.length > 0) {
+            event.closer.forEach((value2, index) => {
+              attrs[`closer-${index}`] = value2.id.toString();
+            });
+          }
+        }
+        return attrs;
+      }, "getAttributesFromYieldedValue")
+    }) ?? this.sendRequest;
+    this.sendMessage = components.metrics?.traceFunction("libp2p.kadDHT.sendMessage", this.sendMessage.bind(this), {
+      optionsIndex: 2,
+      getAttributesFromArgs([to, message2], attrs) {
+        return {
+          ...attrs,
+          to: to.toString(),
+          "message type": `${message2.type}`
+        };
+      },
+      getAttributesFromYieldedValue: /* @__PURE__ */ __name((event, attrs) => {
+        if (event.name === "PEER_RESPONSE") {
+          if (event.providers.length > 0) {
+            event.providers.forEach((value2, index) => {
+              attrs[`providers-${index}`] = value2.id.toString();
+            });
+          }
+          if (event.closer.length > 0) {
+            event.closer.forEach((value2, index) => {
+              attrs[`closer-${index}`] = value2.id.toString();
+            });
+          }
+        }
+        return attrs;
+      }, "getAttributesFromYieldedValue")
+    }) ?? this.sendMessage;
+  }
+  /**
+   * Start the network
+   */
+  async start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+  }
+  /**
+   * Stop all network activity
+   */
+  async stop() {
+    this.running = false;
+  }
+  /**
+   * Is the network online?
+   */
+  isStarted() {
+    return this.running;
+  }
+  /**
+   * Send a request and read a response
+   */
+  async *sendRequest(to, msg, options) {
+    if (!this.running) {
+      return;
+    }
+    const type = msg.type;
+    if (type == null) {
+      throw new InvalidParametersError("Message type was missing");
+    }
+    let stream;
+    const signal = this.timeout.getTimeoutSignal(options);
+    options = {
+      ...options,
+      signal
+    };
+    try {
+      this.metrics.operations?.increment({ [type]: true });
+      this.log("dialling %p", to);
+      yield dialPeerEvent({ peer: to, path: options.path }, options);
+      stream = await this.components.connectionManager.openStream(to, this.protocol, options);
+      this.log("sending %s to %p", msg.type, to);
+      yield sendQueryEvent({ to, type, path: options.path }, options);
+      const response = await this._writeReadMessage(stream, msg, options);
+      stream.close(options).catch((err) => {
+        this.log.error("error closing stream to %p - %e", to, err);
+        stream?.abort(err);
+      });
+      yield peerResponseEvent({
+        from: to,
+        messageType: response.type,
+        closer: response.closer.map(fromPbPeerInfo),
+        providers: response.providers.map(fromPbPeerInfo),
+        record: response.record == null ? void 0 : Libp2pRecord.deserialize(response.record),
+        path: options.path
+      }, options);
+    } catch (err) {
+      this.metrics.errors?.increment({ [type]: true });
+      stream?.abort(err);
+      if (options.signal?.aborted !== true) {
+        this.log.error("could not send %s to %p - %e", msg.type, to, err);
+      }
+      yield queryErrorEvent({ from: to, error: err, path: options.path }, options);
+    } finally {
+      this.timeout.cleanUp(signal);
+    }
+  }
+  /**
+   * Sends a message without expecting an answer
+   */
+  async *sendMessage(to, msg, options) {
+    if (!this.running) {
+      return;
+    }
+    const type = msg.type;
+    if (type == null) {
+      throw new InvalidParametersError("Message type was missing");
+    }
+    let stream;
+    const signal = this.timeout.getTimeoutSignal(options);
+    options = {
+      ...options,
+      signal
+    };
+    try {
+      this.metrics.operations?.increment({ [type]: true });
+      this.log("dialling %p", to);
+      yield dialPeerEvent({ peer: to, path: options.path }, options);
+      stream = await this.components.connectionManager.openStream(to, this.protocol, options);
+      this.log("sending %s to %p", msg.type, to);
+      yield sendQueryEvent({ to, type, path: options.path }, options);
+      await this._writeMessage(stream, msg, options);
+      stream.close(options).catch((err) => {
+        this.log.error("error closing stream to %p - %e", to, err);
+        stream?.abort(err);
+      });
+      yield peerResponseEvent({ from: to, messageType: type, path: options.path }, options);
+    } catch (err) {
+      this.metrics.errors?.increment({ [type]: true });
+      stream?.abort(err);
+      yield queryErrorEvent({ from: to, error: err, path: options.path }, options);
+    } finally {
+      this.timeout.cleanUp(signal);
+    }
+  }
+  /**
+   * Write a message to the given stream
+   */
+  async _writeMessage(stream, msg, options) {
+    const pb = pbStream(stream);
+    await pb.write(msg, Message3, options);
+  }
+  /**
+   * Write a message and read a response
+   */
+  async _writeReadMessage(stream, msg, options) {
+    const pb = pbStream(stream);
+    await pb.write(msg, Message3, options);
+    const message2 = await pb.read(Message3, options);
+    message2.closer.forEach((peerData) => {
+      this.safeDispatchEvent("peer", {
+        detail: fromPbPeerInfo(peerData)
+      });
+    });
+    message2.providers.forEach((peerData) => {
+      this.safeDispatchEvent("peer", {
+        detail: fromPbPeerInfo(peerData)
+      });
+    });
+    return message2;
+  }
+};
+
+// node_modules/uint8arrays/dist/src/xor-compare.js
+function xorCompare(a2, b) {
+  if (a2.byteLength !== b.byteLength) {
+    throw new Error("Inputs should have the same length");
+  }
+  for (let i2 = 0; i2 < a2.byteLength; i2++) {
+    if (a2[i2] === b[i2]) {
+      continue;
+    }
+    return a2[i2] < b[i2] ? -1 : 1;
+  }
+  return 0;
+}
+__name(xorCompare, "xorCompare");
+
+// node_modules/@libp2p/kad-dht/dist/src/peer-distance-list.js
+var PeerDistanceList = class {
+  static {
+    __name(this, "PeerDistanceList");
+  }
+  /**
+   * The DHT key from which distance is calculated
+   */
+  originDhtKey;
+  /**
+   * The maximum size of the list
+   */
+  capacity;
+  peerDistances;
+  constructor(originDhtKey, capacity) {
+    this.originDhtKey = originDhtKey;
+    this.capacity = capacity;
+    this.peerDistances = [];
+  }
+  /**
+   * The length of the list
+   */
+  get length() {
+    return this.peerDistances.length;
+  }
+  /**
+   * The peers in the list, in order of distance from the origin key
+   */
+  get peers() {
+    return [...this.peerDistances];
+  }
+  /**
+   * Add a peerId to the list.
+   */
+  async add(peer, path = { index: -1, queued: 0, running: 0, total: 0 }, options) {
+    const dhtKey = await convertPeerId(peer.id, options);
+    this.addWithKadId(peer, dhtKey, path);
+  }
+  /**
+   * Add a peerId to the list.
+   */
+  addWithKadId(peer, kadId, path = { index: -1, queued: 0, running: 0, total: 0 }) {
+    if (this.peerDistances.find((pd) => pd.peer.id.equals(peer.id)) != null) {
+      return;
+    }
+    const el = {
+      peer,
+      distance: xor(this.originDhtKey, kadId),
+      path
+    };
+    if (this.peerDistances.length === this.capacity) {
+      const lastPeer = this.peerDistances[this.peerDistances.length - 1];
+      if (lastPeer != null && xorCompare(el.distance, lastPeer.distance) !== -1) {
+        return;
+      }
+    }
+    let added = false;
+    for (let j = 0; j < this.peerDistances.length; j++) {
+      const distance = xorCompare(this.peerDistances[j].distance, el.distance);
+      if (distance === 0 || distance === 1) {
+        added = true;
+        this.peerDistances.splice(j, 0, el);
+        break;
+      }
+    }
+    if (!added) {
+      this.peerDistances.push(el);
+    }
+    this.peerDistances = this.peerDistances.slice(0, this.capacity);
+  }
+  /**
+   * Indicates whether any of the peerIds passed as a parameter are closer
+   * to the origin key than the furthest peerId in the PeerDistanceList.
+   */
+  async isCloser(peerId, options) {
+    if (this.length === 0) {
+      return true;
+    }
+    const dhtKey = await convertPeerId(peerId, options);
+    const dhtKeyXor = xor(dhtKey, this.originDhtKey);
+    const furthestDistance = this.peerDistances[this.peerDistances.length - 1].distance;
+    return xorCompare(dhtKeyXor, furthestDistance) === -1;
+  }
+  /**
+   * Indicates whether any of the peerIds passed as a parameter are closer
+   * to the origin key than the furthest peerId in the PeerDistanceList.
+   */
+  async anyCloser(peerIds, options) {
+    if (peerIds.length === 0) {
+      return false;
+    }
+    return Promise.any(peerIds.map(async (peerId) => this.isCloser(peerId, options)));
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/peer-routing/index.js
+var PeerRouting = class {
+  static {
+    __name(this, "PeerRouting");
+  }
+  log;
+  routingTable;
+  network;
+  validators;
+  queryManager;
+  components;
+  constructor(components, init) {
+    this.routingTable = init.routingTable;
+    this.network = init.network;
+    this.validators = init.validators;
+    this.queryManager = init.queryManager;
+    this.components = components;
+    this.log = components.logger.forComponent(`${init.logPrefix}:peer-routing`);
+    this.findPeer = components.metrics?.traceFunction("libp2p.kadDHT.findPeer", this.findPeer.bind(this), {
+      optionsIndex: 1
+    }) ?? this.findPeer;
+    this.getClosestPeers = components.metrics?.traceFunction("libp2p.kadDHT.getClosestPeers", this.getClosestPeers.bind(this), {
+      optionsIndex: 1
+    }) ?? this.getClosestPeers;
+  }
+  /**
+   * Look if we are connected to a peer with the given id.
+   * Returns its id and addresses, if found, otherwise `undefined`.
+   */
+  async findPeerLocal(peer, options) {
+    let peerData;
+    const p2 = await this.routingTable.find(peer, options);
+    if (p2 != null) {
+      this.log("findPeerLocal found %p in routing table", peer);
+      try {
+        peerData = await this.components.peerStore.get(p2, options);
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          throw err;
+        }
+      }
+    }
+    if (peerData == null) {
+      try {
+        peerData = await this.components.peerStore.get(peer, options);
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          throw err;
+        }
+      }
+    }
+    if (peerData != null) {
+      this.log("findPeerLocal found %p in peer store", peer);
+      return {
+        id: peerData.id,
+        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
+      };
+    }
+    return void 0;
+  }
+  /**
+   * Get a value via rpc call for the given parameters
+   */
+  async *_getValueSingle(peer, key, options) {
+    const msg = {
+      type: MessageType.GET_VALUE,
+      key
+    };
+    yield* this.network.sendRequest(peer, msg, options);
+  }
+  /**
+   * Get the public key directly from a node
+   */
+  async *getPublicKeyFromNode(peer, options = {}) {
+    const pkKey = keyForPublicKey(peer);
+    const path = {
+      index: -1,
+      queued: 0,
+      running: 0,
+      total: 0
+    };
+    for await (const event of this._getValueSingle(peer, pkKey, {
+      ...options,
+      path
+    })) {
+      yield event;
+      if (event.name === "PEER_RESPONSE" && event.record != null) {
+        const publicKey2 = publicKeyFromProtobuf(event.record.value);
+        const recPeer = peerIdFromPublicKey(publicKey2);
+        if (!recPeer.equals(peer)) {
+          throw new InvalidPublicKeyError("public key does not match id");
+        }
+        if (recPeer.publicKey == null) {
+          throw new InvalidPublicKeyError("public key missing");
+        }
+        yield valueEvent({
+          from: peer,
+          value: event.record.value,
+          path
+        }, options);
+      }
+    }
+    throw new QueryError(`Node not responding with its public key: ${peer.toString()}`);
+  }
+  /**
+   * Search for a peer with the given ID
+   */
+  async *findPeer(id, options = {}) {
+    this.log("findPeer %p", id);
+    if (options.useCache !== false) {
+      const pi = await this.findPeerLocal(id, options);
+      if (pi != null) {
+        this.log("found local");
+        yield finalPeerEvent({
+          from: this.components.peerId,
+          peer: pi,
+          path: {
+            index: -1,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
+        }, options);
+        return;
+      }
+    }
+    let foundPeer = false;
+    if (options.useNetwork !== false) {
+      const self2 = this;
+      const findPeerQuery = /* @__PURE__ */ __name(async function* ({ peer, signal, path }) {
+        const request = {
+          type: MessageType.FIND_NODE,
+          key: id.toMultihash().bytes
+        };
+        for await (const event of self2.network.sendRequest(peer.id, request, {
+          ...options,
+          signal,
+          path
+        })) {
+          yield event;
+          if (event.name === "PEER_RESPONSE") {
+            const match = event.closer.find((p2) => p2.id.equals(id));
+            if (match != null) {
+              yield finalPeerEvent({
+                from: event.from,
+                peer: match,
+                path: event.path
+              }, options);
+            }
+          }
+        }
+      }, "findPeerQuery");
+      for await (const event of this.queryManager.run(id.toMultihash().bytes, findPeerQuery, options)) {
+        if (event.name === "FINAL_PEER") {
+          foundPeer = true;
+        }
+        yield event;
+      }
+    }
+    if (!foundPeer) {
+      throw new NotFoundError("Not found");
+    }
+  }
+  /**
+   * Kademlia 'FIND_NODE' operation on a key, which could be the bytes from a
+   * multihash or a peer ID
+   */
+  async *getClosestPeers(key, options = {}) {
+    this.log("getClosestPeers to %b", key);
+    const kadId = await convertBuffer(key, options);
+    const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize);
+    const self2 = this;
+    const getCloserPeersQuery = /* @__PURE__ */ __name(async function* ({ peer, path, peerKadId, signal }) {
+      self2.log("getClosestPeers asking %p", peer.id);
+      const request = {
+        type: MessageType.FIND_NODE,
+        key
+      };
+      yield* self2.network.sendRequest(peer.id, request, {
+        ...options,
+        signal,
+        path
+      });
+      peers.addWithKadId(peer, peerKadId, path);
+    }, "getCloserPeersQuery");
+    yield* this.queryManager.run(key, getCloserPeersQuery, options);
+    this.log("found %d peers close to %b", peers.length, key);
+    for (let { peer, path } of peers.peers) {
+      try {
+        if (peer.multiaddrs.length === 0) {
+          peer = await self2.components.peerStore.getInfo(peer.id, options);
+        }
+        if (peer.multiaddrs.length === 0) {
+          continue;
+        }
+        yield finalPeerEvent({
+          from: this.components.peerId,
+          peer: await self2.components.peerStore.getInfo(peer.id, options),
+          path: {
+            index: path.index,
+            queued: 0,
+            running: 0,
+            total: 0
+          }
+        }, options);
+      } catch {
+        continue;
+      }
+    }
+  }
+  /**
+   * Query a particular peer for the value for the given key.
+   * It will either return the value or a list of closer peers.
+   *
+   * Note: The peerStore is updated with new addresses found for the given peer.
+   */
+  async *getValueOrPeers(peer, key, options) {
+    for await (const event of this._getValueSingle(peer, key, options)) {
+      if (event.name === "PEER_RESPONSE") {
+        if (event.record != null) {
+          try {
+            await this._verifyRecordOnline(event.record, options);
+          } catch (err) {
+            const errMsg = "invalid record received, discarded";
+            this.log(errMsg);
+            yield queryErrorEvent({
+              from: event.from,
+              error: new QueryError(errMsg),
+              path: options.path
+            }, options);
+            continue;
+          }
+        }
+      }
+      yield event;
+    }
+  }
+  /**
+   * Verify a record, fetching missing public keys from the network.
+   * Throws an error if the record is invalid.
+   */
+  async _verifyRecordOnline(record, options) {
+    if (record.timeReceived == null) {
+      throw new InvalidRecordError("invalid record received");
+    }
+    await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived), options);
+  }
+  /**
+   * Get the peers in our routing table that are closest to the passed key
+   */
+  async getClosestPeersOffline(key, options) {
+    const output = [];
+    try {
+      const multihash = decode5(key);
+      const targetPeerId = peerIdFromMultihash(multihash);
+      const peer = await this.components.peerStore.get(targetPeerId, options);
+      output.push({
+        id: peer.id,
+        multiaddrs: peer.addresses.map(({ multiaddr: multiaddr2 }) => multiaddr2)
+      });
+    } catch {
+    }
+    const keyKadId = await convertBuffer(key, options);
+    const ids = this.routingTable.closestPeers(keyKadId, options);
+    for (const peerId of ids) {
+      try {
+        output.push(await this.components.peerStore.getInfo(peerId, options));
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          throw err;
+        }
+      }
+    }
+    if (output.length > 0) {
+      this.log("getClosestPeersOffline returning the %d closest peer(s) we know to %b", output.length, key);
+    } else {
+      this.log("getClosestPeersOffline could not any peers close to %b with %d peers in the routing table", key, this.routingTable.size);
+    }
+    return output;
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/providers.js
+var Providers = class {
+  static {
+    __name(this, "Providers");
+  }
+  log;
+  datastore;
+  datastorePrefix;
+  constructor(components, init) {
+    this.log = components.logger.forComponent(`${init.logPrefix}:providers`);
+    this.datastorePrefix = `${init.datastorePrefix}/provider`;
+    this.datastore = components.datastore;
+  }
+  /**
+   * Add a new provider for the given CID
+   */
+  async addProvider(cid, provider, options) {
+    this.log.trace("%p provides %s", provider, cid);
+    await this.writeProviderEntry(cid, provider, options);
+  }
+  /**
+   * Remove a provider for the given CID
+   */
+  async removeProvider(cid, provider, options) {
+    const key = toProviderKey(this.datastorePrefix, cid, provider);
+    this.log.trace("%p no longer provides %s", provider, cid);
+    await this.datastore.delete(key, options);
+  }
+  /**
+   * Get a list of providers for the given CID
+   */
+  async getProviders(cid, options) {
+    this.log.trace("get providers for %c", cid);
+    const provs = await this.loadProviders(cid, options);
+    this.log.trace("got %d providers for %c", provs.size, cid);
+    return [...provs.keys()];
+  }
+  /**
+   * Write a provider into the given store
+   */
+  async writeProviderEntry(cid, peerId, options) {
+    const key = toProviderKey(this.datastorePrefix, cid, peerId);
+    const buffer = encode6(options?.time?.getTime() ?? Date.now());
+    await this.datastore.put(key, buffer, options);
+  }
+  /**
+   * Load providers for the given CID from the store
+   */
+  async loadProviders(cid, options) {
+    const providers = new PeerMap();
+    const key = toProviderKey(this.datastorePrefix, cid);
+    for await (const entry of this.datastore.query({ prefix: key.toString() }, options)) {
+      const { peerId } = parseProviderKey(entry.key);
+      providers.set(peerId, readProviderTime(entry.value));
+    }
+    return providers;
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/query/query-path.js
+async function* queryPath(options) {
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log: log10, peersSeen, connectionManager, signal } = options;
+  const events = pushable({
+    objectMode: true
+  });
+  const queue = new Queue({
+    concurrency: alpha,
+    sort: /* @__PURE__ */ __name((a2, b) => xorCompare(a2.options.distance, b.options.distance), "sort")
+  });
+  queue.addEventListener("idle", () => {
+    events.push(pathEndedEvent({
+      path: {
+        index: path,
+        queued: queue.queued,
+        running: queue.running,
+        total: queue.size
+      }
+    }, options));
+    events.end();
+  });
+  queue.addEventListener("failure", (evt) => {
+    log10.error("error during query - %e", evt.detail.error);
+  });
+  const onAbort = /* @__PURE__ */ __name(() => {
+    queue.abort();
+    events.end(new AbortError());
+  }, "onAbort");
+  signal.addEventListener("abort", onAbort);
+  try {
+    let queryPeer = function(peer, peerKadId) {
+      if (peer == null) {
+        return;
+      }
+      peersSeen.add(peer.id.toMultihash().bytes);
+      const peerXor = xor(peerKadId, kadId);
+      queue.add(async () => {
+        try {
+          for await (const event of query({
+            ...options,
+            key,
+            peer,
+            path: {
+              index: path,
+              queued: queue.queued,
+              running: queue.running,
+              total: queue.size
+            },
+            numPaths,
+            peerKadId,
+            signal
+          })) {
+            if (event.name === "PEER_RESPONSE") {
+              for (const closerPeer of event.closer) {
+                if (peersSeen.has(closerPeer.id.toMultihash().bytes)) {
+                  log10("already seen %p in query", closerPeer.id);
+                  continue;
+                }
+                if (ourPeerId.equals(closerPeer.id)) {
+                  log10("not querying ourselves");
+                  continue;
+                }
+                if (!await connectionManager.isDialable(closerPeer.multiaddrs)) {
+                  log10("not querying undialable peer");
+                  continue;
+                }
+                const closerPeerKadId = await convertPeerId(closerPeer.id, {
+                  signal
+                });
+                const closerPeerXor = xor(closerPeerKadId, kadId);
+                if (xorCompare(closerPeerXor, peerXor) !== -1) {
+                  log10("skipping %p as they are not closer to %b than %p", closerPeer.id, key, peer.id);
+                  continue;
+                }
+                log10("querying closer peer %p", closerPeer.id);
+                queryPeer(closerPeer, closerPeerKadId);
+              }
+            }
+            events.push({
+              ...event,
+              path: {
+                index: path,
+                queued: queue.queued,
+                running: queue.running,
+                total: queue.size
+              }
+            });
+          }
+        } catch (err) {
+          events.push(queryErrorEvent({
+            from: peer.id,
+            error: err,
+            path: {
+              index: path,
+              queued: queue.queued,
+              running: queue.running - 1,
+              total: queue.size - 1
+            }
+          }, options));
+        }
+      }, {
+        distance: peerXor
+      }).catch((err) => {
+        log10.error("error during query - %e", err);
+      });
+    };
+    __name(queryPeer, "queryPeer");
+    const kadId = await convertBuffer(key, {
+      signal
+    });
+    await Promise.all(startingPeers.map(async (startingPeer) => {
+      queryPeer({ id: startingPeer, multiaddrs: [] }, await convertPeerId(startingPeer, {
+        signal
+      }));
+    }));
+    yield* events;
+  } finally {
+    signal.removeEventListener("abort", onAbort);
+  }
+}
+__name(queryPath, "queryPath");
+
+// node_modules/@libp2p/kad-dht/dist/src/query/manager.js
+var QueryManager = class {
+  static {
+    __name(this, "QueryManager");
+  }
+  disjointPaths;
+  alpha;
+  shutDownController;
+  running;
+  logger;
+  peerId;
+  connectionManager;
+  routingTable;
+  initialQuerySelfHasRun;
+  logPrefix;
+  allowQueryWithZeroPeers;
+  constructor(components, init) {
+    this.logPrefix = init.logPrefix;
+    this.disjointPaths = init.disjointPaths ?? K;
+    this.alpha = init.alpha ?? ALPHA;
+    this.initialQuerySelfHasRun = init.initialQuerySelfHasRun;
+    this.routingTable = init.routingTable;
+    this.logger = components.logger;
+    this.peerId = components.peerId;
+    this.connectionManager = components.connectionManager;
+    this.allowQueryWithZeroPeers = init.allowQueryWithZeroPeers ?? false;
+    this.shutDownController = new AbortController();
+    setMaxListeners(Infinity, this.shutDownController.signal);
+    this.running = false;
+  }
+  isStarted() {
+    return this.running;
+  }
+  /**
+   * Starts the query manager
+   */
+  async start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    this.shutDownController = new AbortController();
+    setMaxListeners(Infinity, this.shutDownController.signal);
+  }
+  /**
+   * Stops all queries
+   */
+  async stop() {
+    this.running = false;
+    this.shutDownController.abort();
+  }
+  async *run(key, queryFunc, options = {}) {
+    if (!this.running) {
+      throw new Error("QueryManager not started");
+    }
+    if (options.signal == null) {
+      const signal2 = AbortSignal.timeout(DEFAULT_QUERY_TIMEOUT);
+      setMaxListeners(Infinity, signal2);
+      options = {
+        ...options,
+        signal: signal2
+      };
+    }
+    const queryEarlyExitController = new AbortController();
+    const signal = anySignal([
+      this.shutDownController.signal,
+      queryEarlyExitController.signal,
+      options.signal
+    ]);
+    setMaxListeners(Infinity, signal, queryEarlyExitController.signal);
+    const log10 = this.logger.forComponent(`${this.logPrefix}:query:` + toString2(key, "base58btc"));
+    let queryFinished = false;
+    try {
+      if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
+        log10("routing table was empty, waiting for some peers before running%s query", options.isSelfQuery === true ? " self" : "");
+        await pEvent(this.routingTable, "peer:add", {
+          signal,
+          filter: /* @__PURE__ */ __name((event) => !this.peerId.equals(event.detail), "filter")
+        });
+        log10("routing table has peers, continuing with%s query", options.isSelfQuery === true ? " self" : "");
+      }
+      if (options.isSelfQuery !== true && this.initialQuerySelfHasRun != null) {
+        log10("waiting for initial self query before continuing");
+        await raceSignal(this.initialQuerySelfHasRun.promise, signal);
+        this.initialQuerySelfHasRun = void 0;
+      }
+      log10("query:start");
+      const id = await convertBuffer(key, {
+        signal
+      });
+      const peers = this.routingTable.closestPeers(id, {
+        count: this.routingTable.kBucketSize
+      });
+      const peersToQuery = peers.sort(() => {
+        if (Math.random() > 0.5) {
+          return 1;
+        }
+        return -1;
+      }).reduce((acc, curr, index) => {
+        acc[index % this.disjointPaths].push(curr);
+        return acc;
+      }, new Array(this.disjointPaths).fill(0).map(() => [])).filter((peers2) => peers2.length > 0);
+      if (peers.length === 0) {
+        log10.error("running query with no peers");
+        return;
+      }
+      const peersSeen = createScalableCuckooFilter(1024);
+      const paths = peersToQuery.map((peer, index) => {
+        return queryPath({
+          ...options,
+          key,
+          startingPeers: peer,
+          ourPeerId: this.peerId,
+          signal,
+          query: queryFunc,
+          path: index,
+          numPaths: peersToQuery.length,
+          alpha: this.alpha,
+          log: log10,
+          peersSeen,
+          onProgress: options.onProgress,
+          connectionManager: this.connectionManager
+        });
+      });
+      for await (const event of src_default(...paths)) {
+        if (event.name === "QUERY_ERROR") {
+          log10.error("query error - %e", event.error);
+        }
+        if (event.name === "PEER_RESPONSE") {
+          for (const peer of [...event.closer, ...event.providers]) {
+            if (!await this.connectionManager.isDialable(peer.multiaddrs, {
+              signal
+            })) {
+              continue;
+            }
+            await this.routingTable.add(peer.id, {
+              signal
+            });
+          }
+        }
+        signal.throwIfAborted();
+        yield event;
+      }
+      queryFinished = true;
+    } catch (err) {
+      if (this.running) {
+        throw err;
+      }
+    } finally {
+      if (!queryFinished) {
+        log10("query exited early");
+        queryEarlyExitController.abort();
+      }
+      signal.clear();
+      log10("query finished");
+    }
+  }
+};
+
+// node_modules/it-length/dist/src/index.js
+function isAsyncIterable11(thing) {
+  return thing[Symbol.asyncIterator] != null;
+}
+__name(isAsyncIterable11, "isAsyncIterable");
+function length3(source) {
+  if (isAsyncIterable11(source)) {
+    return (async () => {
+      let count = 0;
+      for await (const _ of source) {
+        count++;
+      }
+      return count;
+    })();
+  } else {
+    let count = 0;
+    for (const _ of source) {
+      count++;
+    }
+    return count;
+  }
+}
+__name(length3, "length");
+var src_default10 = length3;
+
+// node_modules/@libp2p/kad-dht/dist/src/query-self.js
+var QuerySelf = class {
+  static {
+    __name(this, "QuerySelf");
+  }
+  log;
+  peerId;
+  peerRouting;
+  events;
+  count;
+  interval;
+  initialInterval;
+  queryTimeout;
+  running;
+  timeoutId;
+  controller;
+  initialQuerySelfHasRun;
+  querySelfPromise;
+  constructor(components, init) {
+    this.peerId = components.peerId;
+    this.log = components.logger.forComponent(`${init.logPrefix}:query-self`);
+    this.events = components.events;
+    this.running = false;
+    this.peerRouting = init.peerRouting;
+    this.count = init.count ?? K;
+    this.interval = init.interval ?? QUERY_SELF_INTERVAL;
+    this.initialInterval = init.initialInterval ?? QUERY_SELF_INITIAL_INTERVAL;
+    this.queryTimeout = init.queryTimeout ?? QUERY_SELF_TIMEOUT;
+    this.initialQuerySelfHasRun = init.initialQuerySelfHasRun;
+    this.querySelf = timeOperationMethod(this.querySelf.bind(this), init.operationMetrics, "SELF_QUERY");
+  }
+  isStarted() {
+    return this.running;
+  }
+  start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    clearTimeout(this.timeoutId);
+    this.timeoutId = setTimeout(() => {
+      this.querySelf().catch((err) => {
+        this.log.error("error running self-query - %e", err);
+      });
+    }, this.initialInterval);
+  }
+  stop() {
+    this.running = false;
+    if (this.timeoutId != null) {
+      clearTimeout(this.timeoutId);
+    }
+    if (this.controller != null) {
+      this.controller.abort();
+    }
+  }
+  async querySelf() {
+    if (!this.running) {
+      this.log("skip self-query because we are not started");
+      return;
+    }
+    if (this.querySelfPromise != null) {
+      this.log("joining existing self query");
+      return this.querySelfPromise.promise;
+    }
+    this.querySelfPromise = pDefer();
+    if (this.running) {
+      this.controller = new AbortController();
+      const signals = [this.controller.signal];
+      if (this.initialQuerySelfHasRun == null) {
+        const timeoutSignal = AbortSignal.timeout(this.queryTimeout);
+        setMaxListeners(Infinity, timeoutSignal);
+        signals.push(timeoutSignal);
+      }
+      const signal = anySignal(signals);
+      setMaxListeners(Infinity, signal, this.controller.signal);
+      try {
+        this.log("run self-query, look for %d peers timing out after %dms", this.count, this.queryTimeout);
+        const start2 = Date.now();
+        const peers = await pipe(this.peerRouting.getClosestPeers(this.peerId.toMultihash().bytes, {
+          signal,
+          isSelfQuery: true
+        }), (source) => src_default8(source, this.count), async (source) => src_default10(source));
+        signal?.throwIfAborted();
+        const duration = Date.now() - start2;
+        this.log("self-query found %d peers in %dms", peers, duration);
+        this.events.dispatchEvent(new CustomEvent("kad-dht:query:self", {
+          detail: {
+            peers,
+            duration
+          }
+        }));
+      } catch (err) {
+        this.log.error("self-query error - %e", err);
+      } finally {
+        signal.clear();
+        if (this.initialQuerySelfHasRun != null) {
+          this.initialQuerySelfHasRun.resolve();
+          this.initialQuerySelfHasRun = void 0;
+        }
+      }
+    }
+    this.querySelfPromise.resolve();
+    this.querySelfPromise = void 0;
+    if (!this.running) {
+      return;
+    }
+    this.timeoutId = setTimeout(() => {
+      this.querySelf().catch((err) => {
+        this.log.error("error running self-query - %e", err);
+      });
+    }, this.interval);
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/reprovider.js
+var Reprovider = class extends TypedEventEmitter {
+  static {
+    __name(this, "Reprovider");
+  }
+  log;
+  reprovideQueue;
+  maxQueueSize;
+  datastore;
+  timeout;
+  reprovideTimeout;
+  running;
+  shutdownController;
+  reprovideThreshold;
+  contentRouting;
+  datastorePrefix;
+  addressManager;
+  validity;
+  interval;
+  peerId;
+  constructor(components, init) {
+    super();
+    this.log = components.logger.forComponent(`${init.logPrefix}:reprovider`);
+    this.peerId = components.peerId;
+    this.reprovideQueue = new Queue({
+      concurrency: init.concurrency ?? REPROVIDE_CONCURRENCY,
+      metrics: components.metrics,
+      metricName: `${init.metricsPrefix}_reprovide_queue`
+    });
+    this.reprovideTimeout = new AdaptiveTimeout({
+      ...init.timeout ?? {},
+      metrics: components.metrics,
+      metricName: `${init.metricsPrefix}_reprovide_timeout_milliseconds`
+    });
+    this.datastore = components.datastore;
+    this.addressManager = components.addressManager;
+    this.datastorePrefix = `${init.datastorePrefix}/provider`;
+    this.reprovideThreshold = init.threshold ?? REPROVIDE_THRESHOLD;
+    this.maxQueueSize = init.maxQueueSize ?? REPROVIDE_MAX_QUEUE_SIZE;
+    this.validity = init.validity ?? PROVIDERS_VALIDITY;
+    this.interval = init.interval ?? REPROVIDE_INTERVAL;
+    this.contentRouting = init.contentRouting;
+    this.running = false;
+    this.reprovide = timeOperationMethod(this.reprovide.bind(this), init.operationMetrics, "PROVIDE");
+  }
+  start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    this.shutdownController = new AbortController();
+    setMaxListeners(Infinity, this.shutdownController.signal);
+    this.timeout = setTimeout(() => {
+      this.processRecords({
+        signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
+      }).catch((err) => {
+        this.log.error("error running process to reprovide/cleanup - %e", err);
+      });
+    }, this.interval);
+  }
+  stop() {
+    this.running = false;
+    this.reprovideQueue.clear();
+    clearTimeout(this.timeout);
+    this.shutdownController?.abort();
+  }
+  /**
+   * Check all provider records. Delete them if they have expired, reprovide
+   * them if the provider is us and the expiry is within the reprovide window.
+   */
+  async processRecords(options) {
+    try {
+      this.safeDispatchEvent("reprovide:start");
+      this.log("starting reprovide/cleanup");
+      for await (const entry of this.datastore.query({
+        prefix: this.datastorePrefix
+      }, options)) {
+        try {
+          const { cid, peerId } = parseProviderKey(entry.key);
+          const created = readProviderTime(entry.value).getTime();
+          const expires = created + this.validity;
+          const now = Date.now();
+          const expired = now > expires;
+          const isSelf = this.peerId.equals(peerId);
+          this.log.trace("comparing: %d (now) < %d (expires) = %s %s", now, expires, expired, expired ? "(expired)" : "(valid)");
+          if (expired && !isSelf) {
+            await this.datastore.delete(entry.key, options);
+          }
+          if (this.shouldReprovide(isSelf, expires)) {
+            this.log("reproviding %c as it is within the reprovide threshold (%d)", cid, this.reprovideThreshold);
+            this.queueReprovide(cid).catch((err) => {
+              this.log.error("could not reprovide %c - %e", cid, err);
+            });
+          }
+        } catch (err) {
+          this.log.error("error processing datastore key %s - %s", entry.key, err.message);
+        }
+      }
+      this.log("reprovide/cleanup successful");
+    } finally {
+      this.safeDispatchEvent("reprovide:end");
+      if (this.running) {
+        this.log("queuing next re-provide/cleanup run in %d ms", this.interval);
+        this.timeout = setTimeout(() => {
+          this.processRecords({
+            signal: AbortSignal.timeout(REPROVIDE_TIMEOUT)
+          }).catch((err) => {
+            this.log.error("error running re-provide - %e", err);
+          });
+        }, this.interval);
+      }
+    }
+  }
+  /**
+   * Determines if a record should be reprovided
+   */
+  shouldReprovide(isSelf, expires) {
+    if (!isSelf) {
+      return false;
+    }
+    const now = Date.now();
+    if (expires < now) {
+      return true;
+    }
+    return expires - now < this.reprovideThreshold;
+  }
+  async queueReprovide(cid, options) {
+    if (!this.running) {
+      return;
+    }
+    this.log.trace("waiting for queue capacity before adding %c to re-provide queue", cid);
+    await this.reprovideQueue.onSizeLessThan(this.maxQueueSize, options);
+    const existingJob = this.reprovideQueue.queue.find((job) => job.options.cid.equals(cid));
+    if (existingJob != null) {
+      this.log.trace("not adding %c to re-provide queue - already in queue", cid);
+      return existingJob.join();
+    }
+    this.log.trace("adding %c to re-provide queue", cid);
+    this.reprovideQueue.add(async (options2) => {
+      options2.signal?.throwIfAborted();
+      if (!this.running) {
+        return;
+      }
+      this.log.trace("re-providing %c", cid);
+      const signal = this.reprovideTimeout.getTimeoutSignal(options2);
+      try {
+        await this.reprovide(options2.cid, options2);
+      } finally {
+        this.reprovideTimeout.cleanUp(signal);
+      }
+      this.log.trace("re-provided %c", cid);
+    }, {
+      signal: this.shutdownController?.signal,
+      cid
+    }).catch((err) => {
+      this.log.error("could not re-provide key %c - %e", cid, err);
+    });
+  }
+  async reprovide(cid, options) {
+    await src_default4(this.contentRouting.provide(cid, this.addressManager.getAddresses(), options));
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/routing-table/closest-peers.js
+var PEER_SET_SIZE = 20;
+var REFRESH_INTERVAL = 5e3;
+var KAD_CLOSE_TAG_NAME = "kad-close";
+var KAD_CLOSE_TAG_VALUE = 50;
+var ClosestPeers = class {
+  static {
+    __name(this, "ClosestPeers");
+  }
+  routingTable;
+  components;
+  closestPeers;
+  newPeers;
+  refreshInterval;
+  peerSetSize;
+  timeout;
+  closeTagName;
+  closeTagValue;
+  log;
+  running;
+  constructor(components, init) {
+    this.components = components;
+    this.log = components.logger.forComponent(`${init.logPrefix}:routing-table`);
+    this.routingTable = init.routingTable;
+    this.refreshInterval = init.refreshInterval ?? REFRESH_INTERVAL;
+    this.peerSetSize = init.peerSetSize ?? PEER_SET_SIZE;
+    this.closeTagName = init.closeTagName ?? KAD_CLOSE_TAG_NAME;
+    this.closeTagValue = init.closeTagValue ?? KAD_CLOSE_TAG_VALUE;
+    this.closestPeers = new PeerSet();
+    this.onPeerPing = this.onPeerPing.bind(this);
+    this.running = false;
+  }
+  async start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    const targetKadId = await convertPeerId(this.components.peerId);
+    this.newPeers = new PeerDistanceList(targetKadId, this.peerSetSize);
+    this.routingTable.addEventListener("peer:ping", this.onPeerPing);
+    this.timeout = setInterval(() => {
+      this.updatePeerTags().catch((err) => {
+        this.log.error("error updating peer tags - %e", err);
+      });
+    }, this.refreshInterval);
+  }
+  stop() {
+    this.running = false;
+    this.routingTable.removeEventListener("peer:ping", this.onPeerPing);
+    clearTimeout(this.timeout);
+  }
+  onPeerPing(event) {
+    this.newPeers?.add({ id: event.detail, multiaddrs: [] }).catch((err) => {
+      this.log.error("error adding peer to distance list - %e", err);
+    });
+  }
+  async updatePeerTags() {
+    const newClosest = new PeerSet(this.newPeers?.peers.map(({ peer }) => peer.id));
+    const added = newClosest.difference(this.closestPeers);
+    const removed = this.closestPeers.difference(newClosest);
+    this.closestPeers = newClosest;
+    await Promise.all([
+      ...[...added].map(async (peerId) => {
+        await this.components.peerStore.merge(peerId, {
+          tags: {
+            [this.closeTagName]: {
+              value: this.closeTagValue
+            },
+            [KEEP_ALIVE_TAG2]: {
+              value: 1
+            }
+          }
+        });
+      }),
+      ...[...removed].map(async (peerId) => {
+        await this.components.peerStore.merge(peerId, {
+          tags: {
+            [this.closeTagName]: void 0,
+            [KEEP_ALIVE_TAG2]: void 0
+          }
+        });
+      })
+    ]);
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/routing-table/k-bucket.js
+function isLeafBucket(obj) {
+  return Array.isArray(obj?.peers);
+}
+__name(isLeafBucket, "isLeafBucket");
+var KBucket = class {
+  static {
+    __name(this, "KBucket");
+  }
+  peerId;
+  root;
+  localPeer;
+  prefixLength;
+  splitThreshold;
+  kBucketSize;
+  numberOfNodesToPing;
+  lastPingThreshold;
+  ping;
+  verify;
+  onAdd;
+  onRemove;
+  onMove;
+  addingPeerMap;
+  constructor(components, options) {
+    this.peerId = components.peerId;
+    this.prefixLength = options.prefixLength ?? PREFIX_LENGTH;
+    this.kBucketSize = options.kBucketSize ?? KBUCKET_SIZE;
+    this.splitThreshold = options.splitThreshold ?? this.kBucketSize;
+    this.numberOfNodesToPing = options.numberOfOldContactsToPing ?? PING_OLD_CONTACT_COUNT;
+    this.lastPingThreshold = options.lastPingThreshold ?? LAST_PING_THRESHOLD;
+    this.ping = options.ping;
+    this.verify = options.verify;
+    this.onAdd = options.onAdd;
+    this.onRemove = options.onRemove;
+    this.addingPeerMap = trackedPeerMap({
+      name: `${options.metricsPrefix}_adding_peer_map`,
+      metrics: components.metrics
+    });
+    this.root = {
+      prefix: "",
+      depth: 0,
+      peers: []
+    };
+  }
+  async start() {
+    await this.addSelfPeer(this.peerId);
+  }
+  stop() {
+    this.addingPeerMap.clear();
+    this.root = {
+      prefix: "",
+      depth: 0,
+      peers: []
+    };
+  }
+  async addSelfPeer(peerId, options) {
+    this.localPeer = {
+      peerId,
+      kadId: await convertPeerId(peerId, options),
+      lastPing: Date.now()
+    };
+  }
+  /**
+   * Adds a contact to the trie
+   */
+  async add(peerId, options) {
+    const peer = {
+      peerId,
+      kadId: await convertPeerId(peerId, options),
+      lastPing: 0
+    };
+    const existingPromise = this.addingPeerMap.get(peerId);
+    if (existingPromise != null) {
+      return existingPromise;
+    }
+    try {
+      const p2 = this._add(peer, options);
+      this.addingPeerMap.set(peerId, p2);
+      await p2;
+    } finally {
+      this.addingPeerMap.delete(peerId);
+    }
+  }
+  async _add(peer, options) {
+    const bucket = this._determineBucket(peer.kadId);
+    if (this._indexOf(bucket, peer.kadId) > -1) {
+      return;
+    }
+    if (bucket.peers.length === this.splitThreshold && bucket.depth < this.prefixLength) {
+      await this._split(bucket, options);
+      await this._add(peer, options);
+      return;
+    }
+    if (bucket.peers.length < this.kBucketSize) {
+      if (!needsPing(peer, this.lastPingThreshold)) {
+        bucket.peers.push(peer);
+        await this.onAdd?.(peer, bucket, options);
+        return;
+      }
+      const result = await this.verify(peer, options);
+      if (result) {
+        peer.lastPing = Date.now();
+        await this._add(peer, options);
+      }
+      return;
+    }
+    const toPing = bucket.peers.filter((peer2) => {
+      if (peer2.peerId.equals(this.localPeer?.peerId)) {
+        return false;
+      }
+      if (peer2.lastPing > Date.now() - this.lastPingThreshold) {
+        return false;
+      }
+      return true;
+    }).sort((a2, b) => {
+      if (a2.lastPing < b.lastPing) {
+        return -1;
+      }
+      if (a2.lastPing > b.lastPing) {
+        return 1;
+      }
+      return 0;
+    }).slice(0, this.numberOfNodesToPing);
+    let evicted = false;
+    for await (const toEvict of this.ping(toPing, options)) {
+      evicted = true;
+      await this.remove(toEvict.kadId, options);
+    }
+    if (!evicted) {
+      return;
+    }
+    await this._add(peer, options);
+  }
+  /**
+   * Get 0-n closest contacts to the provided node id. "Closest" here means:
+   * closest according to the XOR metric of the contact node id.
+   *
+   * @param {Uint8Array} id - Contact node id
+   * @returns {Generator<Peer, void, undefined>} Array Maximum of n closest contacts to the node id
+   */
+  *closest(id, options) {
+    const list = new PeerDistanceList(id, options?.count ?? this.kBucketSize);
+    for (const peer of this.toIterable()) {
+      if (options?.exclude?.some((p2) => p2.equals(peer.peerId)) === true) {
+        continue;
+      }
+      list.addWithKadId({ id: peer.peerId, multiaddrs: [] }, peer.kadId);
+    }
+    yield* src_default9(list.peers, ({ peer }) => peer.id);
+  }
+  /**
+   * Counts the total number of contacts in the tree.
+   *
+   * @returns {number} The number of contacts held in the tree
+   */
+  count() {
+    function countBucket(bucket) {
+      if (isLeafBucket(bucket)) {
+        return bucket.peers.length;
+      }
+      let count = 0;
+      if (bucket.left != null) {
+        count += countBucket(bucket.left);
+      }
+      if (bucket.right != null) {
+        count += countBucket(bucket.right);
+      }
+      return count;
+    }
+    __name(countBucket, "countBucket");
+    return countBucket(this.root);
+  }
+  /**
+   * Get a contact by its exact ID.
+   * If this is a leaf, loop through the bucket contents and return the correct
+   * contact if we have it or null if not. If this is an inner node, determine
+   * which branch of the tree to traverse and repeat.
+   *
+   * @param {Uint8Array} kadId - The ID of the contact to fetch.
+   * @returns {Peer | undefined} The contact if available, otherwise null
+   */
+  get(kadId) {
+    const bucket = this._determineBucket(kadId);
+    const index = this._indexOf(bucket, kadId);
+    return bucket.peers[index];
+  }
+  /**
+   * Removes contact with the provided id.
+   *
+   * @param {Uint8Array} kadId - The ID of the contact to remove
+   */
+  async remove(kadId, options) {
+    const bucket = this._determineBucket(kadId);
+    const index = this._indexOf(bucket, kadId);
+    if (index > -1) {
+      const peer = bucket.peers.splice(index, 1)[0];
+      await this.onRemove?.(peer, bucket, options);
+    }
+  }
+  /**
+   * Similar to `toArray()` but instead of buffering everything up into an
+   * array before returning it, yields contacts as they are encountered while
+   * walking the tree.
+   *
+   * @returns {Iterable} All of the contacts in the tree, as an iterable
+   */
+  *toIterable() {
+    function* iterate(bucket) {
+      if (isLeafBucket(bucket)) {
+        yield* bucket.peers;
+        return;
+      }
+      yield* iterate(bucket.left);
+      yield* iterate(bucket.right);
+    }
+    __name(iterate, "iterate");
+    yield* iterate(this.root);
+  }
+  /**
+   * Default distance function. Finds the XOR distance between firstId and
+   * secondId.
+   *
+   * @param  {Uint8Array} firstId - Uint8Array containing first id.
+   * @param  {Uint8Array} secondId - Uint8Array containing second id.
+   * @returns {number} Integer The XOR distance between firstId and secondId.
+   */
+  distance(firstId, secondId) {
+    return BigInt("0x" + toString2(xor(firstId, secondId), "base16"));
+  }
+  /**
+   * Determines whether the id at the bitIndex is 0 or 1
+   * Return left leaf if `id` at `bitIndex` is 0, right leaf otherwise
+   *
+   * @param {Uint8Array} kadId - Id to compare localNodeId with
+   * @returns {LeafBucket} left leaf if id at bitIndex is 0, right leaf otherwise.
+   */
+  _determineBucket(kadId) {
+    const bitString = toString2(kadId, "base2");
+    function findBucket(bucket, bitIndex = 0) {
+      if (isLeafBucket(bucket)) {
+        return bucket;
+      }
+      const bit = bitString[bitIndex];
+      if (bit === "0") {
+        return findBucket(bucket.left, bitIndex + 1);
+      }
+      return findBucket(bucket.right, bitIndex + 1);
+    }
+    __name(findBucket, "findBucket");
+    return findBucket(this.root);
+  }
+  /**
+   * Returns the index of the contact with provided
+   * id if it exists, returns -1 otherwise.
+   *
+   * @param {object} bucket - internal object that has 2 leafs: left and right
+   * @param {Uint8Array} kadId - KadId of peer
+   * @returns {number} Integer Index of contact with provided id if it exists, -1 otherwise.
+   */
+  _indexOf(bucket, kadId) {
+    return bucket.peers.findIndex((peer) => equals3(peer.kadId, kadId));
+  }
+  /**
+   * Modify the bucket, turn it from a leaf bucket to an internal bucket
+   *
+   * @param {any} bucket - bucket for splitting
+   */
+  async _split(bucket, options) {
+    const left = {
+      prefix: "0",
+      depth: bucket.depth + 1,
+      peers: []
+    };
+    const right = {
+      prefix: "1",
+      depth: bucket.depth + 1,
+      peers: []
+    };
+    for (const peer of bucket.peers) {
+      const bitString = toString2(peer.kadId, "base2");
+      if (bitString[bucket.depth] === "0") {
+        left.peers.push(peer);
+        await this.onMove?.(peer, bucket, left, options);
+      } else {
+        right.peers.push(peer);
+        await this.onMove?.(peer, bucket, right, options);
+      }
+    }
+    convertToInternalBucket(bucket, left, right);
+  }
+};
+function convertToInternalBucket(bucket, left, right) {
+  delete bucket.peers;
+  bucket.left = left;
+  bucket.right = right;
+  if (bucket.prefix === "") {
+    delete bucket.depth;
+    delete bucket.prefix;
+  }
+  return true;
+}
+__name(convertToInternalBucket, "convertToInternalBucket");
+function needsPing(peer, threshold) {
+  return peer.lastPing < Date.now() - threshold;
+}
+__name(needsPing, "needsPing");
+
+// node_modules/@libp2p/kad-dht/dist/src/routing-table/index.js
+var KBUCKET_SIZE = 20;
+var PREFIX_LENGTH = 6;
+var PING_NEW_CONTACT_CONCURRENCY = 20;
+var PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100;
+var PING_OLD_CONTACT_COUNT = 3;
+var PING_OLD_CONTACT_CONCURRENCY = 20;
+var PING_OLD_CONTACT_MAX_QUEUE_SIZE = 100;
+var KAD_PEER_TAG_NAME = "kad-peer";
+var KAD_PEER_TAG_VALUE = 1;
+var LAST_PING_THRESHOLD = 6e5;
+var POPULATE_FROM_DATASTORE_ON_START = true;
+var POPULATE_FROM_DATASTORE_LIMIT = 1e3;
+var RoutingTable = class extends TypedEventEmitter {
+  static {
+    __name(this, "RoutingTable");
+  }
+  kBucketSize;
+  kb;
+  network;
+  closestPeerTagger;
+  log;
+  components;
+  running;
+  pingNewContactTimeout;
+  pingNewContactQueue;
+  pingOldContactTimeout;
+  pingOldContactQueue;
+  populateFromDatastoreOnStart;
+  populateFromDatastoreLimit;
+  protocol;
+  peerTagName;
+  peerTagValue;
+  metrics;
+  shutdownController;
+  constructor(components, init) {
+    super();
+    this.components = components;
+    this.log = components.logger.forComponent(`${init.logPrefix}:routing-table`);
+    this.kBucketSize = init.kBucketSize ?? KBUCKET_SIZE;
+    this.running = false;
+    this.protocol = init.protocol;
+    this.network = init.network;
+    this.peerTagName = init.peerTagName ?? KAD_PEER_TAG_NAME;
+    this.peerTagValue = init.peerTagValue ?? KAD_PEER_TAG_VALUE;
+    this.pingOldContacts = this.pingOldContacts.bind(this);
+    this.verifyNewContact = this.verifyNewContact.bind(this);
+    this.peerAdded = this.peerAdded.bind(this);
+    this.peerRemoved = this.peerRemoved.bind(this);
+    this.populateFromDatastoreOnStart = init.populateFromDatastoreOnStart ?? POPULATE_FROM_DATASTORE_ON_START;
+    this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT;
+    this.shutdownController = new AbortController();
+    setMaxListeners(Infinity, this.shutdownController.signal);
+    this.pingOldContactQueue = new PeerQueue({
+      concurrency: init.pingOldContactConcurrency ?? PING_OLD_CONTACT_CONCURRENCY,
+      metricName: `${init.metricsPrefix}_ping_old_contact_queue`,
+      metrics: this.components.metrics,
+      maxSize: init.pingOldContactMaxQueueSize ?? PING_OLD_CONTACT_MAX_QUEUE_SIZE
+    });
+    this.pingOldContactTimeout = new AdaptiveTimeout({
+      ...init.pingOldContactTimeout ?? {},
+      metrics: this.components.metrics,
+      metricName: `${init.metricsPrefix}_routing_table_ping_old_contact_time_milliseconds`
+    });
+    this.pingNewContactQueue = new PeerQueue({
+      concurrency: init.pingNewContactConcurrency ?? PING_NEW_CONTACT_CONCURRENCY,
+      metricName: `${init.metricsPrefix}_ping_new_contact_queue`,
+      metrics: this.components.metrics,
+      maxSize: init.pingNewContactMaxQueueSize ?? PING_NEW_CONTACT_MAX_QUEUE_SIZE
+    });
+    this.pingNewContactTimeout = new AdaptiveTimeout({
+      ...init.pingNewContactTimeout ?? {},
+      metrics: this.components.metrics,
+      metricName: `${init.metricsPrefix}_routing_table_ping_new_contact_time_milliseconds`
+    });
+    this.kb = new KBucket(components, {
+      kBucketSize: init.kBucketSize,
+      prefixLength: init.prefixLength,
+      splitThreshold: init.splitThreshold,
+      numberOfOldContactsToPing: init.numberOfOldContactsToPing,
+      lastPingThreshold: init.lastPingThreshold,
+      ping: this.pingOldContacts,
+      verify: this.verifyNewContact,
+      onAdd: this.peerAdded,
+      onRemove: this.peerRemoved,
+      metricsPrefix: init.metricsPrefix
+    });
+    this.closestPeerTagger = new ClosestPeers(this.components, {
+      logPrefix: init.logPrefix,
+      routingTable: this,
+      peerSetSize: init.closestPeerSetSize,
+      refreshInterval: init.closestPeerSetRefreshInterval,
+      closeTagName: init.closeTagName,
+      closeTagValue: init.closeTagValue
+    });
+    if (this.components.metrics != null) {
+      this.metrics = {
+        routingTableSize: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_size`),
+        routingTableKadBucketTotal: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_total`),
+        routingTableKadBucketAverageOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_average_occupancy`),
+        routingTableKadBucketMinOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_min_occupancy`),
+        routingTableKadBucketMaxOccupancy: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_max_occupancy`),
+        routingTableKadBucketMaxDepth: this.components.metrics.registerMetric(`${init.metricsPrefix}_routing_table_kad_bucket_max_depth`),
+        kadBucketEvents: this.components.metrics.registerCounterGroup(`${init.metricsPrefix}_kad_bucket_events_total`)
+      };
+    }
+  }
+  isStarted() {
+    return this.running;
+  }
+  async start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    this.shutdownController = new AbortController();
+    setMaxListeners(Infinity, this.shutdownController.signal);
+    await start(this.closestPeerTagger, this.kb);
+  }
+  async afterStart() {
+    let peerStorePeers = 0;
+    Promise.resolve().then(async () => {
+      if (!this.populateFromDatastoreOnStart) {
+        return;
+      }
+      const signal = anySignal([
+        this.shutdownController.signal,
+        AbortSignal.timeout(2e4)
+      ]);
+      setMaxListeners(Infinity, signal);
+      try {
+        for (const peer of await this.components.peerStore.all({
+          filters: [(peer2) => {
+            return peer2.protocols.includes(this.protocol) && peer2.tags.has(KAD_PEER_TAG_NAME);
+          }],
+          limit: this.populateFromDatastoreLimit,
+          signal
+        })) {
+          if (!this.running) {
+            return;
+          }
+          try {
+            await this.add(peer.id, {
+              signal
+            });
+            peerStorePeers++;
+          } catch (err) {
+            this.log("failed to add peer %p to routing table, removing kad-dht peer tags - %e");
+            await this.components.peerStore.merge(peer.id, {
+              tags: {
+                [this.peerTagName]: void 0
+              }
+            });
+          }
+        }
+      } finally {
+        signal.clear();
+      }
+      this.log("added %d peer store peers to the routing table", peerStorePeers);
+    }).catch((err) => {
+      this.log.error("error adding %d, peer store peers to the routing table - %e", peerStorePeers, err);
+    });
+  }
+  async stop() {
+    this.running = false;
+    await stop(this.closestPeerTagger, this.kb);
+    this.pingOldContactQueue.abort();
+    this.pingNewContactQueue.abort();
+    this.shutdownController.abort();
+  }
+  async peerAdded(peer, bucket, options) {
+    if (!this.components.peerId.equals(peer.peerId)) {
+      await this.components.peerStore.merge(peer.peerId, {
+        tags: {
+          [this.peerTagName]: {
+            value: this.peerTagValue
+          }
+        }
+      }, options);
+    }
+    this.updateMetrics();
+    this.metrics?.kadBucketEvents.increment({ peer_added: true });
+    this.safeDispatchEvent("peer:add", { detail: peer.peerId });
+  }
+  async peerRemoved(peer, bucket, options) {
+    if (!this.components.peerId.equals(peer.peerId)) {
+      await this.components.peerStore.merge(peer.peerId, {
+        tags: {
+          [this.peerTagName]: void 0
+        }
+      }, options);
+    }
+    this.updateMetrics();
+    this.metrics?.kadBucketEvents.increment({ peer_removed: true });
+    this.safeDispatchEvent("peer:remove", { detail: peer.peerId });
+  }
+  /**
+   * Called on the `ping` event from `k-bucket` when a bucket is full
+   * and cannot split.
+   *
+   * `oldContacts.length` is defined by the `numberOfNodesToPing` param
+   * passed to the `k-bucket` constructor.
+   *
+   * `oldContacts` will not be empty and is the list of contacts that
+   * have not been contacted for the longest.
+   */
+  async *pingOldContacts(oldContacts, options) {
+    if (!this.running) {
+      return;
+    }
+    const jobs = [];
+    for (const oldContact of oldContacts) {
+      if (this.kb.get(oldContact.kadId) == null) {
+        this.log("asked to ping contact %p that was not in routing table", oldContact.peerId);
+        continue;
+      }
+      this.metrics?.kadBucketEvents.increment({ ping_old_contact: true });
+      jobs.push(async () => {
+        const existingJob = this.pingOldContactQueue.find(oldContact.peerId);
+        if (existingJob != null) {
+          this.log("asked to ping contact %p was already being pinged", oldContact.peerId);
+          const result2 = await existingJob.join(options);
+          if (!result2) {
+            return oldContact;
+          }
+          return;
+        }
+        const result = await this.pingOldContactQueue.add(async (options2) => {
+          const signal = this.pingOldContactTimeout.getTimeoutSignal();
+          const signals = anySignal([
+            signal,
+            this.shutdownController.signal,
+            options2?.signal
+          ]);
+          setMaxListeners(Infinity, signal, signals);
+          try {
+            return await this.pingContact(oldContact, options2);
+          } catch {
+            this.metrics?.kadBucketEvents.increment({ ping_old_contact_error: true });
+            return true;
+          } finally {
+            this.pingOldContactTimeout.cleanUp(signal);
+            signals.clear();
+          }
+        }, {
+          peerId: oldContact.peerId,
+          signal: options?.signal
+        });
+        if (!result) {
+          return oldContact;
+        }
+      });
+    }
+    for await (const peer of parallel(jobs)) {
+      if (peer != null) {
+        yield peer;
+      }
+    }
+  }
+  async verifyNewContact(contact, options) {
+    const signal = this.pingNewContactTimeout.getTimeoutSignal();
+    const signals = anySignal([
+      signal,
+      this.shutdownController.signal,
+      options?.signal
+    ]);
+    setMaxListeners(Infinity, signal, signals);
+    try {
+      const job = this.pingNewContactQueue.find(contact.peerId);
+      if (job != null) {
+        this.log("joining existing ping to add new peer %p to routing table", contact.peerId);
+        return await job.join({
+          signal: signals
+        });
+      } else {
+        return await this.pingNewContactQueue.add(async (options2) => {
+          this.metrics?.kadBucketEvents.increment({ ping_new_contact: true });
+          this.log("pinging new peer %p before adding to routing table", contact.peerId);
+          return this.pingContact(contact, options2);
+        }, {
+          peerId: contact.peerId,
+          signal: signals
+        });
+      }
+    } catch (err) {
+      this.log.trace("tried to add peer %p but they were not online", contact.peerId);
+      this.metrics?.kadBucketEvents.increment({ ping_new_contact_error: true });
+      return false;
+    } finally {
+      this.pingNewContactTimeout.cleanUp(signal);
+      signals.clear();
+    }
+  }
+  async pingContact(contact, options) {
+    let stream;
+    try {
+      this.log("pinging contact %p", contact.peerId);
+      await this.components.ping.ping(contact.peerId, options);
+      this.log("contact %p ping ok", contact.peerId);
+      this.safeDispatchEvent("peer:ping", {
+        detail: contact.peerId
+      });
+      return true;
+    } catch (err) {
+      this.log("error pinging old contact %p - %e", contact.peerId, err);
+      stream?.abort(err);
+      return false;
+    }
+  }
+  /**
+   * Amount of currently stored peers
+   */
+  get size() {
+    if (this.kb == null) {
+      return 0;
+    }
+    return this.kb.count();
+  }
+  /**
+   * Find a specific peer by id
+   */
+  async find(peer, options) {
+    const kadId = await convertPeerId(peer, options);
+    return this.kb.get(kadId)?.peerId;
+  }
+  /**
+   * Retrieve the closest peers to the given kadId
+   */
+  closestPeer(kadId) {
+    const res = this.closestPeers(kadId, {
+      count: 1
+    });
+    if (res.length > 0) {
+      return res[0];
+    }
+    return void 0;
+  }
+  /**
+   * Retrieve the `count`-closest peers to the given kadId
+   */
+  closestPeers(kadId, options) {
+    if (this.kb == null) {
+      return [];
+    }
+    return [...this.kb.closest(kadId, options)];
+  }
+  /**
+   * Add or update the routing table with the given peer
+   */
+  async add(peerId, options) {
+    if (this.kb == null) {
+      throw new Error("RoutingTable is not started");
+    }
+    await this.kb.add(peerId, options);
+  }
+  /**
+   * Remove a given peer from the table
+   */
+  async remove(peer, options) {
+    if (this.kb == null) {
+      throw new Error("RoutingTable is not started");
+    }
+    const kadId = await convertPeerId(peer, options);
+    await this.kb.remove(kadId, options);
+  }
+  updateMetrics() {
+    if (this.metrics == null || this.kb == null) {
+      return;
+    }
+    let size = 0;
+    let buckets = 0;
+    let maxDepth = 0;
+    let minOccupancy = 20;
+    let maxOccupancy = 0;
+    function count(bucket) {
+      if (isLeafBucket(bucket)) {
+        if (bucket.depth > maxDepth) {
+          maxDepth = bucket.depth;
+        }
+        buckets++;
+        size += bucket.peers.length;
+        if (bucket.peers.length < minOccupancy) {
+          minOccupancy = bucket.peers.length;
+        }
+        if (bucket.peers.length > maxOccupancy) {
+          maxOccupancy = bucket.peers.length;
+        }
+        return;
+      }
+      count(bucket.left);
+      count(bucket.right);
+    }
+    __name(count, "count");
+    count(this.kb.root);
+    this.metrics.routingTableSize.update(size);
+    this.metrics.routingTableKadBucketTotal.update(buckets);
+    this.metrics.routingTableKadBucketAverageOccupancy.update(Math.round(size / buckets));
+    this.metrics.routingTableKadBucketMinOccupancy.update(minOccupancy);
+    this.metrics.routingTableKadBucketMaxOccupancy.update(maxOccupancy);
+    this.metrics.routingTableKadBucketMaxDepth.update(maxDepth);
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/routing-table/generated-prefix-list-browser.js
+var generated_prefix_list_browser_default = [
+  77591,
+  22417,
+  43971,
+  28421,
+  740,
+  29829,
+  71467,
+  228973,
+  196661,
+  78537,
+  27689,
+  36431,
+  44415,
+  14362,
+  19456,
+  106025,
+  96308,
+  2882,
+  49509,
+  21149,
+  87173,
+  131409,
+  75844,
+  23676,
+  121838,
+  30291,
+  17492,
+  2953,
+  7564,
+  110620,
+  129477,
+  127283,
+  53113,
+  72417,
+  165166,
+  109690,
+  21200,
+  102125,
+  24049,
+  71504,
+  90342,
+  25307,
+  72039,
+  26812,
+  26715,
+  32264,
+  133800,
+  71161,
+  88956,
+  171987,
+  51779,
+  24425,
+  16671,
+  30251,
+  186294,
+  247761,
+  14202,
+  2121,
+  8465,
+  35024,
+  4876,
+  85917,
+  169730,
+  3638,
+  256836,
+  96184,
+  943,
+  18678,
+  6583,
+  52907,
+  35807,
+  112254,
+  214097,
+  18796,
+  11595,
+  9243,
+  23554,
+  887,
+  268203,
+  382004,
+  24590,
+  111335,
+  11625,
+  16619,
+  29039,
+  102425,
+  69006,
+  97976,
+  92362,
+  32552,
+  63717,
+  41433,
+  128974,
+  137630,
+  59943,
+  10019,
+  13986,
+  35430,
+  33665,
+  108037,
+  43799,
+  43280,
+  38195,
+  29078,
+  58629,
+  18265,
+  14425,
+  46832,
+  235538,
+  40830,
+  77881,
+  110717,
+  58937,
+  3463,
+  325358,
+  51300,
+  47623,
+  117252,
+  19007,
+  10170,
+  20540,
+  91237,
+  294813,
+  4951,
+  79841,
+  56232,
+  36270,
+  128547,
+  69209,
+  66275,
+  100156,
+  32063,
+  73531,
+  34439,
+  80937,
+  28892,
+  44466,
+  88595,
+  216307,
+  32583,
+  49620,
+  16605,
+  82127,
+  45807,
+  21630,
+  78726,
+  20235,
+  40163,
+  111007,
+  96926,
+  5567,
+  72083,
+  21665,
+  58844,
+  39419,
+  179767,
+  48328,
+  42662,
+  51550,
+  5251,
+  37811,
+  49608,
+  81056,
+  50854,
+  55513,
+  20922,
+  18891,
+  197409,
+  164656,
+  32593,
+  71449,
+  220474,
+  58919,
+  85682,
+  67854,
+  13758,
+  35066,
+  3565,
+  61905,
+  214793,
+  119572,
+  141419,
+  21504,
+  10302,
+  27354,
+  67003,
+  46131,
+  32668,
+  15165,
+  64871,
+  34450,
+  17821,
+  2757,
+  11452,
+  34189,
+  5160,
+  12257,
+  85523,
+  560,
+  53385,
+  65887,
+  119549,
+  135620,
+  312353,
+  115979,
+  122356,
+  10867,
+  193231,
+  124537,
+  54783,
+  90675,
+  120791,
+  4715,
+  142253,
+  50943,
+  17271,
+  43358,
+  25331,
+  4917,
+  120566,
+  34580,
+  12878,
+  33786,
+  160528,
+  32523,
+  4869,
+  301307,
+  104817,
+  81491,
+  23276,
+  8832,
+  97911,
+  31265,
+  52065,
+  7998,
+  49622,
+  9715,
+  43998,
+  34091,
+  84587,
+  20664,
+  69041,
+  29419,
+  53205,
+  10838,
+  58288,
+  116145,
+  6185,
+  5154,
+  141795,
+  35924,
+  21307,
+  144738,
+  43730,
+  12085,
+  8279,
+  10002,
+  119,
+  133779,
+  199668,
+  72938,
+  31768,
+  39176,
+  67875,
+  38453,
+  9700,
+  44144,
+  4121,
+  116048,
+  41733,
+  12868,
+  82669,
+  92308,
+  128,
+  34262,
+  11332,
+  7712,
+  90764,
+  36141,
+  13553,
+  71312,
+  77470,
+  117314,
+  96549,
+  49135,
+  23602,
+  54468,
+  28605,
+  6327,
+  62308,
+  17171,
+  67531,
+  21319,
+  14105,
+  894,
+  107722,
+  46157,
+  8503,
+  51069,
+  100472,
+  45138,
+  15246,
+  14577,
+  35609,
+  191464,
+  1757,
+  13364,
+  161349,
+  32067,
+  91705,
+  81144,
+  52339,
+  5408,
+  91066,
+  21983,
+  14157,
+  100545,
+  4372,
+  26630,
+  129112,
+  1423,
+  29676,
+  213626,
+  4397,
+  88436,
+  99190,
+  6877,
+  49958,
+  26122,
+  114348,
+  60661,
+  29818,
+  293118,
+  50042,
+  179738,
+  16400,
+  163423,
+  89627,
+  31040,
+  43973,
+  36638,
+  45952,
+  5153,
+  1894,
+  109322,
+  1898,
+  134021,
+  12402,
+  112077,
+  68309,
+  190269,
+  69866,
+  31938,
+  107383,
+  11522,
+  105232,
+  11248,
+  14868,
+  39852,
+  71707,
+  186525,
+  16530,
+  38162,
+  106212,
+  11700,
+  5130,
+  16608,
+  26998,
+  59586,
+  108399,
+  230033,
+  43683,
+  48135,
+  82179,
+  2073,
+  5015,
+  196684,
+  189293,
+  16378,
+  23452,
+  8301,
+  35640,
+  11632,
+  214551,
+  29240,
+  57644,
+  33137,
+  91949,
+  55157,
+  52384,
+  117313,
+  5090,
+  17717,
+  89668,
+  49363,
+  82238,
+  241035,
+  66216,
+  29066,
+  184088,
+  97206,
+  62820,
+  26595,
+  4241,
+  135635,
+  173672,
+  8202,
+  459,
+  71355,
+  146294,
+  29587,
+  3008,
+  135385,
+  141203,
+  14803,
+  6634,
+  45094,
+  69362,
+  50925,
+  546,
+  51884,
+  62011,
+  83296,
+  234584,
+  44515,
+  56050,
+  89476,
+  87751,
+  19373,
+  12691,
+  149923,
+  19794,
+  13833,
+  35846,
+  87557,
+  58339,
+  2884,
+  19145,
+  25647,
+  12224,
+  11024,
+  77338,
+  64608,
+  122297,
+  53025,
+  7205,
+  36189,
+  36294,
+  170779,
+  21750,
+  7739,
+  173883,
+  75192,
+  35664,
+  224240,
+  113121,
+  30181,
+  26267,
+  27036,
+  117827,
+  92015,
+  106516,
+  55628,
+  203549,
+  67949,
+  60462,
+  60844,
+  35911,
+  20457,
+  1820,
+  920,
+  19773,
+  8738,
+  73173,
+  181993,
+  38521,
+  98254,
+  76257,
+  46008,
+  92796,
+  5384,
+  26868,
+  151566,
+  22124,
+  2411,
+  15919,
+  186872,
+  180021,
+  28099,
+  152961,
+  78811,
+  80237,
+  62352,
+  102653,
+  74259,
+  184890,
+  16792,
+  123702,
+  224945,
+  29940,
+  19512,
+  75283,
+  14059,
+  112691,
+  92811,
+  233329,
+  20411,
+  138569,
+  53341,
+  109802,
+  50600,
+  134528,
+  66747,
+  5529,
+  166531,
+  31578,
+  64732,
+  67189,
+  1596,
+  126357,
+  967,
+  167999,
+  206598,
+  109752,
+  119431,
+  207825,
+  78791,
+  91938,
+  10301,
+  27311,
+  24233,
+  252343,
+  28831,
+  32812,
+  66002,
+  112267,
+  90895,
+  8786,
+  8095,
+  16824,
+  22866,
+  21813,
+  60507,
+  174833,
+  19549,
+  130985,
+  117051,
+  52110,
+  6938,
+  81923,
+  123864,
+  38061,
+  919,
+  18680,
+  53534,
+  46739,
+  112893,
+  161529,
+  85429,
+  26761,
+  11900,
+  81121,
+  91968,
+  15390,
+  217947,
+  56524,
+  1713,
+  6654,
+  37089,
+  85630,
+  138866,
+  61850,
+  16491,
+  75577,
+  16884,
+  98296,
+  73523,
+  6140,
+  44645,
+  6062,
+  36366,
+  29844,
+  57946,
+  37932,
+  42472,
+  5266,
+  20834,
+  19309,
+  33753,
+  127182,
+  134259,
+  35810,
+  41805,
+  45878,
+  312001,
+  14881,
+  47757,
+  49251,
+  120050,
+  44252,
+  3708,
+  25856,
+  107864,
+  120347,
+  1228,
+  36550,
+  41682,
+  34496,
+  47025,
+  8393,
+  173365,
+  246526,
+  12894,
+  161607,
+  35670,
+  90785,
+  126572,
+  2095,
+  124731,
+  157033,
+  58694,
+  554,
+  12786,
+  9642,
+  4817,
+  16136,
+  47864,
+  174698,
+  66992,
+  4639,
+  69284,
+  10625,
+  40710,
+  27763,
+  51738,
+  30404,
+  264105,
+  137904,
+  109882,
+  52487,
+  42824,
+  57514,
+  2740,
+  10479,
+  146799,
+  107390,
+  16586,
+  88038,
+  174951,
+  9410,
+  16185,
+  44158,
+  5568,
+  40658,
+  46108,
+  12763,
+  97385,
+  26175,
+  108859,
+  664,
+  230732,
+  67470,
+  46663,
+  14395,
+  50750,
+  141320,
+  93140,
+  15361,
+  47997,
+  55784,
+  6791,
+  307840,
+  118569,
+  107326,
+  18056,
+  58281,
+  260415,
+  54691,
+  8790,
+  73332,
+  45633,
+  7511,
+  45674,
+  143373,
+  14031,
+  11799,
+  94491,
+  35646,
+  96544,
+  14560,
+  26049,
+  32983,
+  25791,
+  83814,
+  42094,
+  231370,
+  63955,
+  139212,
+  2359,
+  169908,
+  3108,
+  183486,
+  105867,
+  28197,
+  32941,
+  124968,
+  26402,
+  88267,
+  149768,
+  23053,
+  3078,
+  19091,
+  52924,
+  25383,
+  19209,
+  111548,
+  97361,
+  3959,
+  24880,
+  235061,
+  9099,
+  24921,
+  161254,
+  151405,
+  20508,
+  7159,
+  34381,
+  20133,
+  11434,
+  74036,
+  19974,
+  34769,
+  36585,
+  1076,
+  22454,
+  17354,
+  38727,
+  235160,
+  111547,
+  96454,
+  117448,
+  156940,
+  91330,
+  37299,
+  7310,
+  26915,
+  117060,
+  51369,
+  22620,
+  61861,
+  322264,
+  106850,
+  111694,
+  15091,
+  2624,
+  40345,
+  300446,
+  177064,
+  1707,
+  27389,
+  54792,
+  327783,
+  132669,
+  183543,
+  59003,
+  17744,
+  20603,
+  151134,
+  106923,
+  53084,
+  71803,
+  279424,
+  319816,
+  11579,
+  21946,
+  16728,
+  38274,
+  72711,
+  5085,
+  83391,
+  88646,
+  40159,
+  25027,
+  34680,
+  10752,
+  12988,
+  54126,
+  30365,
+  18338,
+  100445,
+  230674,
+  44874,
+  84974,
+  143877,
+  123253,
+  139372,
+  28082,
+  91477,
+  144002,
+  13096,
+  219729,
+  46016,
+  50029,
+  42377,
+  14601,
+  6660,
+  58244,
+  58978,
+  23918,
+  88206,
+  113611,
+  64452,
+  17541,
+  41032,
+  10942,
+  12021,
+  49189,
+  10978,
+  40175,
+  37156,
+  10947,
+  71709,
+  106894,
+  112538,
+  57007,
+  137486,
+  150608,
+  152719,
+  40615,
+  7746,
+  279716,
+  13101,
+  19524,
+  28708,
+  40578,
+  72320,
+  1096,
+  182051,
+  94527,
+  51275,
+  22833,
+  45164,
+  81917,
+  77519,
+  48508,
+  5421,
+  140302,
+  37845,
+  149830,
+  5587,
+  27579,
+  5357,
+  428725,
+  248187,
+  6326,
+  206760,
+  39814,
+  32585,
+  89923,
+  44341,
+  288753,
+  284443,
+  96368,
+  31201,
+  94189,
+  119504,
+  20359,
+  52073,
+  103216,
+  179,
+  27934,
+  32801,
+  96035,
+  34111,
+  34309,
+  101326,
+  18198,
+  20704,
+  210266,
+  37643,
+  27880,
+  141873,
+  106e3,
+  19414,
+  56614,
+  167714,
+  66483,
+  107885,
+  86602,
+  4379,
+  20796,
+  75467,
+  4987,
+  5017,
+  118857,
+  26003,
+  34308,
+  114428,
+  29198,
+  6686,
+  29697,
+  73632,
+  3739,
+  69795,
+  16798,
+  41504,
+  7207,
+  30722,
+  21436,
+  36735,
+  28067,
+  28545,
+  3239,
+  11221,
+  36031,
+  41889,
+  100010,
+  19247,
+  317673,
+  29495,
+  174554,
+  6424,
+  129725,
+  53845,
+  94986,
+  7955,
+  59676,
+  2604,
+  191497,
+  19735,
+  102214,
+  62954,
+  23844,
+  11872,
+  179525,
+  261436,
+  34492,
+  428,
+  78404,
+  142035,
+  16747,
+  17246,
+  27578,
+  37021,
+  33672,
+  57944,
+  26056,
+  135760,
+  2369,
+  61674,
+  122066,
+  31327,
+  19374,
+  157065,
+  40553,
+  130982,
+  69619,
+  71290,
+  38855,
+  72100,
+  92903,
+  95940,
+  51422,
+  165999,
+  65713,
+  57873,
+  50726,
+  7288,
+  20272,
+  2081,
+  42326,
+  22624,
+  81120,
+  57914,
+  79352,
+  19447,
+  1684,
+  72302,
+  11774,
+  302559,
+  161481,
+  96396,
+  13692,
+  414988,
+  3721,
+  79066,
+  56627,
+  46883,
+  21150,
+  11747,
+  12184,
+  5856,
+  113458,
+  176117,
+  84416,
+  52079,
+  27933,
+  3354,
+  59765,
+  141359,
+  2212,
+  216309,
+  2555,
+  23458,
+  196722,
+  142463,
+  45701,
+  44548,
+  28798,
+  19418,
+  215,
+  29916,
+  9396,
+  10574,
+  114226,
+  84475,
+  13520,
+  18694,
+  34056,
+  4524,
+  90302,
+  62930,
+  13539,
+  19407,
+  77209,
+  7728,
+  38088,
+  9535,
+  2263,
+  23875,
+  183945,
+  17750,
+  26274,
+  67172,
+  10585,
+  28042,
+  22199,
+  7478,
+  51331,
+  66030,
+  26774,
+  192929,
+  31434,
+  25850,
+  50197,
+  52926,
+  178158,
+  4679,
+  181256,
+  70184,
+  229600,
+  9959,
+  105594,
+  72158,
+  73974,
+  2726,
+  35085,
+  78087,
+  23284,
+  35568,
+  51713,
+  155676,
+  5401,
+  27254,
+  11966,
+  17569,
+  223253,
+  71993,
+  103357,
+  111477,
+  55722,
+  30504,
+  26034,
+  46774,
+  35392,
+  36285,
+  214814,
+  41143,
+  163465,
+  1051,
+  16094,
+  81044,
+  6636,
+  76489,
+  179102,
+  20712,
+  39178,
+  35683,
+  125177,
+  54219,
+  30617,
+  52994,
+  25324,
+  50123,
+  2543,
+  87529,
+  58995,
+  10688,
+  125199,
+  12388,
+  60158,
+  125481,
+  131646,
+  7642,
+  133350,
+  65874,
+  3438,
+  97277,
+  101450,
+  10075,
+  56344,
+  116821,
+  50778,
+  60547,
+  98016,
+  106135,
+  13859,
+  14255,
+  16300,
+  77373,
+  173521,
+  8285,
+  45932,
+  37426,
+  4054,
+  114295,
+  55947,
+  7703,
+  39114,
+  52,
+  51119,
+  128135,
+  19714,
+  60715,
+  9554,
+  50492,
+  88180,
+  2823,
+  118271,
+  52993,
+  122625,
+  97919,
+  23859,
+  37895,
+  25040,
+  33614,
+  32102,
+  20431,
+  3577,
+  9275,
+  15686,
+  43031,
+  157741,
+  110358,
+  1884,
+  40291,
+  125391,
+  13736,
+  5008,
+  64881,
+  87336,
+  77381,
+  70711,
+  43032,
+  49155,
+  118587,
+  70494,
+  4318,
+  10168,
+  30126,
+  12580,
+  10524,
+  280104,
+  104001,
+  145413,
+  2862,
+  84140,
+  6603,
+  106005,
+  13566,
+  12780,
+  11251,
+  42830,
+  571,
+  179910,
+  82443,
+  13146,
+  469,
+  42714,
+  32591,
+  265217,
+  424024,
+  92553,
+  54721,
+  134100,
+  6007,
+  15242,
+  114681,
+  59030,
+  16718,
+  85465,
+  200214,
+  85982,
+  55174,
+  165013,
+  23493,
+  56964,
+  82529,
+  109150,
+  32706,
+  27568,
+  82442,
+  5350,
+  14976,
+  13165,
+  44890,
+  60021,
+  21343,
+  33978,
+  17264,
+  4655,
+  22328,
+  27819,
+  75730,
+  16567,
+  55483,
+  14510,
+  17926,
+  45827,
+  150609,
+  3704,
+  7385,
+  272531,
+  161543,
+  76904,
+  122163,
+  52405,
+  2039,
+  19165,
+  41623,
+  14423,
+  228354,
+  3369,
+  176360,
+  85491,
+  7122,
+  35789,
+  303724,
+  4465,
+  13628,
+  2233,
+  55311,
+  118771,
+  20713,
+  10006,
+  221519,
+  45115,
+  71021,
+  35650,
+  29775,
+  7337,
+  10864,
+  20665,
+  21142,
+  1746,
+  15080,
+  1624,
+  32449,
+  10905,
+  105743,
+  229797,
+  7701,
+  3940,
+  22997,
+  178467,
+  57208,
+  389057,
+  39683,
+  59403,
+  63344,
+  63125,
+  54847,
+  69691,
+  18336,
+  56448,
+  3362,
+  37202,
+  18282,
+  29648,
+  138224,
+  35867,
+  10495,
+  5911,
+  28814,
+  26653,
+  31514,
+  176702,
+  26550,
+  45621,
+  11734,
+  4525,
+  40543,
+  73944,
+  121080,
+  27858,
+  155561,
+  14887,
+  44670,
+  30742,
+  8796,
+  107455,
+  113472,
+  56369,
+  75581,
+  183777,
+  240095,
+  133699,
+  153299,
+  8768,
+  160464,
+  26058,
+  49078,
+  103971,
+  21875,
+  71486,
+  44888,
+  17156,
+  9678,
+  89541,
+  123019,
+  102337,
+  3972,
+  83930,
+  21245,
+  87852,
+  109660,
+  287918,
+  183019,
+  686,
+  10100,
+  39177,
+  283941,
+  11274,
+  24736,
+  26793,
+  26214,
+  25995,
+  77011,
+  141580,
+  4070,
+  23742,
+  46285,
+  46632,
+  30700,
+  26669,
+  19056,
+  35951,
+  115575,
+  174034,
+  56097,
+  35463,
+  87425,
+  24575,
+  44245,
+  38701,
+  82317,
+  85922,
+  281616,
+  100333,
+  147697,
+  61503,
+  7730,
+  84330,
+  8530,
+  59917,
+  61597,
+  17173,
+  9092,
+  32658,
+  90288,
+  193136,
+  39023,
+  20381,
+  56654,
+  31132,
+  7779,
+  1919,
+  1375,
+  117128,
+  30819,
+  11169,
+  40938,
+  23935,
+  115201,
+  101155,
+  151034,
+  4835,
+  11231,
+  74550,
+  89388,
+  59951,
+  91704,
+  107312,
+  167882,
+  115062,
+  12732,
+  72738,
+  88703,
+  464019,
+  158267,
+  57995,
+  60496,
+  737,
+  14371,
+  123867,
+  4174,
+  243339,
+  159946,
+  7568,
+  16025,
+  134556,
+  110916,
+  38103,
+  191,
+  80226,
+  88794,
+  29688,
+  27230,
+  10454,
+  76308,
+  57647,
+  77409,
+  113483,
+  66864,
+  14745,
+  19808,
+  12023,
+  46583,
+  84805,
+  16015,
+  17102,
+  2231,
+  20611,
+  3547,
+  95740,
+  250131,
+  34559,
+  108894,
+  8498,
+  15853,
+  159169,
+  148920,
+  20942,
+  2813,
+  93160,
+  45188,
+  210613,
+  45531,
+  52587,
+  149062,
+  39782,
+  28194,
+  57849,
+  60965,
+  84954,
+  89766,
+  84453,
+  100927,
+  16501,
+  27658,
+  165311,
+  103841,
+  54192,
+  207341,
+  19558,
+  20084,
+  319622,
+  5672,
+  205467,
+  98462,
+  61849,
+  36279,
+  13609,
+  147177,
+  24726,
+  165015,
+  209489,
+  59591,
+  31157,
+  6551,
+  117580,
+  75060,
+  141146,
+  277310,
+  21072,
+  22023,
+  106474,
+  63041,
+  137443,
+  122965,
+  68371,
+  5383,
+  42146,
+  98961,
+  113467,
+  30863,
+  23794,
+  4843,
+  99630,
+  30392,
+  82679,
+  13699,
+  241612,
+  33601,
+  93146,
+  24319,
+  18643,
+  32155,
+  95669,
+  40440,
+  15333,
+  34089,
+  67799,
+  142144,
+  58245,
+  38633,
+  114531,
+  117400,
+  77861,
+  188726,
+  5507,
+  2568,
+  8853,
+  10987,
+  107222,
+  2663,
+  2421,
+  11530,
+  13345,
+  30075,
+  41785,
+  118661,
+  104786,
+  17459,
+  12490,
+  16281,
+  71936,
+  193555,
+  17431,
+  5944,
+  71758,
+  26485,
+  77317,
+  20803,
+  367167,
+  158,
+  7362,
+  93430,
+  11735,
+  172445,
+  46002,
+  11532,
+  54482,
+  930,
+  62911,
+  2235,
+  23004,
+  179236,
+  4764,
+  101859,
+  208113,
+  22477,
+  55163,
+  95579,
+  14098,
+  67320,
+  162556,
+  90709,
+  156949,
+  3826,
+  57492,
+  4025,
+  34092,
+  87442,
+  104565,
+  6718,
+  186015,
+  28214,
+  14209,
+  10039,
+  107186,
+  233912,
+  58877,
+  81637,
+  55265,
+  39828,
+  6194,
+  145813,
+  50831,
+  105849,
+  4974,
+  88319,
+  122296,
+  10272,
+  197216,
+  95714,
+  51540,
+  72418,
+  23324,
+  91555,
+  8743,
+  140452,
+  250249,
+  51666,
+  34124,
+  7229,
+  38592,
+  129641,
+  78169,
+  174242,
+  22464,
+  149964,
+  51450,
+  14034,
+  10026,
+  95376,
+  26190,
+  120062,
+  14401,
+  8700,
+  265,
+  31386,
+  143573,
+  7203,
+  229889,
+  61567,
+  4227,
+  140981,
+  2466,
+  72052,
+  10787,
+  10062,
+  30958,
+  6099,
+  38471,
+  30103,
+  23202,
+  208101,
+  70847,
+  467,
+  58934,
+  32271,
+  32984,
+  36637,
+  24107,
+  30771,
+  17109,
+  73353,
+  13650,
+  2098,
+  157040,
+  67366,
+  66904,
+  106018,
+  265380,
+  107238,
+  18535,
+  44025,
+  32681,
+  144983,
+  62505,
+  91295,
+  56120,
+  3082,
+  77508,
+  10322,
+  63023,
+  36700,
+  81885,
+  224127,
+  16721,
+  45023,
+  239261,
+  111272,
+  13852,
+  7866,
+  149243,
+  204199,
+  32309,
+  22084,
+  42029,
+  38316,
+  126644,
+  104973,
+  14406,
+  43454,
+  67322,
+  61310,
+  15789,
+  40285,
+  24026,
+  181047,
+  6301,
+  70927,
+  23319,
+  115823,
+  27248,
+  66693,
+  115875,
+  278566,
+  63007,
+  146844,
+  56841,
+  59007,
+  87368,
+  180001,
+  22370,
+  42114,
+  80605,
+  12022,
+  10374,
+  308,
+  25079,
+  14689,
+  12618,
+  63368,
+  7936,
+  264973,
+  212291,
+  136713,
+  95999,
+  105801,
+  18965,
+  32075,
+  48700,
+  52230,
+  35119,
+  96912,
+  32992,
+  8586,
+  16606,
+  101333,
+  101812,
+  14969,
+  39930,
+  759,
+  193090,
+  27387,
+  42914,
+  12937,
+  5058,
+  62646,
+  64528,
+  38624,
+  25743,
+  37502,
+  3716,
+  4435,
+  30352,
+  178687,
+  26461,
+  132611,
+  42002,
+  138442,
+  35833,
+  59582,
+  16345,
+  8048,
+  60319,
+  49349,
+  309,
+  47800,
+  49739,
+  90482,
+  26405,
+  34470,
+  63786,
+  32479,
+  85028,
+  39866,
+  47846,
+  11649,
+  23934,
+  29466,
+  2816,
+  42864,
+  31828,
+  7410,
+  74885,
+  49632,
+  47629,
+  111801,
+  90749,
+  19536,
+  18767,
+  105764,
+  59606,
+  21223,
+  10746,
+  76298,
+  22220,
+  39408,
+  7190,
+  79654,
+  64856,
+  11602,
+  82156,
+  272765,
+  17079,
+  70089,
+  245473,
+  51813,
+  184407,
+  384678,
+  1576,
+  122249,
+  5064,
+  27481,
+  6188,
+  25790,
+  74361,
+  27541,
+  318284,
+  45430,
+  31488,
+  620,
+  93579,
+  45723,
+  192118,
+  22670,
+  51913,
+  4162,
+  70244,
+  35966,
+  26397,
+  16199,
+  50899,
+  209613,
+  121702,
+  287507,
+  2993,
+  36101,
+  132229,
+  67345,
+  33062,
+  76295,
+  118628,
+  78705,
+  52316,
+  34375,
+  107083,
+  107454,
+  44863,
+  127561,
+  33964,
+  3073,
+  154010,
+  190914,
+  55967,
+  39074,
+  6272,
+  31047,
+  5550,
+  41123,
+  26154,
+  98638,
+  47110,
+  19998,
+  148091,
+  50229,
+  31329,
+  59900,
+  195442,
+  19106,
+  61347,
+  73497,
+  70015,
+  682,
+  45850,
+  25776,
+  38022,
+  148951,
+  6288,
+  37411,
+  232526,
+  109277,
+  27286,
+  32342,
+  9262,
+  5220,
+  16651,
+  23175,
+  46740,
+  129438,
+  78614,
+  121925,
+  66914,
+  88710,
+  127952,
+  5563,
+  21500,
+  34521,
+  10739,
+  14863,
+  191006,
+  62956,
+  17359,
+  16749,
+  67027,
+  56284,
+  69134,
+  43301,
+  35039,
+  58883,
+  54466,
+  60823,
+  404451,
+  75743,
+  59856,
+  86979,
+  7923,
+  34273,
+  83785,
+  32142,
+  7693,
+  268986,
+  197428,
+  282681,
+  17049,
+  22346,
+  22990,
+  92245,
+  107180,
+  3357,
+  37104,
+  96724,
+  49153,
+  7683,
+  31197,
+  43267,
+  82231,
+  164276,
+  23696,
+  20848,
+  188364,
+  22309,
+  24821,
+  158707,
+  1018,
+  22514,
+  70922,
+  27792,
+  45589,
+  59709,
+  10765,
+  736,
+  35218,
+  63479,
+  51987,
+  24275,
+  63588,
+  55361,
+  92929,
+  81964,
+  4658,
+  20122,
+  12330,
+  44058,
+  13065,
+  311456,
+  72224,
+  8337,
+  211229,
+  38979,
+  22590,
+  138478,
+  52757,
+  32595,
+  133600,
+  8838,
+  31549,
+  94412,
+  43391,
+  90056,
+  1585,
+  94802,
+  127271,
+  6223,
+  31889,
+  137038,
+  132910,
+  2165,
+  57616,
+  230152,
+  6080,
+  10748,
+  36737,
+  74579,
+  134062,
+  50525,
+  180532,
+  119270,
+  34556,
+  76155,
+  82394,
+  52595,
+  29258,
+  31435,
+  87820,
+  67996,
+  26943,
+  183878,
+  38007,
+  2410,
+  13526,
+  180297,
+  69856,
+  3503,
+  187396,
+  167700,
+  7838,
+  16701,
+  9199,
+  56267,
+  3661,
+  37407,
+  65994,
+  23767,
+  5708,
+  62508,
+  221700,
+  67088,
+  86978,
+  46776,
+  84434,
+  32088,
+  5612,
+  9149,
+  88244,
+  21685,
+  95151,
+  46750,
+  189612,
+  2979,
+  506311,
+  2594,
+  3628,
+  40074,
+  105039,
+  78243,
+  28523,
+  6651,
+  38058,
+  71999,
+  30992,
+  12764,
+  68261,
+  108991,
+  6165,
+  26450,
+  61961,
+  13400,
+  22426,
+  7490,
+  60890,
+  109623,
+  2070,
+  12958,
+  50355,
+  67979,
+  257096,
+  7213,
+  42578,
+  52121,
+  35716,
+  65461,
+  7516,
+  124758,
+  39268,
+  302,
+  64712,
+  14977,
+  1467,
+  219452,
+  2840,
+  34229,
+  11121,
+  21602,
+  19270,
+  63574,
+  8024,
+  1532,
+  17331,
+  79839,
+  78885,
+  52029,
+  180767,
+  57957,
+  6069,
+  91265,
+  61380,
+  55767,
+  8927,
+  32881,
+  287603,
+  22149,
+  35029,
+  68876,
+  6428,
+  199567,
+  46926,
+  13412,
+  104132,
+  21434,
+  366616,
+  45060,
+  110046,
+  81924,
+  128910,
+  45886,
+  52821,
+  130416,
+  29416,
+  77342,
+  21762,
+  67329,
+  121432,
+  79924,
+  11724,
+  38625,
+  81006,
+  102033,
+  28338,
+  13326,
+  3250,
+  82056,
+  82526,
+  38212,
+  21112,
+  12382,
+  111495,
+  3263,
+  7414,
+  86274,
+  93490,
+  40844,
+  30224,
+  45212,
+  24019,
+  48411,
+  71367,
+  24941,
+  76729,
+  57776,
+  3769,
+  38114,
+  202019,
+  197745,
+  31953,
+  237533,
+  33270,
+  201580,
+  255648,
+  100798,
+  44741,
+  32241,
+  98468,
+  106931,
+  10085,
+  15090,
+  170358,
+  33154,
+  66787,
+  18819,
+  69760,
+  25061,
+  234005,
+  82660,
+  6295,
+  131975,
+  16874,
+  9076,
+  4094,
+  25005,
+  17740,
+  40908,
+  19533,
+  220019,
+  44330,
+  99792,
+  50040,
+  19619,
+  13950,
+  55228,
+  24423,
+  31253,
+  95308,
+  103177,
+  184795,
+  28590,
+  82285,
+  5059,
+  3210,
+  75525,
+  49894,
+  70007,
+  56178,
+  10580,
+  36051,
+  139681,
+  21617,
+  98736,
+  3555,
+  106306,
+  164189,
+  37352,
+  63915,
+  47824,
+  24883,
+  145530,
+  61904,
+  28444,
+  11483,
+  19837,
+  145446,
+  30420,
+  112972,
+  85939,
+  11835,
+  191233,
+  2262,
+  20705,
+  58630,
+  1753,
+  148334,
+  1197,
+  144714,
+  6887,
+  11223,
+  107667,
+  60879,
+  77914,
+  4151,
+  57417,
+  81594,
+  96681,
+  169430,
+  1784,
+  20444,
+  95138,
+  254041,
+  27038,
+  596,
+  7117,
+  72808,
+  13759,
+  3353,
+  126776,
+  21074,
+  55322,
+  27081,
+  36942,
+  39547,
+  139830,
+  179275,
+  4453,
+  713,
+  8722,
+  71399,
+  19204,
+  25785,
+  22794,
+  23923,
+  104114,
+  11291,
+  25458,
+  102309,
+  88396,
+  75288,
+  230440,
+  206396,
+  104551,
+  58447,
+  130857,
+  37247,
+  94734,
+  31548,
+  176529,
+  226077,
+  65159,
+  20104,
+  10096,
+  66881,
+  94191,
+  237909,
+  27109,
+  37404,
+  1520,
+  27421,
+  25220,
+  113003,
+  23423,
+  24884,
+  50585,
+  6286,
+  231877,
+  150800,
+  11789,
+  3226,
+  90004,
+  60642,
+  5053,
+  202400,
+  61442,
+  132531,
+  175329,
+  57138,
+  30116,
+  103847,
+  9973,
+  75367,
+  16452,
+  32360,
+  59119,
+  21246,
+  10191,
+  164804,
+  23305,
+  61051,
+  37348,
+  154530,
+  13214,
+  5468,
+  50403,
+  66754,
+  130976,
+  50559,
+  80515,
+  14436,
+  155492,
+  84017,
+  5472,
+  43107,
+  41240,
+  2890,
+  90431,
+  70188,
+  382,
+  76234,
+  48040,
+  50211,
+  281038,
+  237007,
+  32115,
+  142178,
+  1536,
+  22761,
+  96429,
+  1811,
+  31243,
+  1679,
+  49143,
+  55209,
+  17402,
+  235054,
+  61494,
+  7462,
+  77030,
+  34925,
+  87609,
+  78002,
+  9499,
+  9027,
+  73289,
+  201078,
+  101379,
+  63544,
+  27666,
+  5469,
+  10642,
+  30029,
+  49816,
+  132979,
+  95620,
+  58086,
+  351930,
+  116300,
+  2110,
+  2043,
+  30845,
+  6154,
+  11279,
+  16727,
+  4122,
+  2277,
+  27281,
+  4971,
+  3650,
+  39060,
+  61970,
+  65951,
+  39674,
+  75686,
+  38151,
+  11370,
+  130809,
+  177895,
+  32665,
+  63725,
+  122267,
+  7857,
+  39618,
+  118483,
+  44792,
+  157755,
+  178624,
+  136994,
+  24260,
+  41308,
+  22471,
+  12404,
+  21707,
+  12486,
+  30473,
+  52781,
+  50246,
+  20247,
+  39065,
+  909,
+  56825,
+  103158,
+  128603,
+  31542,
+  1089,
+  41935,
+  32744,
+  12428,
+  37963,
+  84420,
+  33134,
+  72921,
+  208449,
+  42622,
+  168151,
+  127335,
+  147107,
+  46699,
+  38216,
+  12591,
+  94342,
+  85814,
+  31423,
+  24944,
+  2605,
+  87542,
+  67473,
+  192551,
+  4496,
+  56321,
+  91819,
+  17630,
+  6300,
+  256183,
+  114569,
+  202090,
+  33209,
+  35289,
+  34897,
+  24967,
+  40520,
+  43470,
+  5344,
+  10199,
+  34810,
+  14283,
+  10381,
+  10017,
+  62923,
+  49924,
+  23233,
+  64539,
+  13051,
+  35686,
+  19698,
+  11570,
+  135555,
+  120868,
+  44924,
+  87065,
+  52318,
+  52335,
+  47586,
+  140906,
+  245885,
+  109834,
+  78668,
+  9065,
+  46990,
+  25258,
+  72022,
+  61243,
+  40838,
+  4545,
+  146387,
+  10537,
+  11557,
+  17470,
+  36930,
+  68104,
+  46711,
+  24264,
+  79401,
+  81043,
+  18225,
+  120488,
+  24746,
+  84338,
+  81652,
+  28266,
+  13776,
+  21878,
+  46973,
+  1047,
+  230465,
+  73357,
+  95777,
+  24973,
+  210160,
+  62210,
+  58404,
+  110633,
+  169651,
+  6937,
+  41870,
+  9909,
+  26822,
+  191062,
+  76553,
+  27519,
+  96256,
+  239070,
+  2478,
+  205678,
+  67955,
+  58532,
+  20601,
+  50120,
+  19148,
+  78501,
+  195724,
+  110740,
+  8249,
+  109665,
+  27446,
+  30568,
+  57631,
+  31425,
+  49752,
+  32820,
+  65504,
+  50079,
+  3663,
+  102256,
+  219898,
+  23849,
+  211315,
+  14645,
+  4359,
+  91767,
+  9528,
+  12449,
+  49366,
+  7941,
+  49763,
+  107848,
+  8930,
+  27086,
+  50686,
+  9744,
+  10447,
+  81935,
+  39513,
+  46514,
+  1670,
+  29229,
+  6172,
+  22312,
+  137280,
+  97759,
+  9806,
+  14445,
+  22976,
+  56458,
+  73391,
+  34983,
+  93760,
+  174219,
+  52573,
+  33149,
+  59747,
+  2429,
+  136277,
+  75123,
+  165263,
+  91040,
+  7446,
+  57632,
+  48633,
+  97140,
+  246081,
+  84766,
+  151684,
+  79918,
+  93268,
+  120346,
+  54059,
+  54875,
+  77858,
+  32996,
+  103590,
+  45276,
+  11968,
+  19600,
+  25849,
+  17159,
+  132907,
+  42828,
+  16817,
+  4913,
+  99462,
+  103303,
+  27395,
+  5737,
+  74184,
+  20749,
+  21160,
+  14377,
+  77062,
+  131403,
+  158735,
+  10999,
+  27799,
+  77785,
+  9320,
+  34366,
+  51593,
+  61070,
+  33746,
+  47048,
+  29268,
+  36675,
+  30262,
+  53297,
+  9832,
+  82e3,
+  20188,
+  122292,
+  39917,
+  7331,
+  18160,
+  68301,
+  185935,
+  134830,
+  15031,
+  4935,
+  10004,
+  165845,
+  185534,
+  46923,
+  30109,
+  44134,
+  122631,
+  18874,
+  22903,
+  112790,
+  26561,
+  18549,
+  348902,
+  82871,
+  140345,
+  255565,
+  135390,
+  63556,
+  103747,
+  145055,
+  179600,
+  145662,
+  296111,
+  61661,
+  211987,
+  23952,
+  52342,
+  126343,
+  48450,
+  32919,
+  44277,
+  82185,
+  9591,
+  62139,
+  205363,
+  376969,
+  394874,
+  108461,
+  18040,
+  120885,
+  14798,
+  39863,
+  16571,
+  16794,
+  58271,
+  81025,
+  55206,
+  14640,
+  118656,
+  6361,
+  44092,
+  85970,
+  6262,
+  153863,
+  108244,
+  180200,
+  72264,
+  79947,
+  38044,
+  10050,
+  5735,
+  61221,
+  80712,
+  5471,
+  115689,
+  11391,
+  11661,
+  184257,
+  20010,
+  60116,
+  30320,
+  19327,
+  134598,
+  45455,
+  27542,
+  18004,
+  125092,
+  452272,
+  1549,
+  91523,
+  46567,
+  180063,
+  156026,
+  2608,
+  11174,
+  58848,
+  37788,
+  65907,
+  80194,
+  30490,
+  5786,
+  40775,
+  119519,
+  106241,
+  11323,
+  156297,
+  8425,
+  61495,
+  2617,
+  29675,
+  2425,
+  59886,
+  112582,
+  49142,
+  59618,
+  4863,
+  50597,
+  86710,
+  50650,
+  168632,
+  27693,
+  85641,
+  83643,
+  18993,
+  25768,
+  84284,
+  28090,
+  93592,
+  36627,
+  312804,
+  43381,
+  9887,
+  9402,
+  100931,
+  97165,
+  3311,
+  173330,
+  66805,
+  28935,
+  4963,
+  184460,
+  3201,
+  78102,
+  19126,
+  21607,
+  37496,
+  24938,
+  22615,
+  16153,
+  32862,
+  134792,
+  153318,
+  61120,
+  6067,
+  2812,
+  12826,
+  12792,
+  23825,
+  37559,
+  64662,
+  202250,
+  102694,
+  155488,
+  85881,
+  149193,
+  46233,
+  65383,
+  15521,
+  106982,
+  11358,
+  176786,
+  25752,
+  39717,
+  34208,
+  24510,
+  32464,
+  77742,
+  39371,
+  72028,
+  138229,
+  60688,
+  71386,
+  102834,
+  132477,
+  2208,
+  11548,
+  63670,
+  271279,
+  28351,
+  30338,
+  38620,
+  32491,
+  99845,
+  143885,
+  152266,
+  13252,
+  2825,
+  178663,
+  108097,
+  1775,
+  78201,
+  14897,
+  113573,
+  163346,
+  62292,
+  171129,
+  22183,
+  96598,
+  38733,
+  64971,
+  166776,
+  117445,
+  9968,
+  146393,
+  44677,
+  74867,
+  20908,
+  97328,
+  12761,
+  25656,
+  26785,
+  9148,
+  112344,
+  26115,
+  99176,
+  110121,
+  22437,
+  49547,
+  6180,
+  79320,
+  5835,
+  31392,
+  43328,
+  33377,
+  75870,
+  119860,
+  69497,
+  80273,
+  7325,
+  155219,
+  43167,
+  111173,
+  28347,
+  20222,
+  3763,
+  71752,
+  55041,
+  47252,
+  14618,
+  28088,
+  15012,
+  97805,
+  194698,
+  54636,
+  2036,
+  41349,
+  6173,
+  96604,
+  61530,
+  51859,
+  43782,
+  13361,
+  24334,
+  22668,
+  24792,
+  7070,
+  23441,
+  16789,
+  3209,
+  36211,
+  208475,
+  26242,
+  32880,
+  122181,
+  182407,
+  21444,
+  31060,
+  88459,
+  29929,
+  77907,
+  12716,
+  10934,
+  97005,
+  20599,
+  31690,
+  8403,
+  58445,
+  30303,
+  22700,
+  10336,
+  86731,
+  103115,
+  337709,
+  72556,
+  46788,
+  112566,
+  47684,
+  67089,
+  53548,
+  36874,
+  56487,
+  41387,
+  125985,
+  26893,
+  40071,
+  106683,
+  73712,
+  18787,
+  40105,
+  72992,
+  67246,
+  137276,
+  50802,
+  36790,
+  70328,
+  138827,
+  22466,
+  39263,
+  183295,
+  29858,
+  50975,
+  9322,
+  57397,
+  10654,
+  24364,
+  30383,
+  55799,
+  41600,
+  23584,
+  127295,
+  296610,
+  129078,
+  143558,
+  244131,
+  86397,
+  36049,
+  1085,
+  80677,
+  3820,
+  108139,
+  5476,
+  34767,
+  24683,
+  7758,
+  13060,
+  7239,
+  131671,
+  250593,
+  59556,
+  103392,
+  29810,
+  4188,
+  252323,
+  39404,
+  116877,
+  7651,
+  43600,
+  40338,
+  13554,
+  157253,
+  39196,
+  25978,
+  144387,
+  61211,
+  234,
+  50104,
+  6129,
+  10449,
+  93777,
+  9240,
+  356378,
+  274148,
+  4439,
+  72970,
+  3724,
+  147770,
+  78680,
+  62570,
+  115877,
+  40027,
+  40547,
+  36817,
+  224392,
+  64609,
+  34795,
+  165027,
+  67440,
+  2477,
+  37206,
+  23431,
+  50754,
+  164797,
+  46018,
+  94995,
+  170982,
+  27051,
+  7957,
+  22767,
+  3674,
+  27900,
+  56419,
+  18930,
+  60701,
+  41302,
+  2692,
+  84749,
+  339721,
+  61996,
+  111094,
+  80221,
+  50129,
+  1045,
+  8153,
+  62945,
+  19202,
+  8250,
+  37208,
+  37418,
+  32560,
+  79477,
+  41106,
+  88569,
+  33963,
+  36693,
+  5892,
+  30570,
+  1581,
+  66471,
+  49647,
+  11922,
+  160717,
+  29442,
+  5643,
+  114865,
+  82962,
+  95982,
+  132098,
+  22633,
+  22838,
+  94726,
+  54556,
+  28566,
+  205039,
+  162340,
+  33216,
+  16849,
+  35847,
+  221339,
+  94851,
+  26533,
+  71469,
+  1805,
+  3804,
+  12935,
+  45483,
+  71020,
+  36310,
+  65381,
+  192960,
+  34240,
+  35165,
+  59773,
+  1248,
+  46954,
+  155332,
+  96864,
+  4246,
+  388800,
+  16129,
+  57133,
+  74592,
+  44807,
+  442014,
+  38203,
+  42574,
+  80818,
+  91592,
+  26377,
+  36424,
+  65760,
+  977,
+  77387,
+  22628,
+  147610,
+  28018,
+  30561,
+  98454,
+  6969,
+  119628,
+  63648,
+  18170,
+  36854,
+  26601,
+  64018,
+  22027,
+  37279,
+  51395,
+  152934,
+  21153,
+  9430,
+  58760,
+  194742,
+  5330,
+  55115,
+  34158,
+  28917,
+  174111,
+  13171,
+  122326,
+  1526,
+  43896,
+  66094,
+  25325,
+  4234,
+  148354,
+  11450,
+  275,
+  18999,
+  112191,
+  44365,
+  22723,
+  68409,
+  8733,
+  57746,
+  96565,
+  75007,
+  14196,
+  108844,
+  29475,
+  88599,
+  177563,
+  100792,
+  106156,
+  86323,
+  93726,
+  14248,
+  135341,
+  194131,
+  40126,
+  47099,
+  14779,
+  8272,
+  39597,
+  95983,
+  171398,
+  65882,
+  28052,
+  10393,
+  47213,
+  40689,
+  22120,
+  72212,
+  106829,
+  34964,
+  109146,
+  753,
+  648,
+  21660,
+  30047,
+  17527,
+  181025,
+  5619,
+  145357,
+  4085,
+  216883,
+  9359,
+  186951,
+  24779,
+  53931,
+  24545,
+  36197,
+  223296,
+  62628,
+  168101,
+  4243,
+  107313,
+  30321,
+  26642,
+  13049,
+  51059,
+  31027,
+  107912,
+  807,
+  73550,
+  26551,
+  84369,
+  122422,
+  165872,
+  49754,
+  74213,
+  234264,
+  33151,
+  52014,
+  33100,
+  87183,
+  22365,
+  52500,
+  40013,
+  23302,
+  5652,
+  72723,
+  21404,
+  26107,
+  48434,
+  587,
+  94049,
+  168493,
+  96418,
+  32871,
+  70860,
+  31709,
+  25128,
+  443,
+  71597,
+  166253,
+  15670,
+  70994,
+  26341,
+  133675,
+  28280,
+  75491,
+  54756,
+  47955,
+  56028,
+  26182,
+  11952,
+  113272,
+  472197,
+  64640,
+  110753,
+  17919,
+  337,
+  50642,
+  22576,
+  142,
+  87371,
+  53391,
+  93210,
+  126694,
+  15285,
+  19642,
+  85667,
+  14148,
+  1506,
+  42092,
+  52962,
+  33243,
+  11970,
+  20734,
+  135843,
+  57044,
+  58880,
+  13002,
+  219134,
+  22876,
+  64754,
+  232519,
+  4257,
+  43120,
+  321573,
+  24799,
+  64526,
+  124728,
+  52579,
+  81472,
+  70831,
+  276848,
+  17403,
+  74359,
+  23021,
+  182101,
+  74597,
+  23744,
+  148267,
+  12055,
+  7976,
+  5349,
+  11772,
+  67540,
+  167347,
+  65318,
+  18720,
+  127832,
+  108238,
+  22828,
+  90233,
+  9987,
+  259080,
+  118185,
+  73209,
+  79270,
+  13775,
+  90100,
+  137742,
+  90799,
+  70569,
+  15699,
+  19961,
+  9087,
+  67475,
+  57872,
+  39731,
+  8810,
+  134897,
+  131868,
+  146849,
+  19898,
+  3334,
+  2281,
+  167061,
+  91073,
+  60356,
+  467742,
+  74712,
+  188,
+  53179,
+  137679,
+  92769,
+  29241,
+  9537,
+  132595,
+  80119,
+  1041,
+  88962,
+  5976,
+  40171,
+  44911,
+  102859,
+  139059,
+  104558,
+  98987,
+  47761,
+  19272,
+  71472,
+  113864,
+  175377,
+  73338,
+  10857,
+  23402,
+  23758,
+  1591,
+  139864,
+  5644,
+  4076,
+  118760,
+  16427,
+  134198,
+  18853,
+  20291,
+  100849,
+  37423,
+  22038,
+  36677,
+  19071,
+  195521,
+  57445,
+  11069,
+  31869,
+  55718,
+  66882,
+  148490,
+  44,
+  41296,
+  75242,
+  49704,
+  166810,
+  9906,
+  20943,
+  122258,
+  49112,
+  105667,
+  15969,
+  10344,
+  6408,
+  187694,
+  21399,
+  72742,
+  58970,
+  14867,
+  14376,
+  81889,
+  41856,
+  23225,
+  15042,
+  56993,
+  16074,
+  131389,
+  74276,
+  72407,
+  53875,
+  383108,
+  53597,
+  37363,
+  68993,
+  44854,
+  122548,
+  430927,
+  198279,
+  38430,
+  80409,
+  12245,
+  2981,
+  628,
+  2818,
+  17760,
+  37437,
+  238229,
+  7968,
+  46892,
+  2200,
+  3730,
+  34190,
+  65983,
+  37959,
+  112291,
+  87850,
+  70827,
+  6522,
+  20750,
+  73913,
+  111621,
+  41652,
+  19587,
+  2780,
+  58668,
+  25916,
+  85259,
+  18200,
+  168962,
+  95781,
+  42445,
+  102050,
+  7776,
+  57662,
+  103313,
+  47742,
+  96358,
+  41964,
+  66174,
+  100396,
+  29069,
+  204735,
+  19679,
+  27978,
+  7479,
+  40264,
+  22534,
+  61183,
+  36081,
+  107436,
+  58223,
+  14680,
+  23002,
+  101311,
+  24716,
+  124108,
+  12908,
+  5646,
+  31750,
+  40380,
+  14215,
+  232799,
+  102772,
+  14122,
+  96775,
+  61398,
+  50917,
+  12096,
+  149880,
+  67833,
+  598749,
+  124194,
+  155871,
+  49216,
+  790,
+  14677,
+  65319,
+  56917,
+  7440,
+  145744,
+  95701,
+  12206,
+  49405,
+  129269,
+  76199,
+  45732,
+  9767,
+  11058,
+  9047,
+  210885,
+  11051,
+  7392,
+  26307,
+  2130,
+  8132,
+  147526,
+  20802,
+  232698,
+  115660,
+  50060,
+  59789,
+  57344,
+  107623,
+  80343,
+  112676,
+  23291,
+  9866,
+  160971,
+  34032,
+  118291,
+  15719,
+  59730,
+  164911,
+  28975,
+  2659,
+  58046,
+  78480,
+  21854,
+  66209,
+  53863,
+  109085,
+  116045,
+  29021,
+  46481,
+  107552,
+  22130,
+  18764,
+  70254,
+  31272,
+  11300,
+  52460,
+  43933,
+  84738,
+  20721,
+  53869,
+  190840,
+  79673,
+  105300,
+  7561,
+  321817,
+  66924,
+  13940,
+  33281,
+  101046,
+  183181,
+  32176,
+  71878,
+  5678,
+  62924,
+  79535,
+  56646,
+  40303,
+  19559,
+  27703,
+  93042,
+  73368,
+  42187,
+  3670,
+  37376,
+  46440,
+  7023,
+  36816,
+  109628,
+  20680,
+  5940,
+  276440,
+  275233,
+  170848,
+  112093,
+  136996,
+  14984,
+  20226,
+  111441,
+  77693,
+  112960,
+  48577,
+  39370,
+  55707,
+  50314,
+  123404,
+  26570,
+  54281,
+  61372,
+  123391,
+  4857,
+  35928,
+  246740,
+  132507,
+  106646,
+  44241,
+  7196,
+  92258,
+  9825,
+  37688,
+  51197,
+  303141,
+  5590,
+  15476,
+  132986,
+  10955,
+  85782,
+  34486,
+  26696,
+  7991,
+  28813,
+  18858,
+  39546,
+  11703,
+  11365,
+  38185,
+  5716,
+  93555,
+  11925,
+  40121,
+  60002,
+  6985,
+  10976,
+  171384,
+  3887,
+  43394,
+  13337,
+  56346,
+  6381,
+  252336,
+  39573,
+  75042,
+  53711,
+  1028,
+  31781,
+  44295,
+  95925,
+  131713,
+  7214,
+  68125,
+  43571,
+  70954,
+  213234,
+  1628,
+  8760,
+  13391,
+  65485,
+  17320,
+  56038,
+  1710,
+  25248,
+  60803,
+  57399,
+  19839,
+  3870,
+  326,
+  281556,
+  50945,
+  72400,
+  21460,
+  316244,
+  75619,
+  56246,
+  98775,
+  481,
+  13513,
+  55765,
+  50427,
+  7388,
+  123519,
+  32929,
+  57908,
+  27124,
+  61316,
+  101097,
+  57467,
+  30228,
+  48792,
+  10788,
+  20402,
+  37318,
+  50526,
+  155730,
+  34456,
+  158065,
+  145305,
+  17832,
+  43733,
+  64052,
+  4506,
+  35072,
+  205355,
+  177028,
+  184004,
+  187081,
+  68616,
+  35938,
+  83703,
+  10367,
+  36892,
+  93186,
+  260137,
+  51934,
+  89970,
+  4985,
+  23445,
+  26755,
+  21558,
+  7948,
+  78741,
+  23376,
+  124405,
+  85594,
+  68596,
+  57536,
+  49351,
+  12619,
+  56593,
+  132668,
+  99924,
+  109728,
+  71844,
+  71935,
+  196018,
+  65464,
+  17617,
+  14987,
+  89701,
+  143773,
+  33997,
+  8687,
+  22701,
+  33258,
+  2914,
+  4436,
+  72108,
+  85610,
+  9671,
+  49067,
+  2327,
+  82988,
+  1361,
+  1672,
+  44033,
+  35777,
+  30269,
+  24057,
+  10605,
+  82236,
+  616,
+  15793,
+  13919,
+  47249,
+  112086,
+  116698,
+  9484,
+  80207,
+  90574,
+  33304,
+  68624,
+  93127,
+  56101,
+  42210,
+  160929,
+  4827,
+  38995,
+  38095,
+  4701,
+  125119,
+  5027,
+  33680,
+  9236,
+  231236,
+  14135,
+  87837,
+  23318,
+  70261,
+  78893,
+  30151,
+  81482,
+  14332,
+  1084,
+  74256,
+  27532,
+  46644,
+  79185,
+  3148,
+  62615,
+  6981,
+  55672,
+  31668,
+  36825,
+  1849,
+  14536,
+  37446,
+  14738,
+  23779,
+  43058,
+  162749,
+  72199,
+  1168,
+  21346,
+  5592,
+  85932,
+  85302,
+  9668,
+  18351,
+  57135,
+  150360,
+  2080,
+  228015,
+  77953,
+  34670,
+  119302,
+  151751,
+  31009,
+  106725,
+  84265,
+  45214,
+  59289,
+  74178,
+  113071,
+  263206,
+  111009,
+  4021,
+  44449,
+  188119,
+  192629,
+  123592,
+  392506,
+  292847,
+  114487,
+  12831,
+  205858,
+  9852,
+  20780,
+  79648,
+  75767,
+  357014,
+  97721,
+  18166,
+  21005,
+  67950,
+  33226,
+  204009,
+  16536,
+  2987,
+  11335,
+  66717,
+  144910,
+  47950,
+  17262,
+  55060,
+  15063,
+  2934,
+  51038,
+  26775,
+  178497,
+  66008,
+  3427,
+  49433,
+  128592,
+  20036,
+  157553,
+  63861,
+  3089,
+  23015,
+  51210,
+  28696,
+  35933,
+  49942,
+  71135,
+  231518,
+  99620,
+  17248,
+  21835,
+  176536,
+  20676,
+  16944,
+  38700,
+  165831,
+  233253,
+  295625,
+  36723,
+  13023,
+  52745,
+  10907,
+  19423,
+  67972,
+  125868,
+  95473,
+  82875,
+  1183,
+  108455,
+  52685,
+  33417,
+  64095,
+  21433,
+  52438,
+  33191,
+  127809,
+  44505,
+  211823,
+  7810,
+  2752,
+  95548,
+  162031,
+  7185,
+  91196,
+  47563,
+  61721,
+  33359,
+  17897,
+  23682,
+  42806,
+  178101,
+  22874,
+  49707,
+  199897,
+  75419,
+  82456,
+  8618,
+  11171,
+  79712,
+  116847,
+  18783,
+  44190,
+  46564,
+  5346,
+  59046,
+  95032,
+  7893,
+  14916,
+  3214,
+  26800,
+  24172,
+  121453,
+  34362,
+  10250,
+  17408,
+  18888,
+  4840,
+  68696,
+  22831,
+  13162,
+  36005,
+  32512,
+  14800,
+  62357,
+  41723,
+  45046,
+  27247,
+  37486,
+  5372,
+  2564,
+  34261,
+  298500,
+  66509,
+  133920,
+  89138,
+  31305,
+  117697,
+  19097,
+  108304,
+  81386,
+  84106,
+  23802,
+  46411,
+  63304,
+  946,
+  51417,
+  41777,
+  41041,
+  19501,
+  115864,
+  60743,
+  294354,
+  37955,
+  94165,
+  18116,
+  1156,
+  17937,
+  20645,
+  57114,
+  90804,
+  58042,
+  48643,
+  92288,
+  9861,
+  2557,
+  88546,
+  61333,
+  101008,
+  12853,
+  5148,
+  87856,
+  4152,
+  144503,
+  73841,
+  18718,
+  9789,
+  147565,
+  10846,
+  42085,
+  12789,
+  30223,
+  8993,
+  56352,
+  67203,
+  2448,
+  28215,
+  6052,
+  23540,
+  126319,
+  75933,
+  36689,
+  80235,
+  23231,
+  23561,
+  21383,
+  38800,
+  77548,
+  102798,
+  21234,
+  31468,
+  158608,
+  46188,
+  63960,
+  191679,
+  8051,
+  67014,
+  11185,
+  170078,
+  42186,
+  28827,
+  34777,
+  41930,
+  212079,
+  12421,
+  34750,
+  24111,
+  110344,
+  73918,
+  45171,
+  70826,
+  141949,
+  40063,
+  23979,
+  24254,
+  37309,
+  26724,
+  27179,
+  24718,
+  83648,
+  54938,
+  14591,
+  17425,
+  29525,
+  102675,
+  48975,
+  48654,
+  12316,
+  8929,
+  60640,
+  41709,
+  50168,
+  63264,
+  89812,
+  50716,
+  48632,
+  38755,
+  138583,
+  160123,
+  55579,
+  71829,
+  24230,
+  233277,
+  46322,
+  39650,
+  166388,
+  34718,
+  24108,
+  98252,
+  7031,
+  106695,
+  62498,
+  18258,
+  35062,
+  217827,
+  78731,
+  34824,
+  33354,
+  19520,
+  60852,
+  2432,
+  60224,
+  8587,
+  2836,
+  62955,
+  702,
+  20227,
+  42285,
+  40560,
+  95592,
+  62486,
+  11094,
+  53035,
+  143291,
+  18842,
+  46177,
+  77994,
+  1770,
+  9657,
+  107422,
+  172915,
+  32655,
+  128716,
+  25886,
+  25164,
+  156740,
+  119928,
+  165875,
+  85817,
+  11007,
+  89110,
+  33956,
+  12652,
+  65156,
+  180266,
+  8494,
+  36889,
+  19958,
+  20955,
+  96,
+  1264,
+  118288,
+  135769,
+  44754,
+  86671,
+  5632,
+  19026,
+  168220,
+  289120,
+  33569,
+  93821,
+  66144,
+  70635,
+  7687,
+  5642,
+  2714,
+  55445,
+  56636,
+  71545,
+  184182,
+  93133,
+  7332,
+  37389,
+  12643,
+  52315,
+  22729,
+  11014,
+  158742,
+  17050,
+  152889,
+  50178,
+  34601,
+  41945,
+  52136,
+  9948,
+  26914,
+  63548,
+  95721,
+  115951,
+  40759,
+  8960,
+  158258,
+  38938,
+  49232,
+  48325,
+  42234,
+  81523,
+  253019,
+  66128,
+  40978,
+  20048,
+  238048,
+  38760,
+  62928,
+  122560,
+  118532,
+  43687,
+  137472,
+  163689,
+  26680,
+  9878,
+  17448,
+  51035,
+  16211,
+  60834,
+  36749,
+  29178,
+  14241,
+  59868,
+  150086,
+  2305,
+  26477,
+  42422,
+  34342,
+  165341,
+  83279,
+  33894,
+  14257,
+  29928,
+  12743,
+  13957,
+  125571,
+  89134,
+  66712,
+  10952,
+  16507,
+  147839,
+  30146,
+  7249,
+  16565,
+  45399,
+  39874,
+  114565,
+  215780,
+  31990,
+  230881,
+  171477,
+  102,
+  196546,
+  44538,
+  10880,
+  84948,
+  281705,
+  86651,
+  10617,
+  31395,
+  2342,
+  453658,
+  43569,
+  60561,
+  132901,
+  21845,
+  17727,
+  58556,
+  258242,
+  22262,
+  58728,
+  4008,
+  77997,
+  11806,
+  37431,
+  30599,
+  81375,
+  109137,
+  185787,
+  114085,
+  217292,
+  97453,
+  169085,
+  30593,
+  60212,
+  11544,
+  102056,
+  65580,
+  2384,
+  91655,
+  4855,
+  95725,
+  7295,
+  157994,
+  16228,
+  20669,
+  53276,
+  141590,
+  105246,
+  17334,
+  25440,
+  76067,
+  17967,
+  39321,
+  38911,
+  11362,
+  28559,
+  63807,
+  21627,
+  26468,
+  85816,
+  40120,
+  1025,
+  15234,
+  58319,
+  69516,
+  66512,
+  124548,
+  75845,
+  78873,
+  22137,
+  46681,
+  51242,
+  85683,
+  32909,
+  76747,
+  35555,
+  43396,
+  101465,
+  1765,
+  73094,
+  1077,
+  2962,
+  39028,
+  66777,
+  57831,
+  42048,
+  15828,
+  13962,
+  36041,
+  63657,
+  52412,
+  5242,
+  58846,
+  2141,
+  5506,
+  219012,
+  134451,
+  3936,
+  182230,
+  17558,
+  17153,
+  152237,
+  22621,
+  49377,
+  170216,
+  35257,
+  68233,
+  65374,
+  6510,
+  11126,
+  212151,
+  7184,
+  2480,
+  22517,
+  3437,
+  33073,
+  30156,
+  16557,
+  3768,
+  55067,
+  86829,
+  91e3,
+  12350,
+  148650,
+  66017,
+  79424,
+  70885,
+  49066,
+  28250,
+  21369,
+  51213,
+  34533,
+  11510,
+  3258,
+  18176,
+  18465,
+  84413,
+  6315,
+  36411,
+  163765,
+  4346,
+  356,
+  107618,
+  598,
+  13727,
+  285026,
+  162695,
+  8749,
+  14583,
+  7132,
+  63521,
+  184253,
+  32378,
+  25991,
+  5604,
+  30961,
+  53675,
+  4874,
+  84693,
+  5086,
+  34811,
+  26978,
+  56564,
+  7904,
+  33519,
+  51221,
+  113942,
+  69253,
+  6664,
+  125563,
+  22055,
+  220680,
+  102008,
+  742,
+  51930,
+  19494,
+  176108,
+  44424,
+  35123,
+  13025,
+  75685,
+  11759,
+  74335,
+  22250,
+  181453,
+  131147,
+  16984,
+  132115,
+  154311,
+  11991,
+  76452,
+  52609,
+  85351,
+  196,
+  30969,
+  9198,
+  74919,
+  2529,
+  56838,
+  71779,
+  29187,
+  116304,
+  3504,
+  62330,
+  41190,
+  86153,
+  28393,
+  254926,
+  104228,
+  105189,
+  13264,
+  84359,
+  3574,
+  12415,
+  8534,
+  57147,
+  10175,
+  188174,
+  59504,
+  60932,
+  66318,
+  16407,
+  107921,
+  17638,
+  99103,
+  49278,
+  28403,
+  39786,
+  145865,
+  8462,
+  3558,
+  43406,
+  142271,
+  29139,
+  21989,
+  36552,
+  93955,
+  72365,
+  7176,
+  13556,
+  106185,
+  37957,
+  321774,
+  17782,
+  129017,
+  51154,
+  27938,
+  24952,
+  1935,
+  39366,
+  2791,
+  33489,
+  41582,
+  56078,
+  24558,
+  9311,
+  5449,
+  218786,
+  27808,
+  190429,
+  68013,
+  36020,
+  86003,
+  29735,
+  3404,
+  87348,
+  119357,
+  115714,
+  2324,
+  86796,
+  81973,
+  40992,
+  43376,
+  93621,
+  28784,
+  16808,
+  36367,
+  2517,
+  2909,
+  191926,
+  24978,
+  55303,
+  53308,
+  205724,
+  60068,
+  3098,
+  21375,
+  64784,
+  23949,
+  26579,
+  63121,
+  12319,
+  80145,
+  39967,
+  97861,
+  6757,
+  70143,
+  67642,
+  37082,
+  34698,
+  69140,
+  122883,
+  46151,
+  62187,
+  80934,
+  429,
+  19437,
+  135071,
+  137885,
+  222647,
+  13331,
+  154065,
+  327,
+  61778,
+  74257,
+  40116,
+  37493,
+  14855,
+  85079,
+  237641,
+  42342,
+  102164,
+  199965,
+  71204,
+  4662,
+  29368,
+  5042,
+  113914,
+  122214,
+  8955,
+  13149,
+  102503,
+  43173,
+  5659,
+  163787,
+  69003,
+  307084,
+  63392,
+  171080,
+  21390,
+  81918,
+  86666,
+  36622,
+  24126,
+  28887,
+  5736,
+  28054,
+  207170,
+  163428,
+  79891,
+  346467,
+  95363,
+  38980,
+  111806,
+  80828,
+  9200,
+  19288,
+  294896,
+  114468,
+  87405,
+  111715,
+  141705,
+  7015,
+  72754,
+  68463,
+  48738,
+  243147,
+  33397,
+  101210,
+  37051,
+  98801,
+  82847,
+  20397,
+  4940,
+  185559,
+  18716,
+  54718,
+  83491,
+  11725,
+  40803,
+  1128,
+  12128,
+  23060,
+  5174,
+  7745,
+  67007,
+  46701,
+  1571,
+  27807,
+  180186,
+  256996,
+  18975,
+  16837,
+  7877,
+  212758,
+  250379,
+  15440,
+  87954,
+  57755,
+  24719,
+  124057,
+  83461,
+  258,
+  50864,
+  8874,
+  29038,
+  71289,
+  31627,
+  15429,
+  9005,
+  4061,
+  113851,
+  107716,
+  82819,
+  13651,
+  79656,
+  117851,
+  17539,
+  111446,
+  12938,
+  39724,
+  190787,
+  4352,
+  15402,
+  21070,
+  62708,
+  8539,
+  23777,
+  73853,
+  13552,
+  38810,
+  86117,
+  16285,
+  56400,
+  1718,
+  75342,
+  142863,
+  29033,
+  378,
+  110113,
+  180321,
+  32586,
+  23606,
+  26393,
+  160984,
+  207987,
+  23783,
+  8406,
+  16904,
+  24596,
+  47274,
+  11693,
+  46539,
+  60524,
+  78595,
+  48423,
+  31718,
+  20170,
+  9009,
+  146268,
+  15183,
+  191060,
+  172765,
+  1349,
+  138436,
+  37365,
+  10970,
+  40509,
+  225817,
+  20021,
+  70394,
+  152138,
+  21541,
+  66559,
+  66544,
+  89352,
+  2725,
+  17258,
+  91345,
+  7313,
+  3815,
+  115868,
+  8660,
+  40362,
+  4071,
+  103524,
+  39388,
+  118275,
+  21950,
+  6549,
+  38226,
+  32754,
+  209574,
+  29201,
+  43495,
+  18028,
+  20296,
+  40597,
+  18370,
+  47520,
+  202450,
+  24134,
+  2219,
+  8195,
+  69545,
+  38041,
+  136934,
+  46374,
+  19041,
+  159811,
+  84865,
+  58620,
+  846,
+  98749,
+  13569,
+  30714,
+  97246,
+  32186,
+  4479,
+  27355,
+  92973,
+  35214,
+  151491,
+  75963,
+  37631,
+  1561,
+  27200,
+  238083,
+  23182,
+  60756,
+  12291,
+  25766,
+  39355,
+  102333,
+  87362,
+  65741,
+  59906,
+  19538,
+  201575,
+  48772,
+  102938,
+  24438,
+  292580,
+  39964,
+  66366,
+  9004,
+  61379,
+  50548,
+  37622,
+  38732,
+  28379,
+  68180,
+  76622,
+  17488,
+  69849,
+  5963,
+  7219,
+  48143,
+  43413,
+  55358,
+  540,
+  58691,
+  29506,
+  19245,
+  52193,
+  48621,
+  5518,
+  13048,
+  118625,
+  44755,
+  191081,
+  42061,
+  89197,
+  2259,
+  60665,
+  66994,
+  71210,
+  51232,
+  3585,
+  142096,
+  55024,
+  7892,
+  8345,
+  58653,
+  463307,
+  65658,
+  64319,
+  137941,
+  136323,
+  53499,
+  12746,
+  43492,
+  6978,
+  95163,
+  29925,
+  60175,
+  5128,
+  7352,
+  41463,
+  184756,
+  121146,
+  20473,
+  18426,
+  4598,
+  5309,
+  54580,
+  14277,
+  121151,
+  10691,
+  56711,
+  43880,
+  63409,
+  76682,
+  11830,
+  172218,
+  264898,
+  32632,
+  66536,
+  81062,
+  31649,
+  25788,
+  92774,
+  60222,
+  11100,
+  63159,
+  9432,
+  224657,
+  25240,
+  53613,
+  152,
+  138620,
+  163829,
+  2397,
+  85345,
+  12501,
+  37507,
+  64932,
+  38575,
+  43522,
+  65789,
+  80198,
+  78796,
+  35226,
+  3851,
+  108891,
+  73311,
+  3060,
+  28391,
+  93671,
+  39663,
+  46142,
+  30982,
+  66041,
+  37281,
+  68157,
+  26553,
+  71872,
+  81142,
+  211527,
+  39747,
+  118119,
+  22695,
+  2859,
+  11066,
+  20232,
+  168911,
+  7933,
+  197005,
+  17066,
+  111071,
+  44434,
+  133994,
+  120798,
+  12766,
+  227798,
+  45756,
+  132852,
+  29917,
+  36076,
+  55352,
+  65281,
+  129800,
+  41958,
+  18944,
+  84678,
+  18580,
+  168093,
+  132621,
+  39997,
+  54092,
+  27740,
+  32354,
+  3770,
+  114118,
+  103242,
+  43918,
+  15899,
+  18574,
+  145944,
+  3190,
+  123469,
+  219903,
+  24169,
+  100571,
+  62403,
+  16776,
+  92779,
+  14535,
+  17168,
+  16475,
+  14304,
+  37231,
+  1712,
+  28218,
+  242754,
+  61688,
+  28980,
+  1318,
+  51359,
+  222657,
+  99200,
+  67989,
+  31772,
+  23932,
+  35351,
+  201251,
+  49041,
+  27306,
+  19128,
+  40135,
+  3986,
+  77333,
+  19649,
+  120683,
+  151927,
+  21081,
+  7076,
+  78375,
+  77501,
+  101599,
+  8011,
+  89585,
+  96715,
+  58179,
+  5378,
+  102138,
+  106793,
+  26051,
+  217276,
+  4197,
+  16297,
+  27014,
+  46721,
+  13322,
+  22806,
+  5278,
+  29629,
+  70632,
+  9647,
+  71519,
+  58818,
+  40603,
+  128530,
+  8903,
+  36770,
+  56900,
+  31483,
+  26935,
+  43845,
+  34265,
+  34920,
+  87658,
+  6114,
+  84767,
+  64250,
+  47318,
+  50720,
+  19264,
+  162514,
+  33357,
+  13117,
+  6705,
+  46696,
+  75032,
+  71054,
+  87004,
+  42035,
+  69138,
+  11903,
+  99854,
+  102328,
+  19611,
+  34525,
+  69312,
+  6431,
+  49842,
+  101600,
+  133178,
+  108751,
+  41829,
+  89939,
+  225664,
+  48916,
+  99556,
+  9195,
+  130387,
+  5960,
+  36857,
+  116724,
+  53518,
+  94002,
+  39077,
+  53996,
+  6945,
+  22261,
+  64291,
+  8314,
+  152785,
+  57588,
+  16522,
+  9091,
+  5048,
+  87671,
+  35441,
+  39509,
+  1945,
+  12423,
+  158923,
+  178413,
+  37549,
+  14095,
+  1475,
+  73188,
+  62878,
+  4819,
+  24012,
+  68534,
+  42606,
+  4010,
+  120809,
+  57497,
+  59564,
+  101758,
+  103718,
+  32701,
+  80116,
+  12345,
+  95834,
+  46918,
+  21468,
+  53213,
+  15665,
+  31200,
+  3867,
+  5140,
+  96013,
+  250744,
+  21016,
+  10069,
+  13968,
+  35449,
+  180829,
+  27683,
+  39704,
+  59956,
+  22893,
+  3115,
+  26293,
+  32785,
+  75934,
+  62445,
+  141162,
+  62720,
+  2018,
+  83638,
+  19949,
+  114012,
+  95006,
+  3330,
+  99829,
+  130935,
+  309272,
+  9565,
+  55874,
+  121727,
+  37017,
+  23586,
+  319858,
+  40970,
+  27602,
+  8625,
+  112329,
+  61060,
+  100088,
+  118525,
+  25922,
+  16232,
+  1907,
+  60671,
+  51583,
+  44553,
+  80993,
+  5262,
+  94679,
+  8676,
+  940,
+  20736,
+  11823,
+  3020,
+  16476,
+  12340,
+  152600,
+  97416,
+  3703,
+  25744,
+  66826,
+  16245,
+  16876,
+  46446,
+  84798,
+  74227,
+  176020,
+  45192,
+  61955,
+  75496,
+  23946,
+  23626,
+  40372,
+  26036,
+  6149,
+  11822,
+  30582,
+  16541,
+  41914,
+  82385,
+  232823,
+  40921,
+  80773,
+  14930,
+  3631,
+  7517,
+  39619,
+  4348,
+  36180,
+  126106,
+  138939,
+  62611,
+  1477,
+  113512,
+  47321,
+  25052,
+  14546,
+  118881,
+  29060,
+  23589,
+  128322,
+  36795,
+  18401,
+  137921,
+  104699,
+  267929,
+  36194,
+  172791,
+  18113,
+  4766,
+  188215,
+  30083,
+  332586,
+  94089,
+  5805,
+  77909,
+  22194,
+  68234,
+  154976,
+  43220,
+  40660,
+  70001,
+  184893,
+  138095,
+  11128,
+  103010,
+  22663,
+  5108,
+  212615,
+  8485,
+  5565,
+  49222,
+  54614,
+  26530,
+  42639,
+  16319,
+  55062,
+  152662,
+  105595,
+  21114,
+  22216,
+  10294,
+  68158,
+  10436,
+  86950,
+  7206,
+  62115,
+  3977,
+  3657,
+  59874,
+  456,
+  118617,
+  18156,
+  106663,
+  112229,
+  80992,
+  17442,
+  8217,
+  55551,
+  5133,
+  34344,
+  251927,
+  51153,
+  39364,
+  201321,
+  7816,
+  66803,
+  23057,
+  156724,
+  145664,
+  14276,
+  95705,
+  979,
+  2796,
+  6875,
+  13429,
+  212525,
+  50602,
+  26276,
+  28284,
+  3424,
+  19465,
+  52397,
+  46963,
+  31420,
+  51399,
+  206476,
+  92317,
+  48851,
+  637,
+  100820,
+  83349,
+  10317,
+  60227,
+  21972,
+  6908,
+  282439,
+  32857,
+  224767,
+  95629,
+  83882,
+  42106,
+  87338,
+  69757,
+  29840,
+  68709,
+  37665,
+  45244,
+  114577,
+  49188,
+  175943,
+  54009,
+  186746,
+  106158,
+  70168,
+  3358,
+  234002,
+  50555,
+  9221,
+  129338,
+  9562,
+  20118,
+  32923,
+  78479,
+  118280,
+  65752,
+  4977,
+  10474,
+  102174,
+  60947,
+  129006,
+  10570,
+  83451,
+  8598,
+  8078,
+  159367,
+  123785,
+  80438,
+  16742,
+  5905,
+  5281,
+  181513,
+  42402,
+  6977,
+  163136,
+  93179,
+  42191,
+  14968,
+  50421,
+  112401,
+  105440,
+  33456,
+  57347,
+  121611,
+  4221,
+  94954,
+  36517,
+  24046,
+  27796,
+  6255,
+  33394,
+  72990,
+  135408,
+  116627,
+  1233,
+  57874,
+  25654,
+  95419,
+  68156,
+  401399,
+  313338,
+  55208,
+  45573,
+  93124,
+  119251,
+  47200,
+  38196,
+  11909,
+  130667,
+  45391,
+  73904,
+  64964,
+  167846,
+  4137,
+  115606,
+  52036,
+  62214,
+  7969,
+  160925,
+  7187,
+  1132,
+  134835,
+  40309,
+  73195,
+  64494,
+  80472,
+  444841,
+  61111,
+  26500,
+  45323,
+  40743,
+  53625,
+  52797,
+  22659,
+  15631,
+  29739,
+  36706,
+  28841,
+  39147,
+  102836,
+  26794,
+  10536,
+  14845,
+  87305,
+  45874,
+  12241,
+  127587,
+  83833,
+  57183,
+  79722,
+  30844,
+  41304,
+  84655,
+  20825,
+  92500,
+  3722,
+  25655,
+  27811,
+  10157,
+  81634,
+  31362,
+  34088,
+  92487,
+  70123,
+  22190,
+  185100,
+  72658,
+  139035,
+  192523,
+  88241,
+  2078,
+  230490,
+  44528,
+  85638,
+  100198,
+  22088,
+  29982,
+  291233,
+  241062,
+  13865,
+  4445,
+  137791,
+  37835,
+  107218,
+  31726,
+  19718,
+  38234,
+  72528,
+  23046,
+  19177,
+  66695,
+  5109,
+  17251,
+  28077,
+  5617,
+  21554,
+  47839,
+  72425,
+  133825,
+  1486,
+  73065,
+  181275,
+  141508,
+  21768,
+  62971,
+  63082,
+  2512,
+  34200,
+  9904,
+  120309,
+  6392,
+  91243,
+  68416,
+  268253,
+  41199,
+  116757,
+  138551,
+  185526,
+  41246,
+  28986,
+  4093,
+  19057,
+  17295,
+  4148,
+  245766,
+  122360,
+  35356,
+  112075,
+  20301,
+  75441,
+  10998,
+  7977,
+  19769,
+  62922,
+  937,
+  63547,
+  100196,
+  26427,
+  157820,
+  20983,
+  236696,
+  22935,
+  8140,
+  90315,
+  156004,
+  47204,
+  140973,
+  7726,
+  45097,
+  52725,
+  22636,
+  23436,
+  257282,
+  105247,
+  522,
+  88389,
+  216031,
+  202204,
+  46812,
+  211666,
+  19693,
+  68828,
+  81691,
+  45925,
+  11256,
+  30292,
+  372,
+  5236,
+  167826,
+  88328,
+  232776,
+  151611,
+  5360,
+  82104,
+  18841,
+  80393,
+  25465,
+  18285,
+  20320,
+  72377,
+  31730,
+  33160,
+  45803,
+  38715,
+  27705,
+  37379,
+  24163,
+  18360,
+  103586,
+  4015,
+  32305,
+  269494,
+  91252,
+  20080,
+  36567,
+  54650,
+  7797,
+  57073,
+  12650,
+  31164,
+  42209,
+  6375,
+  261663,
+  105528,
+  81661,
+  106002,
+  2800,
+  5375,
+  17247,
+  43151,
+  4442,
+  15727,
+  194619,
+  100855,
+  144898,
+  62320,
+  78465,
+  39929,
+  16454,
+  1967,
+  28311,
+  61363,
+  17219,
+  9395,
+  8745,
+  121445,
+  76939,
+  80385,
+  162380,
+  22009,
+  54191,
+  44248,
+  16299,
+  122830,
+  48151,
+  74429,
+  78291,
+  64755,
+  14238,
+  44966,
+  2511,
+  17712,
+  67954,
+  93583,
+  829,
+  105899,
+  49935,
+  84750,
+  11591,
+  33185,
+  85447,
+  42717,
+  27409,
+  208542,
+  28965,
+  62052,
+  52525,
+  5597,
+  25694,
+  65594,
+  16343,
+  63224,
+  276188,
+  12475,
+  9331,
+  127507,
+  38522,
+  57287,
+  24128,
+  133161,
+  79723,
+  105548,
+  133695,
+  48917,
+  27558,
+  43278,
+  46520,
+  13778,
+  141954,
+  110785,
+  83366,
+  17715,
+  46317,
+  105763,
+  66298,
+  147013,
+  41086,
+  94180,
+  16478,
+  220447,
+  44611,
+  730,
+  19722,
+  78975,
+  117889,
+  125643,
+  26254,
+  16574,
+  18480,
+  65006,
+  15806,
+  38549,
+  246418,
+  46052,
+  36056,
+  8440,
+  34984,
+  30170,
+  3163,
+  59800,
+  4458,
+  115442,
+  4283,
+  41970,
+  33507,
+  104078,
+  1653,
+  22,
+  121158,
+  276486,
+  3655,
+  6338,
+  24048,
+  133421,
+  23641,
+  2161,
+  24422,
+  36006,
+  8086,
+  10675,
+  181474,
+  12307,
+  29514,
+  59143,
+  14729,
+  52509,
+  87128,
+  122470,
+  19446,
+  80852,
+  33314,
+  24573,
+  119864,
+  14237,
+  9652,
+  57779,
+  6612,
+  51851,
+  15284,
+  98871,
+  90581,
+  124466,
+  156831,
+  21190,
+  22015,
+  71380,
+  161906,
+  87247,
+  69201,
+  18392,
+  17908,
+  108470,
+  72962,
+  40719,
+  14338,
+  17911,
+  95260,
+  43339,
+  20610,
+  78916,
+  20710,
+  72451,
+  11315,
+  31448,
+  17263,
+  58853,
+  178878,
+  48111,
+  116002,
+  45497,
+  80506,
+  82605,
+  85880,
+  36300,
+  121755,
+  25215,
+  36118,
+  301929,
+  88728,
+  405223,
+  276136,
+  553,
+  34704,
+  212438,
+  49970,
+  78329,
+  922,
+  20711,
+  25036,
+  257130,
+  38295,
+  145369,
+  18128,
+  15385,
+  30829,
+  55656,
+  48345,
+  8012,
+  3561,
+  28004,
+  122041,
+  192900,
+  58338,
+  112508,
+  41085,
+  29976,
+  87040,
+  47117,
+  23905,
+  4336,
+  92061,
+  138880,
+  97407,
+  42083,
+  172121,
+  6256,
+  25192,
+  172671,
+  5,
+  93568,
+  1420,
+  12677,
+  31605,
+  56743,
+  40620,
+  6015,
+  78415,
+  231077,
+  31298,
+  80026,
+  13902,
+  19048,
+  24924,
+  170586,
+  32955,
+  176119,
+  87859,
+  36731,
+  6773,
+  27711,
+  24658,
+  26475,
+  115216,
+  133207,
+  93250,
+  95820,
+  88522,
+  8317,
+  5714,
+  124047,
+  55219,
+  86860,
+  19677,
+  23961,
+  22928,
+  162209,
+  8904,
+  225992,
+  359835,
+  56084,
+  96201,
+  29392,
+  96558,
+  86071,
+  93643,
+  55114,
+  13347,
+  8183,
+  95129,
+  82012,
+  2017,
+  123336,
+  34219,
+  115554,
+  157159,
+  47747,
+  101684,
+  41008,
+  18735,
+  193781,
+  104151,
+  226906,
+  7552,
+  179874,
+  124113,
+  31159,
+  21162,
+  44010,
+  14771,
+  51268,
+  166128,
+  31382,
+  73124,
+  77438,
+  92830,
+  205709,
+  12113,
+  1292,
+  38937,
+  13114,
+  1334,
+  2118,
+  15597,
+  69581,
+  14449,
+  21934,
+  76618,
+  48728,
+  67038,
+  14967,
+  51495,
+  24243,
+  87736,
+  147249,
+  26720,
+  11119,
+  46063,
+  43749,
+  5843,
+  44147,
+  152629,
+  133428,
+  65703,
+  14269,
+  45604,
+  57982,
+  28672,
+  55616,
+  45957,
+  8438,
+  95433,
+  37698,
+  220862,
+  132034,
+  39456,
+  61870,
+  4161,
+  26501,
+  73560,
+  56418,
+  9845,
+  4654,
+  20916,
+  10456,
+  88920,
+  119358,
+  9015,
+  65931,
+  96507,
+  48029,
+  38534,
+  21676,
+  109081,
+  43078,
+  34943,
+  25089,
+  6131,
+  28766,
+  23665,
+  5477,
+  10255,
+  16695,
+  67,
+  45778,
+  42443,
+  42770,
+  29534,
+  23733,
+  100513,
+  62617,
+  42630,
+  48746,
+  14191,
+  43753,
+  50295,
+  26007,
+  8792,
+  57243,
+  43119,
+  54725,
+  164253,
+  58250,
+  112304,
+  131796,
+  25165,
+  4651,
+  3188,
+  24831,
+  47748,
+  3705,
+  19540,
+  13211,
+  102095,
+  5593,
+  18699,
+  23666,
+  32005,
+  117571,
+  33541,
+  60584,
+  74573,
+  86311,
+  99443,
+  25172,
+  27222,
+  168938,
+  7143,
+  11853,
+  53560,
+  18834,
+  19960,
+  86522,
+  28217,
+  53266,
+  117700,
+  72989,
+  34323,
+  18721,
+  66450,
+  34346,
+  74056,
+  47217,
+  202002,
+  46269,
+  9429,
+  68582,
+  75458,
+  37823,
+  82843,
+  96652,
+  32549,
+  145144,
+  27958,
+  19820,
+  158086,
+  31955,
+  201406,
+  135379,
+  31207,
+  192545,
+  12950,
+  51704,
+  9094,
+  248263,
+  76147,
+  64028,
+  110009,
+  79407,
+  89345,
+  99284,
+  223492,
+  47966,
+  26848,
+  15359,
+  201137,
+  2861,
+  110507,
+  71231,
+  72297,
+  31851,
+  118777,
+  71039,
+  151051,
+  240855,
+  16333,
+  50766,
+  14727,
+  7939,
+  4149,
+  80908,
+  418780,
+  88378,
+  59276,
+  1327,
+  7284,
+  38576,
+  79814,
+  65820,
+  42199,
+  84860,
+  49574,
+  62596,
+  12396,
+  70598,
+  40117,
+  8648,
+  7994,
+  16836,
+  7630,
+  14047,
+  359699,
+  106878,
+  525,
+  29037,
+  28064,
+  13380,
+  11675,
+  50669,
+  74216,
+  103539,
+  180314,
+  27449,
+  56299,
+  172344,
+  19274,
+  7301,
+  246099,
+  32043,
+  19422,
+  36506,
+  129317,
+  6806,
+  30140,
+  4614,
+  46639,
+  66926,
+  932,
+  86600,
+  6322,
+  27847,
+  233103,
+  10541,
+  39025,
+  34887,
+  3517,
+  12972,
+  26220,
+  2031,
+  66561,
+  115015,
+  48658,
+  47596,
+  12714,
+  33845,
+  3893,
+  16165,
+  35237,
+  89983,
+  14769,
+  11962,
+  147224,
+  47018,
+  29977,
+  27979,
+  5552,
+  82338,
+  86023,
+  131368,
+  1218,
+  24853,
+  237840,
+  132193,
+  15455,
+  40873,
+  3668,
+  65351,
+  53388,
+  15229,
+  59889,
+  272245,
+  47934,
+  11858,
+  34347,
+  18038,
+  90853,
+  86981,
+  300602,
+  19343,
+  114181,
+  29362,
+  84921,
+  6095,
+  106059,
+  79472,
+  38015,
+  1206,
+  48741,
+  6208,
+  8e4,
+  21916,
+  17423,
+  6002,
+  108083,
+  24479,
+  34931,
+  56661,
+  9511,
+  26995,
+  100694,
+  163853,
+  35997,
+  81254,
+  58321,
+  18919,
+  171890,
+  86877,
+  91341,
+  74503,
+  70477,
+  53412,
+  7027,
+  59281,
+  39892,
+  131302,
+  5864,
+  15947,
+  61301,
+  67466,
+  162369,
+  47956,
+  27874,
+  35624,
+  282324,
+  21270,
+  111847,
+  102548,
+  41482,
+  30955,
+  116737,
+  28264,
+  8592,
+  55458,
+  22301,
+  75090,
+  29821,
+  30697,
+  51709,
+  3041,
+  19208,
+  8038,
+  24634,
+  30467,
+  87509,
+  126428,
+  19389,
+  18814,
+  152686,
+  20701,
+  83474,
+  45832,
+  80891,
+  105808,
+  11378,
+  153223,
+  120770,
+  98186,
+  150633,
+  49838,
+  9141,
+  12755,
+  30962,
+  5260,
+  74490,
+  21256,
+  31678,
+  65062,
+  33326,
+  289838,
+  187831,
+  20595,
+  89768,
+  2805,
+  58535,
+  10844,
+  70085,
+  12090,
+  2451,
+  138068,
+  98544,
+  24461,
+  4511,
+  6754,
+  41684,
+  28203,
+  3383,
+  65355,
+  82833,
+  30161,
+  83924,
+  234361,
+  128424,
+  28921,
+  222594,
+  33975,
+  125491,
+  34069,
+  11508,
+  67464,
+  144226,
+  41850,
+  98703,
+  34371,
+  7901,
+  21254,
+  38398,
+  65651,
+  23549,
+  53883,
+  213340,
+  123269,
+  12028,
+  71764,
+  177701,
+  28758,
+  2623,
+  68395,
+  11549,
+  15232,
+  68603,
+  9660,
+  63116,
+  36079,
+  57093,
+  31198,
+  20475,
+  48467,
+  89984,
+  35619,
+  186847,
+  107469,
+  31389,
+  43631,
+  73867,
+  41949,
+  68841,
+  114250,
+  1605,
+  30564,
+  63403,
+  17588,
+  27680,
+  99533,
+  12641,
+  70325,
+  50428,
+  73426,
+  78379,
+  11855,
+  91651,
+  72081,
+  91720,
+  60198,
+  15743,
+  12065,
+  83398,
+  140046,
+  6761,
+  46598,
+  45900,
+  5068,
+  886,
+  62448,
+  148968,
+  37347,
+  19405,
+  9680,
+  15819,
+  43496,
+  63370,
+  75667,
+  163700,
+  37639,
+  3633,
+  22774,
+  34341,
+  183131,
+  134335,
+  37200,
+  23915,
+  7054,
+  14194,
+  12970,
+  26438,
+  13350,
+  285521,
+  25594,
+  8219,
+  104410,
+  91039,
+  168804,
+  138480,
+  149734,
+  15907,
+  33818,
+  61132,
+  60082,
+  4622,
+  110187,
+  56736,
+  13551,
+  73571,
+  3945,
+  73463,
+  65498,
+  17758,
+  263266,
+  17593,
+  2710,
+  27585,
+  54469,
+  38200,
+  45367,
+  63754,
+  28881,
+  3473,
+  12791,
+  98287,
+  31895,
+  65787,
+  4463,
+  94536,
+  24951,
+  36332,
+  59901,
+  28803,
+  52130,
+  86403,
+  7668,
+  181822,
+  74831,
+  18977,
+  9850,
+  177206,
+  145485,
+  109798,
+  7292,
+  31421,
+  26280,
+  77211,
+  58511,
+  12507,
+  127004,
+  11113,
+  147,
+  8729,
+  56208,
+  43066,
+  79926,
+  129937,
+  31345,
+  83947,
+  39915,
+  46146,
+  98763,
+  42566,
+  1337,
+  13192,
+  18323,
+  105163,
+  80570,
+  117753,
+  16555,
+  72883,
+  11077,
+  159438,
+  40764,
+  70933,
+  83329,
+  26066,
+  12276,
+  72059,
+  21655,
+  173836,
+  126713,
+  69454,
+  153482,
+  91585,
+  70644,
+  102558,
+  110483,
+  6764,
+  127864,
+  190133,
+  3961,
+  101798,
+  20945,
+  71138,
+  82402,
+  90884,
+  69669,
+  44753,
+  923,
+  16939,
+  59700,
+  164258,
+  25969,
+  27082,
+  31399,
+  43846,
+  6306,
+  246093,
+  51342,
+  6153,
+  151581,
+  202801,
+  182731,
+  56475,
+  162188,
+  89426,
+  141356,
+  14355,
+  121815,
+  27536,
+  28023,
+  65257,
+  77523,
+  106668,
+  127314,
+  24947,
+  12790,
+  38796,
+  169698,
+  23555,
+  10725,
+  44573,
+  183083,
+  42088,
+  62716,
+  43265,
+  105958,
+  32050,
+  44067,
+  50118,
+  1668,
+  3874,
+  6243,
+  318411,
+  16599,
+  1691,
+  94999,
+  52378,
+  28671,
+  216728,
+  123258,
+  2059,
+  34969,
+  69225,
+  5913,
+  136280,
+  171443,
+  141515,
+  91662,
+  22175,
+  135282,
+  80020,
+  92270,
+  1663,
+  4808,
+  4482,
+  3495,
+  34691,
+  5226,
+  109830,
+  108512,
+  17342,
+  107488,
+  11606,
+  123190,
+  100247,
+  29666,
+  146527,
+  113014,
+  15794,
+  30894,
+  13224,
+  39585,
+  243192,
+  22351,
+  9903,
+  7836,
+  47699,
+  11078,
+  25468,
+  122291,
+  48821,
+  26780,
+  122679,
+  75521,
+  81450,
+  630,
+  4895,
+  92900,
+  55074,
+  74293,
+  17441,
+  3563,
+  111657,
+  103102,
+  51613,
+  12318,
+  52370,
+  36191,
+  68245,
+  34269,
+  40445,
+  41354,
+  122901,
+  168604,
+  182500,
+  62012,
+  42557,
+  11259,
+  24428,
+  115113,
+  86345,
+  12362,
+  3909,
+  78430,
+  86852,
+  134602,
+  20459,
+  47853,
+  93879,
+  22577,
+  7659,
+  3688,
+  38555,
+  13349,
+  17381,
+  56715,
+  91639,
+  12493,
+  10895,
+  92438,
+  3142,
+  37057,
+  28928,
+  2004,
+  36427,
+  32268,
+  34222,
+  209974,
+  10432,
+  67436,
+  41989,
+  173518,
+  107930,
+  27079,
+  62729,
+  30908,
+  55558,
+  5828,
+  45031,
+  14902,
+  53546,
+  8204,
+  144263,
+  60255,
+  14520,
+  88212,
+  86582,
+  109589,
+  69356,
+  8064,
+  47449,
+  8505,
+  66558,
+  16886,
+  4844,
+  52817,
+  111260,
+  215129,
+  12941,
+  91118,
+  650,
+  20770,
+  6273,
+  73089,
+  40618,
+  62790,
+  2873,
+  35002,
+  14023,
+  97208,
+  19386,
+  102646,
+  36993,
+  143736,
+  135457,
+  35385,
+  113601,
+  17893,
+  32627,
+  84439,
+  100619,
+  56016,
+  6581,
+  57264,
+  172160,
+  45452,
+  111710,
+  203627,
+  70131,
+  24100,
+  322787,
+  1996,
+  35665,
+  70078,
+  22358,
+  90922,
+  83658,
+  4097,
+  63200,
+  58499,
+  14542,
+  99153,
+  52159,
+  6615,
+  12414,
+  63415,
+  31986,
+  16823,
+  1579,
+  65405,
+  137809,
+  8841,
+  16898,
+  48082,
+  259,
+  33014,
+  42375,
+  12260,
+  179850,
+  73667,
+  91389,
+  98882,
+  29532,
+  17311,
+  326251,
+  41092,
+  5928,
+  20742,
+  44964,
+  48019,
+  43505,
+  9317,
+  49265,
+  6643,
+  192712,
+  48424,
+  163487,
+  19861,
+  20113,
+  70848,
+  31928,
+  105333,
+  23685,
+  78563,
+  14638,
+  54755,
+  7158,
+  24142,
+  44018,
+  20774,
+  125255,
+  20331,
+  24280,
+  10163,
+  1285,
+  2336,
+  39851,
+  4299,
+  117269,
+  46714,
+  63816,
+  87779,
+  159624,
+  11731,
+  9971,
+  990,
+  137317,
+  108831,
+  50994,
+  74554,
+  162680,
+  23640,
+  131597,
+  146962,
+  170620,
+  34829,
+  91205,
+  21184,
+  1913,
+  63616,
+  18427,
+  93136,
+  156592,
+  17519,
+  67565,
+  115882,
+  138220,
+  78622,
+  88535,
+  18115,
+  2711,
+  33554,
+  109492,
+  54298,
+  971,
+  24914,
+  25863,
+  36363,
+  45715,
+  27099,
+  194995,
+  14299,
+  178181,
+  111488,
+  72395,
+  322385,
+  157719,
+  130787,
+  11897,
+  81843,
+  83999,
+  11369,
+  49280,
+  118604,
+  40922,
+  61332,
+  110343,
+  53407,
+  75639,
+  40582,
+  300440,
+  54722,
+  25637,
+  13694,
+  48248,
+  48278,
+  194521,
+  56203,
+  52779,
+  48783,
+  72627,
+  10953,
+  376,
+  16733,
+  280238,
+  26351,
+  230789,
+  15132,
+  25168,
+  137270,
+  3588,
+  63704,
+  73376,
+  94031,
+  74284,
+  19443,
+  159557,
+  9697,
+  39901,
+  13351,
+  119050,
+  15406,
+  146455,
+  3460,
+  29556,
+  75195,
+  37673,
+  102524,
+  92329,
+  47289,
+  98413,
+  15311,
+  100684,
+  56345,
+  7116,
+  95480,
+  11590,
+  7200,
+  167,
+  23610,
+  58426,
+  17730,
+  136656,
+  27944,
+  53151,
+  2701,
+  8824,
+  103124,
+  3017,
+  90744,
+  113588,
+  53216,
+  79736,
+  65940,
+  26931,
+  498,
+  29568,
+  80540,
+  143543,
+  21292,
+  1740,
+  59268,
+  16561,
+  180816,
+  42323,
+  50174,
+  40890,
+  52866,
+  10703,
+  57169,
+  4700,
+  17191,
+  4424,
+  93511,
+  49698,
+  166650,
+  26972,
+  48631,
+  165169,
+  82879,
+  69326,
+  202970,
+  4007,
+  2376,
+  231325,
+  139592,
+  22119,
+  62851,
+  37504,
+  68816,
+  58345,
+  67398,
+  186643,
+  43331,
+  277416,
+  53749,
+  15746,
+  23102,
+  17432,
+  4793,
+  151138,
+  48822,
+  54265,
+  48203,
+  198688,
+  14305,
+  54287,
+  2291,
+  18018,
+  113378,
+  123260,
+  7180,
+  97549,
+  87027,
+  120085,
+  2920,
+  76080,
+  8190,
+  102005,
+  5641,
+  64580,
+  14955,
+  59802,
+  54028,
+  58884,
+  19367,
+  81779,
+  412567,
+  85957,
+  97053,
+  103637,
+  78871,
+  29364,
+  27637,
+  141728,
+  4767,
+  30686,
+  112738,
+  130146,
+  42745,
+  12730,
+  105040,
+  14844,
+  232,
+  210944,
+  36581,
+  152317,
+  135543,
+  29744,
+  3129,
+  55647,
+  58149,
+  46319,
+  27265,
+  17499,
+  28005,
+  59948,
+  7170,
+  34138,
+  5702,
+  293047,
+  110892,
+  408,
+  91760,
+  218674,
+  18469,
+  46095,
+  81403,
+  14389,
+  4610,
+  35672,
+  73060,
+  11006,
+  74848,
+  104820,
+  118143,
+  190357,
+  20043,
+  105358,
+  141735,
+  5115,
+  27093,
+  45924,
+  123073,
+  52599,
+  29433,
+  9616,
+  238350,
+  78610,
+  24851,
+  58858,
+  26769,
+  31969,
+  24613,
+  18294,
+  4982,
+  32735,
+  39639,
+  143563,
+  112073,
+  202205,
+  12567,
+  4873,
+  88601,
+  44897,
+  81503,
+  101648,
+  81362,
+  34662,
+  85277,
+  17574,
+  48173,
+  21435,
+  221188,
+  40215,
+  39576,
+  80786,
+  26544,
+  64668,
+  81841,
+  10731,
+  37733,
+  247986,
+  149188,
+  127703,
+  495,
+  18382,
+  54388,
+  72446,
+  43071,
+  30974,
+  198723,
+  89608,
+  41360,
+  190,
+  33045,
+  8386,
+  31658,
+  19992,
+  237838,
+  119015,
+  137622,
+  50890,
+  100913,
+  6460,
+  116233,
+  267230,
+  26621,
+  104129,
+  65114,
+  14190,
+  41542,
+  14888,
+  85962,
+  23342,
+  23041,
+  26453,
+  43725,
+  71809,
+  45186,
+  4770,
+  46452,
+  53894,
+  56616,
+  221286,
+  18973,
+  9038,
+  109299,
+  55365,
+  19366,
+  26863,
+  18808,
+  60909,
+  69353,
+  41738,
+  83463,
+  12100,
+  68561,
+  72860,
+  3980,
+  13796,
+  49340,
+  12332,
+  31311,
+  27418,
+  4255,
+  53430,
+  18976,
+  45523,
+  510,
+  14224,
+  30477,
+  26581,
+  4530,
+  3651,
+  101663,
+  139840,
+  22709,
+  150861,
+  31996,
+  63923,
+  120623,
+  262522,
+  3076,
+  10528,
+  2929,
+  14672,
+  130238,
+  18087,
+  9816,
+  121894,
+  100308,
+  25085,
+  55111,
+  14565,
+  18952,
+  53293,
+  2042,
+  369988,
+  23674,
+  61789,
+  133529,
+  28783,
+  108293,
+  35477,
+  47119,
+  36448,
+  71049,
+  40015,
+  33055,
+  78598,
+  198442,
+  1833,
+  159937,
+  40654,
+  77444,
+  189245,
+  113153,
+  8621,
+  18599,
+  38553,
+  35223,
+  166072,
+  2375,
+  11659,
+  21786,
+  89523,
+  6032,
+  12116,
+  63046,
+  159398,
+  18454,
+  3678,
+  32521,
+  47626,
+  11411,
+  103527,
+  38896,
+  42946,
+  15696,
+  26370,
+  10185,
+  8413,
+  37080,
+  165583,
+  4331,
+  63555,
+  14907,
+  72220,
+  50056,
+  6623,
+  62236,
+  36565,
+  49783,
+  10049,
+  17503,
+  100581,
+  55951,
+  146244,
+  24724,
+  9626,
+  17969,
+  25524,
+  109300,
+  173965,
+  99994,
+  101056,
+  46459,
+  43647,
+  53737,
+  277968,
+  8347,
+  123521,
+  74858,
+  33829,
+  44762,
+  77574,
+  877,
+  81377,
+  222525,
+  123532,
+  30602,
+  43881,
+  53145,
+  2973,
+  16284,
+  81940,
+  61281,
+  127044,
+  63620,
+  9875,
+  14756,
+  114829,
+  19032,
+  9202,
+  52759,
+  119141,
+  23928,
+  120551,
+  19607,
+  3599,
+  33401,
+  76821,
+  73233,
+  117430,
+  39968,
+  36539,
+  7071,
+  5446,
+  121735,
+  194059,
+  15206,
+  45283,
+  6706,
+  15603,
+  65615,
+  1207,
+  165723,
+  92275,
+  34773,
+  104447,
+  8396,
+  32353,
+  205240,
+  164323,
+  13600,
+  60555,
+  79205,
+  25532,
+  22907,
+  33410,
+  57480,
+  107111,
+  69630,
+  32137,
+  47832,
+  70913,
+  33161,
+  20321,
+  2371,
+  117348,
+  10714,
+  86246,
+  1625,
+  11763,
+  17900,
+  268,
+  78457,
+  99175,
+  97940,
+  101092,
+  86660,
+  32221,
+  14041,
+  128504,
+  125080,
+  53744,
+  124263,
+  31017,
+  13897,
+  403,
+  31859,
+  21964,
+  5633,
+  111630,
+  5547,
+  77329,
+  17961,
+  18241,
+  84995,
+  25984,
+  12983,
+  67491,
+  62168,
+  47262,
+  5241,
+  297,
+  51191,
+  7351,
+  8967,
+  147212,
+  82060,
+  16821,
+  782,
+  11033,
+  82431,
+  62957,
+  5026,
+  43459,
+  77963,
+  203477,
+  53528,
+  6247,
+  191852,
+  87774,
+  74164,
+  215654,
+  13467,
+  1522,
+  219964,
+  28589,
+  244104,
+  16242,
+  117821,
+  67725,
+  72570,
+  156792,
+  17186,
+  15979,
+  26990,
+  44128,
+  193014,
+  35276,
+  57125,
+  16212,
+  166451,
+  68017,
+  6905,
+  77608,
+  16364,
+  53777,
+  75921,
+  76426,
+  37975,
+  26203,
+  269296,
+  64099,
+  84122,
+  12077,
+  38533,
+  830,
+  4407,
+  20139,
+  963,
+  43028,
+  38902,
+  42911,
+  37503,
+  83343,
+  85045,
+  16979,
+  1165,
+  60835,
+  137387,
+  58380,
+  86990,
+  110066,
+  134540,
+  56331,
+  193845,
+  81238,
+  17922,
+  163093,
+  38744,
+  110641,
+  12502,
+  56404,
+  34862,
+  26865,
+  125964,
+  12965,
+  111648,
+  25547,
+  7771,
+  27196,
+  136980,
+  9555,
+  29551,
+  107158,
+  57885,
+  18831,
+  37705,
+  35505,
+  101742,
+  13970,
+  102109,
+  62548,
+  124657,
+  23328,
+  11124,
+  89592,
+  146376,
+  248050,
+  6241,
+  22033,
+  18337,
+  80685,
+  29898,
+  11908,
+  216623,
+  67721,
+  106162,
+  146610,
+  21377,
+  15085,
+  91552,
+  42041,
+  62560,
+  122532,
+  125336,
+  102365,
+  121537,
+  142559,
+  29693,
+  223919,
+  11515,
+  110495,
+  18776,
+  22494,
+  5895,
+  185059,
+  103592,
+  229351,
+  51220,
+  100102,
+  37027,
+  257855,
+  29359,
+  54123,
+  36066,
+  106493,
+  12244,
+  79258,
+  32002,
+  432,
+  56205,
+  94836,
+  90182,
+  6726,
+  14762,
+  29391,
+  48938,
+  26864,
+  38083,
+  60364,
+  3310,
+  60192,
+  14766,
+  205567,
+  57504,
+  110760,
+  22649,
+  24666,
+  46333,
+  21517,
+  3430,
+  13135,
+  28873,
+  27052,
+  158809,
+  11597,
+  20529,
+  6695,
+  23138,
+  22960,
+  37137,
+  45574,
+  6545,
+  305877,
+  43423,
+  26153,
+  24769,
+  59844,
+  14501,
+  10430,
+  134352,
+  56169,
+  13213,
+  103432,
+  49523,
+  35181,
+  13435,
+  12408,
+  129475,
+  64620,
+  230854,
+  77390,
+  51990,
+  15653,
+  83248,
+  33466,
+  44571,
+  117828,
+  51481,
+  2187,
+  10559,
+  68019,
+  18021,
+  54895,
+  48247,
+  18354,
+  33737,
+  4554,
+  108595,
+  37288,
+  39767,
+  116707,
+  9175,
+  3726,
+  108877,
+  21616,
+  83684,
+  49862,
+  1938,
+  8543,
+  276466,
+  20134,
+  108498,
+  48770,
+  102254,
+  31914,
+  131520,
+  185291,
+  100559,
+  51890,
+  209,
+  19526,
+  76471,
+  50544,
+  71814,
+  99351,
+  8172,
+  198526,
+  28816,
+  20419,
+  9109,
+  98389,
+  136777,
+  76479,
+  75596,
+  30635,
+  165417,
+  48216,
+  120220,
+  25955,
+  211071,
+  39314,
+  24308,
+  32164,
+  2559,
+  146280,
+  43403,
+  9233,
+  17947,
+  90585,
+  1786,
+  86920,
+  125662,
+  2457,
+  64741,
+  32152,
+  32918,
+  122882,
+  78538,
+  44001,
+  31723,
+  56426,
+  23375,
+  103172,
+  88177,
+  145697,
+  52506,
+  49319,
+  68016,
+  31664,
+  41488,
+  18486,
+  110400,
+  7030,
+  28241,
+  986,
+  109199,
+  19900,
+  42147,
+  56864,
+  65287,
+  49183,
+  7858,
+  24e3,
+  30453,
+  840,
+  16673,
+  25907,
+  68916,
+  89927,
+  6309,
+  158335,
+  36407,
+  199737,
+  130464,
+  13137,
+  59603,
+  201778,
+  195292,
+  21015,
+  42466,
+  179062,
+  172561,
+  89492,
+  11075,
+  180407,
+  31868,
+  72493,
+  20998,
+  60217,
+  9865,
+  19530,
+  39274,
+  130266,
+  54539,
+  21623,
+  12535,
+  13505,
+  40641,
+  73375,
+  4087,
+  85633,
+  2153,
+  3117,
+  70680,
+  55788,
+  92096,
+  47509,
+  98493,
+  37490,
+  271936,
+  151475,
+  3032,
+  16171,
+  96642,
+  34106,
+  78425,
+  125761,
+  19591,
+  3366,
+  19316,
+  54508,
+  24183,
+  50786,
+  194248,
+  91528,
+  33253,
+  34622,
+  108355,
+  41741,
+  705,
+  3814,
+  3883,
+  108929,
+  13203,
+  67831,
+  10142,
+  59754,
+  68208,
+  29128,
+  84820,
+  56880,
+  38794,
+  24972,
+  48571,
+  40821,
+  40476,
+  18137,
+  164254,
+  24064,
+  236309,
+  79181,
+  11282,
+  395,
+  39169,
+  2013,
+  51587,
+  28551,
+  9645,
+  701,
+  109513,
+  115899,
+  113566,
+  12762,
+  62045,
+  58322,
+  103726,
+  41343,
+  40866,
+  244102,
+  143816,
+  2490,
+  70346,
+  40973,
+  52618,
+  15412,
+  30720,
+  104315,
+  38917,
+  42027,
+  93676,
+  17513,
+  107418,
+  20706,
+  123890,
+  13399,
+  97727,
+  24044,
+  87962,
+  65606,
+  44250,
+  98044,
+  65276,
+  74790,
+  101473,
+  19350,
+  91570,
+  1326,
+  87790,
+  172042,
+  7577,
+  100813,
+  86896,
+  85891,
+  41512,
+  108130,
+  27794,
+  14875,
+  71431,
+  12835,
+  156250,
+  58135,
+  3759,
+  22476,
+  42176,
+  115873,
+  34686,
+  56523,
+  73643,
+  108505,
+  51491,
+  20838,
+  12721,
+  32863,
+  45700,
+  29496,
+  13700,
+  34294,
+  55360,
+  29206,
+  155942,
+  123812,
+  7706,
+  163234,
+  203,
+  132720,
+  49358,
+  144431,
+  8130,
+  175788,
+  35818,
+  3270,
+  76832,
+  25710,
+  54095,
+  97274,
+  28779,
+  94621,
+  74396,
+  19092,
+  128242,
+  58067,
+  20885,
+  14670,
+  93255,
+  15107,
+  63291,
+  23654,
+  126900,
+  129421,
+  59294,
+  262659,
+  9798,
+  3251,
+  67344,
+  28600,
+  44629,
+  50672,
+  29072,
+  26999,
+  31526,
+  23183,
+  49175,
+  165843,
+  175455,
+  17282,
+  175411,
+  32022,
+  45989,
+  30298,
+  90690,
+  78118,
+  83156,
+  23749,
+  35636,
+  31317,
+  7069,
+  80381,
+  94561,
+  133756,
+  14960,
+  97404,
+  6138,
+  41065,
+  78041,
+  32843,
+  16601,
+  34123,
+  9559,
+  146529,
+  123377,
+  96395,
+  54441,
+  42012,
+  84257,
+  123541,
+  10745,
+  22139,
+  106459,
+  11720,
+  150883,
+  172651,
+  154996,
+  110538,
+  4728,
+  53447,
+  25704,
+  2009,
+  71152,
+  119354,
+  21166,
+  66604,
+  1429,
+  216162,
+  8637,
+  122250,
+  63520,
+  27180,
+  29172,
+  36124,
+  276428,
+  107787,
+  77184,
+  4680,
+  14952,
+  104903,
+  24418,
+  14793,
+  51561,
+  52931,
+  8371,
+  26342,
+  48526,
+  7118,
+  92066,
+  67280,
+  40653,
+  8847,
+  34597,
+  105438,
+  14198,
+  50163,
+  61188,
+  146286,
+  50315,
+  41205,
+  170829,
+  161496,
+  585,
+  197359,
+  95056,
+  1687,
+  365794,
+  91349,
+  48507,
+  5804,
+  49263,
+  5146,
+  104902,
+  96365,
+  117343,
+  132222,
+  46084,
+  96919,
+  16875,
+  8073,
+  262381,
+  79982,
+  52663,
+  13928,
+  16056,
+  153908,
+  15145,
+  109256,
+  132308,
+  18763,
+  24904,
+  167644,
+  13618,
+  40750,
+  18686,
+  147124,
+  114709,
+  150038,
+  52849,
+  2938,
+  12568,
+  48617,
+  8778,
+  5459,
+  44202,
+  44591,
+  74914,
+  17183,
+  248689,
+  13878,
+  7822,
+  80060,
+  23116,
+  194037,
+  18487,
+  2067,
+  7798,
+  43077,
+  33678,
+  244028,
+  31320,
+  74273,
+  2794,
+  19466,
+  8218,
+  36280,
+  183997,
+  48124,
+  19416,
+  29656,
+  19280,
+  98734,
+  7715,
+  18311,
+  30701,
+  133602,
+  150307,
+  126956,
+  7378,
+  2933,
+  79903,
+  13178,
+  12593,
+  86571,
+  26604,
+  92446,
+  13574,
+  44205,
+  65699,
+  427599,
+  21118,
+  8245,
+  14407,
+  27877,
+  47936,
+  33542,
+  7916,
+  26460,
+  117762,
+  21596,
+  37818,
+  2249,
+  127359,
+  209394,
+  60044,
+  47677,
+  308089,
+  36791,
+  154971,
+  31417,
+  6998,
+  150042,
+  174360,
+  12255,
+  43009,
+  29335,
+  48739,
+  3912,
+  101398,
+  53340,
+  2580,
+  146939,
+  151295,
+  45360,
+  125275,
+  15273,
+  45383,
+  27456,
+  48761,
+  23314,
+  8750,
+  60801,
+  85823,
+  104759,
+  27894,
+  123685,
+  66968,
+  39480,
+  26917,
+  55290,
+  83305,
+  2696,
+  98390,
+  57569,
+  145853,
+  340733,
+  4919,
+  20024,
+  52268,
+  30884,
+  7413,
+  203685,
+  70989,
+  112855,
+  4129,
+  50536,
+  349518,
+  68205,
+  332641,
+  159581,
+  135361,
+  236026,
+  37563,
+  176404,
+  64899,
+  6578,
+  122033,
+  63871,
+  1850,
+  85234,
+  82089,
+  66124,
+  74145,
+  121098,
+  107351,
+  12687,
+  36881,
+  117334,
+  13136,
+  14698,
+  85933,
+  93866,
+  18047,
+  32620,
+  310,
+  15094,
+  46e3,
+  88451,
+  23632,
+  36645,
+  27940,
+  87618,
+  80520,
+  58892,
+  20976,
+  27702,
+  140090,
+  96075,
+  67841,
+  103292,
+  238964,
+  87778,
+  107338,
+  17019,
+  83427,
+  67522,
+  7302,
+  8261,
+  47570,
+  116787,
+  8730,
+  80484,
+  61772,
+  174422,
+  56005,
+  131193,
+  52875,
+  14588,
+  28471,
+  59817,
+  9586,
+  15720,
+  158155,
+  51307,
+  109734,
+  15196,
+  11025,
+  59331,
+  3884,
+  52626,
+  102602,
+  84797,
+  25158,
+  27314,
+  4437,
+  20488,
+  76214,
+  189248,
+  35023,
+  114952,
+  157376,
+  2827,
+  62439,
+  102878,
+  129749,
+  36405,
+  10329,
+  109339,
+  108633,
+  36662,
+  1254,
+  13267,
+  5470,
+  87105,
+  58004,
+  15397,
+  10434,
+  159667,
+  21864,
+  52022,
+  179464,
+  3013,
+  32147,
+  31496,
+  116832,
+  18494,
+  105502,
+  129227,
+  107267,
+  50033,
+  13481,
+  9954,
+  24267,
+  22141,
+  16257,
+  116154,
+  36185,
+  950,
+  115685,
+  11305,
+  176708,
+  2048,
+  178671,
+  112573,
+  287867,
+  162328,
+  497663,
+  95170,
+  50979,
+  193861,
+  50987,
+  30368,
+  136257,
+  31830,
+  46549,
+  15119,
+  169876,
+  23788,
+  17462,
+  249887,
+  57377,
+  1949,
+  35448,
+  14791,
+  43769,
+  210091,
+  3783,
+  34612,
+  282103,
+  88380,
+  245190,
+  5457,
+  20491,
+  98908,
+  11402,
+  86899,
+  117916,
+  16028,
+  162584,
+  60644,
+  320177,
+  156096,
+  31065,
+  55876,
+  22e3,
+  77655,
+  9992,
+  23397,
+  13757,
+  317623,
+  63978,
+  215255,
+  2443,
+  17648,
+  93231,
+  27388,
+  104529,
+  93807,
+  55505,
+  140477,
+  12046,
+  112040,
+  70887,
+  40152,
+  94365,
+  112353,
+  25063,
+  114679,
+  266061,
+  71248,
+  119555,
+  15589,
+  2244,
+  617,
+  14129,
+  211431,
+  70110,
+  100652,
+  7777,
+  4383,
+  85911,
+  89221,
+  21010,
+  120615,
+  58357,
+  86405,
+  37554,
+  41647,
+  18,
+  15143,
+  69662,
+  60491,
+  14714,
+  186134,
+  148344,
+  42347,
+  5410,
+  168175,
+  44535,
+  42449,
+  343894,
+  129417,
+  99682,
+  20659,
+  27272,
+  140483,
+  63455,
+  222159,
+  17536,
+  13722,
+  42637,
+  62324,
+  11976,
+  114691,
+  148109,
+  2283,
+  32057,
+  182393,
+  4295,
+  147364,
+  33705,
+  2075,
+  44303,
+  30274,
+  28331,
+  63740,
+  69740,
+  29148,
+  10346,
+  44862,
+  33716,
+  73937,
+  153333,
+  12930,
+  38784,
+  247159,
+  2515,
+  41053,
+  20256,
+  83368,
+  256189,
+  54639,
+  115240,
+  5096,
+  24661,
+  175419,
+  153552,
+  26516,
+  141,
+  138176,
+  63885,
+  34115,
+  47222,
+  55709,
+  2765,
+  28479,
+  38875,
+  236608,
+  12229,
+  22921,
+  77291,
+  54426,
+  45388,
+  2860,
+  57787,
+  114579,
+  295139,
+  105782,
+  17826,
+  71066,
+  19119,
+  54364,
+  69385,
+  16568,
+  12323,
+  28057,
+  33346,
+  34919,
+  124763,
+  155533,
+  101386,
+  31644,
+  8627,
+  49001,
+  303600,
+  29868,
+  63213,
+  9103,
+  77280,
+  71333,
+  9696,
+  138789,
+  37059,
+  24823,
+  5057,
+  21352,
+  32368,
+  114208,
+  56803,
+  19424,
+  10445,
+  58514,
+  8661,
+  209508,
+  26187,
+  171838,
+  10460,
+  63454,
+  14016,
+  122504,
+  41328,
+  21329,
+  46618,
+  32493,
+  38225,
+  7855,
+  31763,
+  7945,
+  29876,
+  8734,
+  6438,
+  24205,
+  97490,
+  139977,
+  130740,
+  47323,
+  33195,
+  85390,
+  57194,
+  13813,
+  60600,
+  21313,
+  96251,
+  7699,
+  27584,
+  170521,
+  139271,
+  1363,
+  4402,
+  336738,
+  129223,
+  84983,
+  69150,
+  13147,
+  3590,
+  163929,
+  207225,
+  155260,
+  55916,
+  20288,
+  4503,
+  8398,
+  98490,
+  11773,
+  27512,
+  37113,
+  84976,
+  86558,
+  28365,
+  11756,
+  116005,
+  182148,
+  13733,
+  115313,
+  47644,
+  67208,
+  85069,
+  9347,
+  14995,
+  226141,
+  14704,
+  101835,
+  41159,
+  35314,
+  13113,
+  63526,
+  214039,
+  29978,
+  50446,
+  83339,
+  17440,
+  129441,
+  72522,
+  118641,
+  97816,
+  24907,
+  73844,
+  15717,
+  118884,
+  167255,
+  96509,
+  162793,
+  30847,
+  36849,
+  51297,
+  78974,
+  77793,
+  10427,
+  1873,
+  2972,
+  9999,
+  35074,
+  28190,
+  64297,
+  146836,
+  46298,
+  60038,
+  163007,
+  108919,
+  61219,
+  2403,
+  75022,
+  127339,
+  4233,
+  110389,
+  69022,
+  9833,
+  128097,
+  88016,
+  79390,
+  222936,
+  22570,
+  94657,
+  28462,
+  56956,
+  38803,
+  81536,
+  30474,
+  152794,
+  19566,
+  16481,
+  147408,
+  74574,
+  81895,
+  20731,
+  1918,
+  1366,
+  76367,
+  187321,
+  54494,
+  24366,
+  21690,
+  61696,
+  33283,
+  107477,
+  77499,
+  31112,
+  414383,
+  74362,
+  18463,
+  218441,
+  120929,
+  59848,
+  258629,
+  201924,
+  69269,
+  454,
+  19989,
+  13054,
+  59894,
+  3623,
+  58908,
+  20681,
+  35723,
+  78523,
+  102680,
+  38988,
+  184112,
+  108087,
+  50944,
+  132704,
+  52966,
+  21699,
+  18860,
+  96349,
+  201411,
+  82697,
+  85395,
+  95658,
+  5093,
+  6427,
+  177894,
+  44191,
+  32755,
+  26961,
+  155739,
+  6249,
+  31310,
+  81030,
+  26574,
+  84311,
+  120155,
+  86730,
+  113535,
+  7424,
+  48888,
+  13516,
+  45747,
+  98098,
+  20077,
+  183995,
+  81945,
+  43210,
+  26704,
+  40420,
+  75831,
+  45648,
+  11180,
+  6855,
+  57927,
+  65528,
+  124096,
+  34851,
+  2598,
+  156633,
+  107572,
+  127352,
+  38169,
+  123845,
+  60142,
+  62722,
+  105584,
+  232364,
+  23211,
+  68120,
+  1601,
+  22169,
+  89299,
+  747,
+  258039,
+  80572,
+  7258,
+  152249,
+  11862,
+  101204,
+  8834,
+  121434,
+  33761,
+  19175,
+  133142,
+  46343,
+  40178,
+  48723,
+  3589,
+  41977,
+  30210,
+  38868,
+  62257,
+  10087,
+  82658,
+  87827,
+  90646,
+  16415,
+  47552,
+  351723,
+  28298,
+  72225,
+  91146,
+  272760,
+  1701,
+  11295,
+  1652,
+  109651,
+  300747,
+  51863,
+  198800,
+  29446,
+  11794,
+  32345,
+  37538,
+  22356,
+  33102,
+  37590,
+  113544,
+  37970,
+  11478,
+  179743,
+  25454,
+  103417,
+  59905,
+  221970,
+  105196,
+  145604,
+  7817,
+  164809,
+  102360,
+  16974,
+  75840,
+  255333,
+  56902,
+  6659,
+  1954,
+  645,
+  59400,
+  67769,
+  7689,
+  18675,
+  5215,
+  13793,
+  20536,
+  27852,
+  3387,
+  29523,
+  259718,
+  16860,
+  94625,
+  43143,
+  29245,
+  15848,
+  233581,
+  22685,
+  63631,
+  78557,
+  22836,
+  133302,
+  84513,
+  1348,
+  51826,
+  47129,
+  98836,
+  58284,
+  1830,
+  1749,
+  94642,
+  10933,
+  6145,
+  12506,
+  10975,
+  13879,
+  103781,
+  144434,
+  10268,
+  28409,
+  32346,
+  52968,
+  121567,
+  107374,
+  77268,
+  23686,
+  35097,
+  10501,
+  155275,
+  15303,
+  47136,
+  21102,
+  168741,
+  55332,
+  90385,
+  15996,
+  84817,
+  681,
+  137803,
+  25054,
+  142275,
+  6163,
+  38175,
+  8056,
+  124296,
+  240642,
+  65621,
+  4934,
+  178205,
+  16101,
+  62803,
+  60964,
+  18230,
+  100622,
+  76465,
+  44689,
+  14545,
+  9543,
+  47514,
+  16852,
+  93380,
+  28048,
+  12047,
+  107106,
+  37575,
+  101485,
+  77047,
+  57326,
+  34819,
+  96137,
+  76916,
+  6469,
+  46264,
+  115983,
+  75768,
+  87668,
+  69942,
+  13027,
+  165,
+  8373,
+  114231,
+  26434,
+  52844,
+  42799,
+  182044,
+  23580,
+  146254,
+  38081,
+  43236,
+  33883,
+  146220,
+  382894,
+  14606,
+  46035,
+  36481,
+  166621,
+  35417,
+  95382,
+  2957,
+  59384,
+  60428,
+  36358,
+  66343,
+  75378,
+  22267,
+  22950,
+  83528,
+  17577,
+  56474,
+  25285,
+  4619,
+  179691,
+  75355,
+  95836,
+  53295,
+  34588,
+  171410,
+  4487,
+  14679,
+  84208,
+  44015,
+  18562,
+  109133,
+  54101,
+  11531,
+  86052,
+  174479,
+  303157,
+  28095,
+  9953,
+  35642,
+  14564,
+  39802,
+  16145,
+  77606,
+  117406,
+  53038,
+  121117,
+  53624,
+  22062,
+  1212,
+  7632,
+  127157,
+  237292,
+  189087,
+  10478,
+  127345,
+  102515,
+  181997,
+  86752,
+  87623,
+  10966,
+  121602,
+  68783,
+  68681,
+  83042,
+  114380,
+  138349,
+  191305,
+  67176,
+  50085,
+  39016,
+  1427,
+  42384,
+  1412,
+  67118,
+  122616,
+  72389,
+  25260,
+  2237,
+  13576,
+  137346,
+  19938,
+  20304,
+  2191,
+  68759,
+  5373,
+  61364,
+  238507,
+  75814,
+  23931,
+  69565,
+  38993,
+  131741,
+  38364,
+  12528,
+  87762,
+  5679,
+  129853,
+  5310,
+  186831,
+  32653,
+  90338,
+  260176,
+  389531,
+  108118,
+  26843,
+  43985,
+  50175,
+  30563,
+  25106,
+  56965,
+  18130,
+  140428,
+  4542,
+  165503,
+  117991,
+  24219,
+  229605,
+  1819,
+  129663,
+  1240,
+  3797,
+  76093,
+  18398,
+  71339,
+  51919,
+  93043,
+  27175,
+  47060,
+  216257,
+  6483,
+  35051,
+  1217,
+  16512,
+  80798,
+  129064,
+  13225,
+  69339,
+  8548,
+  237079,
+  72298,
+  2575,
+  34280,
+  51379,
+  117910,
+  55671,
+  53345,
+  247552,
+  29486,
+  39328,
+  140821,
+  34681,
+  57045,
+  60177,
+  5004,
+  90269,
+  78522,
+  2479,
+  322607,
+  48474,
+  61296,
+  13057,
+  31558,
+  4678,
+  59271,
+  6699,
+  27044,
+  31988,
+  35944,
+  12503,
+  83480,
+  4389,
+  136508,
+  3781,
+  114121,
+  70279,
+  4488,
+  155829,
+  42214,
+  2898,
+  68191,
+  75695,
+  305850,
+  45041,
+  74344,
+  106509,
+  30087,
+  17429,
+  93292,
+  12477,
+  290,
+  23080,
+  114802,
+  35714,
+  18751,
+  26554,
+  105424,
+  17775,
+  2144,
+  2412,
+  100610,
+  65192,
+  113975,
+  52975,
+  180272,
+  135050,
+  129815,
+  76238,
+  106483,
+  21440,
+  63186,
+  4260,
+  46189,
+  9711,
+  28249,
+  4169,
+  23429,
+  23390,
+  8324,
+  141585,
+  63809,
+  67668,
+  38457,
+  38063,
+  39226,
+  59972,
+  1189,
+  203916,
+  62368,
+  14403,
+  16949,
+  61767,
+  85801,
+  1739,
+  40147,
+  35049,
+  76757,
+  33124,
+  62102,
+  15780,
+  103593,
+  103009,
+  53484,
+  22952,
+  67973,
+  114645,
+  6566,
+  5245,
+  50462,
+  7601,
+  8288,
+  3513,
+  194571,
+  80276,
+  1908,
+  54592,
+  5124,
+  58571,
+  2513,
+  6800,
+  273997,
+  193904,
+  1119,
+  17991,
+  117245,
+  2508,
+  129156,
+  82366,
+  26278,
+  71465,
+  63341,
+  56943,
+  39662,
+  106116,
+  94966,
+  156875,
+  9736,
+  2204,
+  122308,
+  94418,
+  27134,
+  1280,
+  24539,
+  49022,
+  45314,
+  3764,
+  50904,
+  46424,
+  30699,
+  28087,
+  293839,
+  9400,
+  33646,
+  40165,
+  822,
+  147499,
+  50263,
+  116179,
+  29085,
+  11863,
+  31314,
+  5578,
+  17797,
+  5104,
+  12454,
+  1604,
+  15342,
+  219206,
+  10232,
+  67800,
+  94261,
+  25872,
+  13565,
+  90339,
+  78971,
+  75377,
+  26649,
+  41184,
+  47695,
+  11514,
+  35369,
+  20767,
+  14227,
+  41953,
+  309396,
+  148270,
+  147938,
+  33074,
+  14453,
+  27499,
+  109019,
+  39018,
+  25738,
+  240196,
+  158931,
+  52820,
+  8612,
+  95853,
+  21524,
+  137010,
+  84901,
+  70869,
+  70021,
+  116794,
+  48404,
+  38771,
+  6732,
+  1070,
+  70990,
+  187297,
+  49140,
+  5238,
+  576,
+  3564,
+  253975,
+  16027,
+  16483,
+  2811,
+  37775,
+  19034,
+  25259,
+  4053,
+  2e3,
+  70083,
+  95774,
+  19713,
+  33431,
+  92703,
+  91314,
+  42381,
+  288770,
+  48194,
+  95985,
+  3991,
+  77418,
+  13406,
+  241328,
+  245086,
+  56533,
+  35275,
+  62725,
+  9246,
+  51924,
+  70181,
+  95331,
+  16163,
+  31410,
+  79016,
+  39312,
+  120878,
+  119371,
+  275987,
+  80124,
+  27712,
+  9186,
+  220,
+  23598,
+  146167,
+  85209,
+  68238,
+  282190,
+  57048,
+  31273,
+  30555,
+  80913,
+  17594,
+  75779,
+  59160,
+  135002,
+  101219,
+  189377,
+  29225,
+  96735,
+  60126,
+  62522,
+  104e3,
+  27620,
+  86814,
+  17240,
+  147533,
+  11001,
+  5425,
+  43682,
+  410,
+  49460,
+  87270,
+  69480,
+  46315,
+  59448,
+  1816,
+  76201,
+  9431,
+  11788,
+  87960,
+  29063,
+  65539,
+  47347,
+  11678,
+  33846,
+  7008,
+  196704,
+  9895,
+  6753,
+  8633,
+  120892,
+  59970,
+  572824,
+  115934,
+  6646,
+  202559,
+  892,
+  48351,
+  37611,
+  251282,
+  57823,
+  67263,
+  57750,
+  26527,
+  34485,
+  90747,
+  7685,
+  88370,
+  6144,
+  64182,
+  1709,
+  41969,
+  21458,
+  62327,
+  181657,
+  49247,
+  225330,
+  122600,
+  114574,
+  107124,
+  85361,
+  111833,
+  63243,
+  71420,
+  15655,
+  191178,
+  72430,
+  18063,
+  51425,
+  54002,
+  12364,
+  53225,
+  86557,
+  18193,
+  97580,
+  41232,
+  138398,
+  67821,
+  128724,
+  8944,
+  233212,
+  101353,
+  52099,
+  42127,
+  14006,
+  120107,
+  32789,
+  32132,
+  3498,
+  18123,
+  33758,
+  56058,
+  5779,
+  128760,
+  59888,
+  98869,
+  18445,
+  84702,
+  51911,
+  13234,
+  218379,
+  20093,
+  39031,
+  8074,
+  70195,
+  20708,
+  23462,
+  24355,
+  131384,
+  60189,
+  26390,
+  10403,
+  41060,
+  7140,
+  10781,
+  49410,
+  42261,
+  87202,
+  82566,
+  41663,
+  43105,
+  60276,
+  2768,
+  5733,
+  74176,
+  28329,
+  2297,
+  145430,
+  131632,
+  83615,
+  122915,
+  105441,
+  655,
+  224102,
+  5284,
+  136426,
+  67763,
+  16294,
+  188511,
+  32538,
+  61049,
+  27893,
+  3394,
+  13951,
+  159099,
+  28542,
+  17930,
+  145360,
+  9492,
+  190122,
+  32285,
+  78855,
+  26440,
+  13570,
+  58648,
+  73908,
+  4239,
+  124561,
+  2444,
+  74172,
+  53131,
+  11468,
+  10794,
+  73566,
+  11623,
+  35343,
+  64710,
+  30481,
+  4163,
+  10328,
+  38309,
+  29901,
+  10538,
+  154377,
+  76132,
+  92405,
+  24839,
+  11679,
+  3465,
+  13449,
+  11637,
+  7824,
+  2337,
+  57754,
+  1260,
+  14458,
+  41118,
+  19878,
+  38661,
+  13416,
+  159180,
+  37074,
+  163164,
+  54137,
+  28627,
+  52134,
+  184900,
+  8520,
+  40385,
+  29546,
+  30502,
+  22386,
+  66527,
+  107458,
+  6850,
+  24022,
+  47983,
+  30603,
+  35083,
+  8934,
+  304066,
+  39500,
+  9,
+  28261,
+  33026,
+  77251,
+  9374,
+  44833,
+  116312,
+  34990,
+  29236,
+  63563,
+  125639,
+  135405,
+  165398,
+  159055,
+  55690,
+  88141,
+  69643,
+  236964,
+  31983,
+  25572,
+  20436,
+  36746,
+  60896,
+  31850,
+  16179,
+  11828,
+  5888,
+  3043,
+  66368,
+  9750,
+  31167,
+  7915,
+  53111,
+  36430,
+  1333,
+  64344,
+  93659,
+  20061,
+  60596,
+  180191,
+  51630,
+  6792,
+  30244,
+  43509,
+  101058,
+  22409,
+  420,
+  44210,
+  109783,
+  43223,
+  27030,
+  72477,
+  72831,
+  32679,
+  29235,
+  7675,
+  47556,
+  12258,
+  39907,
+  149412,
+  84926,
+  118247,
+  24692,
+  71717,
+  105038,
+  86009,
+  45941,
+  41189,
+  89453,
+  29856,
+  52543,
+  30627,
+  226798,
+  67303,
+  59230,
+  67415,
+  34408,
+  1367,
+  99685,
+  16867,
+  128419,
+  52147,
+  4111,
+  125381,
+  117881,
+  16173,
+  44093,
+  102224,
+  31575,
+  23234,
+  24870,
+  83790,
+  127407,
+  239098,
+  3200,
+  994,
+  1255,
+  100903,
+  242275,
+  117266,
+  55116,
+  38205,
+  16140,
+  29662,
+  11307,
+  40414,
+  208793,
+  123355,
+  56470,
+  4862,
+  75600,
+  30119,
+  58218,
+  70828,
+  24075,
+  26974,
+  7802,
+  192353,
+  4851,
+  5475,
+  78720,
+  66596,
+  3409,
+  28573,
+  64396,
+  30381,
+  30690,
+  59859,
+  88256,
+  5406,
+  99945,
+  103064,
+  34463,
+  37727,
+  24238,
+  86643,
+  60088,
+  4057,
+  23741,
+  5967,
+  162904,
+  38240,
+  28356,
+  93858,
+  25510,
+  122879,
+  6897,
+  3278,
+  7057,
+  11971,
+  4400,
+  35461,
+  211413,
+  21395,
+  59615,
+  39471,
+  87233,
+  55795,
+  128426,
+  3051,
+  22470,
+  41950,
+  14705,
+  3974,
+  180108,
+  80476,
+  78442,
+  204996,
+  91987,
+  15634,
+  67610,
+  139015,
+  142373,
+  35611,
+  51134,
+  10387,
+  4353,
+  153456,
+  57749,
+  181039,
+  14183,
+  68447,
+  151532,
+  21107,
+  36452,
+  20551,
+  3186,
+  46247,
+  46383,
+  129666,
+  88736,
+  140662,
+  146243,
+  2066,
+  8360,
+  7978,
+  64818,
+  106963,
+  17896,
+  47801,
+  10723,
+  114821,
+  223295,
+  74192,
+  3293,
+  3393,
+  16987,
+  74064,
+  11277,
+  91622,
+  4270,
+  29828,
+  27951,
+  387869,
+  103235,
+  1374,
+  61988,
+  120083,
+  477,
+  145892,
+  128378,
+  11779,
+  211263,
+  61354,
+  18221,
+  17869,
+  46530,
+  83061,
+  108538,
+  157981,
+  90608,
+  67199,
+  95080,
+  49064,
+  195814,
+  12302,
+  66307,
+  10348,
+  231346,
+  160732,
+  112859,
+  63633,
+  146558,
+  21271,
+  31037,
+  198802,
+  47622,
+  12862,
+  95710,
+  3910,
+  77850,
+  73961,
+  85585,
+  34752,
+  61e3,
+  4082,
+  24595,
+  103679,
+  71107,
+  8208,
+  79568,
+  150019,
+  16615,
+  24961,
+  139857,
+  32664,
+  197366,
+  4559,
+  54735,
+  32696,
+  4126,
+  162019,
+  75698,
+  13916,
+  70108,
+  159638,
+  19834,
+  9349,
+  24675,
+  175560,
+  49643,
+  18206,
+  52459,
+  27992,
+  10809,
+  88865,
+  401975,
+  133172,
+  29e3,
+  34558,
+  30915,
+  3658,
+  25834,
+  42430,
+  36562,
+  125265,
+  18182,
+  10155,
+  40149,
+  97082,
+  208980,
+  19575,
+  60853,
+  90529,
+  66545,
+  9600,
+  789,
+  46420,
+  2317,
+  88593,
+  55595,
+  98980,
+  115302,
+  5742,
+  169155,
+  1073,
+  177901,
+  3472,
+  11189,
+  63711,
+  78643,
+  65472,
+  50459,
+  127979,
+  93,
+  42202,
+  67053,
+  21720,
+  157650,
+  11145,
+  141378,
+  42033,
+  22824,
+  85705,
+  79114,
+  35584,
+  15974,
+  1510,
+  54172,
+  28562,
+  12451,
+  104226,
+  19190,
+  97151,
+  73024,
+  20948,
+  5151,
+  81741,
+  21499,
+  29006,
+  84183,
+  198074,
+  54003,
+  45120,
+  170125,
+  26240,
+  35177,
+  28389,
+  64863,
+  79974,
+  60778,
+  176915,
+  232183,
+  45342,
+  2038,
+  80253,
+  41564,
+  40703,
+  32689,
+  5430,
+  100689,
+  5366,
+  23007,
+  134279,
+  14266,
+  26712,
+  73993,
+  24934,
+  64242,
+  52113,
+  102887,
+  61801,
+  46415,
+  201049,
+  54251,
+  62133,
+  122757,
+  164883,
+  30815,
+  139966,
+  2319,
+  30842,
+  766,
+  13362,
+  10287,
+  134518,
+  86111,
+  81665,
+  82440,
+  28333,
+  43019,
+  18963,
+  8804,
+  161944,
+  23439,
+  102144,
+  101145,
+  80029,
+  39052,
+  248708,
+  30350,
+  117340,
+  11878,
+  128467,
+  974,
+  138625,
+  63961,
+  5237,
+  74778,
+  61834,
+  67040,
+  43814,
+  13690,
+  65947,
+  33809,
+  232476,
+  115258,
+  181745,
+  28824,
+  94013,
+  9510,
+  10246,
+  93722,
+  81976,
+  7217,
+  114383,
+  3493,
+  16014,
+  69045,
+  72692,
+  12145,
+  80981,
+  9507,
+  6692,
+  1620,
+  60820,
+  330444,
+  35474,
+  33962,
+  4797,
+  7053,
+  295463,
+  46445,
+  27026,
+  12491,
+  77988,
+  49524,
+  35675,
+  90947,
+  29114,
+  166705,
+  101385,
+  133782,
+  32704,
+  6186,
+  84595,
+  176031,
+  185623,
+  45966,
+  151302,
+  63069,
+  1699,
+  107491,
+  947,
+  15458,
+  74452,
+  196212,
+  6046,
+  10498,
+  12163,
+  10239,
+  35191,
+  243951,
+  9277,
+  9090,
+  29539,
+  54460,
+  22820,
+  26514,
+  112549,
+  60372,
+  51753,
+  48756,
+  21812,
+  70861,
+  260326,
+  41,
+  44222,
+  10441,
+  16961,
+  48148,
+  138771,
+  216194,
+  5914,
+  52153,
+  53400,
+  212036,
+  56519,
+  26245,
+  10117,
+  45888,
+  15294,
+  138019,
+  90913,
+  26368,
+  43842,
+  42111,
+  23348,
+  6082,
+  194845,
+  161089,
+  156206,
+  51546,
+  11647,
+  30759,
+  302912,
+  262094,
+  8635,
+  78876,
+  26535,
+  35283,
+  54183,
+  31183,
+  85484,
+  147873,
+  12989,
+  5197,
+  6356,
+  72894,
+  65347,
+  20150,
+  27370,
+  73787,
+  1493,
+  45918,
+  12366,
+  190217,
+  20724,
+  13858,
+  10981,
+  67449,
+  81213,
+  7553,
+  14115,
+  72242,
+  271517,
+  11842,
+  48310,
+  88743,
+  143726,
+  22177,
+  3290,
+  243231,
+  58452,
+  62937,
+  12592,
+  1654,
+  40066,
+  33477,
+  13751,
+  9921,
+  128442,
+  15868,
+  7106,
+  75236,
+  83773,
+  10775,
+  36938,
+  10482,
+  170465,
+  17368,
+  17469,
+  161508,
+  32752,
+  98340,
+  800,
+  19824,
+  264456,
+  3901,
+  87319,
+  2867,
+  26782,
+  9630,
+  113102,
+  185815,
+  24197,
+  44584,
+  86366,
+  40224,
+  3636,
+  140916,
+  31731,
+  267731,
+  9567,
+  53678,
+  72984,
+  29389,
+  27963,
+  17106,
+  50282,
+  284911,
+  60170,
+  8322,
+  12608,
+  23374,
+  89652,
+  5268,
+  39044,
+  229766,
+  8869,
+  151350,
+  31436,
+  177342,
+  12269,
+  183212,
+  120418,
+  116270,
+  2843,
+  78888,
+  69192,
+  7865,
+  184099,
+  1086,
+  129897,
+  18383,
+  70508,
+  20242,
+  18508,
+  229924,
+  124569,
+  35749,
+  50589,
+  55626,
+  9884,
+  83115,
+  40971,
+  30671,
+  18135,
+  14452,
+  38861,
+  17844,
+  201826,
+  5549,
+  26413,
+  17189,
+  13561,
+  38539,
+  10679,
+  143331,
+  3314,
+  36785,
+  171194,
+  49685,
+  187713,
+  67506,
+  4618,
+  104039,
+  17060,
+  195080,
+  50648,
+  33159,
+  19238,
+  67559,
+  134840,
+  28599,
+  157523,
+  17130,
+  38064,
+  117398,
+  94355,
+  31918,
+  13575,
+  34538,
+  40326,
+  13997,
+  3494,
+  348283,
+  62481,
+  26862,
+  3603,
+  104426,
+  244363,
+  153709,
+  112487,
+  304612,
+  199674,
+  41239,
+  35545,
+  54869,
+  293005,
+  28223,
+  26277,
+  26899,
+  4533,
+  18518,
+  15492,
+  38587,
+  80488,
+  70485,
+  160395,
+  263,
+  60162,
+  11382,
+  222152,
+  4696,
+  250751,
+  51921,
+  182609,
+  10707,
+  48463,
+  46243,
+  1227,
+  49111,
+  111564,
+  46502,
+  33342,
+  56846,
+  68541,
+  63559,
+  858,
+  139927,
+  16654,
+  229375,
+  76759,
+  26478,
+  33205,
+  95828,
+  23399,
+  92945,
+  2637,
+  35630,
+  28470,
+  143992,
+  50214,
+  14174,
+  21456,
+  166191,
+  65665,
+  1711,
+  21594,
+  78019,
+  97599,
+  111701,
+  36,
+  147151,
+  110246,
+  189022,
+  43021,
+  30397,
+  40757,
+  131935,
+  42065,
+  73335,
+  48039,
+  26596,
+  28984,
+  15102,
+  2361,
+  7421,
+  202167,
+  69744,
+  43766,
+  52826,
+  3642,
+  83304,
+  33873,
+  75140,
+  63169,
+  192389,
+  36551,
+  92748,
+  13039,
+  123959,
+  233220,
+  21738,
+  84447,
+  77230,
+  20228,
+  187852,
+  19095,
+  25799,
+  92136,
+  108774,
+  29237,
+  53947,
+  2299,
+  118106,
+  2687,
+  8830,
+  42331,
+  202924,
+  33667,
+  2023,
+  73763,
+  30704,
+  19363,
+  19779,
+  16737,
+  35629,
+  48081,
+  24068,
+  101013,
+  162338,
+  291912,
+  13749,
+  24745,
+  328289,
+  167679,
+  70086,
+  48299,
+  23306,
+  16732,
+  17801,
+  43322,
+  54589,
+  3586,
+  63653,
+  43624,
+  53474,
+  925,
+  109177,
+  251316,
+  43805,
+  13082,
+  19511,
+  86565,
+  142182,
+  92461,
+  17117,
+  101033,
+  103319,
+  64589,
+  4022,
+  4351,
+  235897,
+  5352,
+  82705,
+  107142,
+  46391,
+  156084,
+  5860,
+  61365,
+  10558,
+  13045,
+  7717,
+  18357,
+  33922,
+  12590,
+  33065,
+  6928,
+  46993,
+  783,
+  46937,
+  67846,
+  8952,
+  26295,
+  6107,
+  119656,
+  18799,
+  17458,
+  50747,
+  4229,
+  179559,
+  112727,
+  118080,
+  20683,
+  41464,
+  125468,
+  51560,
+  49749,
+  44231,
+  7359,
+  35339,
+  62988,
+  136487,
+  67015,
+  5208,
+  29150,
+  24956,
+  105186,
+  48858,
+  6143,
+  18097,
+  6972,
+  16404,
+  73489,
+  58742,
+  97196,
+  36357,
+  164616,
+  5834,
+  32267,
+  13746,
+  147733,
+  15113,
+  132091,
+  34127,
+  106298,
+  39729,
+  106426,
+  22294,
+  9780,
+  15602,
+  36213,
+  71502,
+  42808,
+  66802,
+  599,
+  60755,
+  5851,
+  39120,
+  67363,
+  108623,
+  126368,
+  72770,
+  91263,
+  32486,
+  30596,
+  151717,
+  7951,
+  52002,
+  43103,
+  11768,
+  68942,
+  40901,
+  39344,
+  24037,
+  127500,
+  116890,
+  48403,
+  16926,
+  86750,
+  17745,
+  48648,
+  159545,
+  34460,
+  58419,
+  5634,
+  114317,
+  67865,
+  31462,
+  23352,
+  24010,
+  98185,
+  125708,
+  69686,
+  68337,
+  13610,
+  26271,
+  70691,
+  2980,
+  4768,
+  27225,
+  102402,
+  75453,
+  28106,
+  8104,
+  6931,
+  1176,
+  6274,
+  6475,
+  112635,
+  22498,
+  6176,
+  238686,
+  26832,
+  28893,
+  90319,
+  14441,
+  15682,
+  15087,
+  39517,
+  45270,
+  109134,
+  104440,
+  45965,
+  47645,
+  81772,
+  7876,
+  52683,
+  87720,
+  12898,
+  4505,
+  185665,
+  2769,
+  113401,
+  15664,
+  57592,
+  105229,
+  137381,
+  97059,
+  119268,
+  6876,
+  43309,
+  33886,
+  128363,
+  35476,
+  144249,
+  67013,
+  143587,
+  83367,
+  25703,
+  91436,
+  59347,
+  53236,
+  2289,
+  16519,
+  19844,
+  46309,
+  58558,
+  99834,
+  23313,
+  218816,
+  231303,
+  36388,
+  51333,
+  183535,
+  109792,
+  139277,
+  54306,
+  90139,
+  18235,
+  8275,
+  32710,
+  37677,
+  82464,
+  86025,
+  92204,
+  88842,
+  117723,
+  37570,
+  128723,
+  234242,
+  76350,
+  73795,
+  34896,
+  148247,
+  58424,
+  11105,
+  11744,
+  45746,
+  63372,
+  17118,
+  49772,
+  199520,
+  81902,
+  38004,
+  22911,
+  33752,
+  3125,
+  1995,
+  53792,
+  4689,
+  26909,
+  108150,
+  146062,
+  69674,
+  41811,
+  161444,
+  84855,
+  8999,
+  28561,
+  16731,
+  93937,
+  3189,
+  21967,
+  24890,
+  22943,
+  1356,
+  145300,
+  51569,
+  28802,
+  517,
+  118679,
+  31703,
+  40607,
+  48098,
+  108854,
+  25003,
+  10233,
+  73969,
+  177495,
+  5248,
+  24516,
+  215347,
+  146192,
+  48712,
+  60626,
+  69188,
+  40735,
+  5866,
+  586,
+  101541,
+  6509,
+  47590,
+  52129,
+  5969,
+  222045,
+  110933,
+  25733,
+  24223,
+  65339,
+  62812,
+  2414,
+  155418,
+  35819,
+  16022,
+  78423,
+  43138,
+  20995,
+  128255,
+  240673,
+  46745,
+  236093,
+  72176,
+  57085,
+  97841,
+  61248,
+  107,
+  36068,
+  193177,
+  105427,
+  55726,
+  215229,
+  20446,
+  47228,
+  100420,
+  87091,
+  14429,
+  121708,
+  23605,
+  21157,
+  187721,
+  21880,
+  2997,
+  203976,
+  99166,
+  95068,
+  25877,
+  7724,
+  98925,
+  83401,
+  4829,
+  13182,
+  18229,
+  13718,
+  239662,
+  38653,
+  116505,
+  153497,
+  30589,
+  89029,
+  38962,
+  181302,
+  43853,
+  78872,
+  180301,
+  4786,
+  248240,
+  7401,
+  106136,
+  112590,
+  77745,
+  19731,
+  60880,
+  77789,
+  125748,
+  135487,
+  5975,
+  48627,
+  34084,
+  12419,
+  215770,
+  47557,
+  254582,
+  10364,
+  106495,
+  21856,
+  67539,
+  88981,
+  38805,
+  21428,
+  48732,
+  42316,
+  12149,
+  16078,
+  52808,
+  25327,
+  51322,
+  33850,
+  51147,
+  12253,
+  122354,
+  46077,
+  56483,
+  254553,
+  115417,
+  81834,
+  150991,
+  94662,
+  86668,
+  7381,
+  12841,
+  100650,
+  18218,
+  15741,
+  22372,
+  68294,
+  50705,
+  15535,
+  84660,
+  61887,
+  22553,
+  72299,
+  31361,
+  24824,
+  17743,
+  46820,
+  64288,
+  31582,
+  77006,
+  111674,
+  116384,
+  30760,
+  80920,
+  86149,
+  77192,
+  51979,
+  79691,
+  60342,
+  122805,
+  103800,
+  240873,
+  160744,
+  233114,
+  78962,
+  54920,
+  8608,
+  3484,
+  316104,
+  72548,
+  24337,
+  5088,
+  230040,
+  21926,
+  10172,
+  36838,
+  26,
+  86221,
+  83458,
+  102176,
+  12062,
+  17571,
+  41929,
+  41170,
+  28428,
+  68239,
+  41750,
+  103930,
+  2634,
+  18313,
+  53019,
+  34825,
+  97837,
+  63115,
+  24606,
+  73157,
+  152474,
+  14715,
+  91439,
+  37033,
+  109806,
+  140259,
+  30668,
+  174760,
+  380,
+  135597,
+  95673,
+  136073,
+  65073,
+  134249,
+  13829,
+  17279,
+  122305,
+  4420,
+  46444,
+  10237,
+  64848,
+  203623,
+  70728,
+  10349,
+  182885,
+  65075,
+  24519,
+  25783,
+  40318,
+  34139,
+  22222,
+  63394,
+  55266,
+  102764,
+  41422,
+  20126,
+  65100,
+  90408,
+  53640,
+  35128,
+  48932,
+  11192,
+  38935,
+  96839,
+  34782,
+  39492,
+  19396,
+  41332,
+  6250,
+  5511,
+  19492,
+  51304,
+  25936,
+  104466,
+  54099,
+  73771,
+  86115,
+  5080,
+  7669,
+  30891,
+  111700,
+  13931,
+  25276,
+  72289,
+  135447,
+  14820,
+  258641,
+  25265,
+  31005,
+  281179,
+  75286,
+  393,
+  95359,
+  14623,
+  13584,
+  6680,
+  101227,
+  80173,
+  44933,
+  76666,
+  54542,
+  13244,
+  39348,
+  458,
+  25379,
+  109451,
+  134348,
+  81143,
+  6959,
+  65554,
+  12027,
+  51311,
+  8716,
+  57589,
+  140731,
+  28467,
+  23316,
+  17272,
+  30458,
+  25980,
+  55229,
+  77197,
+  83798,
+  28302,
+  114784,
+  7428,
+  34548,
+  26241,
+  14712,
+  39336,
+  103304,
+  18928,
+  54080,
+  12870,
+  334,
+  87722,
+  15208,
+  16895,
+  142098,
+  114262,
+  39820,
+  83913,
+  57817,
+  28682,
+  7721,
+  14900,
+  108672,
+  11250,
+  62246,
+  42849,
+  415188,
+  1724,
+  26555,
+  24549,
+  25505,
+  26443,
+  107450,
+  145899,
+  61035,
+  43528,
+  6901,
+  60726,
+  65906,
+  267741,
+  21338,
+  147590,
+  42079,
+  18924,
+  73017,
+  135236,
+  15393,
+  5206,
+  4026,
+  84185,
+  1531,
+  5988,
+  113890,
+  82647,
+  303391,
+  7386,
+  69844,
+  71611,
+  189865,
+  76523,
+  31877,
+  13315,
+  19314,
+  198575,
+  32821,
+  1928,
+  67641,
+  25913,
+  104475,
+  103489,
+  3297,
+  70391,
+  18406,
+  15446,
+  113347,
+  19295,
+  93790,
+  27856,
+  1792,
+  167471,
+  116449,
+  8541,
+  4408,
+  41757,
+  63233,
+  25765,
+  86680,
+  64501,
+  27034,
+  24816,
+  34975,
+  6079,
+  4486,
+  49693,
+  36229,
+  16917,
+  21581,
+  62426,
+  27862,
+  11612,
+  54284,
+  35702,
+  194034,
+  355,
+  24277,
+  48262,
+  87411,
+  70504,
+  310164,
+  118018,
+  12516,
+  47559,
+  43502,
+  57433,
+  107139,
+  9290,
+  66533,
+  80863,
+  14634,
+  34312,
+  91725,
+  28606,
+  21342,
+  67241,
+  72355,
+  43244,
+  375789,
+  37402,
+  174015,
+  105070,
+  8342,
+  44167,
+  67494,
+  1890,
+  16365,
+  11723,
+  271002,
+  1865,
+  47918,
+  8350,
+  45564,
+  27742,
+  25110,
+  125803,
+  8553,
+  49504,
+  81925,
+  62211,
+  4534,
+  15491,
+  19011,
+  80373,
+  206920,
+  667,
+  102405,
+  128623,
+  245524,
+  5553,
+  113309,
+  192739,
+  65766,
+  19567,
+  22832,
+  261958,
+  29679,
+  21293,
+  71134,
+  20962,
+  105123,
+  24721,
+  860,
+  21752,
+  33448,
+  18372,
+  157167,
+  94822,
+  35770,
+  173224,
+  232737,
+  75729,
+  28937,
+  46828,
+  28062,
+  25453,
+  5207,
+  140366,
+  36665,
+  30652,
+  6169,
+  67920,
+  150458,
+  92040,
+  23186,
+  184604,
+  92330,
+  20891,
+  176492,
+  49427,
+  27828,
+  38305,
+  42495,
+  143982,
+  49560,
+  25503,
+  90043,
+  29747,
+  65328,
+  47830,
+  12932,
+  11068,
+  77721,
+  9003,
+  25213,
+  94205,
+  140426,
+  46090,
+  89945,
+  138173,
+  192691,
+  33329,
+  112232,
+  129905,
+  35709,
+  27514,
+  1841,
+  19957,
+  31411,
+  127476,
+  53572,
+  17497,
+  173549,
+  55063,
+  175135,
+  19841,
+  69314,
+  5192,
+  237921,
+  117660,
+  150697,
+  4060,
+  273045,
+  50414,
+  98940,
+  65348,
+  153665,
+  164423,
+  58804,
+  156695,
+  48994,
+  213928,
+  86036,
+  28608,
+  8355,
+  39574,
+  34540,
+  16927,
+  135680,
+  18374,
+  151587,
+  10830,
+  53805,
+  16878,
+  16623,
+  4282,
+  48030,
+  8537,
+  14986,
+  46102,
+  13062,
+  72897,
+  72,
+  33050,
+  108227,
+  39451,
+  45935,
+  651,
+  113320,
+  40535,
+  95176,
+  57450,
+  48843,
+  5003,
+  19019,
+  10407,
+  211163,
+  3848,
+  1068,
+  4988,
+  32091,
+  30095,
+  41692,
+  15099,
+  43602,
+  107434,
+  50744,
+  7627,
+  171349,
+  16313,
+  150832,
+  352665,
+  207750,
+  33937,
+  38256,
+  51091,
+  156e3,
+  87889,
+  90663,
+  84175,
+  24908,
+  114900,
+  50365,
+  31494,
+  83829,
+  5398,
+  169342,
+  47521,
+  54818,
+  18935,
+  8356,
+  43094,
+  41212,
+  174536,
+  10082,
+  92550,
+  6678,
+  60614,
+  23355,
+  69721,
+  14796,
+  34149,
+  128830,
+  58187,
+  3179,
+  208,
+  40325,
+  28399,
+  225029,
+  401412,
+  51150,
+  31580,
+  207268,
+  6657,
+  10993,
+  69818,
+  64282,
+  289845,
+  23308,
+  12961,
+  38447,
+  6681,
+  52944,
+  31855,
+  2572,
+  47646,
+  120728,
+  179148,
+  37240,
+  45196,
+  218274,
+  4816,
+  3695,
+  21961,
+  50084,
+  35209,
+  18073,
+  51452,
+  27004,
+  6100,
+  33941,
+  1377,
+  84831,
+  171214,
+  85,
+  141510,
+  9078,
+  99227,
+  32610,
+  6417,
+  11718,
+  49868,
+  65579,
+  87902,
+  73018,
+  49062,
+  46280,
+  61742,
+  21512,
+  40862,
+  107733,
+  15941,
+  29168,
+  157765,
+  144919,
+  14487,
+  5767,
+  158014,
+  140070,
+  7241,
+  573,
+  71584,
+  16921,
+  223566,
+  40331,
+  179473,
+  35081,
+  47926,
+  140885,
+  41508,
+  52104,
+  59180,
+  42310,
+  32811,
+  29048,
+  123517,
+  102413,
+  80208,
+  10104,
+  14746,
+  12649,
+  153641,
+  126022,
+  37965,
+  113017,
+  4171,
+  83,
+  142592,
+  2809,
+  6362,
+  50416,
+  71323,
+  116894,
+  260776,
+  16204,
+  1524,
+  5760,
+  30351,
+  12658,
+  20703,
+  54403,
+  36083,
+  45408,
+  74772,
+  4946,
+  14485,
+  50759,
+  111222,
+  10890,
+  2195,
+  167147,
+  92962,
+  130534,
+  16283,
+  177256,
+  35016,
+  15472,
+  210156,
+  151187,
+  73922,
+  117691,
+  43250,
+  52051,
+  37392,
+  24811,
+  24358,
+  30830,
+  5775,
+  818,
+  21969,
+  1476,
+  127322,
+  151783,
+  58392,
+  31021,
+  106913,
+  65215,
+  89407,
+  90802,
+  28531,
+  11690,
+  20234,
+  95249,
+  44602,
+  37256,
+  18707,
+  11928,
+  5161,
+  4410,
+  26571,
+  51903,
+  49768,
+  22008,
+  25252,
+  65780,
+  209499,
+  68769,
+  203726,
+  13249,
+  137363,
+  48845,
+  86823,
+  6658,
+  5674,
+  31881,
+  1083,
+  1823,
+  108676,
+  34518,
+  166752,
+  13791,
+  14287,
+  91576,
+  91429,
+  8665,
+  11529,
+  26401,
+  16191,
+  91972,
+  30964,
+  5254,
+  28486,
+  54697,
+  79613,
+  66520,
+  18447,
+  22870,
+  45203,
+  194466,
+  22822,
+  51703,
+  12278,
+  76716,
+  44595,
+  73455,
+  33546,
+  12235,
+  144843,
+  36154,
+  51247,
+  11116,
+  33040,
+  3180,
+  225753,
+  60864,
+  1972,
+  28469,
+  12891,
+  28879,
+  10338,
+  144157,
+  56294,
+  353058,
+  38302,
+  41447,
+  87532,
+  110616,
+  27065,
+  168438,
+  6557,
+  1213,
+  50804,
+  144643,
+  24817,
+  2390,
+  136531,
+  38174,
+  247513,
+  16190,
+  4059,
+  122791,
+  131994,
+  137430,
+  39506,
+  57650,
+  16305,
+  5188,
+  54309,
+  106128,
+  20628,
+  88071,
+  67394,
+  395446,
+  250285,
+  66176,
+  91254,
+  1399,
+  114196,
+  43915,
+  60230,
+  44853,
+  27206,
+  106353,
+  43013,
+  18733,
+  345105,
+  226453,
+  51202,
+  16607,
+  57106,
+  117175,
+  35492,
+  10476,
+  89598,
+  127439,
+  15187,
+  39624,
+  13688,
+  61570,
+  10615,
+  31111,
+  59370,
+  6238,
+  175252,
+  32143,
+  224492,
+  41388,
+  95408,
+  34384,
+  148238,
+  78307,
+  38959,
+  9340,
+  160091,
+  61443,
+  15737,
+  11216,
+  41244,
+  170,
+  38299,
+  102443,
+  113097,
+  26382,
+  14027,
+  33707,
+  3957,
+  76300,
+  66160,
+  19431,
+  18900,
+  6952,
+  1717,
+  108656,
+  82206,
+  188021,
+  257335,
+  27295,
+  43999,
+  41210,
+  31777,
+  46956,
+  57457,
+  12657,
+  11489,
+  15697,
+  48060,
+  204748,
+  53583,
+  82422,
+  284790,
+  30503,
+  137341,
+  8120,
+  19615,
+  220311,
+  15991,
+  10217,
+  63424,
+  9808,
+  67431,
+  70976,
+  98221,
+  4491,
+  15177,
+  28535,
+  144789,
+  751,
+  13230,
+  2394,
+  1504,
+  33977,
+  132104,
+  30316,
+  22230,
+  931,
+  97193,
+  185240,
+  24826,
+  22687,
+  174322,
+  15307,
+  22988,
+  1390,
+  188745,
+  180325,
+  29580,
+  59068,
+  74903,
+  18994,
+  29195,
+  79,
+  15436,
+  7622,
+  38462,
+  11566,
+  138710,
+  44828,
+  45774,
+  37768,
+  99236,
+  68137,
+  84083,
+  19282,
+  22698,
+  17134,
+  74807,
+  126662,
+  173497,
+  46248,
+  16938,
+  119735,
+  3212,
+  28292,
+  213652,
+  49013,
+  9975,
+  32180,
+  45660,
+  86250,
+  4801,
+  68788,
+  95490,
+  77482,
+  113751,
+  11994,
+  44624,
+  94452,
+  46839,
+  128497,
+  100316,
+  5798,
+  58588,
+  73184,
+  202987,
+  65417,
+  37790,
+  88524,
+  1606,
+  43156,
+  97964,
+  105717,
+  34947,
+  11203,
+  100060,
+  37742,
+  130074,
+  93653,
+  107799,
+  94311,
+  196106,
+  41347,
+  8035,
+  10780,
+  16390,
+  27883,
+  118236,
+  167395,
+  1979,
+  25006,
+  19375,
+  31628,
+  18916,
+  144723,
+  78502,
+  114047,
+  103107,
+  86492,
+  107686,
+  5844,
+  20934,
+  206963,
+  23556,
+  22591,
+  16562,
+  146333,
+  20167,
+  10471,
+  117434,
+  33085,
+  2863,
+  9740,
+  36669,
+  41849,
+  37271,
+  22790,
+  18209,
+  28979,
+  8231,
+  12952,
+  54408,
+  21731,
+  25130,
+  45208,
+  55748,
+  138120,
+  75826,
+  414,
+  29593,
+  9925,
+  292865,
+  25999,
+  683,
+  123149,
+  7036,
+  92159,
+  86055,
+  61827,
+  103680,
+  23176,
+  54918,
+  58466,
+  57578,
+  13305,
+  5709,
+  86479,
+  16697,
+  31064,
+  17660,
+  200919,
+  10770,
+  49793,
+  33423,
+  32370,
+  52047,
+  16488,
+  62555,
+  6459,
+  8426,
+  83493,
+  7763,
+  59725,
+  82812,
+  18628,
+  67760,
+  79405,
+  68557,
+  9612,
+  7673,
+  28102,
+  56517,
+  69620,
+  171797,
+  32458,
+  29541,
+  15870,
+  81109,
+  32080,
+  207644,
+  71495,
+  21202,
+  11039,
+  91036,
+  61230,
+  2810,
+  130800,
+  32260,
+  4613,
+  60590,
+  37112,
+  75214,
+  33979,
+  126402,
+  155062,
+  30642,
+  63875,
+  12810,
+  194463,
+  82799,
+  47664,
+  16725,
+  36685,
+  43367,
+  61099,
+  449,
+  172150,
+  102867,
+  21691,
+  301838,
+  36745,
+  7130,
+  18671,
+  57316,
+  34852,
+  38034,
+  54182,
+  35578,
+  65900,
+  99486,
+  19771,
+  3456,
+  2658,
+  16914,
+  99866,
+  28390,
+  28109,
+  8262,
+  21147,
+  34353,
+  20006,
+  4228,
+  137085,
+  1675,
+  203023,
+  283196,
+  198286,
+  214375,
+  163329,
+  290603,
+  152574,
+  40471,
+  83506,
+  30068,
+  14730,
+  23177,
+  131539,
+  34759,
+  27668,
+  32178,
+  71896,
+  104799,
+  116305,
+  85430,
+  119262,
+  42860,
+  25160,
+  8911,
+  23428,
+  49437,
+  105322,
+  6519,
+  16203,
+  6349,
+  74711,
+  1230,
+  38045,
+  8540,
+  75165,
+  44736,
+  25909,
+  51026,
+  317034,
+  4984,
+  32281,
+  91312,
+  27060,
+  44431,
+  17817,
+  45363,
+  155937,
+  239085,
+  35697,
+  59784,
+  91993,
+  29531,
+  126740,
+  213757,
+  76560,
+  167776,
+  285273,
+  24262,
+  8237,
+  65030,
+  41160,
+  74437,
+  48804,
+  118916,
+  13159,
+  37842,
+  1031,
+  75349,
+  1478,
+  11655,
+  108777,
+  23435,
+  277425,
+  101734,
+  67469,
+  70231,
+  124711,
+  43532,
+  28514,
+  65526,
+  54956,
+  1e3,
+  21882,
+  17728,
+  25302,
+  40952,
+  52214,
+  149632,
+  1999,
+  2111,
+  3259,
+  63362,
+  89961,
+  220561,
+  39777,
+  26335,
+  9063,
+  10572,
+  12416,
+  34551,
+  34623,
+  38604,
+  24723,
+  5947,
+  15588,
+  69927,
+  66252,
+  119177,
+  69173,
+  46629,
+  28714,
+  70715,
+  212408,
+  20521,
+  406913,
+  74380,
+  11716,
+  50659,
+  50862,
+  37009,
+  88460,
+  130101,
+  7210,
+  53853,
+  538,
+  65120,
+  151950,
+  55806,
+  163748,
+  52837,
+  13153,
+  21100,
+  16674,
+  64536,
+  6091,
+  138201,
+  44837,
+  58547,
+  3723,
+  163,
+  2177,
+  32288,
+  85454,
+  34033,
+  8497,
+  14282,
+  25742,
+  10535,
+  10741,
+  79559,
+  117493,
+  243787,
+  49337,
+  100718,
+  79495,
+  40139,
+  42956,
+  7551,
+  55433,
+  15421,
+  31509,
+  23034,
+  45081,
+  547,
+  61176,
+  53434,
+  328001,
+  8470,
+  36263,
+  30145,
+  4519,
+  74173,
+  53935,
+  11845,
+  73774,
+  60211,
+  78025,
+  3,
+  4102,
+  73782,
+  109293,
+  315332,
+  48412,
+  26683,
+  13714,
+  6865,
+  20128,
+  18490,
+  104141,
+  325,
+  39470,
+  171970,
+  115860,
+  15707,
+  7268,
+  73301,
+  74336,
+  31370,
+  2368,
+  111827,
+  107757,
+  136231,
+  142844,
+  97138,
+  96638,
+  84053,
+  38691,
+  23801,
+  1588,
+  10573,
+  122098,
+  77039,
+  240,
+  186135,
+  146101,
+  11996,
+  18143,
+  112963,
+  46171,
+  155836,
+  348769,
+  47795,
+  121213,
+  116266,
+  132515,
+  3344,
+  144804,
+  31286,
+  99187,
+  255838,
+  129694,
+  35894,
+  48779,
+  55235,
+  148582,
+  71967,
+  65282,
+  15174,
+  13920,
+  47080,
+  6147,
+  108242,
+  157593,
+  125025,
+  7136,
+  1286,
+  28957,
+  127956,
+  28402,
+  98813,
+  20805,
+  7532,
+  109417,
+  40610,
+  5041,
+  32958,
+  15142,
+  18408,
+  108596,
+  33543,
+  50517,
+  27748,
+  80114,
+  233434,
+  91447,
+  487,
+  37094,
+  100048,
+  30541,
+  43477,
+  10639,
+  89862,
+  155868,
+  37667,
+  8726,
+  60684,
+  237903,
+  73408,
+  99589,
+  12190,
+  38739,
+  97348,
+  3914,
+  13594,
+  2680,
+  149016,
+  13907,
+  30171,
+  28343,
+  23530,
+  115225,
+  61104,
+  35821,
+  147679,
+  14337,
+  4297,
+  244282,
+  24085,
+  326976,
+  56428,
+  7851,
+  21303,
+  131620,
+  71446,
+  83253,
+  68692,
+  111870,
+  5224,
+  15813,
+  38197,
+  49026,
+  45057,
+  13660,
+  3306,
+  76345,
+  40671,
+  27905,
+  91072,
+  996,
+  68527,
+  62085,
+  91351,
+  122634,
+  55109,
+  168209,
+  2024,
+  27560,
+  112707,
+  17352,
+  8306,
+  167115,
+  169921,
+  166958,
+  5031,
+  46020,
+  11844,
+  67284,
+  19130,
+  76185,
+  6920,
+  32849,
+  5450,
+  14610,
+  22451,
+  21002,
+  17392,
+  31872,
+  66682,
+  84796,
+  13709,
+  40210,
+  59898,
+  12029,
+  8719,
+  53564,
+  21462,
+  91884,
+  21647,
+  88379,
+  194428,
+  12754,
+  37797,
+  132826,
+  160016,
+  22567,
+  54383,
+  53186,
+  77611,
+  31107,
+  8339,
+  4694,
+  19185,
+  90355,
+  23597,
+  17222,
+  140675,
+  28442,
+  23668,
+  55977,
+  9128,
+  61555,
+  28774,
+  155229,
+  17658,
+  9390,
+  24379,
+  69357,
+  15752,
+  127381,
+  239631,
+  62460,
+  93181,
+  55913,
+  45133,
+  140155,
+  18676,
+  25249,
+  33164,
+  29581,
+  82837,
+  67223,
+  22362,
+  29975,
+  7317,
+  52813,
+  1943,
+  29613,
+  20012,
+  207130,
+  49617,
+  49651,
+  5636,
+  15334,
+  36313,
+  29226,
+  28084,
+  95247,
+  72072,
+  19e3,
+  224932,
+  15811,
+  114,
+  32127,
+  38097,
+  37508,
+  88507,
+  37225,
+  27359,
+  91626,
+  12193,
+  69279,
+  20608,
+  11055,
+  88156,
+  92808,
+  2152,
+  57259,
+  55275,
+  72789,
+  24475,
+  104414,
+  1708,
+  9882,
+  3818,
+  48661,
+  66897,
+  1631,
+  34806,
+  227930,
+  85815,
+  87753,
+  18321,
+  250664,
+  72733,
+  25107,
+  206797,
+  50891,
+  8082,
+  196411,
+  92596,
+  96764,
+  152823,
+  65514,
+  22819,
+  387277,
+  62176,
+  51225,
+  40329,
+  15563,
+  189,
+  3659,
+  73670,
+  64357,
+  51793,
+  275136,
+  33482,
+  86653,
+  74615,
+  67058,
+  11318,
+  125720,
+  15388,
+  22388,
+  8267,
+  1730,
+  102663,
+  170910,
+  40784,
+  7144,
+  85373,
+  13040,
+  7088,
+  94309,
+  583,
+  44224,
+  140424,
+  77439,
+  18496,
+  164026,
+  36578,
+  4722,
+  9151,
+  5824,
+  63365,
+  26510,
+  35199,
+  40500,
+  79277,
+  32495,
+  44614,
+  35233,
+  9566,
+  203293,
+  152144,
+  7097,
+  2330,
+  183480,
+  98629,
+  13423,
+  330887,
+  44130,
+  68600,
+  30939,
+  97829,
+  31012,
+  345465,
+  56747,
+  94879,
+  4939,
+  160027,
+  149761,
+  99423,
+  46099,
+  32251,
+  15332,
+  8761,
+  96094,
+  128555,
+  5763,
+  235318,
+  222223,
+  55729,
+  30241,
+  55420,
+  201746,
+  3987,
+  81382,
+  8259,
+  49325,
+  23287,
+  7719,
+  24633,
+  251100,
+  92311,
+  18591,
+  110533,
+  64759,
+  170260,
+  393860,
+  7175,
+  21144,
+  132887,
+  3593,
+  75346,
+  101277,
+  91109,
+  16387,
+  259187,
+  11627,
+  57459,
+  173829,
+  44694,
+  55780,
+  49797,
+  89192,
+  120443,
+  62622,
+  3904,
+  14814,
+  23887,
+  1027,
+  112258,
+  64955,
+  99800,
+  11132,
+  66353,
+  36202,
+  48624,
+  18158,
+  88481,
+  96882,
+  43059,
+  11040,
+  2455,
+  7077,
+  21651,
+  181159,
+  99126,
+  100434,
+  61388,
+  68186,
+  19161,
+  110468,
+  120052,
+  8819,
+  55324,
+  41494,
+  7014,
+  37689,
+  3618,
+  87729,
+  92615,
+  207943,
+  9823,
+  128657,
+  12587,
+  15857,
+  6379,
+  67628,
+  51216,
+  71775,
+  157617,
+  63244,
+  1503,
+  3864,
+  218754,
+  110864,
+  5769,
+  21492,
+  7243,
+  1192,
+  87921,
+  85529,
+  31512,
+  18537,
+  42698,
+  35350,
+  73510,
+  84474,
+  34301,
+  8991,
+  21013,
+  35034,
+  566,
+  38832,
+  19838,
+  35586,
+  37216,
+  39413,
+  55006,
+  12178,
+  59742,
+  856,
+  84563,
+  6900,
+  25632,
+  17437,
+  49786,
+  30723,
+  13847,
+  70845,
+  4044,
+  7843,
+  23944,
+  235976,
+  55530,
+  48942,
+  6518,
+  20939,
+  73769,
+  192653,
+  52936,
+  95207,
+  23895,
+  132542,
+  142982,
+  22632,
+  87452,
+  48042,
+  54018,
+  178468,
+  10728,
+  26230,
+  23559,
+  363,
+  81269,
+  142012,
+  5718,
+  346258,
+  31456,
+  84333,
+  246476,
+  51018,
+  66692,
+  101804,
+  120570,
+  39962,
+  30373,
+  70593,
+  2864,
+  60541,
+  19425,
+  54209,
+  104092,
+  7201,
+  31545,
+  48018,
+  25865,
+  15442,
+  46257,
+  40443,
+  8328,
+  6451,
+  111782,
+  47527,
+  97754,
+  33046,
+  470,
+  245116,
+  31095,
+  39,
+  91934,
+  87208,
+  73470,
+  36708,
+  36521,
+  12801,
+  70624,
+  36272,
+  8892,
+  79768,
+  12427,
+  55454,
+  103756,
+  5908,
+  52390,
+  62962,
+  22720,
+  141138,
+  94634,
+  41689,
+  128402,
+  126390,
+  6628,
+  106394,
+  35527,
+  134394,
+  82727,
+  254651,
+  194502,
+  148064,
+  89549,
+  3202,
+  28359,
+  957,
+  21954,
+  27906,
+  49840,
+  142747,
+  8307,
+  24206,
+  48978,
+  1186,
+  71728,
+  133038,
+  71474,
+  91306,
+  6333,
+  110959,
+  74600,
+  70387,
+  18983,
+  62609,
+  56057,
+  22970,
+  1147,
+  135850,
+  1321,
+  28834,
+  3578,
+  59715,
+  102227,
+  32827,
+  81415,
+  99952,
+  55636,
+  257598,
+  390,
+  22702,
+  35701,
+  85872,
+  402916,
+  39216,
+  189795,
+  14929,
+  19467,
+  10112,
+  144422,
+  61514,
+  5279,
+  63421,
+  134686,
+  41436,
+  8424,
+  51925,
+  10598,
+  132295,
+  124416,
+  4604,
+  194739,
+  210929,
+  57866,
+  31829,
+  51626,
+  50007,
+  9976,
+  91878,
+  61906,
+  56168,
+  81906,
+  60918,
+  61859,
+  40017,
+  23059,
+  16887,
+  40927,
+  62064,
+  12785,
+  32893,
+  32913,
+  21782,
+  93965,
+  20169,
+  44387,
+  79084,
+  38463,
+  11457,
+  93950,
+  27127,
+  157050,
+  2697,
+  337088,
+  5116,
+  54128,
+  48255,
+  33279,
+  8821,
+  27352,
+  25515,
+  124022,
+  65710,
+  28906,
+  38557,
+  33390,
+  1722,
+  104435,
+  72215,
+  38551,
+  12094,
+  30978,
+  25113,
+  6671,
+  37355,
+  175109,
+  42862,
+  98024,
+  65406,
+  221276,
+  59624,
+  118012,
+  64637,
+  78760,
+  86697,
+  21426,
+  1639,
+  40350,
+  12584,
+  67193,
+  84144,
+  31396,
+  7863,
+  143011,
+  69629,
+  63112,
+  9454,
+  28666,
+  65798,
+  46372,
+  134721,
+  6314,
+  51402,
+  30837,
+  151922,
+  2847,
+  38676,
+  38008,
+  92823,
+  136245,
+  17540,
+  5504,
+  109295,
+  205242,
+  37606,
+  5211,
+  214892,
+  1586,
+  20670,
+  208711,
+  137743,
+  19328,
+  40652,
+  16995,
+  20023,
+  14657,
+  154919,
+  34422,
+  12996,
+  13918,
+  38221,
+  47690,
+  16398,
+  2959,
+  37680,
+  89122,
+  6721,
+  198469,
+  91876,
+  172043,
+  83898,
+  101992,
+  26084,
+  94570,
+  3635,
+  76958,
+  22853,
+  76497,
+  38266,
+  176590,
+  168403,
+  44464,
+  142840,
+  79180,
+  184594,
+  1984,
+  41806,
+  83147,
+  11985,
+  6546,
+  366068,
+  59732,
+  24533,
+  271505,
+  8736,
+  39084,
+  222992,
+  93429,
+  28962,
+  58985,
+  86665,
+  8432,
+  30028,
+  14548,
+  32439,
+  54424,
+  165029,
+  55175,
+  27458,
+  69046,
+  121277,
+  46168,
+  33732,
+  20661,
+  24581,
+  135574,
+  123110,
+  37556,
+  79260,
+  72611,
+  16957,
+  12939,
+  46162,
+  58238,
+  44907,
+  72936,
+  253758,
+  41324,
+  32518,
+  96480,
+  11949,
+  124438,
+  65280,
+  43256,
+  34107,
+  53533,
+  43531,
+  37037,
+  28366,
+  45970,
+  32741,
+  173438,
+  6121,
+  194202,
+  62969,
+  26355,
+  30314,
+  58370,
+  28455,
+  1848,
+  50519,
+  82830,
+  90393,
+  21761,
+  295490,
+  10936,
+  256940,
+  133568,
+  44050,
+  20269,
+  4089,
+  27457,
+  21610,
+  219460,
+  36743,
+  14821,
+  101388,
+  52005,
+  13124,
+  30979,
+  140816,
+  167362,
+  26054,
+  18458,
+  60789,
+  34917,
+  40447,
+  26606,
+  33422,
+  9066,
+  3452,
+  83614,
+  5761,
+  20263,
+  137238,
+  25038,
+  91310,
+  101,
+  52322,
+  74548,
+  42572,
+  38084,
+  214054,
+  186568,
+  31802,
+  17665,
+  30620,
+  141936,
+  37730,
+  14420,
+  4265,
+  187218,
+  49640,
+  188208,
+  51441,
+  55388,
+  96452,
+  66659,
+  40869,
+  42039,
+  60967,
+  221027,
+  19234,
+  178581,
+  29105,
+  96050,
+  9165,
+  196118,
+  157335,
+  3738,
+  40354,
+  117436,
+  2965,
+  34136,
+  59659,
+  15570,
+  50843,
+  230035,
+  31444,
+  71260,
+  43886,
+  18316,
+  5387,
+  38500,
+  168508,
+  17406,
+  32174,
+  8828,
+  103373,
+  143806,
+  90367,
+  3560,
+  18719,
+  122310,
+  16508,
+  26719,
+  2541,
+  105429,
+  6645,
+  37998,
+  73190,
+  10591,
+  235916,
+  49737,
+  87112,
+  233941,
+  53188,
+  32193,
+  79154,
+  4544,
+  52905,
+  126477,
+  7580,
+  63501,
+  57314,
+  3216,
+  31337,
+  6541,
+  103083,
+  60846,
+  49,
+  9756,
+  15481,
+  1355,
+  43840,
+  14319,
+  13743,
+  27486,
+  10222,
+  73114,
+  230718,
+  418644,
+  16706,
+  6674,
+  279748,
+  23058,
+  45273,
+  295831,
+  86306,
+  2743,
+  5535,
+  88773,
+  21829,
+  35253,
+  120938,
+  31153,
+  3169,
+  16839,
+  42847,
+  8751,
+  80974,
+  33942,
+  36867,
+  35514,
+  16485,
+  26474,
+  77775,
+  56877,
+  5391,
+  48346,
+  3882,
+  108713,
+  31403,
+  27804,
+  55248,
+  26235,
+  43821,
+  136104,
+  40118,
+  175507,
+  28034,
+  203908,
+  18732,
+  1788,
+  34030,
+  106427,
+  36958,
+  54359,
+  7251,
+  44936,
+  15356,
+  69139,
+  455,
+  157915,
+  22173,
+  140291,
+  50348,
+  43275,
+  82066,
+  49621,
+  54952,
+  15216,
+  36226,
+  96695,
+  66855,
+  6936,
+  1987,
+  8227,
+  196087,
+  4631,
+  68827,
+  99004,
+  47541,
+  110265,
+  17953,
+  147605,
+  110242,
+  58520,
+  31312,
+  38724,
+  329975,
+  642,
+  3155,
+  34497,
+  75937,
+  6207,
+  73843,
+  6120,
+  17249,
+  51429,
+  117746,
+  3218,
+  910,
+  68961,
+  319671,
+  14938,
+  29555,
+  34700,
+  1649,
+  66673,
+  72268,
+  9655,
+  76800,
+  153087,
+  6941,
+  210168,
+  27130,
+  35398,
+  1780,
+  73242,
+  3135,
+  56689,
+  19556,
+  165307,
+  8765,
+  35967,
+  121458,
+  13333,
+  70453,
+  17350,
+  117253,
+  22265,
+  13340,
+  44265,
+  39869,
+  441,
+  3742,
+  135025,
+  23581,
+  33309,
+  16543,
+  17731,
+  13291,
+  157637,
+  283005,
+  21408,
+  101360,
+  63887,
+  52312,
+  83873,
+  5338,
+  233779,
+  23759,
+  186949,
+  34531,
+  177320,
+  38069,
+  156465,
+  91004,
+  19353,
+  59852,
+  68160,
+  14891,
+  1338,
+  1072,
+  29823,
+  1950,
+  28901,
+  81407,
+  313445,
+  73038,
+  84807,
+  162348,
+  240257,
+  37162,
+  138934,
+  16111,
+  58013,
+  41253,
+  102951,
+  16457,
+  96056,
+  19541,
+  56402,
+  67217,
+  41638,
+  94381,
+  89674,
+  29481,
+  37456,
+  80815,
+  151579,
+  13937,
+  13683,
+  132537,
+  19699,
+  134545,
+  67020,
+  29816,
+  222341,
+  141235,
+  427578,
+  48868,
+  129557,
+  233342,
+  23077,
+  87871,
+  16213,
+  18728,
+  16184,
+  9469,
+  37913,
+  19680,
+  2798,
+  171356,
+  178328,
+  13216,
+  50049,
+  72690,
+  71904,
+  124644,
+  55455,
+  7504,
+  29052,
+  41036,
+  266546,
+  19899,
+  30391,
+  188755,
+  8659,
+  59469,
+  16,
+  104298,
+  112943,
+  53865,
+  76203,
+  138226,
+  68857,
+  139953,
+  14125,
+  107625,
+  119795,
+  173133,
+  4398,
+  50273,
+  48808,
+  54390,
+  16466,
+  122086,
+  31835,
+  67035,
+  50971,
+  48859,
+  7508,
+  46427,
+  66477,
+  73021,
+  84615,
+  39985,
+  83076,
+  46779,
+  201569,
+  53336,
+  36443,
+  60865,
+  168164,
+  143810,
+  51393,
+  25548,
+  169307,
+  32896,
+  24485,
+  38424,
+  21837,
+  29087,
+  275813,
+  51674,
+  6714,
+  64883,
+  46169,
+  187369,
+  55186,
+  76192,
+  12852,
+  12018,
+  62134,
+  31067,
+  118303,
+  16542,
+  12125,
+  10579,
+  4928,
+  26291,
+  43854,
+  7091,
+  10946,
+  253716,
+  109062,
+  39283,
+  17261,
+  113012,
+  258512,
+  47764,
+  125126,
+  32646,
+  55892,
+  80279,
+  201623,
+  149872,
+  3192,
+  385,
+  1208,
+  48750,
+  5376,
+  58738,
+  22335,
+  5427,
+  82416,
+  47811,
+  32435,
+  143086,
+  38930,
+  94128,
+  59975,
+  156037,
+  37977,
+  38224,
+  62485,
+  7698,
+  50405,
+  71027,
+  16462,
+  21559,
+  136153,
+  34131,
+  107506,
+  162069,
+  63703,
+  3101,
+  215029,
+  40407,
+  4178,
+  3774,
+  9187,
+  80019,
+  17880,
+  97926,
+  67579,
+  2600,
+  18405,
+  8351,
+  47924,
+  86638,
+  70820,
+  92206,
+  86453,
+  29610,
+  42241,
+  119200,
+  3198,
+  15466,
+  67813,
+  57863,
+  35454,
+  4779,
+  99518,
+  4649,
+  104641,
+  144269,
+  33730,
+  38073,
+  65864,
+  6838,
+  109456,
+  193298,
+  154007,
+  5623,
+  45741,
+  30846,
+  182578,
+  25573,
+  157224,
+  1543,
+  58575,
+  138703,
+  146140,
+  44971,
+  49356,
+  18275,
+  59064,
+  20300,
+  13122,
+  11848,
+  24453,
+  11973,
+  9797,
+  86843,
+  2919,
+  25530,
+  49210,
+  1130,
+  161220,
+  76788,
+  75373,
+  85604,
+  34926,
+  36014,
+  17777,
+  17255,
+  51533,
+  11676,
+  92226,
+  51845,
+  119859,
+  21525,
+  5936,
+  18507,
+  28050,
+  1140,
+  31418,
+  14857,
+  34207,
+  47859,
+  10750,
+  36382,
+  32079,
+  106909,
+  59426,
+  87757,
+  38393,
+  110042,
+  15965,
+  97104,
+  33757,
+  35344,
+  97993,
+  53979,
+  33651,
+  45407,
+  41884,
+  82515,
+  173089,
+  7177,
+  58371,
+  35365,
+  47543,
+  51927,
+  35587,
+  10670,
+  23544,
+  29306,
+  84233,
+  39976,
+  76076,
+  62097,
+  9007,
+  8668,
+  28119,
+  78281,
+  120790,
+  19835,
+  143020,
+  54968,
+  18670,
+  64959,
+  20649,
+  34469,
+  42570,
+  33001,
+  136570,
+  87796,
+  120044,
+  1106,
+  58700,
+  63951,
+  127623,
+  12805,
+  83057,
+  40212,
+  31773,
+  49850,
+  7361,
+  54336,
+  347524,
+  101314,
+  23751,
+  19569,
+  48791,
+  29174,
+  49369,
+  20467,
+  7465,
+  75842,
+  38281,
+  623,
+  112457,
+  60210,
+  28849,
+  51003,
+  94720,
+  6426,
+  90047,
+  85560,
+  43761,
+  3579,
+  85105,
+  34607,
+  90410,
+  118528,
+  7224,
+  42907,
+  111163,
+  18168,
+  6960,
+  161135,
+  191298,
+  5247,
+  100584,
+  127552,
+  171568,
+  20121,
+  91173,
+  12636,
+  54615,
+  20199,
+  63730,
+  98105,
+  2396,
+  40387,
+  14438,
+  125012,
+  4765,
+  33235,
+  12865,
+  45299,
+  37728,
+  82098,
+  77872,
+  114037,
+  59253,
+  19675,
+  24838,
+  398016,
+  102561,
+  11446,
+  17069,
+  57508,
+  178277,
+  65836,
+  99941,
+  26114,
+  2585,
+  271882,
+  136866,
+  50126,
+  11027,
+  155648,
+  118367,
+  14585,
+  8910,
+  123015,
+  335383,
+  40434,
+  41016,
+  53021,
+  14439,
+  87098,
+  176860,
+  201543,
+  121888,
+  2358,
+  9286,
+  5739,
+  22666,
+  54270,
+  37884,
+  169381,
+  33984,
+  93859,
+  16124,
+  89364,
+  72207,
+  51639,
+  76366,
+  99029,
+  65812,
+  2198,
+  12147,
+  174891,
+  194289,
+  6986,
+  30252,
+  88822,
+  21284,
+  11445,
+  288337,
+  160821,
+  33034,
+  100869,
+  43852,
+  25761,
+  52882,
+  1144,
+  103809,
+  1924,
+  84458,
+  86079,
+  43411,
+  13542,
+  139276,
+  18141,
+  34978,
+  41298,
+  7276,
+  26481,
+  173800,
+  33210,
+  17951,
+  142652,
+  33616,
+  33677,
+  2210,
+  19941,
+  98568,
+  2486,
+  192414,
+  80136,
+  12058,
+  235883,
+  50963,
+  249638,
+  29572,
+  27221,
+  47034,
+  6124,
+  72107,
+  63346,
+  97620,
+  158513,
+  299699,
+  40388,
+  23235,
+  37176,
+  224244,
+  198386,
+  121323,
+  67992,
+  23827,
+  63170,
+  17838,
+  106622,
+  158590,
+  26807,
+  5345,
+  23489,
+  91891,
+  55474,
+  74834,
+  37981,
+  13058,
+  5977,
+  72552,
+  34706,
+  26828,
+  145172,
+  19904,
+  21367,
+  34043,
+  960,
+  77092,
+  91381,
+  4733,
+  47446,
+  7680,
+  41697,
+  5170,
+  16960,
+  14741,
+  46101,
+  13656,
+  473,
+  51842,
+  37433,
+  11103,
+  11551,
+  121951,
+  13191,
+  97536,
+  165932,
+  50397,
+  51628,
+  129028,
+  9069,
+  44885,
+  6590,
+  59195,
+  47045,
+  32940,
+  225472,
+  90345,
+  21833,
+  13303,
+  29407,
+  96615,
+  141951,
+  5198,
+  6028,
+  18395,
+  7181,
+  3861,
+  14966,
+  156358,
+  167182,
+  36529,
+  55253,
+  25942,
+  173153,
+  30959,
+  27261,
+  50691,
+  150176,
+  162201,
+  38467,
+  48462,
+  80602,
+  42163,
+  118482,
+  168,
+  108756,
+  26011,
+  17166,
+  54149,
+  456538,
+  22512,
+  91374,
+  13816,
+  90358,
+  131615,
+  18132,
+  226707,
+  1824,
+  28139,
+  26860,
+  42253,
+  93877,
+  77351,
+  65575,
+  8980,
+  80574,
+  22020,
+  27948,
+  40422,
+  91324,
+  76376,
+  13528,
+  39281,
+  91685,
+  82215,
+  122541,
+  144066,
+  1983,
+  193851,
+  17283,
+  26320,
+  2739,
+  194978,
+  4790,
+  26845,
+  42627,
+  61300,
+  65815,
+  174612,
+  55133,
+  4200,
+  191130,
+  79771,
+  158321,
+  52280,
+  166796,
+  221620,
+  62461,
+  11278,
+  4067,
+  88152,
+  83409,
+  31717,
+  121367,
+  13522,
+  47325,
+  37945,
+  10406,
+  174348,
+  249321,
+  154101,
+  64912,
+  29938,
+  51775,
+  17220,
+  15776,
+  166138,
+  78890,
+  84425,
+  54121,
+  42861,
+  16368,
+  24572,
+  291647,
+  10197,
+  32073,
+  22651,
+  11677,
+  97509,
+  26952,
+  35787,
+  18424,
+  41910,
+  71614,
+  94977,
+  72318,
+  41594,
+  70024,
+  275419,
+  37702,
+  60199,
+  7335,
+  39107,
+  61315,
+  18271,
+  18394,
+  33768,
+  87884,
+  104277,
+  123724,
+  7277,
+  56288,
+  71981,
+  189803,
+  49320,
+  3352,
+  6798,
+  14240,
+  8954,
+  69220,
+  94433,
+  57372,
+  28620,
+  68863,
+  193727,
+  85575,
+  42309,
+  41667,
+  67689,
+  42081,
+  22543,
+  44824,
+  12719,
+  28540,
+  114236,
+  101553,
+  27638,
+  27296,
+  4300,
+  5353,
+  4663,
+  19379,
+  94098,
+  3758,
+  95888,
+  95144,
+  80344,
+  87320,
+  28447,
+  259518,
+  12718,
+  71391,
+  152731,
+  37063,
+  24132,
+  31911,
+  104896,
+  15672,
+  103782,
+  1521,
+  4945,
+  72541,
+  23717,
+  122632,
+  15619,
+  87175,
+  206120,
+  29428,
+  189780,
+  61416,
+  28350,
+  44457,
+  972,
+  1175,
+  47233,
+  198738,
+  95789,
+  41907,
+  21953,
+  97034,
+  59341,
+  22864,
+  53713,
+  16873,
+  32971,
+  20693,
+  20954,
+  31336,
+  21477,
+  16169,
+  38370,
+  16412,
+  9019,
+  3841,
+  24599,
+  21938,
+  17085,
+  6484,
+  81198,
+  76413,
+  5849,
+  72514,
+  12320,
+  65247,
+  276175,
+  37234,
+  59796,
+  52642,
+  16312,
+  57349,
+  198507,
+  94148,
+  46134,
+  18958,
+  125552,
+  1747,
+  18725,
+  151873,
+  14901,
+  5490,
+  68287,
+  29470,
+  3689,
+  64794,
+  40814,
+  26018,
+  25692,
+  54450,
+  2703,
+  88278,
+  124886,
+  173087,
+  174e3,
+  24159,
+  179477,
+  24276,
+  46004,
+  201876,
+  209202,
+  445,
+  52876,
+  31948,
+  30206,
+  157610,
+  39180,
+  18439,
+  44124,
+  50469,
+  5774,
+  96278,
+  222758,
+  200216,
+  50290,
+  45486,
+  20435,
+  46986,
+  46276,
+  140133,
+  142326,
+  15569,
+  13363,
+  47522,
+  92583,
+  2182,
+  7135,
+  16853,
+  22998,
+  30272,
+  4952,
+  63263,
+  35623,
+  39096,
+  53789,
+  44864,
+  20053,
+  110392,
+  124213,
+  4630,
+  16087,
+  28221,
+  127787,
+  25839,
+  77481,
+  44693,
+  13464,
+  113146,
+  6983,
+  27069,
+  55717,
+  50102,
+  4760,
+  7107,
+  26186,
+  66507,
+  59145,
+  36032,
+  104182,
+  71328,
+  29425,
+  64317,
+  50781,
+  47465,
+  94298,
+  69706,
+  74899,
+  22754,
+  120756,
+  25108,
+  93077,
+  56834,
+  73286,
+  39928,
+  16218,
+  41699,
+  176763,
+  7555,
+  70819,
+  50083,
+  26895,
+  23315,
+  26014,
+  16773,
+  123079,
+  41712,
+  5719,
+  31516,
+  90427,
+  158540,
+  85051,
+  183128,
+  40864,
+  27505,
+  55392,
+  9058,
+  45224,
+  96857,
+  30901,
+  136622,
+  96557,
+  56304,
+  120061,
+  11501,
+  151448,
+  5773,
+  89743,
+  7769,
+  86069,
+  2935,
+  18471,
+  41628,
+  10114,
+  33660,
+  110170,
+  49479,
+  26745,
+  92846,
+  33221,
+  26731,
+  18795,
+  87076,
+  8550,
+  2100,
+  29972,
+  120289,
+  3077,
+  72490,
+  33784,
+  2630,
+  208722,
+  50861,
+  63483,
+  79029,
+  6419,
+  39467,
+  14302,
+  45286,
+  64207,
+  9686,
+  67513,
+  44170,
+  1050,
+  77246,
+  59266,
+  17055,
+  53801,
+  7150,
+  11111,
+  42432,
+  4278,
+  94579,
+  362117,
+  36175,
+  42902,
+  41933,
+  39002,
+  98489,
+  22913,
+  74161,
+  84773,
+  57036,
+  17556,
+  162288,
+  74485,
+  178760,
+  93867,
+  73635,
+  128860,
+  50362,
+  261,
+  67455,
+  80001,
+  46080,
+  35662,
+  4368,
+  25247,
+  19230,
+  74393,
+  22588,
+  1822,
+  27682,
+  235324,
+  13798,
+  85998,
+  13194,
+  235067,
+  23514,
+  71669,
+  147632,
+  23191,
+  134748,
+  214683,
+  105101,
+  1518,
+  25489,
+  247114,
+  7380,
+  54842,
+  26922,
+  3971,
+  26361,
+  20844,
+  68642,
+  170517,
+  77339,
+  123255,
+  8963,
+  77818,
+  150998,
+  48466,
+  36806,
+  2732,
+  23261,
+  11741,
+  236162,
+  18243,
+  126216,
+  28690,
+  50546,
+  16385,
+  92760,
+  197383,
+  246558,
+  201295,
+  88255,
+  67588,
+  71687,
+  176076,
+  172653,
+  169058,
+  33906,
+  63747,
+  24835,
+  157621,
+  43338,
+  30050,
+  46152,
+  132741,
+  2770,
+  51371,
+  94835,
+  6614,
+  15112,
+  11749,
+  56936,
+  1250,
+  19027,
+  399017,
+  58036,
+  100215,
+  23388,
+  55815,
+  308768,
+  124152,
+  94803,
+  9521,
+  64186,
+  8971,
+  28,
+  30427,
+  62163,
+  7616,
+  103838,
+  35079,
+  29203,
+  131235,
+  7743,
+  17389,
+  10882,
+  37420,
+  61460,
+  228512,
+  85363,
+  41581,
+  131077,
+  62822,
+  119647,
+  10130,
+  54445,
+  26925,
+  19968,
+  29016,
+  24446,
+  74028,
+  24176,
+  61448,
+  67185,
+  9254,
+  8563,
+  119129,
+  9771,
+  99184,
+  37716,
+  39514,
+  10532,
+  221512,
+  258753,
+  218630,
+  55980,
+  23394,
+  32141,
+  61924,
+  66749,
+  32411,
+  3741,
+  36475,
+  26678,
+  77010,
+  44946,
+  91203,
+  128749,
+  116953,
+  20476,
+  49625,
+  53116,
+  13735,
+  102335,
+  29376,
+  51946,
+  83407,
+  67892,
+  59212,
+  34685,
+  21083,
+  1546,
+  112982,
+  32972,
+  74397,
+  1078,
+  190545,
+  16082,
+  86140,
+  58591,
+  89611,
+  101531,
+  10061,
+  105104,
+  76319,
+  20035,
+  17551,
+  52611,
+  169061,
+  190842,
+  100780,
+  23907,
+  90413,
+  115619,
+  9675,
+  34710,
+  193435,
+  49443,
+  129734,
+  11183,
+  258877,
+  16318,
+  136182,
+  126808,
+  44635,
+  27304,
+  192375,
+  2599,
+  125648,
+  47051,
+  12091,
+  23814,
+  721,
+  58800,
+  40137,
+  66726,
+  97930,
+  60877,
+  74487,
+  7942,
+  54326,
+  9841,
+  41428,
+  13762,
+  8211,
+  85383,
+  6950,
+  99177,
+  79806,
+  201786,
+  296464,
+  124087,
+  13144,
+  29741,
+  41721,
+  47634,
+  55088,
+  254286,
+  106408,
+  17041,
+  99064,
+  12942,
+  64086,
+  45233,
+  14005,
+  2612,
+  55827,
+  255,
+  7984,
+  13980,
+  38574,
+  12776,
+  46654,
+  73499,
+  249951,
+  2101,
+  26676,
+  25996,
+  132326,
+  116415,
+  119062,
+  50449,
+  31033,
+  23038,
+  11589,
+  179252,
+  20007,
+  14860,
+  129270,
+  21143,
+  17796,
+  144715,
+  60106,
+  70758,
+  69842,
+  34674,
+  282133,
+  44014,
+  16774,
+  57268,
+  38528,
+  24053,
+  46373,
+  201667,
+  28327,
+  471023,
+  51889,
+  102667,
+  21193,
+  114909,
+  84132,
+  69317,
+  96723,
+  67969,
+  16134,
+  68145,
+  15058,
+  28765,
+  32035,
+  2524,
+  101089,
+  98664,
+  25045,
+  76571,
+  14957,
+  86040,
+  118506,
+  262428,
+  154764,
+  81573,
+  39681,
+  283900,
+  73287,
+  127825,
+  544,
+  80448,
+  52347,
+  38512,
+  175971,
+  15180,
+  45467,
+  33086,
+  46552,
+  48894,
+  81107,
+  43213,
+  36672,
+  54025,
+  76703,
+  8053,
+  7608,
+  13299,
+  56619,
+  20752,
+  238099,
+  54164,
+  105133,
+  1444,
+  32942,
+  953,
+  37564,
+  8e3,
+  66316,
+  119463,
+  106817,
+  404,
+  13667,
+  149108,
+  128597,
+  31267,
+  10269,
+  49836,
+  106150,
+  1484,
+  52330,
+  76965,
+  160486,
+  171648,
+  38456,
+  31263,
+  22424,
+  37738,
+  66245,
+  67467,
+  143369,
+  60471,
+  75610,
+  20895,
+  115528,
+  86070,
+  60854,
+  40796,
+  49347,
+  18989,
+  15030,
+  11371,
+  37578,
+  15779,
+  79867,
+  10187,
+  86462,
+  46402,
+  155626,
+  93200,
+  40229,
+  7090,
+  57547,
+  108053,
+  99598,
+  11088,
+  47505,
+  41218,
+  206017,
+  2173,
+  20988,
+  30219,
+  22919,
+  80563,
+  57566,
+  42369,
+  93141,
+  41675,
+  2407,
+  182519,
+  120495,
+  27154,
+  16702,
+  29456,
+  14349,
+  7958,
+  16688,
+  117177,
+  140375,
+  42467,
+  261919,
+  74916,
+  153569,
+  10836,
+  34742,
+  49526,
+  7621,
+  105997,
+  12212,
+  2270,
+  392377,
+  7755,
+  17959,
+  25086,
+  232152,
+  138791,
+  33847,
+  13860,
+  35316,
+  5811,
+  1344,
+  71259,
+  50452,
+  207539,
+  92635,
+  50359,
+  5821,
+  33674,
+  30255,
+  2086,
+  2587,
+  96264,
+  17543,
+  42,
+  6029,
+  9580,
+  43007,
+  139248,
+  82831,
+  12917,
+  29607,
+  25786,
+  51467,
+  42137,
+  85161,
+  100698,
+  31561,
+  88989,
+  121990,
+  278500,
+  3602,
+  109344,
+  37982,
+  15279,
+  116442,
+  28936,
+  30880,
+  87894,
+  58079,
+  128661,
+  126731,
+  67392,
+  28051,
+  146885,
+  4861,
+  16216,
+  97344,
+  42827,
+  147561,
+  153948,
+  22684,
+  21335,
+  47685,
+  1853,
+  43349,
+  15185,
+  59642,
+  10229,
+  25520,
+  187921,
+  108972,
+  5579,
+  98037,
+  24945,
+  6697,
+  19193,
+  63734,
+  137934,
+  75056,
+  89740,
+  19767,
+  224268,
+  56138,
+  63643,
+  151661,
+  39313,
+  70618,
+  84031,
+  89723,
+  84074,
+  13703,
+  85626,
+  35460,
+  8867,
+  64845,
+  3439,
+  57906,
+  99776,
+  63968,
+  49270,
+  81130,
+  34356,
+  16210,
+  23547,
+  36446,
+  34090,
+  140028,
+  72439,
+  2221,
+  22163,
+  57058,
+  363492,
+  113754,
+  18913,
+  95451,
+  48663,
+  54464,
+  54037,
+  176097,
+  68425,
+  3023,
+  34906,
+  29482,
+  117389,
+  341780,
+  80431,
+  58330,
+  16753,
+  92616,
+  60907,
+  94846,
+  147486,
+  4498,
+  48646,
+  7773,
+  46801,
+  7778,
+  18946,
+  464978,
+  47558,
+  33223,
+  177444,
+  7328,
+  15626,
+  63337,
+  94700,
+  11743,
+  9351,
+  255024,
+  39098,
+  16447,
+  42647,
+  96230,
+  39769,
+  58840,
+  10068,
+  63439,
+  35800,
+  65843,
+  58823,
+  413844,
+  9156,
+  51258,
+  7434,
+  61791,
+  85018,
+  6872,
+  3692,
+  28096,
+  7121,
+  33024,
+  6009,
+  75532,
+  31997,
+  192535,
+  9661,
+  3304,
+  9547,
+  14753,
+  31987,
+  25314,
+  55689,
+  15896,
+  20430,
+  39472,
+  31340,
+  99744,
+  25398,
+  115569,
+  54883,
+  28719,
+  205423,
+  23071,
+  57855,
+  64638,
+  149867,
+  25671,
+  82403,
+  37616,
+  20668,
+  39989,
+  77996,
+  74948,
+  140555,
+  175248,
+  64810,
+  36515,
+  46595,
+  4958,
+  248773,
+  24045,
+  28728,
+  136673,
+  168704,
+  20804,
+  114833,
+  100325,
+  27135,
+  21205,
+  96151,
+  153134,
+  45992,
+  7093,
+  13992,
+  76047,
+  1980,
+  19432,
+  145001,
+  75159,
+  87462,
+  17710,
+  1013,
+  45556,
+  34297,
+  144882,
+  20648,
+  26061,
+  11319,
+  129567,
+  108555,
+  18872,
+  464580,
+  33386,
+  22717,
+  65948,
+  167189,
+  5603,
+  135042,
+  79542,
+  8801,
+  202632,
+  18114,
+  91882,
+  5973,
+  5239,
+  67315,
+  4431,
+  60916,
+  47819,
+  71693,
+  32597,
+  32606,
+  18183,
+  45072,
+  80329,
+  76385,
+  24749,
+  51305,
+  40314,
+  156514,
+  14693,
+  130345,
+  13168,
+  66214,
+  18029,
+  12858,
+  34801,
+  27628,
+  14544,
+  10823,
+  40522,
+  40185,
+  33739,
+  148694,
+  23548,
+  9923,
+  61012,
+  28859,
+  17933,
+  19442,
+  34364,
+  99849,
+  164107,
+  141167,
+  30629,
+  21054,
+  6744,
+  36491,
+  8096,
+  42474,
+  41706,
+  155060,
+  30650,
+  10600,
+  163442,
+  1143,
+  96655,
+  61390,
+  52359,
+  7559,
+  51568,
+  64256,
+  203854,
+  4467,
+  22453,
+  14504,
+  436398,
+  7878,
+  6980,
+  8293,
+  63610,
+  293747,
+  16167,
+  35763,
+  19627,
+  147603,
+  15419,
+  18032,
+  110744,
+  51346,
+  33681,
+  54571,
+  40472,
+  48615,
+  39073,
+  21604,
+  13754,
+  173027,
+  92560,
+  11083,
+  47299,
+  63062,
+  11813,
+  52007,
+  29883,
+  9734,
+  139722,
+  15953,
+  1550,
+  20651,
+  13616,
+  49306,
+  16113,
+  90089,
+  92326,
+  7584,
+  30712,
+  72424,
+  164858,
+  6831,
+  152871,
+  55746,
+  197721,
+  34167,
+  196442,
+  6022,
+  112107,
+  55215,
+  7538,
+  123381,
+  4920,
+  43539,
+  77165,
+  8939,
+  50392,
+  34192,
+  20225,
+  79762,
+  22505,
+  58667,
+  40770,
+  29788,
+  97180,
+  82835,
+  4568,
+  8579,
+  13273,
+  363569,
+  35898,
+  49983,
+  436,
+  36598,
+  3237,
+  131691,
+  62418,
+  35591,
+  8101,
+  4073,
+  379438,
+  65218,
+  76072,
+  33887,
+  2968,
+  27573,
+  212619,
+  288680,
+  68278,
+  72851,
+  150504,
+  217896,
+  6913,
+  121339,
+  22017,
+  35340,
+  51072,
+  43616,
+  75043,
+  31437,
+  10833,
+  81487,
+  4364,
+  22968,
+  41454,
+  106687,
+  85446,
+  19863,
+  109625,
+  149241,
+  524,
+  141850,
+  214404,
+  54376,
+  657,
+  237023,
+  9401,
+  108137,
+  53800,
+  32474,
+  49712,
+  53334,
+  126876,
+  27337,
+  45552,
+  177696,
+  8269,
+  15036,
+  12097,
+  42240,
+  2328,
+  125374,
+  119295,
+  99715,
+  2500,
+  19624,
+  39441,
+  27220,
+  102691,
+  60957,
+  94543,
+  39101,
+  18566,
+  67362,
+  13975,
+  78230,
+  25017,
+  34017,
+  239007,
+  90027,
+  39351,
+  41681,
+  35354,
+  43822,
+  1043,
+  916,
+  58587,
+  141983,
+  94818,
+  38799,
+  75459,
+  41114,
+  67432,
+  16195,
+  36606,
+  59568,
+  22272,
+  126769,
+  31424,
+  68659,
+  12287,
+  134302,
+  257977,
+  5756,
+  207285,
+  95637,
+  47248,
+  117689,
+  19583,
+  77451,
+  22373,
+  12200,
+  54993,
+  117118,
+  34244,
+  29386,
+  34562,
+  53819,
+  71267,
+  64172,
+  77665,
+  49368,
+  7716,
+  59301,
+  25749,
+  45426,
+  194789,
+  17297,
+  2650,
+  1766,
+  32501,
+  45198,
+  20403,
+  20984,
+  6600,
+  14171,
+  94604,
+  19037,
+  5402,
+  29896,
+  9938,
+  59935,
+  109708,
+  88081,
+  145182,
+  44844,
+  39167,
+  352626,
+  164173,
+  35374,
+  45982,
+  6122,
+  154,
+  73419,
+  220487,
+  53834,
+  53601,
+  17992,
+  8609,
+  229321,
+  5610,
+  68098,
+  66815,
+  71012,
+  95069,
+  140968,
+  27396,
+  8957,
+  134489,
+  24656,
+  86659,
+  56598,
+  134852,
+  17316,
+  123838,
+  255436,
+  6613,
+  41610,
+  138033,
+  81452,
+  32023,
+  32396,
+  123687,
+  63398,
+  8693,
+  29712,
+  30407,
+  19296,
+  121188,
+  3551,
+  36099,
+  20032,
+  111948,
+  56624,
+  16547,
+  27453,
+  35916,
+  15378,
+  52039,
+  56849,
+  13489,
+  22214,
+  73177,
+  53097,
+  277349,
+  2157,
+  14029,
+  187886,
+  10260,
+  141743,
+  246460,
+  91880,
+  50869,
+  3788,
+  49486,
+  133566,
+  54950,
+  33120,
+  129337,
+  53768,
+  18333,
+  9525,
+  26902,
+  312251,
+  10297,
+  9020,
+  70759,
+  16647,
+  112432,
+  59260,
+  84609,
+  9818,
+  82766,
+  73569,
+  468,
+  46001,
+  75780,
+  55028,
+  52106,
+  11498,
+  43645,
+  108069,
+  17150,
+  17753,
+  29417,
+  16705,
+  31799,
+  9606,
+  289,
+  122254,
+  115975,
+  8620,
+  6133,
+  255357,
+  56908,
+  14456,
+  133464,
+  43554,
+  79224,
+  11247,
+  29630,
+  160,
+  12756,
+  25464,
+  65960,
+  350428,
+  62521,
+  321796,
+  100359,
+  67358,
+  35169,
+  46172,
+  113128,
+  48988,
+  88868,
+  31094,
+  33266,
+  6847,
+  60887,
+  98188,
+  49659,
+  69117,
+  92977,
+  220228,
+  13947,
+  80181,
+  35103,
+  62170,
+  97351,
+  13475,
+  2440,
+  199768,
+  19498,
+  36597,
+  46971,
+  25234,
+  67806,
+  62881,
+  84717,
+  73648,
+  181966,
+  10488,
+  94149,
+  21550,
+  26655,
+  63436,
+  48375,
+  14405,
+  165650,
+  9621,
+  24439,
+  28043,
+  42735,
+  4490,
+  29963,
+  56674,
+  45373,
+  1934,
+  262446,
+  50855,
+  67098,
+  26898,
+  5261,
+  52696,
+  40644,
+  33900,
+  9440,
+  180286,
+  87162,
+  22940,
+  19704,
+  26936,
+  69769,
+  10254,
+  101759,
+  27406,
+  12243,
+  48e3,
+  73926,
+  113215,
+  54935,
+  5726,
+  192787,
+  4312,
+  106216,
+  9366,
+  11550,
+  52949,
+  23457,
+  212271,
+  277152,
+  133895,
+  108374,
+  6191,
+  96477,
+  29980,
+  218916,
+  58024,
+  54696,
+  40853,
+  91124,
+  65894,
+  91170,
+  65908,
+  252552,
+  6793,
+  29212,
+  15389,
+  44516,
+  122515,
+  52617,
+  35058,
+  9017,
+  103536,
+  39510,
+  49136,
+  19242,
+  130652,
+  662077,
+  74699,
+  47024,
+  31422,
+  8517,
+  73351,
+  24399,
+  13867,
+  128360,
+  4810,
+  4434,
+  61779,
+  111983,
+  61036,
+  17798,
+  110240,
+  59722,
+  102960,
+  39688,
+  10001,
+  23803,
+  23039,
+  176498,
+  56659,
+  44814,
+  134295,
+  17188,
+  77577,
+  74466,
+  226175,
+  102472,
+  154333,
+  63900,
+  111747,
+  18062,
+  41171,
+  79669,
+  32773,
+  408933,
+  42562,
+  28931,
+  30907,
+  107388,
+  43487,
+  2946,
+  240310,
+  23938,
+  24354,
+  319,
+  184983,
+  7927,
+  6488,
+  1422,
+  10790,
+  68809,
+  68209,
+  64775,
+  4361,
+  202,
+  17123,
+  59634,
+  51200,
+  44391,
+  18188,
+  17843,
+  2619,
+  74278,
+  3230,
+  9540,
+  47187,
+  21702,
+  36274,
+  56894,
+  43907,
+  16310,
+  34790,
+  16866,
+  6150,
+  5561,
+  13587,
+  107545,
+  108873,
+  126867,
+  86986,
+  28640,
+  33427,
+  19017,
+  5762,
+  80637,
+  17430,
+  46903,
+  2047,
+  131055,
+  25958,
+  13558,
+  5444,
+  47152,
+  13900,
+  44563,
+  122857,
+  45348,
+  70863,
+  39593,
+  54332,
+  38068,
+  33637,
+  318,
+  40310,
+  143467,
+  18502,
+  24520,
+  11377,
+  62013,
+  28942,
+  27246,
+  28269,
+  83545,
+  17999,
+  59015,
+  90707,
+  30065,
+  15161,
+  34720,
+  1263,
+  37008,
+  2012,
+  6060,
+  98575,
+  92933,
+  5721,
+  299,
+  199555,
+  24578,
+  29223,
+  2985,
+  743,
+  115825,
+  109523,
+  136657,
+  47454,
+  26378,
+  53586,
+  3733,
+  174945,
+  93340,
+  244456,
+  5693,
+  37386,
+  28782,
+  89767,
+  27545,
+  23573,
+  18798,
+  136425,
+  34320,
+  84778,
+  20041,
+  48453,
+  38215,
+  7477,
+  71958,
+  40621,
+  8773,
+  5874,
+  187927,
+  105965,
+  51100,
+  43533,
+  18083,
+  8443,
+  10180,
+  43597,
+  2003,
+  183999,
+  69689,
+  12216,
+  129696,
+  146188,
+  62389,
+  34044,
+  68410,
+  12765,
+  43273,
+  26949,
+  266807,
+  3345,
+  34477,
+  79197,
+  5688,
+  47539,
+  213110,
+  21634,
+  22257,
+  50092,
+  32222,
+  42346,
+  39530,
+  63668,
+  98,
+  134978,
+  74022,
+  5152,
+  59088,
+  174145,
+  37220,
+  9934,
+  9545,
+  118937,
+  5724,
+  87240,
+  19875,
+  15784,
+  40143,
+  23263,
+  87513,
+  181654,
+  285152,
+  37881,
+  263241,
+  4966,
+  43934,
+  10433,
+  186657,
+  6470,
+  74416,
+  225854,
+  25908,
+  142677,
+  246262,
+  32280,
+  6192,
+  75890,
+  45546,
+  143264,
+  135305,
+  29742,
+  47013,
+  77787,
+  11732,
+  126658,
+  8763,
+  37950,
+  21806,
+  57557,
+  113464,
+  89465,
+  108995,
+  164574,
+  23894,
+  22996,
+  23169,
+  15369,
+  23117,
+  17642,
+  130607,
+  40503,
+  36239,
+  280990,
+  44666,
+  9981,
+  40427,
+  147487,
+  26869,
+  168452,
+  32886,
+  32991,
+  46798,
+  240839,
+  15111,
+  70502,
+  65697,
+  88548,
+  44145,
+  28701,
+  48767,
+  31139,
+  206777,
+  35659,
+  181164,
+  166262,
+  14554,
+  171445,
+  31786,
+  66523,
+  76607,
+  17956,
+  6507,
+  31279,
+  90476,
+  116611,
+  167918,
+  6560,
+  1243,
+  115324,
+  80128,
+  41867,
+  55897,
+  187323,
+  37069,
+  32596,
+  189444,
+  145931,
+  13390,
+  105530,
+  65709,
+  26805,
+  6999,
+  55714,
+  41300,
+  22915,
+  68951,
+  22138,
+  21120,
+  22264,
+  10058,
+  19945,
+  33635,
+  56123,
+  99085,
+  10032,
+  5818,
+  6016,
+  46649,
+  57476,
+  35264,
+  94413,
+  112522,
+  262288,
+  93686,
+  83038,
+  14341,
+  23204,
+  28807,
+  66084,
+  77987,
+  6101,
+  126673,
+  7133,
+  38126,
+  5923,
+  122091,
+  170240,
+  97772,
+  46874,
+  215746,
+  43948,
+  41622,
+  3272,
+  55596,
+  8332,
+  146411,
+  251315,
+  13533,
+  8561,
+  81521,
+  115449,
+  48616,
+  175175,
+  2063,
+  186556,
+  3036,
+  134537,
+  75772,
+  29728,
+  82360,
+  22973,
+  186559,
+  86348,
+  89100,
+  38388,
+  82297,
+  45610,
+  2613,
+  87082,
+  9986,
+  177812,
+  57884,
+  23591,
+  47485,
+  42543,
+  33582,
+  44713,
+  74439,
+  257444,
+  252451,
+  31825,
+  35631,
+  38540,
+  33066,
+  5147,
+  13973,
+  4343,
+  51830,
+  70378,
+  22827,
+  26448,
+  95560,
+  36896,
+  241741,
+  48067,
+  203953,
+  298860,
+  61620,
+  20450,
+  3220,
+  67272,
+  6586,
+  107662,
+  100160,
+  108684,
+  6929,
+  57226,
+  4762,
+  7457,
+  1320,
+  40404,
+  77204,
+  99309,
+  62750,
+  208653,
+  59977,
+  44e3,
+  74315,
+  34332,
+  5819,
+  172217,
+  64904,
+  114077,
+  18147,
+  84012,
+  1791,
+  98456,
+  90930,
+  21446,
+  116669,
+  103938,
+  7422,
+  85140,
+  59713,
+  5768,
+  326211,
+  16239,
+  75411,
+  13229,
+  29398,
+  10758,
+  236107,
+  1539,
+  112472,
+  95979,
+  152154,
+  151294,
+  306,
+  21196,
+  38146,
+  10700,
+  6891,
+  84282,
+  109646,
+  56492,
+  40539,
+  6589,
+  119491,
+  51354,
+  30685,
+  140209,
+  136906,
+  29622,
+  73617,
+  49553,
+  70525,
+  51671,
+  166869,
+  139616,
+  74395,
+  37439,
+  49595,
+  45678,
+  11959,
+  33211,
+  86560,
+  52434,
+  9282,
+  62690,
+  112155,
+  130810,
+  5243,
+  108261,
+  99970,
+  265613,
+  72551,
+  80049,
+  6391,
+  33365,
+  90721,
+  66737,
+  69872,
+  87011,
+  1860,
+  9032,
+  112544,
+  60905,
+  37371,
+  89015,
+  140351,
+  19076,
+  850,
+  373531,
+  2802,
+  36725,
+  218795,
+  72062,
+  28990,
+  16550,
+  24614,
+  7815,
+  6187,
+  26336,
+  33373,
+  32162,
+  42791,
+  73555,
+  32062,
+  23386,
+  10244,
+  56392,
+  49442,
+  27076,
+  136262,
+  12412,
+  14883,
+  1134,
+  33675,
+  97153,
+  199281,
+  15608,
+  100152,
+  74072,
+  47942,
+  254301,
+  36451,
+  16026,
+  10687,
+  65067,
+  56708,
+  254030,
+  30290,
+  50490,
+  13864,
+  57941,
+  259331,
+  35588,
+  23485,
+  43486,
+  24869,
+  21620,
+  92971,
+  22072,
+  88645,
+  1048,
+  182050,
+  13343,
+  32452,
+  14825,
+  19509,
+  3325,
+  216938,
+  45740,
+  99716,
+  189082,
+  53740,
+  78245,
+  25609,
+  24311,
+  176777,
+  47340,
+  308354,
+  40669,
+  66085,
+  14102,
+  125339,
+  9225,
+  128709,
+  97207,
+  1271,
+  200933,
+  78439,
+  113451,
+  88975,
+  18324,
+  46521,
+  11819,
+  18570,
+  141756,
+  72512,
+  170020,
+  52754,
+  63550,
+  118515,
+  103073,
+  93330,
+  32736,
+  50499,
+  14722,
+  31600,
+  68452,
+  398867,
+  29316,
+  172786,
+  18417,
+  104924,
+  2606,
+  5670,
+  84818,
+  16288,
+  67106,
+  59580,
+  82929,
+  607401,
+  291,
+  85829,
+  359,
+  15897,
+  35830,
+  50696,
+  65630,
+  52672,
+  22115,
+  356968,
+  29895,
+  40837,
+  231192,
+  34024,
+  38957,
+  26722,
+  406,
+  23335,
+  124952,
+  72068,
+  68804,
+  13268,
+  147101,
+  164740,
+  276569,
+  162596,
+  66943,
+  11569,
+  26654,
+  66358,
+  4777,
+  23229,
+  102127,
+  5848,
+  978,
+  2921,
+  59666,
+  5371,
+  28212,
+  90108,
+  42938,
+  39320,
+  2499,
+  4271,
+  108792,
+  33510,
+  125072,
+  71653,
+  65239,
+  38250,
+  66357,
+  38577,
+  13964,
+  86251,
+  35708,
+  50755,
+  36010,
+  29448,
+  12209,
+  3844,
+  38222,
+  206337,
+  100876,
+  67827,
+  137088,
+  14167,
+  252225,
+  84163,
+  195270,
+  1306,
+  5703,
+  54198,
+  779,
+  46802,
+  22028,
+  51124,
+  86759,
+  70560,
+  113164,
+  35685,
+  162145,
+  45471,
+  34561,
+  422,
+  2611,
+  6464,
+  47486,
+  19223,
+  38246,
+  9191,
+  18331,
+  89942,
+  243642,
+  212364,
+  15893,
+  17518,
+  22617,
+  6409,
+  30046,
+  126182,
+  59716,
+  36560,
+  104428,
+  18846,
+  26592,
+  19458,
+  50793,
+  147333,
+  30826,
+  1388,
+  27647,
+  10922,
+  14495,
+  33545,
+  19269,
+  135828,
+  39727,
+  41601,
+  46931,
+  233379,
+  49169,
+  131130,
+  182112,
+  16276,
+  82381,
+  118209,
+  142445,
+  128310,
+  19672,
+  28740,
+  82907,
+  33436,
+  3118,
+  102206,
+  28723,
+  24819,
+  41937,
+  38854,
+  5157,
+  3881,
+  111491,
+  1142,
+  9776,
+  421673,
+  152241,
+  29309,
+  14961,
+  87854,
+  6054,
+  15424,
+  3796,
+  82656,
+  54996,
+  2108,
+  55367,
+  239450,
+  154525,
+  9643,
+  118103,
+  106041,
+  64601,
+  68549,
+  48707,
+  30266,
+  25772,
+  18740,
+  9462,
+  229669,
+  91798,
+  112152,
+  191327,
+  14493,
+  72828,
+  8175,
+  66636,
+  236474,
+  25817,
+  87351,
+  129027,
+  76653,
+  20422,
+  22983,
+  71240,
+  27846,
+  44661,
+  12399,
+  46158,
+  77704,
+  53101,
+  35032,
+  11072,
+  17300,
+  109294,
+  33638,
+  24408,
+  1895,
+  11241,
+  760,
+  17584,
+  82479,
+  125877,
+  63150,
+  141075,
+  34259,
+  23274,
+  81698,
+  15732,
+  43577,
+  48340,
+  91584,
+  14688,
+  16379,
+  24481,
+  150280,
+  96420,
+  262050,
+  48635,
+  43727,
+  61819,
+  56268,
+  72003,
+  88178,
+  17281,
+  79912,
+  13218,
+  122519,
+  125295,
+  166396,
+  11811,
+  2171,
+  118930,
+  67746,
+  17636,
+  178278,
+  174656,
+  95661,
+  173039,
+  83845,
+  79689,
+  17473,
+  98555,
+  127696,
+  203415,
+  54730,
+  22925,
+  232239,
+  9309,
+  12136,
+  175026,
+  20740,
+  180188,
+  10747,
+  39816,
+  314017,
+  266131,
+  10040,
+  175732,
+  112550,
+  220651,
+  31974,
+  37393,
+  888,
+  23008,
+  86799,
+  4303,
+  64905,
+  148467,
+  75337,
+  251,
+  3284,
+  370102,
+  50264,
+  9835,
+  5438,
+  23655,
+  4481,
+  29851,
+  329,
+  12855,
+  7162,
+  64931,
+  78141,
+  12804,
+  42372,
+  296771,
+  83547,
+  18624,
+  34874,
+  86271,
+  3360,
+  48665,
+  77735,
+  88767,
+  11463,
+  63527,
+  28889,
+  22258,
+  29140,
+  194315,
+  113924,
+  25499,
+  6406,
+  31334,
+  1845,
+  4802,
+  49184,
+  43455,
+  35469,
+  127594,
+  92970,
+  61038,
+  115005,
+  38840,
+  87761,
+  106838,
+  8811,
+  20572,
+  55637,
+  11162,
+  96721,
+  132425,
+  108925,
+  2948,
+  125457,
+  36356,
+  3502,
+  75270,
+  27622,
+  127192,
+  2561,
+  123095,
+  49394,
+  61155,
+  16897,
+  110064,
+  9699,
+  89448,
+  53356,
+  19628,
+  220310,
+  21622,
+  83036,
+  9885,
+  112214,
+  6087,
+  26713,
+  17901,
+  161912,
+  91492,
+  3440,
+  68594,
+  9266,
+  92238,
+  8087,
+  6866,
+  150194,
+  72175,
+  80701,
+  13459,
+  31836,
+  43243,
+  239700,
+  95846,
+  44749,
+  50647,
+  21945,
+  230538,
+  120612,
+  132371,
+  244604,
+  5193,
+  105637,
+  34661,
+  41341,
+  68775,
+  85393,
+  1874,
+  8771,
+  33718,
+  49672,
+  77403,
+  595452,
+  99507,
+  6490,
+  58895,
+  128742,
+  7704,
+  39239,
+  73217,
+  43816,
+  62824,
+  37804,
+  199976,
+  22361,
+  80005,
+  87514,
+  94832,
+  14089,
+  4574,
+  139975,
+  59142,
+  75523,
+  100268,
+  43906,
+  53442,
+  15152,
+  2547,
+  186002,
+  17011,
+  19513,
+  204282,
+  3343,
+  60568,
+  128318,
+  119250,
+  4298,
+  51871,
+  41336,
+  71759,
+  21921,
+  45074,
+  98169,
+  145889,
+  99427,
+  11350,
+  1237,
+  5520,
+  28799,
+  7803,
+  53702,
+  21026,
+  136352,
+  38293,
+  128690,
+  12158,
+  90132,
+  44600,
+  10184,
+  26957,
+  39459,
+  126025,
+  78904,
+  82999,
+  59373,
+  39301,
+  150198,
+  120529,
+  153042,
+  20177,
+  50089,
+  14764,
+  271571,
+  30530,
+  123161,
+  38975,
+  101562,
+  22941,
+  5648,
+  124654,
+  109243,
+  69817,
+  71675,
+  49162,
+  106884,
+  21241,
+  107795,
+  30258,
+  16572,
+  188262,
+  141456,
+  7688,
+  60718,
+  8271,
+  11044,
+  32440,
+  104608,
+  103419,
+  236109,
+  93156,
+  43293,
+  128929,
+  42107,
+  67180,
+  25201,
+  115254,
+  185488,
+  130954,
+  72813,
+  167547,
+  20537,
+  39969,
+  38432,
+  22582,
+  184022,
+  1139,
+  27199,
+  5655,
+  17767,
+  97412,
+  122606,
+  209377,
+  27070,
+  35871,
+  326617,
+  188954,
+  42680,
+  73512,
+  80911,
+  22629,
+  3011,
+  95021,
+  315242,
+  157737,
+  383,
+  41821,
+  41808,
+  19335,
+  27950,
+  15674,
+  25677,
+  110950,
+  35375,
+  76835,
+  59108,
+  57370,
+  35262,
+  16569,
+  160415,
+  37706,
+  78086,
+  32041,
+  49691,
+  137143,
+  9782,
+  172080,
+  50148,
+  77917,
+  6323,
+  10110,
+  69172,
+  17711,
+  21795,
+  59511,
+  76184,
+  135114,
+  31046,
+  132319,
+  59105,
+  157578,
+  20549,
+  80778,
+  57649,
+  158421,
+  65143,
+  4575,
+  72235,
+  21899,
+  10797,
+  92745,
+  34035,
+  106079,
+  80159,
+  4508,
+  78304,
+  25350,
+  75457,
+  46458,
+  32937,
+  25623,
+  47,
+  8531,
+  104751,
+  84953,
+  8138,
+  36508,
+  187199,
+  66310,
+  115274,
+  13253,
+  32461,
+  38536,
+  1916,
+  42007,
+  187160,
+  35055,
+  26325,
+  84394,
+  35963,
+  94216,
+  45590,
+  97782
+];
+
+// node_modules/@libp2p/kad-dht/dist/src/routing-table/refresh.js
+var MAX_COMMON_PREFIX_LENGTH = 15;
+var RoutingTableRefresh = class {
+  static {
+    __name(this, "RoutingTableRefresh");
+  }
+  log;
+  peerRouting;
+  routingTable;
+  refreshInterval;
+  refreshQueryTimeout;
+  commonPrefixLengthRefreshedAt;
+  refreshTimeoutId;
+  constructor(components, init) {
+    const { peerRouting, routingTable, refreshInterval, refreshQueryTimeout, logPrefix } = init;
+    this.log = components.logger.forComponent(`${logPrefix}:routing-table:refresh`);
+    this.peerRouting = peerRouting;
+    this.routingTable = routingTable;
+    this.refreshInterval = refreshInterval ?? TABLE_REFRESH_INTERVAL;
+    this.refreshQueryTimeout = refreshQueryTimeout ?? TABLE_REFRESH_QUERY_TIMEOUT;
+    this.commonPrefixLengthRefreshedAt = [];
+    this.refreshTable = this.refreshTable.bind(this);
+  }
+  async afterStart() {
+    this.log(`refreshing routing table every ${this.refreshInterval}ms`);
+    this.refreshTable(true);
+  }
+  async stop() {
+    if (this.refreshTimeoutId != null) {
+      clearTimeout(this.refreshTimeoutId);
+    }
+  }
+  /**
+   * To speed lookups, we seed the table with random PeerIds. This means
+   * when we are asked to locate a peer on the network, we can find a KadId
+   * that is close to the requested peer ID and query that, then network
+   * peers will tell us who they know who is close to the fake ID
+   */
+  refreshTable(force = false, options) {
+    this.log("refreshing routing table");
+    const prefixLength = this._maxCommonPrefix();
+    const refreshCommonPrefixLengths = this._getTrackedCommonPrefixLengthsForRefresh(prefixLength);
+    this.log(`max common prefix length ${prefixLength}`);
+    this.log(`tracked CPLs [ ${refreshCommonPrefixLengths.map((date) => date.toISOString()).join(", ")} ]`);
+    Promise.all(refreshCommonPrefixLengths.map(async (lastRefresh, index) => {
+      try {
+        await this._refreshCommonPrefixLength(index, lastRefresh, force, options);
+        if (this._numPeersForCpl(prefixLength) === 0) {
+          const lastCpl = Math.min(2 * (index + 1), refreshCommonPrefixLengths.length - 1);
+          for (let n2 = index + 1; n2 < lastCpl + 1; n2++) {
+            try {
+              await this._refreshCommonPrefixLength(n2, lastRefresh, force, options);
+            } catch (err) {
+              this.log.error("failed to refresh entries with common prefix length %d - %e", n2, err);
+            }
+          }
+        }
+      } catch (err) {
+        this.log.error("failed to refresh entries with common prefix length - %e", err);
+      }
+    })).catch((err) => {
+      this.log.error("failed to refresh table - %e", err);
+    }).then(() => {
+      this.refreshTimeoutId = setTimeout(this.refreshTable, this.refreshInterval);
+      if (this.refreshTimeoutId.unref != null) {
+        this.refreshTimeoutId.unref();
+      }
+    }).catch((err) => {
+      this.log.error("failed to set refresh timeout - %e", err);
+    });
+  }
+  async _refreshCommonPrefixLength(cpl, lastRefresh, force, options) {
+    if (!force && lastRefresh.getTime() > Date.now() - this.refreshInterval) {
+      this.log("not running refresh for cpl %s as time since last refresh not above interval", cpl);
+      return;
+    }
+    const peerId = this._generateRandomPeerId(cpl);
+    this.log("starting refreshing cpl %s with key %p (routing table size was %s)", cpl, peerId, this.routingTable.size);
+    const signal = anySignal([options?.signal, AbortSignal.timeout(this.refreshQueryTimeout)]);
+    setMaxListeners(Infinity, signal);
+    try {
+      const peers = await src_default10(this.peerRouting.getClosestPeers(peerId.toMultihash().bytes, {
+        signal
+      }));
+      this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId);
+      this.log("finished refreshing cpl %s with key %p (routing table size is now %s)", cpl, peerId, this.routingTable.size);
+    } finally {
+      signal.clear();
+    }
+  }
+  _getTrackedCommonPrefixLengthsForRefresh(maxCommonPrefix) {
+    if (maxCommonPrefix > MAX_COMMON_PREFIX_LENGTH) {
+      maxCommonPrefix = MAX_COMMON_PREFIX_LENGTH;
+    }
+    const dates = [];
+    for (let i2 = 0; i2 <= maxCommonPrefix; i2++) {
+      dates[i2] = this.commonPrefixLengthRefreshedAt[i2] ?? /* @__PURE__ */ new Date();
+    }
+    return dates;
+  }
+  _generateRandomPeerId(targetCommonPrefixLength) {
+    if (this.routingTable.kb == null) {
+      throw new Error("Routing table not started");
+    }
+    if (this.routingTable.kb.localPeer == null) {
+      throw new Error("Local peer not set");
+    }
+    const randomData = randomBytes2(2);
+    const randomUint16 = (randomData[1] << 8) + randomData[0];
+    const key = this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength);
+    const multihash = decode5(key);
+    return peerIdFromMultihash(multihash);
+  }
+  _makePeerId(localKadId, randomPrefix, targetCommonPrefixLength) {
+    if (targetCommonPrefixLength > MAX_COMMON_PREFIX_LENGTH) {
+      throw new Error(`Cannot generate peer ID for common prefix length greater than ${MAX_COMMON_PREFIX_LENGTH}`);
+    }
+    const view = new DataView(localKadId.buffer, localKadId.byteOffset, localKadId.byteLength);
+    const localPrefix = view.getUint16(0, false);
+    const toggledLocalPrefix = localPrefix ^ 32768 >> targetCommonPrefixLength;
+    const mask = 65535 << 16 - (targetCommonPrefixLength + 1);
+    const targetPrefix = toggledLocalPrefix & mask | randomPrefix & ~mask;
+    const keyPrefix = generated_prefix_list_browser_default[targetPrefix];
+    const keyBuffer = new ArrayBuffer(34);
+    const keyView = new DataView(keyBuffer, 0, keyBuffer.byteLength);
+    keyView.setUint8(0, sha2562.code);
+    keyView.setUint8(1, 32);
+    keyView.setUint32(2, keyPrefix, false);
+    return new Uint8Array(keyView.buffer, keyView.byteOffset, keyView.byteLength);
+  }
+  /**
+   * returns the maximum common prefix length between any peer in the table
+   * and the current peer
+   */
+  _maxCommonPrefix() {
+    let prefixLength = 0;
+    for (const length4 of this._prefixLengths()) {
+      if (length4 > prefixLength) {
+        prefixLength = length4;
+      }
+    }
+    return prefixLength;
+  }
+  /**
+   * Returns the number of peers in the table with a given prefix length
+   */
+  _numPeersForCpl(prefixLength) {
+    let count = 0;
+    for (const length4 of this._prefixLengths()) {
+      if (length4 === prefixLength) {
+        count++;
+      }
+    }
+    return count;
+  }
+  /**
+   * Yields the common prefix length of every peer in the table
+   */
+  *_prefixLengths() {
+    if (this.routingTable.kb?.localPeer == null) {
+      return;
+    }
+    for (const { kadId } of this.routingTable.kb.toIterable()) {
+      const distance = xor(this.routingTable.kb.localPeer.kadId, kadId);
+      let leadingZeros = 0;
+      for (const byte of distance) {
+        if (byte === 0) {
+          leadingZeros++;
+        } else {
+          break;
+        }
+      }
+      yield leadingZeros;
+    }
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/handlers/add-provider.js
+var AddProviderHandler = class {
+  static {
+    __name(this, "AddProviderHandler");
+  }
+  peerId;
+  providers;
+  peerStore;
+  log;
+  constructor(components, init) {
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:add-provider`);
+    this.peerId = components.peerId;
+    this.providers = init.providers;
+    this.peerStore = components.peerStore;
+  }
+  async handle(peerId, msg) {
+    if (msg.key == null || msg.key.length === 0) {
+      throw new InvalidMessageError("Missing key");
+    }
+    let cid;
+    try {
+      cid = CID.decode(msg.key);
+    } catch (err) {
+      throw new InvalidMessageError("Invalid CID");
+    }
+    if (msg.providers == null || msg.providers.length === 0) {
+      this.log.error("no providers found in message");
+    }
+    this.log("%p asked us, %p to store provider record for for %c", peerId, this.peerId, cid);
+    await Promise.all(msg.providers.map(async (pi) => {
+      const digest2 = decode5(pi.id);
+      const providerId = peerIdFromMultihash(digest2);
+      const providerMultiaddrs = pi.multiaddrs.map((buf) => multiaddr(buf));
+      if (!peerId.equals(providerId)) {
+        this.log("invalid provider peer %p from %p", pi.id, peerId);
+        return;
+      }
+      if (pi.multiaddrs.length < 1) {
+        this.log("no valid addresses for provider %p. Ignore", peerId);
+        return;
+      }
+      this.log.trace("received provider %p for %s (addrs %s)", peerId, cid, providerMultiaddrs);
+      await this.providers.addProvider(cid, providerId);
+      await this.peerStore.merge(providerId, {
+        multiaddrs: providerMultiaddrs
+      });
+    }));
+    return void 0;
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/handlers/find-node.js
+var FindNodeHandler = class {
+  static {
+    __name(this, "FindNodeHandler");
+  }
+  peerRouting;
+  peerInfoMapper;
+  peerId;
+  addressManager;
+  log;
+  constructor(components, init) {
+    const { peerRouting, logPrefix } = init;
+    this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:find-node`);
+    this.peerId = components.peerId;
+    this.addressManager = components.addressManager;
+    this.peerRouting = peerRouting;
+    this.peerInfoMapper = init.peerInfoMapper;
+  }
+  /**
+   * Process `FindNode` DHT messages
+   */
+  async handle(peerId, msg) {
+    this.log("incoming request from %p for peers close to %b", peerId, msg.key);
+    try {
+      if (msg.key == null) {
+        throw new InvalidMessageError("Invalid FIND_NODE message received - key was missing");
+      }
+      const closer = await this.peerRouting.getClosestPeersOffline(msg.key, {
+        exclude: [
+          // never tell a peer about itself
+          peerId,
+          // do not include the server in the results
+          this.peerId
+        ]
+      });
+      if (equals3(this.peerId.toMultihash().bytes, msg.key)) {
+        closer.push({
+          id: this.peerId,
+          multiaddrs: this.addressManager.getAddresses().map((ma) => ma.decapsulateCode(CODE_P2P))
+        });
+      }
+      const response = {
+        type: MessageType.FIND_NODE,
+        clusterLevel: msg.clusterLevel,
+        closer: closer.map(this.peerInfoMapper).filter(({ multiaddrs }) => multiaddrs.length).map((peerInfo) => ({
+          id: peerInfo.id.toMultihash().bytes,
+          multiaddrs: peerInfo.multiaddrs.map((ma) => ma.bytes)
+        })),
+        providers: []
+      };
+      if (response.closer.length === 0) {
+        this.log("could not find any peers closer to %b for %p", msg.key, peerId);
+      } else {
+        this.log("found %d peers close to %b for %p", response.closer.length, msg.key, peerId);
+      }
+      return response;
+    } catch (err) {
+      this.log("error during finding peers closer to %b for %p - %e", msg.key, peerId, err);
+      throw err;
+    }
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/handlers/get-providers.js
+var GetProvidersHandler = class {
+  static {
+    __name(this, "GetProvidersHandler");
+  }
+  peerId;
+  peerRouting;
+  providers;
+  peerStore;
+  peerInfoMapper;
+  log;
+  constructor(components, init) {
+    const { peerRouting, providers, logPrefix } = init;
+    this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:get-providers`);
+    this.peerId = components.peerId;
+    this.peerStore = components.peerStore;
+    this.peerRouting = peerRouting;
+    this.providers = providers;
+    this.peerInfoMapper = init.peerInfoMapper;
+  }
+  async handle(peerId, msg) {
+    if (msg.key == null) {
+      throw new InvalidMessageError("Invalid GET_PROVIDERS message received - key was missing");
+    }
+    let cid;
+    try {
+      cid = CID.decode(msg.key);
+    } catch (err) {
+      throw new InvalidMessageError("Invalid CID");
+    }
+    this.log("%p asking for providers for %s", peerId, cid);
+    const [providerPeers, closerPeers] = await Promise.all([
+      src_default3(src_default9(await this.providers.getProviders(cid), async (peerId2) => {
+        const peer = await this.peerStore.get(peerId2);
+        const info = {
+          id: peer.id,
+          multiaddrs: peer.addresses.map(({ multiaddr: multiaddr2 }) => multiaddr2)
+        };
+        return info;
+      })),
+      this.peerRouting.getClosestPeersOffline(msg.key)
+    ]);
+    const response = {
+      type: MessageType.GET_PROVIDERS,
+      key: msg.key,
+      clusterLevel: msg.clusterLevel,
+      closer: closerPeers.map(this.peerInfoMapper).filter(({ id, multiaddrs }) => multiaddrs.length > 0).map((peerInfo) => ({
+        id: peerInfo.id.toMultihash().bytes,
+        multiaddrs: peerInfo.multiaddrs.map((ma) => ma.bytes)
+      })),
+      providers: providerPeers.map(this.peerInfoMapper).filter(({ id, multiaddrs }) => multiaddrs.length > 0).map((peerInfo) => ({
+        id: peerInfo.id.toMultihash().bytes,
+        multiaddrs: peerInfo.multiaddrs.map((ma) => ma.bytes)
+      }))
+    };
+    this.log("got %s providers %s closerPeers", response.providers.length, response.closer.length);
+    return response;
+  }
+  async _getAddresses(peerId) {
+    return [];
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/handlers/get-value.js
+var GetValueHandler = class {
+  static {
+    __name(this, "GetValueHandler");
+  }
+  peerStore;
+  datastore;
+  peerRouting;
+  log;
+  datastorePrefix;
+  constructor(components, init) {
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:get-value`);
+    this.datastorePrefix = `${init.datastorePrefix}/record`;
+    this.peerStore = components.peerStore;
+    this.datastore = components.datastore;
+    this.peerRouting = init.peerRouting;
+  }
+  async handle(peerId, msg) {
+    const key = msg.key;
+    this.log("%p asked for key %b", peerId, key);
+    if (key == null || key.length === 0) {
+      throw new InvalidMessageError("Invalid key");
+    }
+    const response = {
+      type: MessageType.GET_VALUE,
+      key,
+      clusterLevel: msg.clusterLevel,
+      closer: [],
+      providers: []
+    };
+    if (isPublicKeyKey(key)) {
+      this.log("is public key");
+      const idFromKey = fromPublicKeyKey(key);
+      let pubKey;
+      try {
+        const peer = await this.peerStore.get(idFromKey);
+        if (peer.id.publicKey == null) {
+          throw new NotFoundError("No public key found in key book");
+        }
+        pubKey = publicKeyToProtobuf(peer.id.publicKey);
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          throw err;
+        }
+      }
+      if (pubKey != null) {
+        this.log("returning found public key");
+        response.record = new Libp2pRecord(key, pubKey, /* @__PURE__ */ new Date()).serialize();
+        return response;
+      }
+    }
+    const [record, closer] = await Promise.all([
+      this._checkLocalDatastore(key),
+      this.peerRouting.getClosestPeersOffline(key)
+    ]);
+    if (record != null) {
+      this.log("had record for %b in local datastore", key);
+      response.record = record.serialize();
+    }
+    if (closer.length > 0) {
+      this.log("had %s closer peers in routing table", closer.length);
+      response.closer = closer.map((peerInfo) => ({
+        id: peerInfo.id.toMultihash().bytes,
+        multiaddrs: peerInfo.multiaddrs.map((ma) => ma.bytes)
+      }));
+    }
+    return response;
+  }
+  /**
+   * Try to fetch a given record by from the local datastore.
+   * Returns the record if it is still valid, meaning
+   * - it was either authored by this node, or
+   * - it was received less than `PROVIDERS_VALIDITY` ago.
+   */
+  async _checkLocalDatastore(key) {
+    this.log("checkLocalDatastore looking for %b", key);
+    const dsKey = bufferToRecordKey(this.datastorePrefix, key);
+    let rawRecord;
+    try {
+      rawRecord = await this.datastore.get(dsKey);
+    } catch (err) {
+      if (err.name === "NotFoundError") {
+        return void 0;
+      }
+      throw err;
+    }
+    const record = Libp2pRecord.deserialize(rawRecord);
+    if (record.timeReceived == null || Date.now() - record.timeReceived.getTime() > PROVIDERS_VALIDITY) {
+      await this.datastore.delete(dsKey);
+      return void 0;
+    }
+    return record;
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/handlers/ping.js
+var PingHandler = class {
+  static {
+    __name(this, "PingHandler");
+  }
+  log;
+  constructor(components, init) {
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:ping`);
+  }
+  async handle(peerId, msg) {
+    this.log("ping from %p", peerId);
+    return msg;
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/handlers/put-value.js
+var PutValueHandler = class {
+  static {
+    __name(this, "PutValueHandler");
+  }
+  components;
+  validators;
+  log;
+  datastorePrefix;
+  constructor(components, init) {
+    const { validators: validators2 } = init;
+    this.components = components;
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:put-value`);
+    this.datastorePrefix = `${init.datastorePrefix}/record`;
+    this.validators = validators2;
+  }
+  async handle(peerId, msg) {
+    const key = msg.key;
+    this.log("%p asked us to store value for key %b", peerId, key);
+    if (msg.record == null) {
+      this.log.error("empty record from %p", peerId);
+      throw new InvalidMessageError(`Empty record from: ${peerId}`);
+    }
+    try {
+      const deserializedRecord = Libp2pRecord.deserialize(msg.record);
+      await verifyRecord(this.validators, deserializedRecord);
+      deserializedRecord.timeReceived = /* @__PURE__ */ new Date();
+      const recordKey = bufferToRecordKey(this.datastorePrefix, deserializedRecord.key);
+      await this.components.datastore.put(recordKey, deserializedRecord.serialize().subarray());
+      this.log("put record for %b into datastore under key %k", key, recordKey);
+    } catch (err) {
+      this.log("did not put record for key %b into datastore %o", key, err);
+    }
+    return msg;
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/rpc/index.js
+var RPC = class {
+  static {
+    __name(this, "RPC");
+  }
+  handlers;
+  log;
+  metrics;
+  incomingMessageTimeout;
+  constructor(components, init) {
+    this.metrics = {
+      operations: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_requests_total`),
+      errors: components.metrics?.registerCounterGroup(`${init.metricsPrefix}_inbound_rpc_errors_total`),
+      rpcTime: components.metrics?.registerMetricGroup(`${init.metricsPrefix}_inbound_rpc_time_seconds`, { label: "operation" })
+    };
+    this.log = components.logger.forComponent(`${init.logPrefix}:rpc`);
+    this.incomingMessageTimeout = init.incomingMessageTimeout ?? 1e4;
+    this.handlers = {
+      [MessageType.GET_VALUE.toString()]: new GetValueHandler(components, init),
+      [MessageType.PUT_VALUE.toString()]: new PutValueHandler(components, init),
+      [MessageType.FIND_NODE.toString()]: new FindNodeHandler(components, init),
+      [MessageType.ADD_PROVIDER.toString()]: new AddProviderHandler(components, init),
+      [MessageType.GET_PROVIDERS.toString()]: new GetProvidersHandler(components, init),
+      [MessageType.PING.toString()]: new PingHandler(components, init)
+    };
+  }
+  /**
+   * Process incoming DHT messages
+   */
+  async handleMessage(peerId, msg) {
+    const handler = this.handlers[msg.type];
+    if (handler == null) {
+      this.log.error(`no handler found for message type: ${msg.type}`);
+      return;
+    }
+    try {
+      this.metrics.operations?.increment({
+        [msg.type]: true
+      });
+      return await handler.handle(peerId, msg);
+    } catch {
+      this.metrics.errors?.increment({
+        [msg.type]: true
+      });
+    }
+  }
+  /**
+   * Handle incoming streams on the dht protocol
+   */
+  async onIncomingStream(stream, connection) {
+    const abortListener = /* @__PURE__ */ __name(() => {
+      stream.abort(new TimeoutError());
+    }, "abortListener");
+    let signal = AbortSignal.timeout(this.incomingMessageTimeout);
+    signal.addEventListener("abort", abortListener);
+    const messages2 = pbStream(stream).pb(Message3);
+    while (true) {
+      if (stream.readStatus !== "readable") {
+        await stream.close({
+          signal
+        });
+        break;
+      }
+      const message2 = await messages2.read({
+        signal
+      });
+      const stopSuccessTimer = this.metrics?.rpcTime?.timer(message2.type.toString());
+      const stopErrorTimer = this.metrics?.rpcTime?.timer(message2.type.toString());
+      let errored = false;
+      try {
+        this.log("incoming %s from %p", message2.type, connection.remotePeer);
+        const res = await this.handleMessage(connection.remotePeer, message2);
+        if (res != null) {
+          await messages2.write(res, {
+            signal
+          });
+        }
+      } catch (err) {
+        errored = true;
+        stopErrorTimer?.();
+        throw err;
+      } finally {
+        if (!errored) {
+          stopSuccessTimer?.();
+        }
+      }
+      signal.removeEventListener("abort", abortListener);
+      signal = AbortSignal.timeout(this.incomingMessageTimeout);
+      signal.addEventListener("abort", abortListener);
+    }
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/topology-listener.js
+var TopologyListener = class extends TypedEventEmitter {
+  static {
+    __name(this, "TopologyListener");
+  }
+  log;
+  components;
+  protocol;
+  running;
+  registrarId;
+  constructor(components, init) {
+    super();
+    const { protocol, logPrefix } = init;
+    this.components = components;
+    this.log = components.logger.forComponent(`${logPrefix}:topology-listener`);
+    this.running = false;
+    this.protocol = protocol;
+  }
+  isStarted() {
+    return this.running;
+  }
+  /**
+   * Start the network
+   */
+  async start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    this.registrarId = await this.components.registrar.register(this.protocol, {
+      onConnect: /* @__PURE__ */ __name((peerId) => {
+        this.log("observed peer %p with protocol %s", peerId, this.protocol);
+        this.dispatchEvent(new CustomEvent("peer", {
+          detail: peerId
+        }));
+      }, "onConnect")
+    });
+  }
+  /**
+   * Stop all network activity
+   */
+  async stop() {
+    this.running = false;
+    if (this.registrarId != null) {
+      this.components.registrar.unregister(this.registrarId);
+      this.registrarId = void 0;
+    }
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/kad-dht.js
+var DHTContentRouting = class {
+  static {
+    __name(this, "DHTContentRouting");
+  }
+  dht;
+  constructor(dht) {
+    this.dht = dht;
+  }
+  async provide(cid, options = {}) {
+    await src_default4(this.dht.provide(cid, options));
+  }
+  async cancelReprovide(key) {
+    await this.dht.cancelReprovide(key);
+  }
+  async *findProviders(cid, options = {}) {
+    for await (const event of this.dht.findProviders(cid, options)) {
+      if (event.name === "PROVIDER") {
+        yield* event.providers;
+      }
+    }
+  }
+  async put(key, value2, options) {
+    await src_default4(this.dht.put(key, value2, options));
+  }
+  async get(key, options) {
+    for await (const event of this.dht.get(key, options)) {
+      if (event.name === "VALUE") {
+        return event.value;
+      }
+    }
+    throw new NotFoundError("Could not find value for key");
+  }
+};
+var DHTPeerRouting = class {
+  static {
+    __name(this, "DHTPeerRouting");
+  }
+  dht;
+  constructor(dht) {
+    this.dht = dht;
+  }
+  async findPeer(peerId, options = {}) {
+    for await (const event of this.dht.findPeer(peerId, options)) {
+      if (event.name === "FINAL_PEER") {
+        return event.peer;
+      }
+    }
+    throw new NotFoundError("Peer not found");
+  }
+  async *getClosestPeers(key, options = {}) {
+    for await (const event of this.dht.getClosestPeers(key, options)) {
+      if (event.name === "FINAL_PEER") {
+        yield event.peer;
+      }
+    }
+  }
+};
+var DEFAULT_MAX_INBOUND_STREAMS2 = 32;
+var DEFAULT_MAX_OUTBOUND_STREAMS2 = 64;
+var KadDHT = class extends TypedEventEmitter {
+  static {
+    __name(this, "KadDHT");
+  }
+  k;
+  a;
+  d;
+  protocol;
+  routingTable;
+  providers;
+  network;
+  peerRouting;
+  components;
+  log;
+  running;
+  clientMode;
+  validators;
+  selectors;
+  queryManager;
+  contentFetching;
+  contentRouting;
+  routingTableRefresh;
+  rpc;
+  topologyListener;
+  querySelf;
+  maxInboundStreams;
+  maxOutboundStreams;
+  dhtContentRouting;
+  dhtPeerRouting;
+  peerInfoMapper;
+  reprovider;
+  onPeerConnectTimeout;
+  /**
+   * Create a new KadDHT
+   */
+  constructor(components, init = {}) {
+    super();
+    const logPrefix = init.logPrefix ?? "libp2p:kad-dht";
+    const datastorePrefix = init.datastorePrefix ?? "/dht";
+    const metricsPrefix = init.metricsPrefix ?? "libp2p_kad_dht";
+    const operationMetrics = {
+      queries: components.metrics?.registerMetricGroup(`${metricsPrefix}_operations_total`, { label: "operation" }),
+      errors: components.metrics?.registerCounterGroup(`${metricsPrefix}_operation_errors_total`, { label: "operation" }),
+      queryTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_time_seconds`, { label: "operation" }),
+      errorTime: components.metrics?.registerMetricGroup(`${metricsPrefix}_operation_error_time_seconds`, { label: "operation" })
+    };
+    this.running = false;
+    this.components = components;
+    this.log = components.logger.forComponent(logPrefix);
+    this.k = init.kBucketSize ?? KBUCKET_SIZE;
+    this.a = init.alpha ?? ALPHA;
+    this.d = init.disjointPaths ?? this.a;
+    this.protocol = init.protocol ?? PROTOCOL;
+    this.clientMode = init.clientMode ?? true;
+    this.maxInboundStreams = init.maxInboundStreams ?? DEFAULT_MAX_INBOUND_STREAMS2;
+    this.maxOutboundStreams = init.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS2;
+    this.peerInfoMapper = init.peerInfoMapper ?? removePrivateAddressesMapper;
+    this.onPeerConnectTimeout = init.onPeerConnectTimeout ?? ON_PEER_CONNECT_TIMEOUT;
+    this.providers = new Providers(components, {
+      ...init.providers,
+      logPrefix,
+      datastorePrefix
+    });
+    this.validators = {
+      ...validators,
+      ...init.validators
+    };
+    this.selectors = {
+      ...selectors,
+      ...init.selectors
+    };
+    this.network = new Network(components, {
+      protocol: this.protocol,
+      logPrefix,
+      metricsPrefix
+    });
+    this.routingTable = new RoutingTable(components, {
+      kBucketSize: this.k,
+      pingOldContactTimeout: init.pingOldContactTimeout,
+      pingOldContactConcurrency: init.pingOldContactConcurrency,
+      pingOldContactMaxQueueSize: init.pingOldContactMaxQueueSize,
+      pingNewContactTimeout: init.pingNewContactTimeout,
+      pingNewContactConcurrency: init.pingNewContactConcurrency,
+      pingNewContactMaxQueueSize: init.pingNewContactMaxQueueSize,
+      protocol: this.protocol,
+      logPrefix,
+      metricsPrefix,
+      prefixLength: init.prefixLength,
+      splitThreshold: init.kBucketSplitThreshold,
+      network: this.network
+    });
+    const initialQuerySelfHasRun = pDefer();
+    if (init.allowQueryWithZeroPeers === true) {
+      initialQuerySelfHasRun.resolve();
+    }
+    this.queryManager = new QueryManager(components, {
+      disjointPaths: this.d,
+      alpha: this.a,
+      logPrefix,
+      metricsPrefix,
+      initialQuerySelfHasRun,
+      routingTable: this.routingTable,
+      allowQueryWithZeroPeers: init.allowQueryWithZeroPeers
+    });
+    this.peerRouting = new PeerRouting(components, {
+      routingTable: this.routingTable,
+      network: this.network,
+      validators: this.validators,
+      queryManager: this.queryManager,
+      logPrefix
+    });
+    this.contentFetching = new ContentFetching(components, {
+      validators: this.validators,
+      selectors: this.selectors,
+      peerRouting: this.peerRouting,
+      queryManager: this.queryManager,
+      network: this.network,
+      logPrefix,
+      datastorePrefix
+    });
+    this.contentRouting = new ContentRouting(components, {
+      network: this.network,
+      peerRouting: this.peerRouting,
+      queryManager: this.queryManager,
+      routingTable: this.routingTable,
+      providers: this.providers,
+      logPrefix
+    });
+    this.routingTableRefresh = new RoutingTableRefresh(components, {
+      peerRouting: this.peerRouting,
+      routingTable: this.routingTable,
+      logPrefix
+    });
+    this.rpc = new RPC(components, {
+      routingTable: this.routingTable,
+      providers: this.providers,
+      peerRouting: this.peerRouting,
+      validators: this.validators,
+      logPrefix,
+      metricsPrefix,
+      datastorePrefix,
+      peerInfoMapper: this.peerInfoMapper
+    });
+    this.topologyListener = new TopologyListener(components, {
+      protocol: this.protocol,
+      logPrefix
+    });
+    this.querySelf = new QuerySelf(components, {
+      peerRouting: this.peerRouting,
+      interval: init.querySelfInterval,
+      initialInterval: init.initialQuerySelfInterval,
+      logPrefix,
+      initialQuerySelfHasRun,
+      operationMetrics
+    });
+    this.reprovider = new Reprovider(components, {
+      ...init.reprovide,
+      logPrefix,
+      metricsPrefix,
+      datastorePrefix,
+      contentRouting: this.contentRouting,
+      operationMetrics
+    });
+    this.network.addEventListener("peer", (evt) => {
+      const peerData = evt.detail;
+      this.onPeerConnect(peerData).catch((err) => {
+        this.log.error("could not add %p to routing table - %e", peerData.id, err);
+      });
+      this.dispatchEvent(new CustomEvent("peer", {
+        detail: peerData
+      }));
+    });
+    this.topologyListener.addEventListener("peer", (evt) => {
+      const peerId = evt.detail;
+      Promise.resolve().then(async () => {
+        const peer = await this.components.peerStore.get(peerId);
+        const peerData = {
+          id: peerId,
+          multiaddrs: peer.addresses.map(({ multiaddr: multiaddr2 }) => multiaddr2),
+          protocols: peer.protocols
+        };
+        await this.onPeerConnect(peerData);
+      }).catch((err) => {
+        this.log.error("could not add %p to routing table - %e", peerId, err);
+      });
+    });
+    this.dhtPeerRouting = new DHTPeerRouting(this);
+    this.dhtContentRouting = new DHTContentRouting(this);
+    if (init.clientMode == null) {
+      components.events.addEventListener("self:peer:update", (evt) => {
+        this.log("received update of self-peer info");
+        void Promise.resolve().then(async () => {
+          const hasPublicAddress = evt.detail.peer.addresses.some(({ multiaddr: multiaddr2 }) => {
+            return !isPrivate(multiaddr2) && !Circuit.exactMatch(multiaddr2);
+          });
+          const mode = this.getMode();
+          if (hasPublicAddress && mode === "client") {
+            await this.setMode("server");
+          } else if (mode === "server" && !hasPublicAddress) {
+            await this.setMode("client");
+          }
+        }).catch((err) => {
+          this.log.error("error setting dht server mode - %e", err);
+        });
+      });
+    }
+    this.get = timeOperationGenerator(this.get.bind(this), operationMetrics, "GET_VALUE");
+    this.findProviders = timeOperationGenerator(this.findProviders.bind(this), operationMetrics, "FIND_PROVIDERS");
+    this.findPeer = timeOperationGenerator(this.findPeer.bind(this), operationMetrics, "FIND_PEER");
+    this.getClosestPeers = timeOperationGenerator(this.getClosestPeers.bind(this), operationMetrics, "GET_CLOSEST_PEERS");
+    this.provide = timeOperationGenerator(this.provide.bind(this), operationMetrics, "PROVIDE");
+    this.put = timeOperationGenerator(this.put.bind(this), operationMetrics, "PUT_VALUE");
+  }
+  [Symbol.toStringTag] = "@libp2p/kad-dht";
+  [serviceCapabilities] = [
+    "@libp2p/content-routing",
+    "@libp2p/peer-routing",
+    "@libp2p/peer-discovery",
+    "@libp2p/kad-dht"
+  ];
+  [serviceDependencies] = [
+    "@libp2p/identify",
+    "@libp2p/ping"
+  ];
+  get [contentRoutingSymbol]() {
+    return this.dhtContentRouting;
+  }
+  get [peerRoutingSymbol]() {
+    return this.dhtPeerRouting;
+  }
+  get [peerDiscoverySymbol]() {
+    return this;
+  }
+  async onPeerConnect(peerData) {
+    this.log.trace("peer %p connected", peerData.id, peerData.multiaddrs);
+    peerData = this.peerInfoMapper(peerData);
+    if (peerData.multiaddrs.length === 0) {
+      this.log.trace("ignoring %p as there were no valid addresses in %s after filtering", peerData.id, peerData.multiaddrs.map((addr) => addr.toString()));
+      return;
+    }
+    const signal = AbortSignal.timeout(this.onPeerConnectTimeout);
+    setMaxListeners(Infinity, signal);
+    try {
+      await this.routingTable.add(peerData.id, {
+        signal
+      });
+    } catch (err) {
+      this.log.error("could not add %p to routing table - %e", peerData.id, err);
+    }
+  }
+  /**
+   * Is this DHT running.
+   */
+  isStarted() {
+    return this.running;
+  }
+  /**
+   * If 'server' this node will respond to DHT queries, if 'client' this node will not
+   */
+  getMode() {
+    return this.clientMode ? "client" : "server";
+  }
+  /**
+   * If 'server' this node will respond to DHT queries, if 'client' this node will not
+   */
+  async setMode(mode, options) {
+    if (mode === this.getMode() && options?.force !== true) {
+      this.log("already in %s mode", mode);
+      return;
+    }
+    await this.components.registrar.unhandle(this.protocol, options);
+    if (mode === this.getMode() && options?.force !== true) {
+      this.log("already in %s mode", mode);
+      return;
+    }
+    if (mode === "client") {
+      this.log("enabling client mode while in %s mode", this.getMode());
+      this.clientMode = true;
+    } else {
+      this.log("enabling server mode while in %s mode", this.getMode());
+      this.clientMode = false;
+      await this.components.registrar.handle(this.protocol, this.rpc.onIncomingStream.bind(this.rpc), {
+        signal: options?.signal,
+        maxInboundStreams: this.maxInboundStreams,
+        maxOutboundStreams: this.maxOutboundStreams
+      });
+    }
+  }
+  /**
+   * Start listening to incoming connections.
+   */
+  async start() {
+    if (this.running) {
+      return;
+    }
+    this.running = true;
+    await this.setMode(this.clientMode ? "client" : "server", {
+      force: true
+    });
+    await start(this.routingTable, this.queryManager, this.network, this.topologyListener, this.routingTableRefresh, this.reprovider);
+    await start(this.querySelf);
+  }
+  /**
+   * Stop accepting incoming connections and sending outgoing
+   * messages.
+   */
+  async stop() {
+    this.running = false;
+    await stop(this.querySelf, this.queryManager, this.network, this.routingTable, this.routingTableRefresh, this.topologyListener, this.reprovider);
+  }
+  /**
+   * Store the given key/value pair in the DHT
+   */
+  async *put(key, value2, options = {}) {
+    yield* this.contentFetching.put(key, value2, options);
+  }
+  /**
+   * Get the value that corresponds to the passed key
+   */
+  async *get(key, options = {}) {
+    yield* this.contentFetching.get(key, options);
+  }
+  // ----------- Content Routing
+  /**
+   * Announce to the network that we can provide given key's value
+   */
+  async *provide(key, options = {}) {
+    yield* this.contentRouting.provide(key, this.components.addressManager.getAddresses(), options);
+  }
+  /**
+   * Provider records must be re-published every 24 hours - pass a previously
+   * provided CID here to not re-publish a record for it any more
+   */
+  async cancelReprovide(key, options) {
+    await this.providers.removeProvider(key, this.components.peerId, options);
+  }
+  /**
+   * Search the dht for providers of the given CID
+   */
+  async *findProviders(key, options = {}) {
+    yield* this.contentRouting.findProviders(key, options);
+  }
+  // ----------- Peer Routing -----------
+  /**
+   * Search for a peer with the given ID
+   */
+  async *findPeer(id, options = {}) {
+    yield* this.peerRouting.findPeer(id, options);
+  }
+  /**
+   * Kademlia 'node lookup' operation
+   */
+  async *getClosestPeers(key, options = {}) {
+    yield* this.peerRouting.getClosestPeers(key, options);
+  }
+  async refreshRoutingTable(options) {
+    this.routingTableRefresh.refreshTable(true, options);
+  }
+};
+
+// node_modules/@libp2p/kad-dht/dist/src/index.js
+var EventTypes;
+(function(EventTypes2) {
+  EventTypes2[EventTypes2["SEND_QUERY"] = 0] = "SEND_QUERY";
+  EventTypes2[EventTypes2["PEER_RESPONSE"] = 1] = "PEER_RESPONSE";
+  EventTypes2[EventTypes2["FINAL_PEER"] = 2] = "FINAL_PEER";
+  EventTypes2[EventTypes2["QUERY_ERROR"] = 3] = "QUERY_ERROR";
+  EventTypes2[EventTypes2["PROVIDER"] = 4] = "PROVIDER";
+  EventTypes2[EventTypes2["VALUE"] = 5] = "VALUE";
+  EventTypes2[EventTypes2["ADD_PEER"] = 6] = "ADD_PEER";
+  EventTypes2[EventTypes2["DIAL_PEER"] = 7] = "DIAL_PEER";
+  EventTypes2[EventTypes2["PATH_ENDED"] = 8] = "PATH_ENDED";
+})(EventTypes || (EventTypes = {}));
+function kadDHT(init = {}) {
+  return (components) => new KadDHT(components, init);
+}
+__name(kadDHT, "kadDHT");
+
 // public/components/peer-connection/actions/index.mjs
+var DHT_CONFIG = {
+  // LAN DHT settings
+  LAN: {
+    PROTOCOL: "/ipfs/lan/kad/1.0.0",
+    CLIENT_MODE: false,
+    DATASOURCE_PREFIX: "/dht-lan",
+    LOG_PREFIX: "libp2p:dht-lan",
+    METRICS_PREFIX: "libp2p_dht_lan",
+    BUCKET_SIZE: 20,
+    MAX_RECORD_AGE: 36 * 60 * 60 * 1e3,
+    QUERY_TIMEOUT: 3e4,
+    QUERY_CONCURRENCY: 3
+  },
+  // Amino DHT settings
+  AMINO: {
+    PROTOCOL: "/ipfs/kad/1.0.0",
+    CLIENT_MODE: true,
+    DATASOURCE_PREFIX: "/dht-amino",
+    LOG_PREFIX: "libp2p:dht-amino",
+    METRICS_PREFIX: "libp2p_dht_amino",
+    BUCKET_SIZE: 20,
+    MAX_RECORD_AGE: 36 * 60 * 60 * 1e3,
+    QUERY_TIMEOUT: 3e4,
+    QUERY_CONCURRENCY: 3
+  },
+  // Universe DHT settings (custom WAN)
+  UNIVERSE: {
+    PROTOCOL: "/universe/kad/1.0.0",
+    CLIENT_MODE: false,
+    DATASOURCE_PREFIX: "/dht-universe",
+    LOG_PREFIX: "libp2p:dht-universe",
+    METRICS_PREFIX: "libp2p_dht_universe",
+    BUCKET_SIZE: 20,
+    MAX_RECORD_AGE: 36 * 60 * 60 * 1e3,
+    QUERY_TIMEOUT: 3e4,
+    QUERY_CONCURRENCY: 3
+  }
+};
 async function createActions4(context) {
-  const log11 = logger("peer-connection:actions");
+  const log10 = logger("peer-connection:actions");
   let libp2p = null;
   let connectionInterval = null;
+  let dhtInterval = null;
   const self2 = {
+    /**
+     * Инициализирует DHT сервисы
+     * @async
+     */
+    async initializeDHT() {
+      if (!libp2p || !context.state.dhtEnabled) return;
+      try {
+        const dhtServices = [];
+        if (context.state.dhtEnabled.lan) {
+          const lanDHT = kadDHT({
+            protocol: DHT_CONFIG.LAN.PROTOCOL,
+            clientMode: DHT_CONFIG.LAN.CLIENT_MODE,
+            logPrefix: DHT_CONFIG.LAN.LOG_PREFIX,
+            kBucketSize: DHT_CONFIG.LAN.BUCKET_SIZE,
+            maxRecordAge: DHT_CONFIG.LAN.MAX_RECORD_AGE,
+            queryTimeout: DHT_CONFIG.LAN.QUERY_TIMEOUT,
+            queryConcurrency: DHT_CONFIG.LAN.QUERY_CONCURRENCY
+          });
+          dhtServices.push(lanDHT);
+          context._dhtServices.set("lan", lanDHT);
+          log10("LAN DHT initialized");
+        }
+        if (context.state.dhtEnabled.amino) {
+          const aminoDHT = kadDHT({
+            protocol: DHT_CONFIG.AMINO.PROTOCOL,
+            clientMode: DHT_CONFIG.AMINO.CLIENT_MODE,
+            logPrefix: DHT_CONFIG.AMINO.LOG_PREFIX,
+            kBucketSize: DHT_CONFIG.AMINO.BUCKET_SIZE,
+            maxRecordAge: DHT_CONFIG.AMINO.MAX_RECORD_AGE,
+            queryTimeout: DHT_CONFIG.AMINO.QUERY_TIMEOUT,
+            queryConcurrency: DHT_CONFIG.AMINO.QUERY_CONCURRENCY
+          });
+          dhtServices.push(aminoDHT);
+          context._dhtServices.set("amino", aminoDHT);
+          log10("Amino DHT initialized");
+        }
+        if (context.state.dhtEnabled.universe) {
+          const universeDHT = kadDHT({
+            protocol: DHT_CONFIG.UNIVERSE.PROTOCOL,
+            clientMode: DHT_CONFIG.UNIVERSE.CLIENT_MODE,
+            logPrefix: DHT_CONFIG.UNIVERSE.LOG_PREFIX,
+            kBucketSize: DHT_CONFIG.UNIVERSE.BUCKET_SIZE,
+            maxRecordAge: DHT_CONFIG.UNIVERSE.MAX_RECORD_AGE,
+            queryTimeout: DHT_CONFIG.UNIVERSE.QUERY_TIMEOUT,
+            queryConcurrency: DHT_CONFIG.UNIVERSE.QUERY_CONCURRENCY
+          });
+          dhtServices.push(universeDHT);
+          context._dhtServices.set("universe", universeDHT);
+          log10("Universe DHT initialized");
+        }
+        return dhtServices;
+      } catch (error) {
+        log10.error("Error initializing DHT services: %o", error);
+        context.addError({
+          componentName: context.constructor.name,
+          source: "initializeDHT",
+          message: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 DHT",
+          details: error
+        });
+        return [];
+      }
+    },
+    /**
+     * Обновляет список пиров DHT
+     * @async
+     */
+    async updateDHTPeers() {
+      if (!libp2p || !context._dhtServices.size) return;
+      try {
+        const dhtPeers = {
+          lan: [],
+          amino: [],
+          universe: []
+        };
+        for (const [type, dht] of context._dhtServices.entries()) {
+          try {
+            const routingTablePeers = dht.routingTable?.toArray() || [];
+            dhtPeers[type] = routingTablePeers.map((peerId) => ({
+              id: peerId.toString(),
+              type: type.toUpperCase(),
+              discoveredAt: Date.now()
+            }));
+            log10("DHT %s peers: %d", type, dhtPeers[type].length);
+          } catch (error) {
+            log10.error("Error getting DHT %s peers: %o", type, error);
+          }
+        }
+        context.state.dhtPeers = dhtPeers;
+        await self2.sendDHTPeersToChatInterface();
+      } catch (error) {
+        log10.error("Error updating DHT peers: %o", error);
+      }
+    },
+    /**
+     * Передает данные о DHT пирах в chat-interface
+     * @async
+     */
+    async sendDHTPeersToChatInterface() {
+      try {
+        const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
+        if (chatInterface) {
+          const dhtData = {
+            totalPeers: Object.values(context.state.dhtPeers).flat().length,
+            peers: Object.values(context.state.dhtPeers).flat(),
+            dhtEnabled: context.state.dhtEnabled,
+            timestamp: Date.now()
+          };
+          await chatInterface.postMessage({
+            type: "DHT_PEERS_UPDATE",
+            data: dhtData
+          });
+          log10.trace("DHT peers data sent to chat-interface: %o", dhtData);
+        }
+      } catch (error) {
+        log10.error("Error sending DHT peers to chat interface: %o", error);
+      }
+    },
+    /**
+     * Запускает периодическое обновление DHT пиров
+     * @async
+     */
+    async startDHTPeerUpdates() {
+      if (dhtInterval) {
+        clearInterval(dhtInterval);
+      }
+      dhtInterval = setInterval(() => {
+        self2.updateDHTPeers();
+      }, 1e4);
+      setTimeout(() => {
+        self2.updateDHTPeers();
+      }, 2e3);
+    },
+    /**
+     * Публикует информацию о себе в DHT
+     * @async
+     * @param {Object} data - Данные для публикации
+     */
+    async publishToDHT(data) {
+      if (!libp2p || !context._dhtServices.size) return;
+      try {
+        const key = new TextEncoder().encode(`peer:${context.state.peerId}`);
+        const value2 = new TextEncoder().encode(JSON.stringify({
+          ...data,
+          peerId: context.state.peerId,
+          timestamp: Date.now(),
+          addresses: context.state.listeningAddresses
+        }));
+        for (const [type, dht] of context._dhtServices.entries()) {
+          try {
+            if (dht.provide) {
+              await dht.provide(key);
+              log10("Provided key in %s DHT", type);
+            }
+            if (libp2p.contentRouting && libp2p.contentRouting.put) {
+              await libp2p.contentRouting.put(key, value2);
+              log10("Data published to content routing via %s DHT", type);
+            }
+          } catch (error) {
+            log10.error("Error publishing to %s DHT: %o", type, error);
+          }
+        }
+      } catch (error) {
+        log10.error("Error publishing to DHT: %o", error);
+      }
+    },
+    /**
+     * Ищет пиров в DHT
+     * @async
+     * @param {string} query - Поисковый запрос
+     */
+    async findPeersInDHT(query) {
+      if (!libp2p || !context._dhtServices.size) return [];
+      try {
+        const key = new TextEncoder().encode(query);
+        const foundPeers = [];
+        for (const [type, dht] of context._dhtServices.entries()) {
+          try {
+            if (dht.findProviders) {
+              for await (const provider of dht.findProviders(key)) {
+                foundPeers.push({
+                  id: provider.id.toString(),
+                  dhtType: type,
+                  foundVia: "DHT",
+                  addresses: provider.multiadds
+                });
+              }
+            }
+            if (libp2p.contentRouting && libp2p.contentRouting.get) {
+              try {
+                const value2 = await libp2p.contentRouting.get(key);
+                if (value2) {
+                  const data = JSON.parse(new TextDecoder().decode(value2));
+                  foundPeers.push({
+                    ...data,
+                    dhtType: type,
+                    foundVia: "ContentRouting"
+                  });
+                }
+              } catch (e2) {
+              }
+            }
+          } catch (error) {
+            log10.error("Error searching in %s DHT: %o", type, error);
+          }
+        }
+        return foundPeers;
+      } catch (error) {
+        log10.error("Error finding peers in DHT: %o", error);
+        return [];
+      }
+    },
+    /**
+     * Обновляет настройки DHT
+     * @async
+     * @param {Object} dhtSettings - Новые настройки DHT
+     */
+    async updateDHTSettings(dhtSettings) {
+      try {
+        context.state.dhtEnabled = { ...context.state.dhtEnabled, ...dhtSettings };
+        if (libp2p) {
+          await self2.initializeDHT();
+          await self2.startDHTPeerUpdates();
+        }
+        log10("DHT settings updated: %o", context.state.dhtEnabled);
+        return true;
+      } catch (error) {
+        log10.error("Error updating DHT settings: %o", error);
+        return false;
+      }
+    },
     /**
      * Инициализирует Libp2p узел
      * @async
@@ -37306,7 +57690,7 @@ async function createActions4(context) {
         };
         libp2p = await createLibp2p(config);
         await libp2p.start();
-        log11("Libp2p \u0443\u0437\u0435\u043B \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D: %o", {
+        log10("Libp2p \u0443\u0437\u0435\u043B \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D: %o", {
           peerId: libp2p.peerId.toString(),
           mode,
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString())
@@ -37314,7 +57698,7 @@ async function createActions4(context) {
         await self2.setupEventHandlers();
         return libp2p;
       } catch (error) {
-        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p: %o", error);
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 Libp2p: %o", error);
         context.addError({
           componentName: context.constructor.name,
           source: "initializeLibp2p",
@@ -37331,17 +57715,17 @@ async function createActions4(context) {
     async setupEventHandlers() {
       if (!libp2p) return;
       libp2p.addEventListener("peer:connect", async (event) => {
-        log11("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
+        log10("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
         await self2.updatePeerList();
         await self2.sendPeersToChatInterface();
       });
       libp2p.addEventListener("peer:disconnect", async (event) => {
-        log11("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
+        log10("\u041E\u0442\u043A\u043B\u044E\u0447\u0435\u043D \u043F\u0438\u0440: %s", event.detail.toString());
         await self2.updatePeerList();
         await self2.sendPeersToChatInterface();
       });
       libp2p.addEventListener("self:peer:update", (event) => {
-        log11("\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
+        log10("\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0430\u0434\u0440\u0435\u0441\u0430 \u0443\u0437\u043B\u0430");
         self2.updatePeerList();
         self2.updateAddressList();
         self2.updateStatsCard();
@@ -37349,7 +57733,7 @@ async function createActions4(context) {
         self2.sendConnectionStatusToChatInterface();
       });
       libp2p.addEventListener("peer:discovery", async (event) => {
-        log11("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440: %s", event.detail.id.toString());
+        log10("\u041E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D \u043F\u0438\u0440: %s", event.detail.id.toString());
         await self2.updatePeerList();
         await self2.sendPeersToChatInterface();
       });
@@ -37375,13 +57759,13 @@ async function createActions4(context) {
             type: "PEERS_UPDATE",
             data: peersData
           });
-          log11.trace("Peers data sent to chat-interface: %o", peersData);
+          log10.trace("Peers data sent to chat-interface: %o", peersData);
         } else {
-          log11("Chat interface not found, will retry...");
+          log10("Chat interface not found, will retry...");
           setTimeout(() => self2.sendPeersToChatInterface(), 1e3);
         }
       } catch (error) {
-        log11.error("Error sending peers to chat interface: %o", error);
+        log10.error("Error sending peers to chat interface: %o", error);
       }
     },
     /**
@@ -37402,10 +57786,10 @@ async function createActions4(context) {
             type: "CONNECTION_STATUS_UPDATE",
             data: connectionData
           });
-          log11.trace("Connection status sent to chat-interface: %o", connectionData);
+          log10.trace("Connection status sent to chat-interface: %o", connectionData);
         }
       } catch (error) {
-        log11.error("Error sending connection status: %o", error);
+        log10.error("Error sending connection status: %o", error);
       }
     },
     /**
@@ -37414,14 +57798,14 @@ async function createActions4(context) {
     async updateStatsCard() {
       const statsCard = context.shadowRoot.querySelector(".stats-card");
       if (statsCard && context.renderPart) {
-        log11.trace("Updating stats card section");
+        log10.trace("Updating stats card section");
         await context.renderPart({
           partName: "renderStatistics",
           state: context.state,
           selector: ".stats-card .card-content"
         });
       } else {
-        log11("Stats card not found, using full render");
+        log10("Stats card not found, using full render");
         await context.fullRender(context.state);
       }
     },
@@ -37439,7 +57823,7 @@ async function createActions4(context) {
       self2.sendPeersToChatInterface();
       self2.sendConnectionStatusToChatInterface();
       setTimeout(() => {
-        log11.trace("\u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
+        log10.trace("\u041E\u0434\u043D\u043E\u043A\u0440\u0430\u0442\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043F\u043E\u0441\u043B\u0435 \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0438");
         self2.manualUpdate();
       }, 4e3);
     },
@@ -37448,19 +57832,19 @@ async function createActions4(context) {
      * @async
      */
     async manualUpdate() {
-      log11.trace("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0441\u043F\u0438\u0441\u043A\u043E\u0432...");
+      log10.trace("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0441\u043F\u0438\u0441\u043A\u043E\u0432...");
       const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
       const peersElement = context.shadowRoot.querySelector("#connected-peers-list");
-      log11.trace("\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 DOM: %o", {
+      log10.trace("\u0421\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 DOM: %o", {
         addressesElement: !!addressesElement,
         peersElement: !!peersElement,
         shadowRoot: !!context.shadowRoot
       });
       if (context.shadowRoot) {
-        log11.trace("\u0412\u0441\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0432 shadowRoot:");
+        log10.trace("\u0412\u0441\u0435 \u044D\u043B\u0435\u043C\u0435\u043D\u0442\u044B \u0432 shadowRoot:");
         context.shadowRoot.querySelectorAll("*").forEach((el) => {
           if (el.id) {
-            log11.trace("  - %s #%s", el.tagName, el.id);
+            log10.trace("  - %s #%s", el.tagName, el.id);
           }
         });
       }
@@ -37474,9 +57858,9 @@ async function createActions4(context) {
      * @async
      */
     async forceUpdate() {
-      log11("\u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0432\u0441\u0435\u0445 \u0441\u043F\u0438\u0441\u043A\u043E\u0432");
+      log10("\u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0432\u0441\u0435\u0445 \u0441\u043F\u0438\u0441\u043A\u043E\u0432");
       if (libp2p) {
-        log11("\u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 libp2p: %o", {
+        log10("\u0422\u0435\u043A\u0443\u0449\u0435\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435 libp2p: %o", {
           peerId: libp2p.peerId?.toString(),
           addresses: libp2p.getMultiaddrs().map((ma) => ma.toString()),
           peers: libp2p.getPeers().map((p2) => p2.toString())
@@ -37490,24 +57874,24 @@ async function createActions4(context) {
      */
     async updatePeerList() {
       if (!libp2p || !context.state) {
-        log11("libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        log10("libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
       }
       const peers = await self2.getConnectedPeers();
       context.state.connectedPeers = peers;
-      log11("updatePeerList: \u043F\u0438\u0440\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %d", peers.length);
+      log10("updatePeerList: \u043F\u0438\u0440\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %d", peers.length);
       const peersElement = context.shadowRoot.querySelector("#connected-peers-list");
-      log11.trace("updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D: %s", !!peersElement);
+      log10.trace("updatePeerList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #connected-peers-list \u043D\u0430\u0439\u0434\u0435\u043D: %s", !!peersElement);
       if (peersElement && context.renderPart) {
-        log11.trace("updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
+        log10.trace("updatePeerList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
         await context.renderPart({
           partName: "renderPeersList",
           state: context.state,
           selector: "#connected-peers-list"
         });
-        log11.trace("updatePeerList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
+        log10.trace("updatePeerList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
       } else {
-        log11("updatePeerList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
+        log10("updatePeerList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
       }
     },
     /**
@@ -37516,24 +57900,24 @@ async function createActions4(context) {
      */
     async updateAddressList() {
       if (!libp2p || !context.state) {
-        log11.error("updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
+        log10.error("updateAddressList: libp2p \u0438\u043B\u0438 context.state \u043D\u0435 \u0434\u043E\u0441\u0442\u0443\u043F\u043D\u044B");
         return;
       }
       const addresses = libp2p.getMultiaddrs().filter((ma) => WebRTC.matches(ma)).map((ma) => ma.toString());
       context.state.listeningAddresses = addresses;
-      log11.trace("updateAddressList: \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %d", addresses.length);
+      log10.trace("updateAddressList: \u0430\u0434\u0440\u0435\u0441\u043E\u0432 \u043D\u0430\u0439\u0434\u0435\u043D\u043E: %d", addresses.length);
       const addressesElement = context.shadowRoot.querySelector("#listening-addresses");
-      log11.trace("updateAddressList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #listening-addresses \u043D\u0430\u0439\u0434\u0435\u043D: %s", !!addressesElement);
+      log10.trace("updateAddressList: \u044D\u043B\u0435\u043C\u0435\u043D\u0442 #listening-addresses \u043D\u0430\u0439\u0434\u0435\u043D: %s", !!addressesElement);
       if (addressesElement && context.renderPart) {
-        log11.trace("updateAddressList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
+        log10.trace("updateAddressList: \u0432\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u043C renderPart");
         await context.renderPart({
           partName: "renderAddressesList",
           state: context.state,
           selector: "#listening-addresses"
         });
-        log11.trace("updateAddressList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
+        log10.trace("updateAddressList: renderPart \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D");
       } else {
-        log11("updateAddressList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
+        log10("updateAddressList: renderPart \u043D\u0435 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D - \u044D\u043B\u0435\u043C\u0435\u043D\u0442 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D");
       }
     },
     /**
@@ -37547,11 +57931,11 @@ async function createActions4(context) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
         const ma = multiaddr(multiaddrStr.trim());
-        log11("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u043C\u0441\u044F \u043A: %s", ma.toString());
+        log10("\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u043C\u0441\u044F \u043A: %s", ma.toString());
         await libp2p.dial(ma);
-        log11("\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u044B \u043A: %s", ma.toString());
+        log10("\u0423\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u044B \u043A: %s", ma.toString());
       } catch (error) {
-        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
         context.addError({
           componentName: context.constructor.name,
           source: "connectToPeer",
@@ -37600,9 +57984,9 @@ async function createActions4(context) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
         await libp2p.services.pubsub.subscribe(topic);
-        log11("\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: %s", topic);
+        log10("\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043B\u0438\u0441\u044C \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: %s", topic);
       } catch (error) {
-        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: %o", error);
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0438 \u043D\u0430 \u0442\u043E\u043F\u0438\u043A: %o", error);
         throw error;
       }
     },
@@ -37618,9 +58002,9 @@ async function createActions4(context) {
           throw new Error("Libp2p \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         }
         await libp2p.services.pubsub.publish(topic, fromString2(message2));
-        log11("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u0442\u043E\u043F\u0438\u043A %s: %s", topic, message2);
+        log10("\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 \u0442\u043E\u043F\u0438\u043A %s: %s", topic, message2);
       } catch (error) {
-        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u044F: %o", error);
         throw error;
       }
     },
@@ -37635,7 +58019,7 @@ async function createActions4(context) {
       try {
         return libp2p.services.pubsub.getSubscribers(topic).map((peerId) => peerId.toString());
       } catch (error) {
-        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432 \u0442\u043E\u043F\u0438\u043A\u0430: %o", error);
+        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u044F \u0441\u043F\u0438\u0441\u043A\u0430 \u043F\u0438\u0440\u043E\u0432 \u0442\u043E\u043F\u0438\u043A\u0430: %o", error);
         return [];
       }
     },
@@ -37644,11 +58028,11 @@ async function createActions4(context) {
      * @async
      */
     async notifyComponentsNodeReady() {
-      const log12 = logger("peer-connection:actions:notifyNodeReady");
+      const log11 = logger("peer-connection:actions:notifyNodeReady");
       try {
-        const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-        if (chatManager2) {
-          await chatManager2.postMessage({
+        const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager) {
+          await chatManager.postMessage({
             type: "NODE_RESTARTED",
             data: {
               peerId: context.state.peerId,
@@ -37659,11 +58043,11 @@ async function createActions4(context) {
         }
         const groupManager = await context.getComponentAsync("group-manager", "group-manager");
         if (groupManager) {
-          log12("GroupManager \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D \u043E \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0435 \u043D\u043E\u0434\u044B");
+          log11("GroupManager \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D \u043E \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0435 \u043D\u043E\u0434\u044B");
         }
-        log12("\u0412\u0441\u0435 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u044B \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u044B \u043E \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u043D\u043E\u0432\u043E\u0439 \u043D\u043E\u0434\u044B");
+        log11("\u0412\u0441\u0435 \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u044B \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u044B \u043E \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u043D\u043E\u0432\u043E\u0439 \u043D\u043E\u0434\u044B");
       } catch (error) {
-        log12.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432: %o", error);
+        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F \u043A\u043E\u043C\u043F\u043E\u043D\u0435\u043D\u0442\u043E\u0432: %o", error);
       }
     },
     /**
@@ -37671,19 +58055,19 @@ async function createActions4(context) {
      * @async
      */
     async cleanup() {
-      const log12 = logger("peer-connection:actions:cleanup");
+      const log11 = logger("peer-connection:actions:cleanup");
       try {
-        log12("\u041D\u0430\u0447\u0430\u043B\u043E \u043E\u0447\u0438\u0441\u0442\u043A\u0438 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B...");
+        log11("\u041D\u0430\u0447\u0430\u043B\u043E \u043E\u0447\u0438\u0441\u0442\u043A\u0438 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B...");
         if (connectionInterval) {
           clearInterval(connectionInterval);
           connectionInterval = null;
-          log12("\u041E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0438\u043D\u0442\u0435\u0440\u0432\u0430\u043B \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432");
+          log11("\u041E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D \u0438\u043D\u0442\u0435\u0440\u0432\u0430\u043B \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043F\u0438\u0440\u043E\u0432");
         }
         try {
-          const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-          if (chatManager2 && chatManager2._actions) {
-            log12("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C ChatManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
-            await chatManager2.postMessage({
+          const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+          if (chatManager && chatManager._actions) {
+            log11("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C ChatManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
+            await chatManager.postMessage({
               type: "NODE_SHUTDOWN",
               data: {
                 peerId: libp2p?.peerId?.toString(),
@@ -37692,12 +58076,12 @@ async function createActions4(context) {
             });
           }
         } catch (error) {
-          log12.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F ChatManager: %o", error);
+          log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F ChatManager: %o", error);
         }
         try {
           const groupManager = await context.getComponentAsync("group-manager", "group-manager");
           if (groupManager) {
-            log12("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C GroupManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
+            log11("\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u044F\u0435\u043C GroupManager \u043E\u0431 \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0435...");
             groupManager.state.nodeReady = false;
             groupManager.state.groups = [];
             groupManager.state.discoveredGroups = [];
@@ -37707,13 +58091,13 @@ async function createActions4(context) {
             }
           }
         } catch (error) {
-          log12.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F GroupManager: %o", error);
+          log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F GroupManager: %o", error);
         }
         if (libp2p) {
-          log12("\u041E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C Libp2p \u0443\u0437\u0435\u043B...");
+          log11("\u041E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u043C Libp2p \u0443\u0437\u0435\u043B...");
           await libp2p.stop();
           libp2p = null;
-          log12("Libp2p \u0443\u0437\u0435\u043B \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D");
+          log11("Libp2p \u0443\u0437\u0435\u043B \u043E\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D");
         }
         context.state.connected = false;
         context.state.peerId = null;
@@ -37721,9 +58105,9 @@ async function createActions4(context) {
         context.state.connectedPeers = [];
         context.state.uptime = "0:00";
         context.state.startTime = null;
-        log12("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0430");
+        log11("\u041E\u0447\u0438\u0441\u0442\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0430");
       } catch (error) {
-        log12.error("\u041A\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0447\u0438\u0441\u0442\u043A\u0435: %o", error);
+        log11.error("\u041A\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043A\u0430\u044F \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u043E\u0447\u0438\u0441\u0442\u043A\u0435: %o", error);
         context.addError({
           componentName: context.constructor.name,
           source: "cleanup",
@@ -37738,45 +58122,45 @@ async function createActions4(context) {
      * @param {string} mode - Новый режим работы
      */
     async restart(mode) {
-      const log12 = logger("peer-connection:actions:restart");
+      const log11 = logger("peer-connection:actions:restart");
       try {
-        log12("\u041D\u0430\u0447\u0430\u043B\u043E \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0432 \u0440\u0435\u0436\u0438\u043C\u0435: %s", mode);
+        log11("\u041D\u0430\u0447\u0430\u043B\u043E \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0432 \u0440\u0435\u0436\u0438\u043C\u0435: %s", mode);
         await this.cleanup();
         await new Promise((resolve) => setTimeout(resolve, 1e3));
         try {
-          const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-          if (chatManager2) {
-            log12("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C ChatManager...");
-            chatManager2.state.messages = [];
-            chatManager2.state.currentGroup = null;
-            chatManager2.state.connected = false;
-            await chatManager2.initializeFromPeerConnection();
-            log12("ChatManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+          const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+          if (chatManager) {
+            log11("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C ChatManager...");
+            chatManager.state.messages = [];
+            chatManager.state.currentGroup = null;
+            chatManager.state.connected = false;
+            await chatManager.initializeFromPeerConnection();
+            log11("ChatManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
           }
         } catch (error) {
-          log12.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 ChatManager: %o", error);
+          log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 ChatManager: %o", error);
         }
         try {
           const groupManager = await context.getComponentAsync("group-manager", "group-manager");
           if (groupManager) {
-            log12("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C GroupManager...");
+            log11("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u043C GroupManager...");
             groupManager.state.groups = [];
             groupManager.state.discoveredGroups = [];
             groupManager.state.joinedGroups = [];
             groupManager.state.nodeReady = false;
             await groupManager.startNodeInitialization();
-            log12("GroupManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
+            log11("GroupManager \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0449\u0435\u043D");
           }
         } catch (error) {
-          log12.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 GroupManager: %o", error);
+          log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 GroupManager: %o", error);
         }
-        log12("\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u043C \u043D\u043E\u0432\u0443\u044E Libp2p \u043D\u043E\u0434\u0443...");
+        log11("\u0418\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u043C \u043D\u043E\u0432\u0443\u044E Libp2p \u043D\u043E\u0434\u0443...");
         const newLibp2p = await this.initializeLibp2p(mode);
         await this.notifyComponentsNodeReady();
-        log12("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D \u0443\u0441\u043F\u0435\u0448\u043D\u043E");
+        log11("\u041F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D \u0443\u0441\u043F\u0435\u0448\u043D\u043E");
         return newLibp2p;
       } catch (error) {
-        log12.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B: %o", error);
+        log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430 P2P \u0441\u0438\u0441\u0442\u0435\u043C\u044B: %o", error);
         throw error;
       }
     },
@@ -37813,7 +58197,34 @@ async function createActions4(context) {
       };
     }
   };
+  const originalInitializeLibp2p = self2.initializeLibp2p;
+  self2.initializeLibp2p = async function(mode = "listener") {
+    try {
+      const libp2pInstance = await originalInitializeLibp2p.call(this, mode);
+      const dhtServices = await self2.initializeDHT();
+      if (dhtServices.length > 0) {
+        libp2pInstance.services.dht = dhtServices;
+      }
+      await self2.startDHTPeerUpdates();
+      await self2.publishToDHT({
+        mode,
+        capabilities: ["chat", "groups"],
+        version: "1.0.0"
+      });
+      return libp2pInstance;
+    } catch (error) {
+      log10.error("Error in enhanced initializeLibp2p: %o", error);
+      throw error;
+    }
+  };
   return {
+    initializeDHT: self2.initializeDHT.bind(self2),
+    updateDHTPeers: self2.updateDHTPeers.bind(self2),
+    sendDHTPeersToChatInterface: self2.sendDHTPeersToChatInterface.bind(self2),
+    startDHTPeerUpdates: self2.startDHTPeerUpdates.bind(self2),
+    publishToDHT: self2.publishToDHT.bind(self2),
+    findPeersInDHT: self2.findPeersInDHT.bind(self2),
+    updateDHTSettings: self2.updateDHTSettings.bind(self2),
     initializeLibp2p: self2.initializeLibp2p.bind(self2),
     setupEventHandlers: self2.setupEventHandlers.bind(self2),
     startPeerListUpdates: self2.startPeerListUpdates.bind(self2),
@@ -37838,14 +58249,14 @@ async function createActions4(context) {
 __name(createActions4, "createActions");
 
 // public/components/peer-connection/index.mjs
-var log7 = logger("peer-connection");
+var log6 = logger("peer-connection");
 var PeerConnection = class extends BaseComponent {
   static {
     __name(this, "PeerConnection");
   }
   constructor() {
     super();
-    this._templateMethods = template_exports4;
+    this._templateMethods = template_exports3;
     this.node = null;
     this.state = {
       mode: globalThis.APP_INITIAL_MODE,
@@ -37858,18 +58269,30 @@ var PeerConnection = class extends BaseComponent {
       relayEnabled: true,
       startTime: null,
       // Время старта ноды
-      uptime: "0:00"
+      uptime: "0:00",
       // Текущее время работы
+      // DHT Configuration
+      dhtEnabled: {
+        lan: false,
+        amino: false,
+        universe: true
+      },
+      dhtPeers: {
+        lan: [],
+        amino: [],
+        universe: []
+      }
     };
     this._lastPeersCount = 0;
     this._uptimeInterval = null;
+    this._dhtServices = /* @__PURE__ */ new Map();
   }
   async _componentReady() {
-    log7("PeerConnection component ready");
-    this._controller = await controller4(this);
+    log6("PeerConnection component ready");
+    this._controller = await controller3(this);
     this._actions = await createActions4(this);
     this.node = await this.initializeLibp2p(this.state.mode);
-    log7("Controller and actions created: %o", {
+    log6("Controller and actions created: %o", {
       hasController: !!this._controller,
       hasActions: !!this._actions
     });
@@ -37886,7 +58309,7 @@ var PeerConnection = class extends BaseComponent {
               e2.target.textContent = original;
             }, 2e3);
           } catch (err) {
-            log7.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C WebRTC-\u0430\u0434\u0440\u0435\u0441:", err);
+            log6.error("\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u0442\u044C WebRTC-\u0430\u0434\u0440\u0435\u0441:", err);
           }
         }
       }
@@ -37894,12 +58317,18 @@ var PeerConnection = class extends BaseComponent {
     return true;
   }
   async initializeLibp2p(mode = "listener") {
-    log7("initializeLibp2p called with mode: %s", mode);
+    log6("initializeLibp2p called with mode: %s", mode);
     this.state.mode = mode;
     this.state.connected = false;
     try {
       const libp2p = await this._actions.initializeLibp2p(mode);
       this.node = libp2p;
+      await this._actions.startDHTPeerUpdates();
+      await this._actions.publishToDHT({
+        mode,
+        capabilities: ["chat", "groups"],
+        version: "1.0.0"
+      });
       this.state.peerId = libp2p.peerId.toString();
       const allAddresses = libp2p.getMultiaddrs().map((ma) => ma.toString());
       this.state.listeningAddresses = allAddresses;
@@ -37907,8 +58336,8 @@ var PeerConnection = class extends BaseComponent {
       this.state.webRtcAddress = webRtcAddresses.length > 0 ? webRtcAddresses[0] : null;
       this.state.connected = true;
       this.state.startTime = Date.now();
-      log7("Libp2p initialized successfully");
-      log7("New state: %o", {
+      log6("Libp2p initialized successfully");
+      log6("New state: %o", {
         mode: this.state.mode,
         connected: this.state.connected,
         peerId: this.state.peerId,
@@ -37929,7 +58358,7 @@ var PeerConnection = class extends BaseComponent {
       await this.sendConnectionStatusToChatInterface();
       return libp2p;
     } catch (error) {
-      log7.error("Libp2p initialization failed: %o", error);
+      log6.error("Libp2p initialization failed: %o", error);
       await this.hideSkeleton();
       this.addError({
         componentName: this.constructor.name,
@@ -38012,14 +58441,14 @@ var PeerConnection = class extends BaseComponent {
   async copyToClipboard(text, successMessage = "\u0422\u0435\u043A\u0441\u0442 \u0441\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430", addressItem) {
     try {
       await navigator.clipboard.writeText(text);
-      log7("Text copied to clipboard: %s", text);
+      log6("Text copied to clipboard: %s", text);
       addressItem.classList.add("copied");
       setTimeout(() => {
         addressItem.classList.remove("copied");
       }, 2e3);
       return true;
     } catch (error) {
-      log7.error("Error copying to clipboard: %o", error);
+      log6.error("Error copying to clipboard: %o", error);
       try {
         const textArea = document.createElement("textarea");
         textArea.value = text;
@@ -38041,7 +58470,7 @@ var PeerConnection = class extends BaseComponent {
           return true;
         }
       } catch (fallbackError) {
-        log7.error("Fallback copy also failed: %o", fallbackError);
+        log6.error("Fallback copy also failed: %o", fallbackError);
       }
       await this.showModal({
         title: "\u041E\u0448\u0438\u0431\u043A\u0430",
@@ -38054,13 +58483,13 @@ var PeerConnection = class extends BaseComponent {
   }
   async connectToPeer(multiaddr2) {
     try {
-      log7("Connecting to peer: %s", multiaddr2);
+      log6("Connecting to peer: %s", multiaddr2);
       await this._actions.connectToPeer(multiaddr2);
       await new Promise((resolve) => setTimeout(resolve, 1e3));
       await this.updatePeerList();
-      log7("Successfully connected to peer: %s", multiaddr2);
+      log6("Successfully connected to peer: %s", multiaddr2);
     } catch (error) {
-      log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
+      log6.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F \u043A \u043F\u0438\u0440\u0443: %o", error);
       const errorMessage = error.message || "\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u0430\u044F \u043E\u0448\u0438\u0431\u043A\u0430 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F";
       this.addError({
         componentName: this.constructor.name,
@@ -38078,7 +58507,7 @@ var PeerConnection = class extends BaseComponent {
         const peers = await this._actions.getConnectedPeers();
         this.state.connectedPeers = Array.isArray(peers) ? peers : [];
         this._lastPeersCount = this.state.connectedPeers.length;
-        log7("Peer list updated: %o", {
+        log6("Peer list updated: %o", {
           previous: previousCount,
           current: this._lastPeersCount,
           peers: this.state.connectedPeers.map((p2) => p2.id).filter(Boolean)
@@ -38087,13 +58516,13 @@ var PeerConnection = class extends BaseComponent {
         try {
           await this.sendPeersToChatInterface();
         } catch (sendError) {
-          log7.error("Error sending peers to chat interface: %o", sendError);
+          log6.error("Error sending peers to chat interface: %o", sendError);
         }
       } else {
-        log7.error("getConnectedPeers action not available");
+        log6.error("getConnectedPeers action not available");
       }
     } catch (error) {
-      log7.error("Error updating peer list: %o", error);
+      log6.error("Error updating peer list: %o", error);
     }
   }
   /**
@@ -38125,10 +58554,10 @@ var PeerConnection = class extends BaseComponent {
           type: "PEERS_UPDATE",
           data: peersData
         });
-        log7("Peers data sent to chat-interface: %o", peersData);
+        log6("Peers data sent to chat-interface: %o", peersData);
       }
     } catch (error) {
-      log7.error("Error sending peers to chat interface: %o", error);
+      log6.error("Error sending peers to chat interface: %o", error);
     }
   }
   /**
@@ -38149,10 +58578,10 @@ var PeerConnection = class extends BaseComponent {
           type: "CONNECTION_STATUS_UPDATE",
           data: connectionData
         });
-        log7("Connection status sent to chat-interface: %o", connectionData);
+        log6("Connection status sent to chat-interface: %o", connectionData);
       }
     } catch (error) {
-      log7.error("Error sending connection status: %o", error);
+      log6.error("Error sending connection status: %o", error);
     }
   }
   /**
@@ -38161,7 +58590,7 @@ var PeerConnection = class extends BaseComponent {
   async updatePeersCard() {
     const peersCard = this.shadowRoot.querySelector(".peers-card");
     if (peersCard && this.renderPart) {
-      log7("Updating peers card section");
+      log6("Updating peers card section");
       await this.renderPart({
         partName: "renderPeersList",
         state: this.state,
@@ -38171,7 +58600,7 @@ var PeerConnection = class extends BaseComponent {
         this._setupCopyHandlers();
       }, 100);
     } else {
-      log7("Peers card not found, using full render");
+      log6("Peers card not found, using full render");
       await this.fullRender(this.state);
     }
   }
@@ -38206,32 +58635,32 @@ var PeerConnection = class extends BaseComponent {
     });
   }
   async switchMode(mode) {
-    log7("switchMode called with: %s", mode);
-    log7("Current mode: %s", this.state.mode);
+    log6("switchMode called with: %s", mode);
+    log6("Current mode: %s", this.state.mode);
     if (this.state.mode !== mode) {
-      log7("Mode change detected, proceeding...");
+      log6("Mode change detected, proceeding...");
       if (this._actions && this._actions.cleanup) {
-        log7("Cleaning up previous connections...");
+        log6("Cleaning up previous connections...");
         await this._actions.cleanup();
       }
-      log7("Initializing Libp2p with new mode...");
+      log6("Initializing Libp2p with new mode...");
       await this.initializeLibp2p(mode);
-      log7("Mode switch completed");
+      log6("Mode switch completed");
     } else {
-      log7("Mode is already %s", mode);
+      log6("Mode is already %s", mode);
     }
   }
   async getRelayAddresses() {
     return "/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
   }
   async manualUpdate() {
-    log7("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
+    log6("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
     if (this._actions && this._actions.manualUpdate) {
       await this._actions.manualUpdate();
     }
   }
   async forceUpdate() {
-    log7("\u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
+    log6("\u041F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
     if (this._actions && this._actions.forceUpdate) {
       await this._actions.forceUpdate();
     }
@@ -38255,12 +58684,12 @@ if (!customElements.get("peer-connection")) {
 }
 
 // public/components/remote-control/template/index.mjs
-var template_exports5 = {};
-__export(template_exports5, {
-  defaultTemplate: () => defaultTemplate5,
+var template_exports4 = {};
+__export(template_exports4, {
+  defaultTemplate: () => defaultTemplate4,
   renderCursor: () => renderCursor
 });
-function defaultTemplate5({ state = {} } = {}) {
+function defaultTemplate4({ state = {} } = {}) {
   const { mode = "viewer", isConnected = false, videoEnabled = false, focusOnCursor = false } = state;
   return `
 <div class="remote-control">
@@ -38280,7 +58709,7 @@ function defaultTemplate5({ state = {} } = {}) {
 </div>
 `;
 }
-__name(defaultTemplate5, "defaultTemplate");
+__name(defaultTemplate4, "defaultTemplate");
 function renderCursor({ state = {} } = {}) {
   const { cursorPosition = { x: 0, y: 0 } } = state;
   return `
@@ -38292,7 +58721,7 @@ function renderCursor({ state = {} } = {}) {
 __name(renderCursor, "renderCursor");
 
 // public/components/remote-control/controller/index.mjs
-var log8 = logger("remote-control:controller");
+var log7 = logger("remote-control:controller");
 function debounce3(func, wait) {
   let timeout;
   return /* @__PURE__ */ __name(function executedFunction(...args) {
@@ -38305,7 +58734,7 @@ function debounce3(func, wait) {
   }, "executedFunction");
 }
 __name(debounce3, "debounce");
-var controller5 = /* @__PURE__ */ __name(async (context) => {
+var controller4 = /* @__PURE__ */ __name(async (context) => {
   let eventListeners = [];
   const add2 = /* @__PURE__ */ __name((el, ev, fn) => {
     if (!el) return;
@@ -38328,7 +58757,7 @@ var controller5 = /* @__PURE__ */ __name(async (context) => {
       payload: eventData
     }));
     lp.write(msg).catch((err) => {
-      log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043C\u044B\u0448\u0438:", err);
+      log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u043C\u044B\u0448\u0438:", err);
     });
   }, 50);
   const mouseMoveHandler = /* @__PURE__ */ __name((e2) => {
@@ -38428,7 +58857,7 @@ var controller5 = /* @__PURE__ */ __name(async (context) => {
       if (context.state.mode === "controller") {
         const screen = context.shadowRoot.querySelector("#remote-screen");
         if (!screen) {
-          log8.error("\u042D\u043B\u0435\u043C\u0435\u043D\u0442 #remote-screen \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
+          log7.error("\u042D\u043B\u0435\u043C\u0435\u043D\u0442 #remote-screen \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
           return;
         }
         screen.setAttribute("tabindex", "0");
@@ -38436,7 +58865,7 @@ var controller5 = /* @__PURE__ */ __name(async (context) => {
         add2(screen, "mousemove", mouseMoveHandler);
         add2(screen, "mousedown", mouseDownHandler);
         add2(screen, "mouseup", mouseUpHandler);
-        log8("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043C\u044B\u0448\u0438 \u0438 \u0432\u0438\u0434\u0435\u043E \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
+        log7("\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0438 \u043C\u044B\u0448\u0438 \u0438 \u0432\u0438\u0434\u0435\u043E \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u044B \u0434\u043B\u044F \u0440\u0435\u0436\u0438\u043C\u0430 controller");
       } else {
       }
     },
@@ -38449,17 +58878,17 @@ var controller5 = /* @__PURE__ */ __name(async (context) => {
         try {
           element?.removeEventListener(event, handler);
         } catch (error) {
-          log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0430 \u0441\u043E\u0431\u044B\u0442\u0438\u044F: %o", error);
+          log7.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0443\u0434\u0430\u043B\u0435\u043D\u0438\u0438 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A\u0430 \u0441\u043E\u0431\u044B\u0442\u0438\u044F: %o", error);
         }
       });
       eventListeners = [];
-      log8("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 remote-control \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
+      log7("\u041A\u043E\u043D\u0442\u0440\u043E\u043B\u043B\u0435\u0440 remote-control \u0443\u043D\u0438\u0447\u0442\u043E\u0436\u0435\u043D");
     }
   };
 }, "controller");
 
 // public/components/remote-control/actions/index.mjs
-var log9 = logger("remote-control:actions");
+var log8 = logger("remote-control:actions");
 async function createActions5(context) {
   let videoPeerConnection = null;
   let localStream = null;
@@ -38483,12 +58912,12 @@ async function createActions5(context) {
   async function sendInputEvent(eventData) {
     const targetPeer = context.getAttribute("target-peer");
     if (!targetPeer) {
-      log9.error("\u041D\u0435\u0442 \u0446\u0435\u043B\u0435\u0432\u043E\u0433\u043E \u043F\u0438\u0440\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430");
+      log8.error("\u041D\u0435\u0442 \u0446\u0435\u043B\u0435\u0432\u043E\u0433\u043E \u043F\u0438\u0440\u0430 \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430");
       return;
     }
-    const chatManager2 = await context.getComponentAsync("chat-manager", "chat-manager");
-    if (!chatManager2) {
-      log9.error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 REMOTE_CONTROL_EVENT");
+    const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
+    if (!chatManager) {
+      log8.error("chat-manager \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D \u0434\u043B\u044F \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 REMOTE_CONTROL_EVENT");
       return;
     }
     const message2 = {
@@ -38499,10 +58928,10 @@ async function createActions5(context) {
       }
     };
     try {
-      await chatManager2.sendPrivateMessage(targetPeer, JSON.stringify(message2));
-      log9("\u0421\u043E\u0431\u044B\u0442\u0438\u0435 \u0432\u0432\u043E\u0434\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E: %s", eventData.type);
+      await chatManager.sendPrivateMessage(targetPeer, JSON.stringify(message2));
+      log8("\u0421\u043E\u0431\u044B\u0442\u0438\u0435 \u0432\u0432\u043E\u0434\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E: %s", eventData.type);
     } catch (error) {
-      log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430: %o", error);
+      log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0442\u043F\u0440\u0430\u0432\u043A\u0438 \u0441\u043E\u0431\u044B\u0442\u0438\u044F \u0432\u0432\u043E\u0434\u0430: %o", error);
     }
   }
   __name(sendInputEvent, "sendInputEvent");
@@ -38609,7 +59038,7 @@ async function createActions5(context) {
       });
     } catch (err) {
       console.error("ERROR", err);
-      log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0445\u0432\u0430\u0442\u0430 \u044D\u043A\u0440\u0430\u043D\u0430:", err);
+      log8.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0437\u0430\u0445\u0432\u0430\u0442\u0430 \u044D\u043A\u0440\u0430\u043D\u0430:", err);
       stopScreenShare();
       context.state.videoEnabled = false;
       await context.renderPart({ partName: "defaultTemplate", state: context.state, selector: "#root", method: "innerHTML" });
@@ -38668,7 +59097,7 @@ async function createActions5(context) {
 __name(createActions5, "createActions");
 
 // public/components/remote-control/index.mjs
-var log10 = logger("remote-control");
+var log9 = logger("remote-control");
 var RemoteControl = class extends BaseComponent {
   static {
     __name(this, "RemoteControl");
@@ -38677,7 +59106,7 @@ var RemoteControl = class extends BaseComponent {
   // 'viewer' | 'controller'
   constructor() {
     super();
-    this._templateMethods = template_exports5;
+    this._templateMethods = template_exports4;
     this._videoPeerConnection = null;
     this._screenStream = null;
     this.state = {
@@ -38693,7 +59122,7 @@ var RemoteControl = class extends BaseComponent {
     };
   }
   async _componentReady() {
-    this._controller = await controller5(this);
+    this._controller = await controller4(this);
     this._actions = await createActions5(this);
     this.state.mode = this.getAttribute("mode");
     await this.fullRender(this.state);
@@ -38730,12 +59159,12 @@ var RemoteControl = class extends BaseComponent {
           isPrivate: true
         });
       } else {
-        const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-        if (chatManager2) {
-          if (!chatManager2.state.unreadCounts) chatManager2.state.unreadCounts = {};
-          chatManager2.state.unreadCounts[remotePeer] = (chatManager2.state.unreadCounts[remotePeer] || 0) + 1;
+        const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+        if (chatManager) {
+          if (!chatManager.state.unreadCounts) chatManager.state.unreadCounts = {};
+          chatManager.state.unreadCounts[remotePeer] = (chatManager.state.unreadCounts[remotePeer] || 0) + 1;
           if (chatInterface?.updateMembersList) {
-            await chatInterface.updateMembersList({ unreadCounts: chatManager2.state.unreadCounts });
+            await chatInterface.updateMembersList({ unreadCounts: chatManager.state.unreadCounts });
           }
         }
       }
@@ -38746,7 +59175,7 @@ var RemoteControl = class extends BaseComponent {
       const remoteVideo = this.shadowRoot.querySelector("#remote-video");
       if (remoteVideo) {
         remoteVideo.srcObject = event.streams[0];
-        log10("\u0412\u0438\u0434\u0435\u043E \u043E\u0442 viewer \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0438 \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044F");
+        log9("\u0412\u0438\u0434\u0435\u043E \u043E\u0442 viewer \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u043E \u0438 \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044F");
         await this.setSlotToChatInterface();
       }
     };
@@ -38759,7 +59188,7 @@ var RemoteControl = class extends BaseComponent {
     pc.onicecandidate = (e2) => {
       if (e2.candidate) {
         const mode = this.getAttribute("mode");
-        log10("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u043B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0439 ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442:", e2.candidate);
+        log9("\u041F\u043E\u043B\u0443\u0447\u0435\u043D \u043B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0439 ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442:", e2.candidate);
         this._actions.sendInputEvent({
           type: "VIDEO_ICE_CANDIDATE",
           mode: mode === "viewer" ? "controller" : "viewer",
@@ -38773,10 +59202,10 @@ var RemoteControl = class extends BaseComponent {
    * @param {string} state - Текущее состояние (например, 'connected', 'failed', 'disconnected' и т.д.)
    */
   _handleIceConnectionState(state) {
-    const log11 = logger("remote-control:ice");
+    const log10 = logger("remote-control:ice");
     const remoteVideo = this.shadowRoot.querySelector("#remote-video");
     const statusEl = this.shadowRoot.querySelector("#video-status");
-    log11("ICE Connection State: %s", state);
+    log10("ICE Connection State: %s", state);
     switch (state) {
       case "connected":
       case "completed":
@@ -38794,7 +59223,7 @@ var RemoteControl = class extends BaseComponent {
         }
         break;
       case "disconnected":
-        log11("\u26A0\uFE0F WebRTC \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0440\u0430\u0437\u043E\u0440\u0432\u0430\u043D\u043E");
+        log10("\u26A0\uFE0F WebRTC \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0440\u0430\u0437\u043E\u0440\u0432\u0430\u043D\u043E");
         if (statusEl) {
           statusEl.textContent = "\u0421\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u0435 \u0440\u0430\u0437\u043E\u0440\u0432\u0430\u043D\u043E";
           statusEl.className = "video-status disconnected";
@@ -38811,7 +59240,7 @@ var RemoteControl = class extends BaseComponent {
           statusEl.textContent = `ICE: ${state}`;
           statusEl.className = `video-status ${state}`;
         }
-        log11("ICE state: %s", state);
+        log10("ICE state: %s", state);
     }
   }
   /**
@@ -38819,7 +59248,7 @@ var RemoteControl = class extends BaseComponent {
    * @returns {RTCPeerConnection}
    */
   async createPeerConnection() {
-    const log11 = logger("remote-control:webrtc:controller");
+    const log10 = logger("remote-control:webrtc:controller");
     const pc = new RTCPeerConnection({ iceServers: [] });
     this._events(pc);
     this._videoPeerConnection = pc;
@@ -38830,7 +59259,7 @@ var RemoteControl = class extends BaseComponent {
    * @param {Object} offerData - { sdp: string, from: string }
    */
   async negotiateWebRtcOffer(offerData) {
-    const log11 = logger("remote-control:webrtc:controller");
+    const log10 = logger("remote-control:webrtc:controller");
     try {
       if (this.state.mode !== "controller") {
         console.warn("negotiateWebRtcOffer \u0434\u043E\u043F\u0443\u0441\u0442\u0438\u043C \u0442\u043E\u043B\u044C\u043A\u043E \u0432 \u0440\u0435\u0436\u0438\u043C\u0435 controller");
@@ -38842,9 +59271,9 @@ var RemoteControl = class extends BaseComponent {
       );
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      const chatManager2 = await this.getComponentAsync("chat-manager", "chat-manager");
-      if (!chatManager2) throw new Error("chat-manager \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
-      await chatManager2.sendPrivateMessage(offerData.from, JSON.stringify({
+      const chatManager = await this.getComponentAsync("chat-manager", "chat-manager");
+      if (!chatManager) throw new Error("chat-manager \u043D\u0435\u0434\u043E\u0441\u0442\u0443\u043F\u0435\u043D");
+      await chatManager.sendPrivateMessage(offerData.from, JSON.stringify({
         type: "REMOTE_CONTROL_EVENT",
         payload: {
           type: "VIDEO_SDP",
@@ -38854,9 +59283,9 @@ var RemoteControl = class extends BaseComponent {
           timestamp: Date.now()
         }
       }));
-      log11("WebRTC answer \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D viewer: %s", offerData.from);
+      log10("WebRTC answer \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u0435\u043D viewer: %s", offerData.from);
     } catch (err) {
-      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC offer \u0432 controller:", err);
+      log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC offer \u0432 controller:", err);
       this.addError({
         componentName: "RemoteControl",
         source: "negotiateWebRtcOffer",
@@ -38867,7 +59296,7 @@ var RemoteControl = class extends BaseComponent {
   }
   async handleIceCandidate(candidateData) {
     if (!this._videoPeerConnection) {
-      log10.error("RTCPeerConnection \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C \u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442");
+      log9.error("RTCPeerConnection \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D, \u0438\u0433\u043D\u043E\u0440\u0438\u0440\u0443\u0435\u043C \u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442");
       return;
     }
     try {
@@ -38879,9 +59308,9 @@ var RemoteControl = class extends BaseComponent {
           remoteVideo.srcObject = event.streams[0];
         }
       };
-      log10("ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D:", candidateData);
+      log9("ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442 \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D:", candidateData);
     } catch (err) {
-      log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u044F ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442\u0430:", err);
+      log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0438\u044F ICE-\u043A\u0430\u043D\u0434\u0438\u0434\u0430\u0442\u0430:", err);
     }
   }
   /**
@@ -38889,10 +59318,10 @@ var RemoteControl = class extends BaseComponent {
    * @param {Object} answerData - { sdp: string }
    */
   async handleWebRtcAnswer(answerData) {
-    const log11 = logger("remote-control:webrtc");
+    const log10 = logger("remote-control:webrtc");
     try {
       if (!this._videoPeerConnection) {
-        log11.error("RTCPeerConnection \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
+        log10.error("RTCPeerConnection \u043D\u0435 \u0438\u043D\u0438\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D");
         return;
       }
       await this._videoPeerConnection.setRemoteDescription(
@@ -38901,9 +59330,9 @@ var RemoteControl = class extends BaseComponent {
           sdp: answerData.sdp
         })
       );
-      log11("WebRTC answer \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u0440\u0438\u043C\u0435\u043D\u0451\u043D");
+      log10("WebRTC answer \u0443\u0441\u043F\u0435\u0448\u043D\u043E \u043F\u0440\u0438\u043C\u0435\u043D\u0451\u043D");
     } catch (err) {
-      log11.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC-\u043E\u0442\u0432\u0435\u0442\u0430:", err);
+      log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0438 WebRTC-\u043E\u0442\u0432\u0435\u0442\u0430:", err);
       this.addError({
         componentName: "RemoteControl",
         source: "handleWebRtcAnswer",
@@ -38923,7 +59352,7 @@ var RemoteControl = class extends BaseComponent {
         try {
           eventData = JSON.parse(text);
         } catch (e2) {
-          log10.error("\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 remote-control \u0441\u0442\u0440\u0438\u043C\u0435:", text);
+          log9.error("\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u043E\u0435 \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0432 remote-control \u0441\u0442\u0440\u0438\u043C\u0435:", text);
           continue;
         }
         if (eventData.type === "REMOTE_CONTROL_EVENT") {
@@ -38934,7 +59363,7 @@ var RemoteControl = class extends BaseComponent {
       }
     } catch (err) {
       if (err.message !== "stream closed" && err.code !== "ERR_STREAM_RESET") {
-        log10.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0447\u0442\u0435\u043D\u0438\u044F remote-control \u0441\u0442\u0440\u0438\u043C\u0430:", err);
+        log9.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u0447\u0442\u0435\u043D\u0438\u044F remote-control \u0441\u0442\u0440\u0438\u043C\u0430:", err);
       }
       this.state.isConnected = false;
       await this.renderPart({
@@ -39619,10 +60048,10 @@ var $947d894b4a2680e5$exports = {};
   var inited$1 = false;
   function init$1() {
     inited$1 = true;
-    var code3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    for (var i2 = 0, len = code3.length; i2 < len; ++i2) {
-      lookup$1[i2] = code3[i2];
-      revLookup$1[code3.charCodeAt(i2)] = i2;
+    var code4 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    for (var i2 = 0, len = code4.length; i2 < len; ++i2) {
+      lookup$1[i2] = code4[i2];
+      revLookup$1[code4.charCodeAt(i2)] = i2;
     }
     revLookup$1["-".charCodeAt(0)] = 62;
     revLookup$1["_".charCodeAt(0)] = 63;
@@ -39773,25 +60202,25 @@ var $947d894b4a2680e5$exports = {};
     return Buffer$1.TYPED_ARRAY_SUPPORT ? 2147483647 : 1073741823;
   }
   __name(kMaxLength$1, "kMaxLength$1");
-  function createBuffer$1(that, length3) {
-    if (kMaxLength$1() < length3) throw new RangeError("Invalid typed array length");
+  function createBuffer$1(that, length4) {
+    if (kMaxLength$1() < length4) throw new RangeError("Invalid typed array length");
     if (Buffer$1.TYPED_ARRAY_SUPPORT) {
-      that = new Uint8Array(length3);
+      that = new Uint8Array(length4);
       that.__proto__ = Buffer$1.prototype;
     } else {
-      if (that === null) that = new Buffer$1(length3);
-      that.length = length3;
+      if (that === null) that = new Buffer$1(length4);
+      that.length = length4;
     }
     return that;
   }
   __name(createBuffer$1, "createBuffer$1");
-  function Buffer$1(arg, encodingOrOffset, length3) {
-    if (!Buffer$1.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer$1)) return new Buffer$1(arg, encodingOrOffset, length3);
+  function Buffer$1(arg, encodingOrOffset, length4) {
+    if (!Buffer$1.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer$1)) return new Buffer$1(arg, encodingOrOffset, length4);
     if (typeof arg === "number") {
       if (typeof encodingOrOffset === "string") throw new Error("If encoding is specified then the first argument must be a string");
       return allocUnsafe$1(this, arg);
     }
-    return from$1(this, arg, encodingOrOffset, length3);
+    return from$1(this, arg, encodingOrOffset, length4);
   }
   __name(Buffer$1, "Buffer$1");
   Buffer$1.poolSize = 8192;
@@ -39799,15 +60228,15 @@ var $947d894b4a2680e5$exports = {};
     arr.__proto__ = Buffer$1.prototype;
     return arr;
   };
-  function from$1(that, value2, encodingOrOffset, length3) {
+  function from$1(that, value2, encodingOrOffset, length4) {
     if (typeof value2 === "number") throw new TypeError('"value" argument must not be a number');
-    if (typeof ArrayBuffer !== "undefined" && value2 instanceof ArrayBuffer) return fromArrayBuffer$1(that, value2, encodingOrOffset, length3);
+    if (typeof ArrayBuffer !== "undefined" && value2 instanceof ArrayBuffer) return fromArrayBuffer$1(that, value2, encodingOrOffset, length4);
     if (typeof value2 === "string") return fromString$1(that, value2, encodingOrOffset);
     return fromObject$1(that, value2);
   }
   __name(from$1, "from$1");
-  Buffer$1.from = function(value2, encodingOrOffset, length3) {
-    return from$1(null, value2, encodingOrOffset, length3);
+  Buffer$1.from = function(value2, encodingOrOffset, length4) {
+    return from$1(null, value2, encodingOrOffset, length4);
   };
   if (Buffer$1.TYPED_ARRAY_SUPPORT) {
     Buffer$1.prototype.__proto__ = Uint8Array.prototype;
@@ -39845,28 +60274,28 @@ var $947d894b4a2680e5$exports = {};
   function fromString$1(that, string2, encoding) {
     if (typeof encoding !== "string" || encoding === "") encoding = "utf8";
     if (!Buffer$1.isEncoding(encoding)) throw new TypeError('"encoding" must be a valid string encoding');
-    var length3 = byteLength$1(string2, encoding) | 0;
-    that = createBuffer$1(that, length3);
+    var length4 = byteLength$1(string2, encoding) | 0;
+    that = createBuffer$1(that, length4);
     var actual = that.write(string2, encoding);
-    if (actual !== length3)
+    if (actual !== length4)
       that = that.slice(0, actual);
     return that;
   }
   __name(fromString$1, "fromString$1");
   function fromArrayLike$1(that, array) {
-    var length3 = array.length < 0 ? 0 : checked$1(array.length) | 0;
-    that = createBuffer$1(that, length3);
-    for (var i2 = 0; i2 < length3; i2 += 1) that[i2] = array[i2] & 255;
+    var length4 = array.length < 0 ? 0 : checked$1(array.length) | 0;
+    that = createBuffer$1(that, length4);
+    for (var i2 = 0; i2 < length4; i2 += 1) that[i2] = array[i2] & 255;
     return that;
   }
   __name(fromArrayLike$1, "fromArrayLike$1");
-  function fromArrayBuffer$1(that, array, byteOffset, length3) {
+  function fromArrayBuffer$1(that, array, byteOffset, length4) {
     array.byteLength;
     if (byteOffset < 0 || array.byteLength < byteOffset) throw new RangeError("'offset' is out of bounds");
-    if (array.byteLength < byteOffset + (length3 || 0)) throw new RangeError("'length' is out of bounds");
-    if (byteOffset === void 0 && length3 === void 0) array = new Uint8Array(array);
-    else if (length3 === void 0) array = new Uint8Array(array, byteOffset);
-    else array = new Uint8Array(array, byteOffset, length3);
+    if (array.byteLength < byteOffset + (length4 || 0)) throw new RangeError("'length' is out of bounds");
+    if (byteOffset === void 0 && length4 === void 0) array = new Uint8Array(array);
+    else if (length4 === void 0) array = new Uint8Array(array, byteOffset);
+    else array = new Uint8Array(array, byteOffset, length4);
     if (Buffer$1.TYPED_ARRAY_SUPPORT) {
       that = array;
       that.__proto__ = Buffer$1.prototype;
@@ -39893,9 +60322,9 @@ var $947d894b4a2680e5$exports = {};
     throw new TypeError("First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.");
   }
   __name(fromObject$1, "fromObject$1");
-  function checked$1(length3) {
-    if (length3 >= kMaxLength$1()) throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + kMaxLength$1().toString(16) + " bytes");
-    return length3 | 0;
+  function checked$1(length4) {
+    if (length4 >= kMaxLength$1()) throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + kMaxLength$1().toString(16) + " bytes");
+    return length4 | 0;
   }
   __name(checked$1, "checked$1");
   Buffer$1.isBuffer = isBuffer$2;
@@ -39935,15 +60364,15 @@ var $947d894b4a2680e5$exports = {};
         return false;
     }
   }, "isEncoding");
-  Buffer$1.concat = /* @__PURE__ */ __name(function concat2(list, length3) {
+  Buffer$1.concat = /* @__PURE__ */ __name(function concat2(list, length4) {
     if (!isArray$2(list)) throw new TypeError('"list" argument must be an Array of Buffers');
     if (list.length === 0) return Buffer$1.alloc(0);
     var i2;
-    if (length3 === void 0) {
-      length3 = 0;
-      for (i2 = 0; i2 < list.length; ++i2) length3 += list[i2].length;
+    if (length4 === void 0) {
+      length4 = 0;
+      for (i2 = 0; i2 < list.length; ++i2) length4 += list[i2].length;
     }
-    var buffer = Buffer$1.allocUnsafe(length3);
+    var buffer = Buffer$1.allocUnsafe(length4);
     var pos = 0;
     for (i2 = 0; i2 < list.length; ++i2) {
       var buf = list[i2];
@@ -40055,9 +60484,9 @@ var $947d894b4a2680e5$exports = {};
     return this;
   }, "swap64");
   Buffer$1.prototype.toString = /* @__PURE__ */ __name(function toString5() {
-    var length3 = this.length | 0;
-    if (length3 === 0) return "";
-    if (arguments.length === 0) return utf8Slice$1(this, 0, length3);
+    var length4 = this.length | 0;
+    if (length4 === 0) return "";
+    if (arguments.length === 0) return utf8Slice$1(this, 0, length4);
     return slowToString$1.apply(this, arguments);
   }, "toString");
   Buffer$1.prototype.equals = /* @__PURE__ */ __name(function equals4(b) {
@@ -40190,18 +60619,18 @@ var $947d894b4a2680e5$exports = {};
   Buffer$1.prototype.lastIndexOf = /* @__PURE__ */ __name(function lastIndexOf(val, byteOffset, encoding) {
     return bidirectionalIndexOf$1(this, val, byteOffset, encoding, false);
   }, "lastIndexOf");
-  function hexWrite$1(buf, string2, offset, length3) {
+  function hexWrite$1(buf, string2, offset, length4) {
     offset = Number(offset) || 0;
     var remaining = buf.length - offset;
-    if (!length3) length3 = remaining;
+    if (!length4) length4 = remaining;
     else {
-      length3 = Number(length3);
-      if (length3 > remaining) length3 = remaining;
+      length4 = Number(length4);
+      if (length4 > remaining) length4 = remaining;
     }
     var strLen = string2.length;
     if (strLen % 2 !== 0) throw new TypeError("Invalid hex string");
-    if (length3 > strLen / 2) length3 = strLen / 2;
-    for (var i2 = 0; i2 < length3; ++i2) {
+    if (length4 > strLen / 2) length4 = strLen / 2;
+    for (var i2 = 0; i2 < length4; ++i2) {
       var parsed = parseInt(string2.substr(i2 * 2, 2), 16);
       if (isNaN(parsed)) return i2;
       buf[offset + i2] = parsed;
@@ -40209,68 +60638,68 @@ var $947d894b4a2680e5$exports = {};
     return i2;
   }
   __name(hexWrite$1, "hexWrite$1");
-  function utf8Write$1(buf, string2, offset, length3) {
-    return blitBuffer$1(utf8ToBytes$1(string2, buf.length - offset), buf, offset, length3);
+  function utf8Write$1(buf, string2, offset, length4) {
+    return blitBuffer$1(utf8ToBytes$1(string2, buf.length - offset), buf, offset, length4);
   }
   __name(utf8Write$1, "utf8Write$1");
-  function asciiWrite$1(buf, string2, offset, length3) {
-    return blitBuffer$1(asciiToBytes$1(string2), buf, offset, length3);
+  function asciiWrite$1(buf, string2, offset, length4) {
+    return blitBuffer$1(asciiToBytes$1(string2), buf, offset, length4);
   }
   __name(asciiWrite$1, "asciiWrite$1");
-  function latin1Write$1(buf, string2, offset, length3) {
-    return asciiWrite$1(buf, string2, offset, length3);
+  function latin1Write$1(buf, string2, offset, length4) {
+    return asciiWrite$1(buf, string2, offset, length4);
   }
   __name(latin1Write$1, "latin1Write$1");
-  function base64Write$1(buf, string2, offset, length3) {
-    return blitBuffer$1(base64ToBytes$1(string2), buf, offset, length3);
+  function base64Write$1(buf, string2, offset, length4) {
+    return blitBuffer$1(base64ToBytes$1(string2), buf, offset, length4);
   }
   __name(base64Write$1, "base64Write$1");
-  function ucs2Write$1(buf, string2, offset, length3) {
-    return blitBuffer$1(utf16leToBytes$1(string2, buf.length - offset), buf, offset, length3);
+  function ucs2Write$1(buf, string2, offset, length4) {
+    return blitBuffer$1(utf16leToBytes$1(string2, buf.length - offset), buf, offset, length4);
   }
   __name(ucs2Write$1, "ucs2Write$1");
-  Buffer$1.prototype.write = /* @__PURE__ */ __name(function write2(string2, offset, length3, encoding) {
+  Buffer$1.prototype.write = /* @__PURE__ */ __name(function write2(string2, offset, length4, encoding) {
     if (offset === void 0) {
       encoding = "utf8";
-      length3 = this.length;
+      length4 = this.length;
       offset = 0;
-    } else if (length3 === void 0 && typeof offset === "string") {
+    } else if (length4 === void 0 && typeof offset === "string") {
       encoding = offset;
-      length3 = this.length;
+      length4 = this.length;
       offset = 0;
     } else if (isFinite(offset)) {
       offset = offset | 0;
-      if (isFinite(length3)) {
-        length3 = length3 | 0;
+      if (isFinite(length4)) {
+        length4 = length4 | 0;
         if (encoding === void 0) encoding = "utf8";
       } else {
-        encoding = length3;
-        length3 = void 0;
+        encoding = length4;
+        length4 = void 0;
       }
     } else throw new Error("Buffer.write(string, encoding, offset[, length]) is no longer supported");
     var remaining = this.length - offset;
-    if (length3 === void 0 || length3 > remaining) length3 = remaining;
-    if (string2.length > 0 && (length3 < 0 || offset < 0) || offset > this.length) throw new RangeError("Attempt to write outside buffer bounds");
+    if (length4 === void 0 || length4 > remaining) length4 = remaining;
+    if (string2.length > 0 && (length4 < 0 || offset < 0) || offset > this.length) throw new RangeError("Attempt to write outside buffer bounds");
     if (!encoding) encoding = "utf8";
     var loweredCase = false;
     for (; ; ) switch (encoding) {
       case "hex":
-        return hexWrite$1(this, string2, offset, length3);
+        return hexWrite$1(this, string2, offset, length4);
       case "utf8":
       case "utf-8":
-        return utf8Write$1(this, string2, offset, length3);
+        return utf8Write$1(this, string2, offset, length4);
       case "ascii":
-        return asciiWrite$1(this, string2, offset, length3);
+        return asciiWrite$1(this, string2, offset, length4);
       case "latin1":
       case "binary":
-        return latin1Write$1(this, string2, offset, length3);
+        return latin1Write$1(this, string2, offset, length4);
       case "base64":
-        return base64Write$1(this, string2, offset, length3);
+        return base64Write$1(this, string2, offset, length4);
       case "ucs2":
       case "ucs-2":
       case "utf16le":
       case "utf-16le":
-        return ucs2Write$1(this, string2, offset, length3);
+        return ucs2Write$1(this, string2, offset, length4);
       default:
         if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
         encoding = ("" + encoding).toLowerCase();
@@ -40405,9 +60834,9 @@ var $947d894b4a2680e5$exports = {};
     }
     return newBuf;
   }, "slice");
-  function checkOffset$1(offset, ext, length3) {
+  function checkOffset$1(offset, ext, length4) {
     if (offset % 1 !== 0 || offset < 0) throw new RangeError("offset is not uint");
-    if (offset + ext > length3) throw new RangeError("Trying to access beyond buffer length");
+    if (offset + ext > length4) throw new RangeError("Trying to access beyond buffer length");
   }
   __name(checkOffset$1, "checkOffset$1");
   Buffer$1.prototype.readUIntLE = /* @__PURE__ */ __name(function readUIntLE(offset, byteLength, noAssert) {
@@ -40758,8 +61187,8 @@ var $947d894b4a2680e5$exports = {};
         end = this.length;
       }
       if (val.length === 1) {
-        var code3 = val.charCodeAt(0);
-        if (code3 < 256) val = code3;
+        var code4 = val.charCodeAt(0);
+        if (code4 < 256) val = code4;
       }
       if (encoding !== void 0 && typeof encoding !== "string") throw new TypeError("encoding must be a string");
       if (typeof encoding === "string" && !Buffer$1.isEncoding(encoding)) throw new TypeError("Unknown encoding: " + encoding);
@@ -40799,17 +61228,17 @@ var $947d894b4a2680e5$exports = {};
   function utf8ToBytes$1(string2, units) {
     units = units || Infinity;
     var codePoint;
-    var length3 = string2.length;
+    var length4 = string2.length;
     var leadSurrogate = null;
     var bytes = [];
-    for (var i2 = 0; i2 < length3; ++i2) {
+    for (var i2 = 0; i2 < length4; ++i2) {
       codePoint = string2.charCodeAt(i2);
       if (codePoint > 55295 && codePoint < 57344) {
         if (!leadSurrogate) {
           if (codePoint > 56319) {
             if ((units -= 3) > -1) bytes.push(239, 191, 189);
             continue;
-          } else if (i2 + 1 === length3) {
+          } else if (i2 + 1 === length4) {
             if ((units -= 3) > -1) bytes.push(239, 191, 189);
             continue;
           }
@@ -40868,8 +61297,8 @@ var $947d894b4a2680e5$exports = {};
     return toByteArray$1(base64clean$1(str));
   }
   __name(base64ToBytes$1, "base64ToBytes$1");
-  function blitBuffer$1(src3, dst, offset, length3) {
-    for (var i2 = 0; i2 < length3; ++i2) {
+  function blitBuffer$1(src3, dst, offset, length4) {
+    for (var i2 = 0; i2 < length4; ++i2) {
       if (i2 + offset >= dst.length || i2 >= src3.length) break;
       dst[i2 + offset] = src3[i2];
     }
@@ -41387,11 +61816,11 @@ var $947d894b4a2680e5$exports = {};
   }
   __name(formatProperty, "formatProperty");
   function reduceToSingleString(output, base3, braces) {
-    var length3 = output.reduce(function(prev, cur) {
+    var length4 = output.reduce(function(prev, cur) {
       cur.indexOf("\n");
       return prev + cur.replace(/\u001b\[\d\d?m/g, "").length + 1;
     }, 0);
-    if (length3 > 60) return braces[0] + (base3 === "" ? "" : base3 + "\n ") + " " + output.join(",\n  ") + " " + braces[1];
+    if (length4 > 60) return braces[0] + (base3 === "" ? "" : base3 + "\n ") + " " + output.join(",\n  ") + " " + braces[1];
     return braces[0] + base3 + " " + output.join(", ") + " " + braces[1];
   }
   __name(reduceToSingleString, "reduceToSingleString");
@@ -41491,10 +61920,10 @@ var $947d894b4a2680e5$exports = {};
     ].join(" ");
   }
   __name(timestamp, "timestamp");
-  function log11() {
+  function log10() {
     console.log("%s - %s", timestamp(), format$1.apply(null, arguments));
   }
-  __name(log11, "log");
+  __name(log10, "log");
   function _extend(origin, add2) {
     if (!add2 || !isObject(add2)) return origin;
     var keys = Object.keys(add2);
@@ -41510,7 +61939,7 @@ var $947d894b4a2680e5$exports = {};
   var util = {
     inherits: inherits$3,
     _extend,
-    log: log11,
+    log: log10,
     isBuffer: isBuffer$1,
     isPrimitive,
     isFunction,
@@ -41537,10 +61966,10 @@ var $947d894b4a2680e5$exports = {};
   var inited = false;
   function init() {
     inited = true;
-    var code3 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    for (var i2 = 0, len = code3.length; i2 < len; ++i2) {
-      lookup[i2] = code3[i2];
-      revLookup[code3.charCodeAt(i2)] = i2;
+    var code4 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    for (var i2 = 0, len = code4.length; i2 < len; ++i2) {
+      lookup[i2] = code4[i2];
+      revLookup[code4.charCodeAt(i2)] = i2;
     }
     revLookup["-".charCodeAt(0)] = 62;
     revLookup["_".charCodeAt(0)] = 63;
@@ -41691,25 +62120,25 @@ var $947d894b4a2680e5$exports = {};
     return Buffer2.TYPED_ARRAY_SUPPORT ? 2147483647 : 1073741823;
   }
   __name(kMaxLength, "kMaxLength");
-  function createBuffer(that, length3) {
-    if (kMaxLength() < length3) throw new RangeError("Invalid typed array length");
+  function createBuffer(that, length4) {
+    if (kMaxLength() < length4) throw new RangeError("Invalid typed array length");
     if (Buffer2.TYPED_ARRAY_SUPPORT) {
-      that = new Uint8Array(length3);
+      that = new Uint8Array(length4);
       that.__proto__ = Buffer2.prototype;
     } else {
-      if (that === null) that = new Buffer2(length3);
-      that.length = length3;
+      if (that === null) that = new Buffer2(length4);
+      that.length = length4;
     }
     return that;
   }
   __name(createBuffer, "createBuffer");
-  function Buffer2(arg, encodingOrOffset, length3) {
-    if (!Buffer2.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer2)) return new Buffer2(arg, encodingOrOffset, length3);
+  function Buffer2(arg, encodingOrOffset, length4) {
+    if (!Buffer2.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer2)) return new Buffer2(arg, encodingOrOffset, length4);
     if (typeof arg === "number") {
       if (typeof encodingOrOffset === "string") throw new Error("If encoding is specified then the first argument must be a string");
       return allocUnsafe2(this, arg);
     }
-    return from1(this, arg, encodingOrOffset, length3);
+    return from1(this, arg, encodingOrOffset, length4);
   }
   __name(Buffer2, "Buffer");
   Buffer2.poolSize = 8192;
@@ -41717,15 +62146,15 @@ var $947d894b4a2680e5$exports = {};
     arr.__proto__ = Buffer2.prototype;
     return arr;
   };
-  function from1(that, value2, encodingOrOffset, length3) {
+  function from1(that, value2, encodingOrOffset, length4) {
     if (typeof value2 === "number") throw new TypeError('"value" argument must not be a number');
-    if (typeof ArrayBuffer !== "undefined" && value2 instanceof ArrayBuffer) return fromArrayBuffer(that, value2, encodingOrOffset, length3);
+    if (typeof ArrayBuffer !== "undefined" && value2 instanceof ArrayBuffer) return fromArrayBuffer(that, value2, encodingOrOffset, length4);
     if (typeof value2 === "string") return fromString3(that, value2, encodingOrOffset);
     return fromObject(that, value2);
   }
   __name(from1, "from1");
-  Buffer2.from = function(value2, encodingOrOffset, length3) {
-    return from1(null, value2, encodingOrOffset, length3);
+  Buffer2.from = function(value2, encodingOrOffset, length4) {
+    return from1(null, value2, encodingOrOffset, length4);
   };
   if (Buffer2.TYPED_ARRAY_SUPPORT) {
     Buffer2.prototype.__proto__ = Uint8Array.prototype;
@@ -41763,28 +62192,28 @@ var $947d894b4a2680e5$exports = {};
   function fromString3(that, string2, encoding) {
     if (typeof encoding !== "string" || encoding === "") encoding = "utf8";
     if (!Buffer2.isEncoding(encoding)) throw new TypeError('"encoding" must be a valid string encoding');
-    var length3 = byteLength1(string2, encoding) | 0;
-    that = createBuffer(that, length3);
+    var length4 = byteLength1(string2, encoding) | 0;
+    that = createBuffer(that, length4);
     var actual = that.write(string2, encoding);
-    if (actual !== length3)
+    if (actual !== length4)
       that = that.slice(0, actual);
     return that;
   }
   __name(fromString3, "fromString");
   function fromArrayLike(that, array) {
-    var length3 = array.length < 0 ? 0 : checked(array.length) | 0;
-    that = createBuffer(that, length3);
-    for (var i2 = 0; i2 < length3; i2 += 1) that[i2] = array[i2] & 255;
+    var length4 = array.length < 0 ? 0 : checked(array.length) | 0;
+    that = createBuffer(that, length4);
+    for (var i2 = 0; i2 < length4; i2 += 1) that[i2] = array[i2] & 255;
     return that;
   }
   __name(fromArrayLike, "fromArrayLike");
-  function fromArrayBuffer(that, array, byteOffset, length3) {
+  function fromArrayBuffer(that, array, byteOffset, length4) {
     array.byteLength;
     if (byteOffset < 0 || array.byteLength < byteOffset) throw new RangeError("'offset' is out of bounds");
-    if (array.byteLength < byteOffset + (length3 || 0)) throw new RangeError("'length' is out of bounds");
-    if (byteOffset === void 0 && length3 === void 0) array = new Uint8Array(array);
-    else if (length3 === void 0) array = new Uint8Array(array, byteOffset);
-    else array = new Uint8Array(array, byteOffset, length3);
+    if (array.byteLength < byteOffset + (length4 || 0)) throw new RangeError("'length' is out of bounds");
+    if (byteOffset === void 0 && length4 === void 0) array = new Uint8Array(array);
+    else if (length4 === void 0) array = new Uint8Array(array, byteOffset);
+    else array = new Uint8Array(array, byteOffset, length4);
     if (Buffer2.TYPED_ARRAY_SUPPORT) {
       that = array;
       that.__proto__ = Buffer2.prototype;
@@ -41811,9 +62240,9 @@ var $947d894b4a2680e5$exports = {};
     throw new TypeError("First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.");
   }
   __name(fromObject, "fromObject");
-  function checked(length3) {
-    if (length3 >= kMaxLength()) throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + kMaxLength().toString(16) + " bytes");
-    return length3 | 0;
+  function checked(length4) {
+    if (length4 >= kMaxLength()) throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x" + kMaxLength().toString(16) + " bytes");
+    return length4 | 0;
   }
   __name(checked, "checked");
   Buffer2.isBuffer = isBuffer;
@@ -41853,15 +62282,15 @@ var $947d894b4a2680e5$exports = {};
         return false;
     }
   }, "isEncoding");
-  Buffer2.concat = /* @__PURE__ */ __name(function concat2(list, length3) {
+  Buffer2.concat = /* @__PURE__ */ __name(function concat2(list, length4) {
     if (!isArray(list)) throw new TypeError('"list" argument must be an Array of Buffers');
     if (list.length === 0) return Buffer2.alloc(0);
     var i2;
-    if (length3 === void 0) {
-      length3 = 0;
-      for (i2 = 0; i2 < list.length; ++i2) length3 += list[i2].length;
+    if (length4 === void 0) {
+      length4 = 0;
+      for (i2 = 0; i2 < list.length; ++i2) length4 += list[i2].length;
     }
-    var buffer = Buffer2.allocUnsafe(length3);
+    var buffer = Buffer2.allocUnsafe(length4);
     var pos = 0;
     for (i2 = 0; i2 < list.length; ++i2) {
       var buf = list[i2];
@@ -41973,9 +62402,9 @@ var $947d894b4a2680e5$exports = {};
     return this;
   }, "swap64");
   Buffer2.prototype.toString = /* @__PURE__ */ __name(function toString5() {
-    var length3 = this.length | 0;
-    if (length3 === 0) return "";
-    if (arguments.length === 0) return utf8Slice(this, 0, length3);
+    var length4 = this.length | 0;
+    if (length4 === 0) return "";
+    if (arguments.length === 0) return utf8Slice(this, 0, length4);
     return slowToString.apply(this, arguments);
   }, "toString");
   Buffer2.prototype.equals = /* @__PURE__ */ __name(function equals4(b) {
@@ -42108,18 +62537,18 @@ var $947d894b4a2680e5$exports = {};
   Buffer2.prototype.lastIndexOf = /* @__PURE__ */ __name(function lastIndexOf(val, byteOffset, encoding) {
     return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
   }, "lastIndexOf");
-  function hexWrite(buf, string2, offset, length3) {
+  function hexWrite(buf, string2, offset, length4) {
     offset = Number(offset) || 0;
     var remaining = buf.length - offset;
-    if (!length3) length3 = remaining;
+    if (!length4) length4 = remaining;
     else {
-      length3 = Number(length3);
-      if (length3 > remaining) length3 = remaining;
+      length4 = Number(length4);
+      if (length4 > remaining) length4 = remaining;
     }
     var strLen = string2.length;
     if (strLen % 2 !== 0) throw new TypeError("Invalid hex string");
-    if (length3 > strLen / 2) length3 = strLen / 2;
-    for (var i2 = 0; i2 < length3; ++i2) {
+    if (length4 > strLen / 2) length4 = strLen / 2;
+    for (var i2 = 0; i2 < length4; ++i2) {
       var parsed = parseInt(string2.substr(i2 * 2, 2), 16);
       if (isNaN(parsed)) return i2;
       buf[offset + i2] = parsed;
@@ -42127,68 +62556,68 @@ var $947d894b4a2680e5$exports = {};
     return i2;
   }
   __name(hexWrite, "hexWrite");
-  function utf8Write(buf, string2, offset, length3) {
-    return blitBuffer(utf8ToBytes(string2, buf.length - offset), buf, offset, length3);
+  function utf8Write(buf, string2, offset, length4) {
+    return blitBuffer(utf8ToBytes(string2, buf.length - offset), buf, offset, length4);
   }
   __name(utf8Write, "utf8Write");
-  function asciiWrite(buf, string2, offset, length3) {
-    return blitBuffer(asciiToBytes(string2), buf, offset, length3);
+  function asciiWrite(buf, string2, offset, length4) {
+    return blitBuffer(asciiToBytes(string2), buf, offset, length4);
   }
   __name(asciiWrite, "asciiWrite");
-  function latin1Write(buf, string2, offset, length3) {
-    return asciiWrite(buf, string2, offset, length3);
+  function latin1Write(buf, string2, offset, length4) {
+    return asciiWrite(buf, string2, offset, length4);
   }
   __name(latin1Write, "latin1Write");
-  function base64Write(buf, string2, offset, length3) {
-    return blitBuffer(base64ToBytes(string2), buf, offset, length3);
+  function base64Write(buf, string2, offset, length4) {
+    return blitBuffer(base64ToBytes(string2), buf, offset, length4);
   }
   __name(base64Write, "base64Write");
-  function ucs2Write(buf, string2, offset, length3) {
-    return blitBuffer(utf16leToBytes(string2, buf.length - offset), buf, offset, length3);
+  function ucs2Write(buf, string2, offset, length4) {
+    return blitBuffer(utf16leToBytes(string2, buf.length - offset), buf, offset, length4);
   }
   __name(ucs2Write, "ucs2Write");
-  Buffer2.prototype.write = /* @__PURE__ */ __name(function write2(string2, offset, length3, encoding) {
+  Buffer2.prototype.write = /* @__PURE__ */ __name(function write2(string2, offset, length4, encoding) {
     if (offset === void 0) {
       encoding = "utf8";
-      length3 = this.length;
+      length4 = this.length;
       offset = 0;
-    } else if (length3 === void 0 && typeof offset === "string") {
+    } else if (length4 === void 0 && typeof offset === "string") {
       encoding = offset;
-      length3 = this.length;
+      length4 = this.length;
       offset = 0;
     } else if (isFinite(offset)) {
       offset = offset | 0;
-      if (isFinite(length3)) {
-        length3 = length3 | 0;
+      if (isFinite(length4)) {
+        length4 = length4 | 0;
         if (encoding === void 0) encoding = "utf8";
       } else {
-        encoding = length3;
-        length3 = void 0;
+        encoding = length4;
+        length4 = void 0;
       }
     } else throw new Error("Buffer.write(string, encoding, offset[, length]) is no longer supported");
     var remaining = this.length - offset;
-    if (length3 === void 0 || length3 > remaining) length3 = remaining;
-    if (string2.length > 0 && (length3 < 0 || offset < 0) || offset > this.length) throw new RangeError("Attempt to write outside buffer bounds");
+    if (length4 === void 0 || length4 > remaining) length4 = remaining;
+    if (string2.length > 0 && (length4 < 0 || offset < 0) || offset > this.length) throw new RangeError("Attempt to write outside buffer bounds");
     if (!encoding) encoding = "utf8";
     var loweredCase = false;
     for (; ; ) switch (encoding) {
       case "hex":
-        return hexWrite(this, string2, offset, length3);
+        return hexWrite(this, string2, offset, length4);
       case "utf8":
       case "utf-8":
-        return utf8Write(this, string2, offset, length3);
+        return utf8Write(this, string2, offset, length4);
       case "ascii":
-        return asciiWrite(this, string2, offset, length3);
+        return asciiWrite(this, string2, offset, length4);
       case "latin1":
       case "binary":
-        return latin1Write(this, string2, offset, length3);
+        return latin1Write(this, string2, offset, length4);
       case "base64":
-        return base64Write(this, string2, offset, length3);
+        return base64Write(this, string2, offset, length4);
       case "ucs2":
       case "ucs-2":
       case "utf16le":
       case "utf-16le":
-        return ucs2Write(this, string2, offset, length3);
+        return ucs2Write(this, string2, offset, length4);
       default:
         if (loweredCase) throw new TypeError("Unknown encoding: " + encoding);
         encoding = ("" + encoding).toLowerCase();
@@ -42323,9 +62752,9 @@ var $947d894b4a2680e5$exports = {};
     }
     return newBuf;
   }, "slice");
-  function checkOffset(offset, ext, length3) {
+  function checkOffset(offset, ext, length4) {
     if (offset % 1 !== 0 || offset < 0) throw new RangeError("offset is not uint");
-    if (offset + ext > length3) throw new RangeError("Trying to access beyond buffer length");
+    if (offset + ext > length4) throw new RangeError("Trying to access beyond buffer length");
   }
   __name(checkOffset, "checkOffset");
   Buffer2.prototype.readUIntLE = /* @__PURE__ */ __name(function readUIntLE(offset, byteLength, noAssert) {
@@ -42676,8 +63105,8 @@ var $947d894b4a2680e5$exports = {};
         end = this.length;
       }
       if (val.length === 1) {
-        var code3 = val.charCodeAt(0);
-        if (code3 < 256) val = code3;
+        var code4 = val.charCodeAt(0);
+        if (code4 < 256) val = code4;
       }
       if (encoding !== void 0 && typeof encoding !== "string") throw new TypeError("encoding must be a string");
       if (typeof encoding === "string" && !Buffer2.isEncoding(encoding)) throw new TypeError("Unknown encoding: " + encoding);
@@ -42717,17 +63146,17 @@ var $947d894b4a2680e5$exports = {};
   function utf8ToBytes(string2, units) {
     units = units || Infinity;
     var codePoint;
-    var length3 = string2.length;
+    var length4 = string2.length;
     var leadSurrogate = null;
     var bytes = [];
-    for (var i2 = 0; i2 < length3; ++i2) {
+    for (var i2 = 0; i2 < length4; ++i2) {
       codePoint = string2.charCodeAt(i2);
       if (codePoint > 55295 && codePoint < 57344) {
         if (!leadSurrogate) {
           if (codePoint > 56319) {
             if ((units -= 3) > -1) bytes.push(239, 191, 189);
             continue;
-          } else if (i2 + 1 === length3) {
+          } else if (i2 + 1 === length4) {
             if ((units -= 3) > -1) bytes.push(239, 191, 189);
             continue;
           }
@@ -42786,8 +63215,8 @@ var $947d894b4a2680e5$exports = {};
     return toByteArray(base64clean(str));
   }
   __name(base64ToBytes, "base64ToBytes");
-  function blitBuffer(src3, dst, offset, length3) {
-    for (var i2 = 0; i2 < length3; ++i2) {
+  function blitBuffer(src3, dst, offset, length4) {
+    for (var i2 = 0; i2 < length4; ++i2) {
       if (i2 + offset >= dst.length || i2 >= src3.length) break;
       dst[i2 + offset] = src3[i2];
     }
@@ -44158,8 +64587,8 @@ var $947d894b4a2680e5$exports = {};
   }
   __name(highlight, "highlight");
   var highlightTags = /* @__PURE__ */ __name(function highlightTags2(name3) {
-    var code3 = document.getElementById("mocha").getElementsByTagName(name3);
-    for (var i2 = 0, len = code3.length; i2 < len; ++i2) code3[i2].innerHTML = highlight(code3[i2].innerHTML);
+    var code4 = document.getElementById("mocha").getElementsByTagName(name3);
+    for (var i2 = 0, len = code4.length; i2 < len; ++i2) code4[i2].innerHTML = highlight(code4[i2].innerHTML);
   }, "highlightTags");
   var escapeStringRegexp = /* @__PURE__ */ __name((string2) => {
     if (typeof string2 !== "string") throw new TypeError("Expected a string");
@@ -44241,9 +64670,9 @@ var $947d894b4a2680e5$exports = {};
     __name(trim, "trim");
     var fromParts = trim(from4.split("/"));
     var toParts = trim(to.split("/"));
-    var length3 = Math.min(fromParts.length, toParts.length);
-    var samePartsLength = length3;
-    for (var i2 = 0; i2 < length3; i2++) if (fromParts[i2] !== toParts[i2]) {
+    var length4 = Math.min(fromParts.length, toParts.length);
+    var samePartsLength = length4;
+    for (var i2 = 0; i2 < length4; i2++) if (fromParts[i2] !== toParts[i2]) {
       samePartsLength = i2;
       break;
     }
@@ -49352,8 +69781,8 @@ var $947d894b4a2680e5$exports = {};
       }, "has");
       var contains = /* @__PURE__ */ __name(function(array, value2) {
         var index = -1;
-        var length3 = array.length;
-        while (++index < length3) {
+        var length4 = array.length;
+        while (++index < length4) {
           if (array[index] == value2) return true;
         }
         return false;
@@ -49596,7 +70025,7 @@ var $947d894b4a2680e5$exports = {};
       var space = spaces * depth;
       var str = Array.isArray(object) ? "[" : "{";
       var end = Array.isArray(object) ? "]" : "}";
-      var length3 = typeof object.length === "number" ? object.length : Object.keys(object).length;
+      var length4 = typeof object.length === "number" ? object.length : Object.keys(object).length;
       function repeat(s2, n2) {
         return new Array(n2).join(s2);
       }
@@ -49637,8 +70066,8 @@ var $947d894b4a2680e5$exports = {};
       __name(_stringify, "_stringify");
       for (var i2 in object) {
         if (!Object.prototype.hasOwnProperty.call(object, i2)) continue;
-        --length3;
-        str += "\n " + repeat(" ", space) + (Array.isArray(object) ? "" : '"' + i2 + '": ') + _stringify(object[i2]) + (length3 ? "," : "");
+        --length4;
+        str += "\n " + repeat(" ", space) + (Array.isArray(object) ? "" : '"' + i2 + '": ') + _stringify(object[i2]) + (length4 ? "," : "");
       }
       return str + (str.length !== 1 ? "\n" + repeat(" ", --space) + end : end);
     }
@@ -52082,14 +72511,14 @@ var $947d894b4a2680e5$exports = {};
       runner.on(EVENT_TEST_PASS, function(test2) {
         base1.consoleLog("%s  <dt>%s</dt>", indent(), utils.escape(test2.title));
         base1.consoleLog("%s  <dt>%s</dt>", indent(), utils.escape(test2.file));
-        var code3 = utils.escape(utils.clean(test2.body));
-        base1.consoleLog("%s  <dd><pre><code>%s</code></pre></dd>", indent(), code3);
+        var code4 = utils.escape(utils.clean(test2.body));
+        base1.consoleLog("%s  <dd><pre><code>%s</code></pre></dd>", indent(), code4);
       });
       runner.on(EVENT_TEST_FAIL, function(test2, err) {
         base1.consoleLog('%s  <dt class="error">%s</dt>', indent(), utils.escape(test2.title));
         base1.consoleLog('%s  <dt class="error">%s</dt>', indent(), utils.escape(test2.file));
-        var code3 = utils.escape(utils.clean(test2.body));
-        base1.consoleLog('%s  <dd class="error"><pre><code>%s</code></pre></dd>', indent(), code3);
+        var code4 = utils.escape(utils.clean(test2.body));
+        base1.consoleLog('%s  <dd class="error"><pre><code>%s</code></pre></dd>', indent(), code4);
         base1.consoleLog('%s  <dd class="error">%s</dd>', indent(), utils.escape(err));
       });
     }
@@ -52962,10 +73391,10 @@ var $947d894b4a2680e5$exports = {};
         --level1;
       });
       runner.on(EVENT_TEST_PASS, function(test2) {
-        var code3 = utils.clean(test2.body);
+        var code4 = utils.clean(test2.body);
         buf1 += test2.title + ".\n";
         buf1 += "\n```js\n";
-        buf1 += code3 + "\n";
+        buf1 += code4 + "\n";
         buf1 += "```\n\n";
       });
       runner.once(EVENT_RUN_END, function() {
@@ -56493,10 +76922,10 @@ var $3817b02937c60b41$var$chai = $3817b02937c60b41$var$createCommonjsModule(func
           }
           __name(formatProperty, "formatProperty");
           function reduceToSingleString(output, base3, braces) {
-            var length3 = output.reduce(function(prev, cur) {
+            var length4 = output.reduce(function(prev, cur) {
               return prev + cur.length + 1;
             }, 0);
-            if (length3 > 60) return braces[0] + (base3 === "" ? "" : base3 + "\n ") + " " + output.join(",\n  ") + " " + braces[1];
+            if (length4 > 60) return braces[0] + (base3 === "" ? "" : base3 + "\n ") + " " + output.join(",\n  ") + " " + braces[1];
             return braces[0] + base3 + " " + output.join(", ") + " " + braces[1];
           }
           __name(reduceToSingleString, "reduceToSingleString");
@@ -57016,11 +77445,11 @@ var $3817b02937c60b41$var$chai = $3817b02937c60b41$var$createCommonjsModule(func
           }
           __name(entriesEqual, "entriesEqual");
           function iterableEqual(leftHandOperand, rightHandOperand, options) {
-            var length3 = leftHandOperand.length;
-            if (length3 !== rightHandOperand.length) return false;
-            if (length3 === 0) return true;
+            var length4 = leftHandOperand.length;
+            if (length4 !== rightHandOperand.length) return false;
+            if (length4 === 0) return true;
             var index = -1;
-            while (++index < length3) {
+            while (++index < length4) {
               if (deepEqual2(leftHandOperand[index], rightHandOperand[index], options) === false) return false;
             }
             return true;
@@ -57062,9 +77491,9 @@ var $3817b02937c60b41$var$chai = $3817b02937c60b41$var$createCommonjsModule(func
           }
           __name(getEnumerableKeys, "getEnumerableKeys");
           function keysEqual(leftHandOperand, rightHandOperand, keys, options) {
-            var length3 = keys.length;
-            if (length3 === 0) return true;
-            for (var i2 = 0; i2 < length3; i2 += 1) {
+            var length4 = keys.length;
+            if (length4 === 0) return true;
+            for (var i2 = 0; i2 < length4; i2 += 1) {
               if (deepEqual2(leftHandOperand[keys[i2]], rightHandOperand[keys[i2]], options) === false) return false;
             }
             return true;

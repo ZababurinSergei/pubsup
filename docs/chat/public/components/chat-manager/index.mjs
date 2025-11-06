@@ -169,8 +169,6 @@ export class ChatManager extends BaseComponent {
             id: generateMessageId(message.text, message.timestamp)
         });
 
-        console.log('----------------- addMessage --------------------------', this.state.messages)
-
         await this.renderPart({
             partName: 'renderMessages',
             state: this.state,
@@ -566,15 +564,11 @@ export class ChatManager extends BaseComponent {
             let messageData;
             let lp;
             let stream;
+            let protocol;
 
             try {
-                // Пытаемся распарсить как JSON
                 const parsed = JSON.parse(messageText);
-
-                const IS_REMOTE_CONTROL_EVENT = parsed.type === 'REMOTE_CONTROL_EVENT'
-                stream = await this.node.dialProtocol(ma, IS_REMOTE_CONTROL_EVENT ? '/remote-control/1.0.0' : '/chat/1.0.0');
-                lp = lpStream(stream);
-
+                // Пытаемся распарсить как JSON
                 if (parsed && typeof parsed === 'object' && parsed.type) {
                     // Это уже структурированное сообщение (например, REMOTE_CONTROL_REQUEST)
                     messageData = {
@@ -603,6 +597,10 @@ export class ChatManager extends BaseComponent {
                 };
             }
 
+            protocol = getProtocol(messageData.type)
+            stream = await this.node.dialProtocol(ma, protocol);
+            lp = lpStream(stream);
+
             let request = ''
             if (messageData.payload) {
                 request = JSON.stringify(messageData)
@@ -610,12 +608,12 @@ export class ChatManager extends BaseComponent {
                 request = JSON.stringify(messageData)
             }
 
-            const protocol = getProtocol(messageData.type)
-            stream = await this.node.dialProtocol(ma, protocol);
+            // const protocol = getProtocol(messageData.type)
+            // stream = await this.node.dialProtocol(ma, protocol);
 
             // === ОТПРАВКА ===
             const messageBytes = uint8ArrayFromString(request);
-            console.log(`----------------------- SEND PRIVATE_MESSAGE dialProtocol(ma, ${protocol}) -----------------------`, messageData.payload ? messageData.payload: messageData);
+            console.log(`----------------------- SEND PRIVATE_MESSAGE dialProtocol(ma, ${protocol}) -----------------------`, request);
             await lp.write(messageBytes);
 
             // === ЛОГИКА СОХРАНЕНИЯ В ИСТОРИЮ ===
@@ -856,7 +854,6 @@ export class ChatManager extends BaseComponent {
                 try {
                     const lp = lpStream(stream);
                     const remotePeer = connection.remotePeer.toString();
-
                     while (true) {
                         try {
                             const message = await lp.read();

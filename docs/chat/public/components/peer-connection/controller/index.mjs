@@ -19,6 +19,27 @@ export const controller = async (context) => {
          */
         async init() {
             log('controller initializing...');
+            const setupDHTHandlers = () => {
+                const dhtToggles = [
+                    { id: 'dht-lan-toggle', key: 'lan' },
+                    { id: 'dht-amino-toggle', key: 'amino' },
+                    { id: 'dht-universe-toggle', key: 'universe' }
+                ];
+
+                dhtToggles.forEach(({ id, key }) => {
+                    const toggle = context.shadowRoot.querySelector(`#${id}`);
+                    if (toggle) {
+                        const handler = async (e) => {
+                            const dhtSettings = { [key]: e.target.checked };
+                            await context.updateDHTSettings(dhtSettings);
+                        };
+                        toggle.addEventListener('change', handler);
+                        eventListeners.push({ element: toggle, handler: handler });
+                    }
+                });
+            };
+
+            setupDHTHandlers()
 
             // Открыть новую вкладку в режиме dialer
             const openDialerBtn = context.shadowRoot.querySelector('#open-dialer-mode');

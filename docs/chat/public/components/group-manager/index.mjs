@@ -1,21 +1,17 @@
 import { BaseComponent } from '../../base/base-component.mjs';
-import * as template from './template/index.mjs';
-import { controller } from './controller/index.mjs';
 import { createActions } from './actions/index.mjs';
 import { logger } from '@libp2p/logger';
 
 export class GroupManager extends BaseComponent {
     constructor() {
         super();
-        this._templateMethods = template;
         this.log = logger('group-manager');
         this.state = {
             groups: [],
             discoveredGroups: [],
-            searchQuery: '',
             joinedGroups: [],
             nodeReady: false,
-            _initialized: false // Флаг полной инициализации
+            _initialized: false
         };
         this._nodeCheckInterval = null;
     }
@@ -23,21 +19,14 @@ export class GroupManager extends BaseComponent {
     async _componentReady() {
         this.log('component ready');
 
-        this._controller = await controller(this);
         this._actions = await createActions(this);
 
-        this.log('controller and actions created: %o', {
-            hasController: !!this._controller,
+        this.log('actions created: %o', {
             hasActions: !!this._actions
         });
 
-        // Сначала рендерим компонент
-        await this.fullRender(this.state);
-
         // Запускаем инициализацию ноды
         await this.startNodeInitialization();
-
-        await this._controller.init();
 
         this.state._initialized = true;
 
@@ -73,18 +62,18 @@ export class GroupManager extends BaseComponent {
 
     get allGroups() {
         return {
-            groups: [...new Set([...(this.state.groups  || []), ...(this.state.joinedGroups || [])])],
+            groups: [...new Set([...(this.state.groups || []), ...(this.state.joinedGroups || [])])],
             all: [...new Set([
-                ...(this.state.groups  || []),
-                ...(this.state.joinedGroups || []),
-                ...(this.state.discoveredGroups || []),
+                    ...(this.state.groups || []),
+                    ...(this.state.joinedGroups || []),
+                    ...(this.state.discoveredGroups || []),
                 ]
             )],
             discoveredGroups: this.state.discoveredGroups,
             joinedGroups: this.state.joinedGroups
         }
     }
-    // ✅ ДОБАВЛЕНО: обработка события перезапуска ноды
+
     async postMessage(event) {
         if (event.type === 'NODE_RESTARTED') {
             await this.handleNodeRestart();
@@ -103,14 +92,10 @@ export class GroupManager extends BaseComponent {
                 }
                 break;
             default:
-                log.error('Неизвестный тип сообщения: %s', event.type);
+                this.log('Получено необработанное сообщение: %s', event.type);
         }
-
-        // Остальные типы сообщений (если понадобятся в будущем)
-        this.log('Получено необработанное сообщение: %s', event.type);
     }
 
-    // В GroupManager улучшаем обработку перезапуска
     async handleNodeRestart() {
         this.log('Обработка перезапуска ноды в GroupManager');
 
@@ -154,7 +139,6 @@ export class GroupManager extends BaseComponent {
                     }
 
                     this.log('node obtained from peer connection for group manager, pubsub is ready');
-                    await this.safeUpdateUI();
                     return true;
                 } else {
                     this.log('node found but pubsub not ready yet');
@@ -166,69 +150,6 @@ export class GroupManager extends BaseComponent {
 
         } catch (error) {
             this.log.error('failed to initialize from peer connection: %o', error);
-            return false;
-        }
-    }
-
-    async safeUpdateUI() {
-        try {
-            // Пытаемся обновить через renderPart
-            const updates = [];
-
-            // Обновляем статус ноды если элемент существует
-            const nodeStatusElement = this.shadowRoot.querySelector('.node-status-section');
-            if (nodeStatusElement && this.renderPart) {
-                updates.push(
-                    this.renderPart({
-                        partName: 'renderNodeStatus',
-                        state: this.state,
-                        selector: '.node-status-section'
-                    }).catch(() => {
-                        this.log('node status element not available for renderPart');
-                    })
-                );
-            }
-
-            // Обновляем быстрые действия если элемент существует
-            const quickActionsElement = this.shadowRoot.querySelector('.quick-actions');
-            if (quickActionsElement && this.renderPart) {
-                updates.push(
-                    this.renderPart({
-                        partName: 'renderQuickActions',
-                        state: this.state,
-                        selector: '.quick-actions'
-                    }).catch(() => {
-                        this.log('quick actions element not available for renderPart');
-                    })
-                );
-            }
-
-            await Promise.allSettled(updates);
-
-        } catch (error) {
-            this.log('error in safeUpdateUI: %o', error);
-            // Если renderPart не работает, используем полный рендер
-            await this.fullRender(this.state);
-        }
-    }
-
-    async safeRenderPart(options) {
-        try {
-            if (!this.renderPart) {
-                this.log('renderPart method not available');
-                return false;
-            }
-
-            const element = this.shadowRoot.querySelector(options.selector);
-            if (!element) {
-                this.log('element with selector %s not found', options.selector);
-                return false;
-            }
-
-            await this.renderPart(options);
-            return true;
-        } catch (error) {
-            this.log('error in safeRenderPart for %s: %o', options.selector, error);
             return false;
         }
     }
@@ -270,29 +191,10 @@ export class GroupManager extends BaseComponent {
                 throw new Error('Неверный тип аргумента: ожидается строка или объект группы');
             }
 
-            // Обновление UI
-            let uiUpdated = false;
-            try {
-                uiUpdated = await this.safeRenderPart({
-                    partName: 'renderMyGroups',
-                    state: this.state,
-                    selector: '#my-groups-list'
-                });
-                this.log('UI updated via renderPart: %s', uiUpdated);
-            } catch (error) {
-                this.log.error('Error updating via renderPart: %o', error);
-            }
-
-            if (!uiUpdated) {
-                this.log('Using full render as fallback');
-                await this.fullRender(this.state);
-                uiUpdated = true;
-            }
-
             // Уведомляем другие компоненты
             await this.notifyGroupCreation(group);
 
-            this.log('Group operation completed, UI updated: %s', uiUpdated);
+            this.log('Group operation completed');
 
             return group;
 
@@ -301,59 +203,10 @@ export class GroupManager extends BaseComponent {
 
             if (error.message.includes('Pubsub has not started')) {
                 this.state.nodeReady = false;
-                await this.safeUpdateUI();
                 throw new Error('Сервис сообщений не готов. Попробуйте через несколько секунд.');
             }
 
             throw error;
-        }
-    }
-
-    /**
-     * Принудительно обновляет список моих групп
-     */
-    async forceUpdateMyGroups() {
-        try {
-            this.log('Force updating my groups list');
-
-            // Обновляем состояние
-            this.state = {...this.state};
-
-            // Пытаемся обновить через renderPart
-            const success = await this.safeRenderPart({
-                partName: 'renderMyGroups',
-                state: this.state,
-                selector: '#my-groups-list'
-            });
-
-            if (!success) {
-                // Fallback to full render
-                await this.fullRender(this.state);
-            }
-
-            this.log('My groups list updated successfully');
-        } catch (error) {
-            this.log.error('Error in forceUpdateMyGroups: %o', error);
-            await this.fullRender(this.state);
-        }
-    }
-
-    async safeUpdateGroupsList() {
-        try {
-            // Пытаемся обновить список моих групп
-            const myGroupsUpdated = await this.safeRenderPart({
-                partName: 'renderMyGroups',
-                state: this.state,
-                selector: '#my-groups-list'
-            });
-
-            if (!myGroupsUpdated) {
-                // Если не удалось, делаем полный рендер
-                await this.fullRender(this.state);
-            }
-        } catch (error) {
-            this.log('error updating groups list: %o', error);
-            await this.fullRender(this.state);
         }
     }
 
@@ -364,46 +217,16 @@ export class GroupManager extends BaseComponent {
 
         try {
             await this._actions.discoverGroups();
-
-            // Безопасное обновление списка обнаруженных групп
-            await this.safeUpdateDiscoveredGroups();
-
         } catch (error) {
             this.log.error('error discovering groups: %o', error);
             throw error;
         }
     }
 
-    async safeUpdateDiscoveredGroups() {
-        try {
-            const updated = await this.safeRenderPart({
-                partName: 'renderDiscoveredGroups',
-                state: this.state,
-                selector: '#discovered-groups-list'
-            });
-
-            if (!updated) {
-                this.log('discovered groups list not found, using full render');
-                await this.fullRender(this.state);
-            }
-        } catch (error) {
-            this.log('error updating discovered groups: %o', error);
-            await this.fullRender(this.state);
-        }
-    }
-
     async searchGroups(query) {
         try {
             this.state.searchQuery = query;
-            const results = await this._actions.searchGroups(query);
-
-            // Безопасное обновление результатов поиска
-            await this.safeRenderPart({
-                partName: 'renderSearchResults',
-                state: { ...this.state, searchResults: results },
-                selector: '#search-results'
-            });
-
+            return await this._actions.searchGroups(query);
         } catch (error) {
             this.log.error('error searching groups: %o', error);
             throw error;
@@ -420,30 +243,10 @@ export class GroupManager extends BaseComponent {
             const joinedGroup = await this._actions.joinGroup(group.topic || group.id);
             this.log('group joined: %o', joinedGroup);
 
-            // Безопасное обновление списка присоединенных групп
-            await this.safeUpdateJoinedGroups();
-
             return joinedGroup;
         } catch (error) {
             this.log.error('error joining group: %o', error);
             throw error;
-        }
-    }
-
-    async safeUpdateJoinedGroups() {
-        try {
-            const updated = await this.safeRenderPart({
-                partName: 'renderJoinedGroups',
-                state: this.state,
-                selector: '#joined-groups-list'
-            });
-
-            if (!updated) {
-                await this.fullRender(this.state);
-            }
-        } catch (error) {
-            this.log('error updating joined groups: %o', error);
-            await this.fullRender(this.state);
         }
     }
 
@@ -456,29 +259,16 @@ export class GroupManager extends BaseComponent {
             this.log('leaving group: %s', groupId);
             await this._actions.leaveGroup(groupId);
             this.log('group left: %s', groupId);
-
-            await this.safeUpdateJoinedGroups();
-
         } catch (error) {
             this.log.error('error leaving group: %o', error);
             throw error;
         }
     }
 
-    // Метод для принудительной проверки статуса ноды
     async checkNodeStatus() {
         try {
             const wasReady = this.state.nodeReady;
             await this.initializeFromPeerConnection();
-
-            if (!wasReady && this.state.nodeReady) {
-                await this.showModal({
-                    title: 'Готово',
-                    content: '<p>P2P нода готова к работе!</p>',
-                    buttons: [{ text: 'OK', type: 'primary' }]
-                });
-            }
-
             return this.state.nodeReady;
         } catch (error) {
             this.log.error('error checking node status: %o', error);
@@ -486,9 +276,6 @@ export class GroupManager extends BaseComponent {
         }
     }
 
-    /**
-     * Уведомляет другие компоненты о создании группы и передаёт список активных групп
-     */
     async notifyGroupCreation(group) {
         try {
             // Собираем актуальный список групп (мои + присоединённые)
@@ -514,7 +301,7 @@ export class GroupManager extends BaseComponent {
                     data: group
                 });
 
-                // 🔥 Передаём список активных групп для обновления members-list
+                // Передаём список активных групп для обновления members-list
                 await chatInterface.postMessage({
                     type: 'ACTIVE_GROUPS_UPDATED',
                     data: { activeGroups }
@@ -533,13 +320,9 @@ export class GroupManager extends BaseComponent {
             this._nodeCheckInterval = null;
         }
 
-        if (this._controller && this._controller.destroy) {
-            await this._controller.destroy();
-        }
         if (this._actions && this._actions.cleanup) {
             await this._actions.cleanup();
         }
-        this._templateMethods = null;
     }
 }
 

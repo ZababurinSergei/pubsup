@@ -203,11 +203,55 @@ export class ChatInterface extends BaseComponent {
         }
     }
 
+    /**
+     * Обрабатывает обновление DHT пиров
+     * @async
+     * @param {Object} data - Данные DHT пиров
+     */
+    async handleDHTPeersUpdate(data) {
+        try {
+            this._log('👥 обработка обновления DHT пиров: %o', data);
+
+            // Объединяем DHT пиров с обычными подключенными пирами
+            const dhtPeers = data.peers || [];
+            const existingPeerIds = new Set(this.state.connectedPeers.map(p => p.id));
+
+            // Добавляем только новых пиров из DHT
+            const newDHTPeers = dhtPeers.filter(peer =>
+                !existingPeerIds.has(peer.id) && peer.id !== this.state.peerId
+            );
+
+            if (newDHTPeers.length > 0) {
+                this.state.connectedPeers = [
+                    ...this.state.connectedPeers,
+                    ...newDHTPeers.map(peer => ({
+                        id: peer.id,
+                        name: this.generatePeerName(peer.id),
+                        online: true,
+                        discoveredVia: peer.dhtType || 'DHT',
+                        isDHT: true
+                    }))
+                ];
+
+                this._log('Добавлено %d новых пиров из DHT', newDHTPeers.length);
+
+                // Обновляем список участников
+                await this.updateMembersList();
+            }
+
+        } catch (error) {
+            this._log.error('❌ ошибка обработки DHT пиров: %o', error);
+        }
+    }
+
     async postMessage(event) {
         try {
             this._log('📨 получено сообщение: %s %o', event.type, event.data);
 
             switch (event.type) {
+                case 'DHT_PEERS_UPDATE':
+                    await this.handleDHTPeersUpdate(event.data);
+                    break;
                 case 'ACTIVE_GROUPS_UPDATED':
                     // Сохраняем список активных групп в состоянии
                     this.state.activeGroups = event.data.activeGroups || [];

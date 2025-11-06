@@ -23,13 +23,26 @@ export class PeerConnection extends BaseComponent {
             connectedPeers: [],
             relayEnabled: true,
             startTime: null, // Время старта ноды
-            uptime: '0:00'   // Текущее время работы
+            uptime: '0:00',   // Текущее время работы
+            // DHT Configuration
+            dhtEnabled: {
+                lan: false,
+                amino: false,
+                universe: true
+            },
+            dhtPeers: {
+                lan: [],
+                amino: [],
+                universe: []
+            }
         };
         this._lastPeersCount = 0; // Для отслеживания изменений
         this._uptimeInterval = null; // Интервал для обновления времени
+        this._dhtServices = new Map(); // Для хранения DHT сервисов
     }
 
     async _componentReady() {
+        // debugger
         log('PeerConnection component ready');
 
         this._controller = await controller(this);
@@ -75,7 +88,18 @@ export class PeerConnection extends BaseComponent {
 
         try {
             const libp2p = await this._actions.initializeLibp2p(mode);
+
             this.node = libp2p; // Сохраняем ноду
+            // Запускаем обновление DHT пиров
+            await this._actions.startDHTPeerUpdates();
+
+            // Публикуем информацию о себе в DHT
+            await this._actions.publishToDHT({
+                mode: mode,
+                capabilities: ['chat', 'groups'],
+                version: '1.0.0'
+            });
+
             this.state.peerId = libp2p.peerId.toString();
 
             // Получаем все адреса

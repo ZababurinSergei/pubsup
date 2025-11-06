@@ -324,14 +324,10 @@ export const controller = async (context) => {
 
                         let history = [];
                         if (context?.state?.topicHistories?.[group.topic]) {
-                            history = [...chatManager.state.topicHistories[group.topic]];
+                            history = [...context.state.topicHistories[group.topic]];
                         }
 
-                        console.log('22222222222222222222222222222222222222222222222222222222222222222222222222222', group, history)
-                        // Устанавливаем историю в состояние chat-manager (для синхронизации)
-                        // if (chatManager) {
-                            context.state.messages = history;
-                        // }
+                        context.state.messages = history;
 
                         // Рендерим заголовок и список групп
                         await context.renderPart({

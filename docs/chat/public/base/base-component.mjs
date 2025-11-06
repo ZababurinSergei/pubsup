@@ -273,8 +273,7 @@ export class BaseComponent extends HTMLElement {
 
         if (!exclusion.includes(this.tagName)) {
             this.#templateImported = true;
-
-            if(type !== "server") {
+            if(type !== "server" && !this.hasAttribute('data-no-render')) {
                 await this.#loadComponentStyles();
                 await this.showSkeleton({
                     selector: '#connection-status',

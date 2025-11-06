@@ -1,18 +1,59 @@
 // Импортируем необходимые модули
-import { createLibp2p } from 'libp2p';
-import { noise } from '@chainsafe/libp2p-noise';
-import { yamux } from '@chainsafe/libp2p-yamux';
-import { circuitRelayTransport } from '@libp2p/circuit-relay-v2';
-import { webSockets } from '@libp2p/websockets';
-import { webRTC } from '@libp2p/webrtc';
-import { identify } from '@libp2p/identify';
-import { gossipsub } from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm'
-import { multiaddr } from '@multiformats/multiaddr';
-import { fromString } from 'uint8arrays';
+import {createLibp2p} from 'libp2p';
+import {noise} from '@chainsafe/libp2p-noise';
+import {yamux} from '@chainsafe/libp2p-yamux';
+import {circuitRelayTransport} from '@libp2p/circuit-relay-v2';
+import {webSockets} from '@libp2p/websockets';
+import {webRTC} from '@libp2p/webrtc';
+import {identify} from '@libp2p/identify';
+import {gossipsub} from 'https://cdn.jsdelivr.net/npm/@libp2p/gossipsub@15.0.7/+esm'
+import {multiaddr} from '@multiformats/multiaddr';
+import {fromString} from 'uint8arrays';
 import {WebRTC, WebSockets} from "@multiformats/multiaddr-matcher";
-import { ping } from '@libp2p/ping'
-// Импортируем логгер
-import { logger } from '@libp2p/logger';
+import {ping} from '@libp2p/ping'
+import {kadDHT} from '@libp2p/kad-dht';
+import {sha256} from 'multiformats/hashes/sha2';
+import {logger} from '@libp2p/logger';
+
+// DHT Configuration
+const DHT_CONFIG = {
+    // LAN DHT settings
+    LAN: {
+        PROTOCOL: '/ipfs/lan/kad/1.0.0',
+        CLIENT_MODE: false,
+        DATASOURCE_PREFIX: '/dht-lan',
+        LOG_PREFIX: 'libp2p:dht-lan',
+        METRICS_PREFIX: 'libp2p_dht_lan',
+        BUCKET_SIZE: 20,
+        MAX_RECORD_AGE: 36 * 60 * 60 * 1000,
+        QUERY_TIMEOUT: 30000,
+        QUERY_CONCURRENCY: 3
+    },
+    // Amino DHT settings
+    AMINO: {
+        PROTOCOL: '/ipfs/kad/1.0.0',
+        CLIENT_MODE: true,
+        DATASOURCE_PREFIX: '/dht-amino',
+        LOG_PREFIX: 'libp2p:dht-amino',
+        METRICS_PREFIX: 'libp2p_dht_amino',
+        BUCKET_SIZE: 20,
+        MAX_RECORD_AGE: 36 * 60 * 60 * 1000,
+        QUERY_TIMEOUT: 30000,
+        QUERY_CONCURRENCY: 3
+    },
+    // Universe DHT settings (custom WAN)
+    UNIVERSE: {
+        PROTOCOL: '/universe/kad/1.0.0',
+        CLIENT_MODE: false,
+        DATASOURCE_PREFIX: '/dht-universe',
+        LOG_PREFIX: 'libp2p:dht-universe',
+        METRICS_PREFIX: 'libp2p_dht_universe',
+        BUCKET_SIZE: 20,
+        MAX_RECORD_AGE: 36 * 60 * 60 * 1000,
+        QUERY_TIMEOUT: 30000,
+        QUERY_CONCURRENCY: 3
+    }
+};
 
 /**
  * Фабричная функция для создания действий компонента PeerConnection
@@ -25,8 +66,286 @@ export async function createActions(context) {
 
     let libp2p = null;
     let connectionInterval = null;
+    let dhtInterval = null;
 
     const self = {
+        /**
+         * Инициализирует DHT сервисы
+         * @async
+         */
+        async initializeDHT() {
+            if (!libp2p || !context.state.dhtEnabled) return;
+
+            try {
+                const dhtServices = [];
+
+                // LAN DHT
+                if (context.state.dhtEnabled.lan) {
+                    const lanDHT = kadDHT({
+                        protocol: DHT_CONFIG.LAN.PROTOCOL,
+                        clientMode: DHT_CONFIG.LAN.CLIENT_MODE,
+                        logPrefix: DHT_CONFIG.LAN.LOG_PREFIX,
+                        kBucketSize: DHT_CONFIG.LAN.BUCKET_SIZE,
+                        maxRecordAge: DHT_CONFIG.LAN.MAX_RECORD_AGE,
+                        queryTimeout: DHT_CONFIG.LAN.QUERY_TIMEOUT,
+                        queryConcurrency: DHT_CONFIG.LAN.QUERY_CONCURRENCY
+                    });
+                    dhtServices.push(lanDHT);
+                    context._dhtServices.set('lan', lanDHT);
+                    log('LAN DHT initialized');
+                }
+
+                // Amino DHT
+                if (context.state.dhtEnabled.amino) {
+                    const aminoDHT = kadDHT({
+                        protocol: DHT_CONFIG.AMINO.PROTOCOL,
+                        clientMode: DHT_CONFIG.AMINO.CLIENT_MODE,
+                        logPrefix: DHT_CONFIG.AMINO.LOG_PREFIX,
+                        kBucketSize: DHT_CONFIG.AMINO.BUCKET_SIZE,
+                        maxRecordAge: DHT_CONFIG.AMINO.MAX_RECORD_AGE,
+                        queryTimeout: DHT_CONFIG.AMINO.QUERY_TIMEOUT,
+                        queryConcurrency: DHT_CONFIG.AMINO.QUERY_CONCURRENCY
+                    });
+                    dhtServices.push(aminoDHT);
+                    context._dhtServices.set('amino', aminoDHT);
+                    log('Amino DHT initialized');
+                }
+
+                // Universe DHT
+                if (context.state.dhtEnabled.universe) {
+                    const universeDHT = kadDHT({
+                        protocol: DHT_CONFIG.UNIVERSE.PROTOCOL,
+                        clientMode: DHT_CONFIG.UNIVERSE.CLIENT_MODE,
+                        logPrefix: DHT_CONFIG.UNIVERSE.LOG_PREFIX,
+                        kBucketSize: DHT_CONFIG.UNIVERSE.BUCKET_SIZE,
+                        maxRecordAge: DHT_CONFIG.UNIVERSE.MAX_RECORD_AGE,
+                        queryTimeout: DHT_CONFIG.UNIVERSE.QUERY_TIMEOUT,
+                        queryConcurrency: DHT_CONFIG.UNIVERSE.QUERY_CONCURRENCY
+                    });
+                    dhtServices.push(universeDHT);
+                    context._dhtServices.set('universe', universeDHT);
+                    log('Universe DHT initialized');
+                }
+
+                return dhtServices;
+
+            } catch (error) {
+                log.error('Error initializing DHT services: %o', error);
+                context.addError({
+                    componentName: context.constructor.name,
+                    source: 'initializeDHT',
+                    message: 'Ошибка инициализации DHT',
+                    details: error
+                });
+                return [];
+            }
+        },
+
+        /**
+         * Обновляет список пиров DHT
+         * @async
+         */
+        async updateDHTPeers() {
+            if (!libp2p || !context._dhtServices.size) return;
+
+            try {
+                const dhtPeers = {
+                    lan: [],
+                    amino: [],
+                    universe: []
+                };
+
+                for (const [type, dht] of context._dhtServices.entries()) {
+                    try {
+                        // Получаем пиров из таблицы маршрутизации DHT
+                        const routingTablePeers = dht.routingTable?.toArray() || [];
+                        dhtPeers[type] = routingTablePeers.map(peerId => ({
+                            id: peerId.toString(),
+                            type: type.toUpperCase(),
+                            discoveredAt: Date.now()
+                        }));
+
+                        log('DHT %s peers: %d', type, dhtPeers[type].length);
+                    } catch (error) {
+                        log.error('Error getting DHT %s peers: %o', type, error);
+                    }
+                }
+
+                context.state.dhtPeers = dhtPeers;
+                await self.sendDHTPeersToChatInterface();
+
+            } catch (error) {
+                log.error('Error updating DHT peers: %o', error);
+            }
+        },
+
+        /**
+         * Передает данные о DHT пирах в chat-interface
+         * @async
+         */
+        async sendDHTPeersToChatInterface() {
+            try {
+                const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
+                if (chatInterface) {
+                    const dhtData = {
+                        totalPeers: Object.values(context.state.dhtPeers).flat().length,
+                        peers: Object.values(context.state.dhtPeers).flat(),
+                        dhtEnabled: context.state.dhtEnabled,
+                        timestamp: Date.now()
+                    };
+
+                    await chatInterface.postMessage({
+                        type: 'DHT_PEERS_UPDATE',
+                        data: dhtData
+                    });
+
+                    log.trace('DHT peers data sent to chat-interface: %o', dhtData);
+                }
+            } catch (error) {
+                log.error('Error sending DHT peers to chat interface: %o', error);
+            }
+        },
+
+        /**
+         * Запускает периодическое обновление DHT пиров
+         * @async
+         */
+        async startDHTPeerUpdates() {
+            if (dhtInterval) {
+                clearInterval(dhtInterval);
+            }
+
+            dhtInterval = setInterval(() => {
+                self.updateDHTPeers();
+            }, 10000); // Обновление каждые 10 секунд
+
+            // Первое обновление
+            setTimeout(() => {
+                self.updateDHTPeers();
+            }, 2000);
+        },
+
+        /**
+         * Публикует информацию о себе в DHT
+         * @async
+         * @param {Object} data - Данные для публикации
+         */
+        async publishToDHT(data) {
+            if (!libp2p || !context._dhtServices.size) return;
+
+            try {
+                const key = new TextEncoder().encode(`peer:${context.state.peerId}`);
+                const value = new TextEncoder().encode(JSON.stringify({
+                    ...data,
+                    peerId: context.state.peerId,
+                    timestamp: Date.now(),
+                    addresses: context.state.listeningAddresses
+                }));
+
+                for (const [type, dht] of context._dhtServices.entries()) {
+                    try {
+                        // Новый API для DHT - используем provide вместо put
+                        if (dht.provide) {
+                            // Для объявления доступности контента
+                            await dht.provide(key);
+                            log('Provided key in %s DHT', type);
+                        }
+
+                        // Если нужно сохранять данные, используем content routing
+                        if (libp2p.contentRouting && libp2p.contentRouting.put) {
+                            await libp2p.contentRouting.put(key, value);
+                            log('Data published to content routing via %s DHT', type);
+                        }
+
+                    } catch (error) {
+                        log.error('Error publishing to %s DHT: %o', type, error);
+                    }
+                }
+
+            } catch (error) {
+                log.error('Error publishing to DHT: %o', error);
+            }
+        },
+
+        /**
+         * Ищет пиров в DHT
+         * @async
+         * @param {string} query - Поисковый запрос
+         */
+        async findPeersInDHT(query) {
+            if (!libp2p || !context._dhtServices.size) return [];
+
+            try {
+                const key = new TextEncoder().encode(query);
+                const foundPeers = [];
+
+                for (const [type, dht] of context._dhtServices.entries()) {
+                    try {
+                        // Используем findProviders для поиска пиров
+                        if (dht.findProviders) {
+                            for await (const provider of dht.findProviders(key)) {
+                                foundPeers.push({
+                                    id: provider.id.toString(),
+                                    dhtType: type,
+                                    foundVia: 'DHT',
+                                    addresses: provider.multiadds
+                                });
+                            }
+                        }
+
+                        // Альтернативно используем content routing
+                        if (libp2p.contentRouting && libp2p.contentRouting.get) {
+                            try {
+                                const value = await libp2p.contentRouting.get(key);
+                                if (value) {
+                                    const data = JSON.parse(new TextDecoder().decode(value));
+                                    foundPeers.push({
+                                        ...data,
+                                        dhtType: type,
+                                        foundVia: 'ContentRouting'
+                                    });
+                                }
+                            } catch (e) {
+                                // Игнорируем ошибки получения данных
+                            }
+                        }
+
+                    } catch (error) {
+                        log.error('Error searching in %s DHT: %o', type, error);
+                    }
+                }
+
+                return foundPeers;
+
+            } catch (error) {
+                log.error('Error finding peers in DHT: %o', error);
+                return [];
+            }
+        },
+
+        /**
+         * Обновляет настройки DHT
+         * @async
+         * @param {Object} dhtSettings - Новые настройки DHT
+         */
+        async updateDHTSettings(dhtSettings) {
+            try {
+                context.state.dhtEnabled = {...context.state.dhtEnabled, ...dhtSettings};
+
+                // Перезапускаем DHT сервисы
+                if (libp2p) {
+                    await self.initializeDHT();
+                    await self.startDHTPeerUpdates();
+                }
+
+                log('DHT settings updated: %o', context.state.dhtEnabled);
+                return true;
+
+            } catch (error) {
+                log.error('Error updating DHT settings: %o', error);
+                return false;
+            }
+        },
         /**
          * Инициализирует Libp2p узел
          * @async
@@ -123,8 +442,8 @@ export async function createActions(context) {
 
                 // Обновляем список пиров
                 // setTimeout(async () => {
-                    await self.updatePeerList();
-                    await self.sendPeersToChatInterface();
+                await self.updatePeerList();
+                await self.sendPeersToChatInterface();
                 // }, 500);
             });
 
@@ -134,8 +453,8 @@ export async function createActions(context) {
 
                 // Обновляем список пиров
                 // setTimeout(async () => {
-                    await self.updatePeerList();
-                    await self.sendPeersToChatInterface();
+                await self.updatePeerList();
+                await self.sendPeersToChatInterface();
                 // }, 500);
             });
 
@@ -154,8 +473,8 @@ export async function createActions(context) {
                 log('Обнаружен пир: %s', event.detail.id.toString());
                 // Также обновляем список при обнаружении новых пиров
                 // setTimeout(async () => {
-                    await self.updatePeerList();
-                    await self.sendPeersToChatInterface();
+                await self.updatePeerList();
+                await self.sendPeersToChatInterface();
                 // }, 1000);
             });
         },
@@ -252,11 +571,11 @@ export async function createActions(context) {
 
             // connectionInterval = setInterval(() => {
             //     log.trace('Автоматическое обновление...');
-                self.updatePeerList();
-                self.updateAddressList();
-                self.updateStatsCard();
-                self.sendPeersToChatInterface();
-                self.sendConnectionStatusToChatInterface();
+            self.updatePeerList();
+            self.updateAddressList();
+            self.updateStatsCard();
+            self.sendPeersToChatInterface();
+            self.sendConnectionStatusToChatInterface();
             // }, 5000);
 
             // Однократное обновление после полной загрузки
@@ -502,7 +821,6 @@ export async function createActions(context) {
         },
 
 
-
         /**
          * Уведомляет все компоненты о готовности новой ноды
          * @async
@@ -733,7 +1051,48 @@ export async function createActions(context) {
         }
     };
 
+
+    // Обновляем метод initializeLibp2p для включения DHT
+    const originalInitializeLibp2p = self.initializeLibp2p;
+
+    self.initializeLibp2p = async function (mode = 'listener') {
+        try {
+            const libp2pInstance = await originalInitializeLibp2p.call(this, mode);
+
+            // Инициализируем DHT после создания ноды
+            const dhtServices = await self.initializeDHT();
+
+            // Добавляем DHT сервисы в конфигурацию
+            if (dhtServices.length > 0) {
+                libp2pInstance.services.dht = dhtServices;
+            }
+
+            // Запускаем обновление DHT пиров
+            await self.startDHTPeerUpdates();
+
+            // Публикуем информацию о себе в DHT
+            await self.publishToDHT({
+                mode: mode,
+                capabilities: ['chat', 'groups'],
+                version: '1.0.0'
+            });
+
+            return libp2pInstance;
+
+        } catch (error) {
+            log.error('Error in enhanced initializeLibp2p: %o', error);
+            throw error;
+        }
+    };
+
     return {
+        initializeDHT: self.initializeDHT.bind(self),
+        updateDHTPeers: self.updateDHTPeers.bind(self),
+        sendDHTPeersToChatInterface: self.sendDHTPeersToChatInterface.bind(self),
+        startDHTPeerUpdates: self.startDHTPeerUpdates.bind(self),
+        publishToDHT: self.publishToDHT.bind(self),
+        findPeersInDHT: self.findPeersInDHT.bind(self),
+        updateDHTSettings: self.updateDHTSettings.bind(self),
         initializeLibp2p: self.initializeLibp2p.bind(self),
         setupEventHandlers: self.setupEventHandlers.bind(self),
         startPeerListUpdates: self.startPeerListUpdates.bind(self),

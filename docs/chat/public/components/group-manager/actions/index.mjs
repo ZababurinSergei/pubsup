@@ -73,8 +73,6 @@ export async function createActions(context) {
                         } catch (error) {
                             log.error('ошибка обработки сообщения: %o', error);
                         }
-                    } else {
-
                     }
                 });
 
@@ -143,9 +141,6 @@ export async function createActions(context) {
             // Сортируем по времени обновления (новые сверху)
             context.state.discoveredGroups.sort((a, b) => b.lastUpdated - a.lastUpdated);
 
-            // Безопасное обновление UI
-            await this.safeUpdateDiscoveredGroupsUI();
-
             // 🔥 Уведомляем chat-manager о новых обнаруженных группах
             const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
             if (chatManager) {
@@ -157,35 +152,6 @@ export async function createActions(context) {
         },
 
         /**
-         * Безопасно обновляет UI списка обнаруженных групп
-         */
-        async safeUpdateDiscoveredGroupsUI() {
-            try {
-                // Проверяем доступность метода renderPart
-                if (!context.renderPart) {
-                    log.error('renderPart method not available in actions');
-                    return;
-                }
-
-                // Проверяем существование элемента
-                const discoveredGroupsElement = context.shadowRoot?.querySelector('#discovered-groups-list');
-                if (!discoveredGroupsElement) {
-                    log.error('discovered groups list element not found');
-                    return;
-                }
-
-                await context.renderPart({
-                    partName: 'renderDiscoveredGroups',
-                    state: context.state,
-                    selector: '#discovered-groups-list'
-                });
-            } catch (error) {
-                log.error('error updating discovered groups UI: %o', error);
-                // Не выбрасываем ошибку дальше, чтобы не прерывать логику
-            }
-        },
-
-        /**
          * Запуск процесса обнаружения групп
          * @async
          */
@@ -193,11 +159,6 @@ export async function createActions(context) {
             if (discoveredGroupsInterval) {
                 clearInterval(discoveredGroupsInterval);
             }
-
-            // Обновляем список групп каждые 10 секунд
-            // discoveredGroupsInterval = setInterval(async () => {
-            await this.discoverGroups();
-            // }, 10000);
 
             // Первоначальное обнаружение
             await this.discoverGroups();
@@ -362,9 +323,6 @@ export async function createActions(context) {
                 // Обновляем состояние компонента
                 context.state.discoveredGroups = discoveredGroups;
 
-                // Безопасное обновление UI вместо прямого вызова renderPart
-                await this.safeUpdateDiscoveredGroupsUI();
-
                 // 🔥 Уведомляем chat-manager после обновления
                 const chatManager = await context.getComponentAsync('chat-manager', 'chat-manager');
                 if (chatManager) {
@@ -435,9 +393,6 @@ export async function createActions(context) {
 
                 log('создана группа: %s (%s)', safeGroupName, topic);
 
-                // Безопасное обновление UI
-                await this.safeUpdateMyGroupsUI();
-
                 return group;
 
             } catch (error) {
@@ -449,46 +404,6 @@ export async function createActions(context) {
                     details: error
                 });
                 throw error;
-            }
-        },
-
-        /**
-         * Безопасно обновляет UI списка моих групп
-         */
-        async safeUpdateMyGroupsUI() {
-            try {
-                if (!context.renderPart) {
-                    log.error('renderPart method not available for my groups');
-                    // Пытаемся использовать полный рендер
-                    if (context.fullRender) {
-                        await context.fullRender(context.state);
-                    }
-                    return;
-                }
-
-                const myGroupsElement = context.shadowRoot?.querySelector('#my-groups-list');
-                if (!myGroupsElement) {
-                    log.error('my groups list element not found, using full render');
-                    if (context.fullRender) {
-                        await context.fullRender(context.state);
-                    }
-                    return;
-                }
-
-                await context.renderPart({
-                    partName: 'renderMyGroups',
-                    state: context.state,
-                    selector: '#my-groups-list'
-                });
-
-                log.trace('My groups UI updated successfully');
-
-            } catch (error) {
-                log.error('Error updating my groups UI: %o', error);
-                // Fallback to full render
-                if (context.fullRender) {
-                    await context.fullRender(context.state);
-                }
             }
         },
 
@@ -588,9 +503,6 @@ export async function createActions(context) {
 
                 log('присоединились к группе: %s (%s)', group.name, topic);
 
-                // Безопасное обновление UI
-                await this.safeUpdateJoinedGroupsUI();
-
                 return group;
 
             } catch (error) {
@@ -602,33 +514,6 @@ export async function createActions(context) {
                     details: error
                 });
                 throw error;
-            }
-        },
-
-        /**
-         * Безопасно обновляет UI списка присоединенных групп
-         */
-        async safeUpdateJoinedGroupsUI() {
-            try {
-                if (!context.renderPart) {
-                    log.error('renderPart method not available for joined groups');
-                    return;
-                }
-
-                const joinedGroupsElement = context.shadowRoot?.querySelector('#joined-groups-list');
-                if (!joinedGroupsElement) {
-                    log.error('joined groups list element not found');
-                    return;
-                }
-
-                await context.renderPart({
-                    partName: 'renderJoinedGroups',
-                    state: context.state,
-                    selector: '#joined-groups-list'
-                });
-
-            } catch (error) {
-                log.error('error updating joined groups UI: %o', error);
             }
         },
 
@@ -652,9 +537,6 @@ export async function createActions(context) {
                 }
 
                 log('покинули группу: %s', topic);
-
-                // Безопасное обновление UI
-                await this.safeUpdateJoinedGroupsUI();
 
             } catch (error) {
                 log.error('ошибка выхода из группы: %o', error);
