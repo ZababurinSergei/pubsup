@@ -2693,7 +2693,6 @@ var controller = /* @__PURE__ */ __name(async (context) => {
             if (groupManager?.state) {
               activeGroups = groupManager.state.joinedGroups;
             }
-            console.log("dddddddddddddddddddddddddddddddddddd", activeGroups);
             const chatInterface = await context.getComponentAsync("chat-interface", "main-chat");
             if (chatInterface) {
               await chatInterface.postMessage({
@@ -17577,24 +17576,35 @@ function renderConnectionStatus({ state = {} } = {}) {
         </div>
         `;
   }
-  if (!state.currentGroup) {
+  if (!state.currentGroup && !state.activeMember) {
     return `
         <div class="status-message info">
             <span class="status-icon">\u2139\uFE0F</span>
-            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
+            <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u043B\u0438 \u0441\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u0433\u0440\u0443\u043F\u043F\u0443 \u0438\u043B\u0438 \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F \u0434\u043B\u044F \u043D\u0430\u0447\u0430\u043B\u0430 \u043E\u0431\u0449\u0435\u043D\u0438\u044F</span>
         </div>
         `;
   }
-  return `
-    <div class="status-message connected">
-        <span class="status-icon">\u{1F7E2}</span>
-        <span class="status-text">
-            \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}
-            ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}
-        </span>
-        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}
-        ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}
-    </div>
+  const isActiveMember = !!state.activeMember;
+  return isActiveMember ? ` 
+            <div class="status-message connected">
+                <span class="status-icon">\u{1F7E2}</span>
+                <span class="status-text">
+                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043F\u0438\u0440\u0443
+                    ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}
+                </span>
+                    ${state.peerId ? `<span class="peer-id">\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C: ${state.activeMember.name}...</span>` : ""}
+                    ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}
+                </div>
+        ` : `
+            <div class="status-message connected">
+                <span class="status-icon">\u{1F7E2}</span>
+                <span class="status-text">
+                    \u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0435\u043D\u043E ${state.totalPeers ? `\u043A ${state.totalPeers} \u043F\u0438\u0440\u0430\u043C` : "\u043A \u0441\u0435\u0442\u0438"}
+                    ${state.connectionMode ? `(${state.connectionMode === "listener" ? "\u0441\u043B\u0443\u0448\u0430\u0442\u0435\u043B\u044C" : "\u0438\u043D\u0438\u0446\u0438\u0430\u0442\u043E\u0440"})` : ""}
+                </span>
+                ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ""}
+                ${state.uptime ? `<span class="uptime">\u0412\u0440\u0435\u043C\u044F \u0440\u0430\u0431\u043E\u0442\u044B: ${state.uptime}</span>` : ""}
+            </div>
     `;
 }
 __name(renderConnectionStatus, "renderConnectionStatus");
@@ -17667,7 +17677,7 @@ function renderMembersList({ state = {} } = {}) {
     }
     const unreadCount = state.unreadCounts?.[item.id] || 0;
     const showUnread = !item.isCurrentUser && unreadCount > 0;
-    const displayName = item.isCurrentUser ? "\u0412\u044B" : item.name || `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`;
+    const displayName = item.isCurrentUser ? "\u0412\u044B" : item.name || `${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`;
     const isActivePeer = state.isPrivateChat && state.activeMember?.id === item.id;
     return `
           <div class="member-item ${item.isCurrentUser ? "current-user" : ""} ${isActivePeer ? "active" : ""} clickable" data-peer-id="${item.id}">
@@ -18144,7 +18154,6 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
             const groupManager = await context.getComponentAsync("group-manager", "group-manager");
             const allGroups = groupManager.allGroups.all;
             const group = allGroups.find((g) => g.topic === groupTopic);
-            console.log("@@@@@@@@@@@@@@@@@@@@@@ group @@@@@@@@@@@@@@@@@@@@@@", group, allGroups);
             if (group) {
               const chatManager = await context.getComponentAsync("chat-manager", "chat-manager");
               log10("\u0432\u044B\u0431\u043E\u0440 \u0433\u0440\u0443\u043F\u043F\u044B \u0434\u043B\u044F \u0447\u0430\u0442\u0430: %s", group.name || groupTopic);
@@ -19184,6 +19193,11 @@ var ChatInterface = class extends BaseComponent {
           partName: "renderChatHeader",
           state: this.state,
           selector: ".chat-header"
+        });
+        await this.renderPart({
+          partName: "renderConnectionStatus",
+          state: this.state,
+          selector: "#connection-status"
         });
       }
     } catch (error) {
@@ -58542,7 +58556,7 @@ var PeerConnection = class extends BaseComponent {
             const suffix = peer.id ? peer.id.substring(peer.id.length - 4) : "????";
             return {
               id: peer.id || "unknown",
-              name: `\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C ${prefix}...${suffix}`,
+              name: `${prefix}...${suffix}`,
               connections: peer.connections ? peer.connections.length : 1,
               status: "connected"
             };

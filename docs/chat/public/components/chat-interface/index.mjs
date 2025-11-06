@@ -510,6 +510,12 @@ export class ChatInterface extends BaseComponent {
                     state: this.state,
                     selector: '.chat-header'
                 });
+
+                await this.renderPart({
+                    partName: 'renderConnectionStatus',
+                    state: this.state,
+                    selector: '#connection-status'
+                });
             }
         } catch (error) {
             this._log.error('ошибка обновления заголовка чата: %o', error);

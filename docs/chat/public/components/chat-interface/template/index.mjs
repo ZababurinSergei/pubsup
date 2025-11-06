@@ -125,25 +125,39 @@ export function renderConnectionStatus({state = {}} = {}) {
         `;
     }
 
-    if (!state.currentGroup) {
+    if (!state.currentGroup && !state.activeMember) {
         return `
         <div class="status-message info">
             <span class="status-icon">ℹ️</span>
-            <span class="status-text">Выберите или создайте группу для начала общения</span>
+            <span class="status-text">Выберите или создайте группу или пользователя для начала общения</span>
         </div>
         `;
     }
 
-    return `
-    <div class="status-message connected">
-        <span class="status-icon">🟢</span>
-        <span class="status-text">
-            Подключено ${state.totalPeers ? `к ${state.totalPeers} пирам` : 'к сети'}
-            ${state.connectionMode ? `(${state.connectionMode === 'listener' ? 'слушатель' : 'инициатор'})` : ''}
-        </span>
-        ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ''}
-        ${state.uptime ? `<span class="uptime">Время работы: ${state.uptime}</span>` : ''}
-    </div>
+    const isActiveMember = !!state.activeMember
+
+    return isActiveMember
+        ? ` 
+            <div class="status-message connected">
+                <span class="status-icon">🟢</span>
+                <span class="status-text">
+                    Подключено пиру
+                    ${state.connectionMode ? `(${state.connectionMode === 'listener' ? 'слушатель' : 'инициатор'})` : ''}
+                </span>
+                    ${state.peerId ? `<span class="peer-id">Пользователь: ${state.activeMember.name}...</span>` : ''}
+                    ${state.uptime ? `<span class="uptime">Время работы: ${state.uptime}</span>` : ''}
+                </div>
+        `
+        :`
+            <div class="status-message connected">
+                <span class="status-icon">🟢</span>
+                <span class="status-text">
+                    Подключено ${state.totalPeers ? `к ${state.totalPeers} пирам` : 'к сети'}
+                    ${state.connectionMode ? `(${state.connectionMode === 'listener' ? 'слушатель' : 'инициатор'})` : ''}
+                </span>
+                ${state.peerId ? `<span class="peer-id">ID: ${state.peerId.substring(0, 12)}...</span>` : ''}
+                ${state.uptime ? `<span class="uptime">Время работы: ${state.uptime}</span>` : ''}
+            </div>
     `;
 }
 
@@ -242,7 +256,7 @@ export function renderMembersList({ state = {} } = {}) {
 
         const displayName = item.isCurrentUser
             ? 'Вы'
-            : (item.name || `Пользователь ${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
+            : (item.name || `${item.id.substring(0, 6)}...${item.id.substring(item.id.length - 4)}`);
 
         const isActivePeer = state.isPrivateChat && state.activeMember?.id === item.id;
 

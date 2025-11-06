@@ -270,7 +270,7 @@ export const controller = async (context) => {
                         const allGroups = (groupManager.allGroups).all
                         // Ищем группу по топику в активных группах
                         const group = allGroups.find(g => g.topic === groupTopic)
-                        console.log('@@@@@@@@@@@@@@@@@@@@@@ group @@@@@@@@@@@@@@@@@@@@@@', group, allGroups)
+
                             // context.state.activeGroups?.find(g => g.topic === groupTopic) ||
                             // context.state.groups?.find(g => g.topic === groupTopic) ||
                             // context.state.discoveredGroups?.find(g => g.topic === groupTopic);

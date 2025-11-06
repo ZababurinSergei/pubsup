@@ -352,7 +352,6 @@ export const controller = async (context) => {
                             // activeGroups = [...new Set([...(groupManager.state.groups  || []), ...(groupManager.state.joinedGroups || [])])];
                         }
 
-                        console.log('dddddddddddddddddddddddddddddddddddd', activeGroups)
                         // Уведомляем chat-interface
                         const chatInterface = await context.getComponentAsync('chat-interface', 'main-chat');
                         if (chatInterface) {

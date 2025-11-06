@@ -376,7 +376,7 @@ export class PeerConnection extends BaseComponent {
                         const suffix = peer.id ? peer.id.substring(peer.id.length - 4) : '????';
                         return {
                             id: peer.id || 'unknown',
-                            name: `Пользователь ${prefix}...${suffix}`,
+                            name: `${prefix}...${suffix}`,
                             connections: peer.connections ? peer.connections.length : 1,
                             status: 'connected'
                         };
