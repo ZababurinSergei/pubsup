@@ -23,11 +23,130 @@
     <link href="./theme.css" rel="stylesheet"/>
 </head>
 <body  class="mocha-dark">
-<div class="container">
-    <peer-connection slot="peer-connection" id="peer-connection"></peer-connection>
-    <chat-interface slot="chat-interface" id="main-chat"></chat-interface>
-    <chat-manager slot="chat-manager" id="chat-manager"></chat-manager>
-    <group-manager slot="group-manager" id="group-manager" data-no-render></group-manager>
-</div>
+<div class="stars" id="stars"></div>
+<div class="moon" id="moon"></div>
+<div class="planet"></div>
+<div class="rings"></div>
+<div class="asteroid"></div>
+<div class="comet"></div>
+<div class="earth" id="earth"></div>
+<div class="container"></div>
+<script>
+    // Создание случайных звезд
+    const starsContainer = document.getElementById('stars');
+    const starCount = 150;
+
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+
+        // Случайные позиции и размеры
+        const size = Math.random() * 2 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+
+        // Случайная продолжительность мерцания
+        star.style.setProperty('--duration', `${Math.random() * 5 + 3}s`);
+
+        starsContainer.appendChild(star);
+    }
+
+    // Создание кратеров на луне
+    const moon = document.getElementById('moon');
+    const craterCount = 8;
+
+    for (let i = 0; i < craterCount; i++) {
+        const crater = document.createElement('div');
+        crater.classList.add('crater');
+
+        const size = Math.random() * 30 + 10;
+        crater.style.width = `${size}px`;
+        crater.style.height = `${size}px`;
+        crater.style.left = `${Math.random() * 70 + 15}%`;
+        crater.style.top = `${Math.random() * 70 + 15}%`;
+
+        moon.appendChild(crater);
+    }
+
+    // Создание облаков на земле
+    const earth = document.getElementById('earth');
+    const cloudCount = 5;
+
+    for (let i = 0; i < cloudCount; i++) {
+        const cloud = document.createElement('div');
+        cloud.classList.add('cloud');
+
+        const size = Math.random() * 40 + 20;
+        cloud.style.width = `${size}px`;
+        cloud.style.height = `${size/2}px`;
+        cloud.style.left = `${Math.random() * 80 + 10}%`;
+        cloud.style.top = `${Math.random() * 80 + 10}%`;
+
+        earth.appendChild(cloud);
+    }
+
+    // Создание созвездий
+    for (let i = 0; i < 3; i++) {
+        createConstellation();
+    }
+
+    function createConstellation() {
+        const constellation = document.createElement('div');
+        constellation.classList.add('constellation');
+
+        const starCount = Math.floor(Math.random() * 5) + 3;
+        const stars = [];
+
+        // Создание звезд созвездия
+        for (let j = 0; j < starCount; j++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+
+            const size = Math.random() * 3 + 2;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.left = `${Math.random() * 80 + 10}%`;
+            star.style.top = `${Math.random() * 80 + 10}%`;
+
+            constellation.appendChild(star);
+            stars.push(star);
+        }
+
+        // Соединение звезд линиями
+        for (let j = 0; j < starCount - 1; j++) {
+            const link = document.createElement('div');
+            link.classList.add('star-link');
+
+            const star1 = stars[j];
+            const star2 = stars[j+1];
+
+            const rect1 = star1.getBoundingClientRect();
+            const rect2 = star2.getBoundingClientRect();
+
+            const x1 = parseFloat(star1.style.left);
+            const y1 = parseFloat(star1.style.top);
+            const x2 = parseFloat(star2.style.left);
+            const y2 = parseFloat(star2.style.top);
+
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+            link.style.width = `${length}%`;
+            link.style.left = `${x1}%`;
+            link.style.top = `${y1}%`;
+            link.style.transform = `rotate(${angle}deg)`;
+
+            constellation.appendChild(link);
+        }
+
+        // Позиционирование созвездия на странице
+        constellation.style.left = `${Math.random() * 80 + 10}%`;
+        constellation.style.top = `${Math.random() * 80 + 10}%`;
+
+        document.body.appendChild(constellation);
+    }
+</script>
 </body>
 </html>

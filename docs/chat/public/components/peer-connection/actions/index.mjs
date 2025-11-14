@@ -375,12 +375,7 @@ export async function createActions(context) {
                     connectionEncrypters: [noise()],
                     streamMuxers: [yamux()],
                     services: {
-                        ping: ping({
-                            protocolPrefix: 'libp2p',
-                            maxInboundStreams: 10,
-                            maxOutboundStreams: 10,
-                            timeout: 5000
-                        }),
+                        ping: ping(),
                         identify: identify(),
                         pubsub: gossipsub({
                             doPX: true,

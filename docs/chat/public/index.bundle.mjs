@@ -1627,6 +1627,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
    */
   async connectedCallback() {
     try {
+      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", this.tagName);
       log(`${this.constructor.name} \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0430\u0435\u0442\u0441\u044F \u043A DOM.`);
       await this.#initComponent(this.state);
       this.#isReady = true;
@@ -1834,16 +1835,16 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
         if (targetElement) {
           targetElement.innerHTML = skeletonHtml;
         } else {
-          const container2 = document.createElement("div");
-          container2.id = "root";
-          container2.innerHTML = skeletonHtml;
-          this.shadowRoot.appendChild(container2);
+          const container = document.createElement("div");
+          container.id = "root";
+          container.innerHTML = skeletonHtml;
+          this.shadowRoot.appendChild(container);
         }
       } else {
-        const container2 = document.createElement("div");
-        container2.className = "skeleton-overlay";
-        container2.innerHTML = skeletonHtml;
-        this.shadowRoot.appendChild(container2);
+        const container = document.createElement("div");
+        container.className = "skeleton-overlay";
+        container.innerHTML = skeletonHtml;
+        this.shadowRoot.appendChild(container);
       }
       log(`\u0421\u043A\u0435\u043B\u0435\u0442\u043E\u043D-\u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u043F\u043E\u043A\u0430\u0437\u0430\u043D\u0430 \u0434\u043B\u044F ${this.constructor.name}`);
     } catch (error) {
@@ -2111,6 +2112,7 @@ var BaseComponent = class _BaseComponent extends HTMLElement {
       }
       const key = `${this.tagName.toLowerCase()}:${this.id}`;
       _BaseComponent.pendingRequests.set(key, this);
+      console.log("-----------------------------", this.tagName, _BaseComponent.pendingRequests);
       if (this.tagName.toLowerCase() === "navigation-manager" || this.tagName.toLowerCase() === "navigation-sections") {
         log(`${this.constructor.name} \u0441 ID ${this.id} \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D.`);
       }
@@ -16214,6 +16216,7 @@ var ChatManager = class extends BaseComponent {
     };
     this.node = null;
     this.activeStreams = /* @__PURE__ */ new Map();
+    console.log("#####################################", this.tagName);
   }
   async _componentReady() {
     log5("ChatManager component ready");
@@ -17860,6 +17863,20 @@ function renderChatHeader({ state = {} } = {}) {
                 </div>
             </div>
         </div>
+        <div class="chat-actions">
+            <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
+                <span class="btn-icon">\u{1F5D1}\uFE0F</span>
+            </button>
+            <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
+                <span class="btn-icon">\u{1F50D}</span>
+            </button>
+            <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
+                <span class="btn-icon">\u{1F465}</span>
+            </button>
+            <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
+                <span class="btn-icon">\u2699\uFE0F</span>
+            </button>
+        </div>
         `;
   }
   if (!state.currentGroup) {
@@ -17874,6 +17891,20 @@ function renderChatHeader({ state = {} } = {}) {
                     <span class="status-text">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0447\u0430\u0442</span>
                 </div>
             </div>
+        </div>
+        <div class="chat-actions">
+            <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
+                <span class="btn-icon">\u{1F5D1}\uFE0F</span>
+            </button>
+            <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
+                <span class="btn-icon">\u{1F50D}</span>
+            </button>
+            <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
+                <span class="btn-icon">\u{1F465}</span>
+            </button>
+            <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
+                <span class="btn-icon">\u2699\uFE0F</span>
+            </button>
         </div>
         `;
   }
@@ -17890,6 +17921,20 @@ function renderChatHeader({ state = {} } = {}) {
                 ${state.currentGroup ? `<span class="member-count">\u{1F465} ${state.currentGroup.memberCount || 1}</span>` : ""}            </div>
         </div>
     </div>
+      <div class="chat-actions">
+            <button class="action-btn" id="clear-chat" title="\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0447\u0430\u0442">
+                <span class="btn-icon">\u{1F5D1}\uFE0F</span>
+            </button>
+            <button class="action-btn" id="search-messages" title="\u041F\u043E\u0438\u0441\u043A \u0441\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0439">
+                <span class="btn-icon">\u{1F50D}</span>
+            </button>
+            <button class="action-btn" id="toggle-members" title="\u0423\u0447\u0430\u0441\u0442\u043D\u0438\u043A\u0438">
+                <span class="btn-icon">\u{1F465}</span>
+            </button>
+            <button class="action-btn" id="settings" title="\u041D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0438">
+                <span class="btn-icon">\u2699\uFE0F</span>
+            </button>
+        </div>
     `;
 }
 __name(renderChatHeader, "renderChatHeader");
@@ -17959,6 +18004,32 @@ var controller2 = /* @__PURE__ */ __name(async (context) => {
       log10("controller initializing");
       const sendMessageBtn = context.shadowRoot.querySelector("#send-message");
       let messageInput = context.shadowRoot.querySelector("#message-input");
+      let messageSettings = context.shadowRoot.querySelector("#settings");
+      if (messageSettings) {
+        const sendMessageHandler = /* @__PURE__ */ __name(async (event) => {
+          const container = document.body.querySelector(".container");
+          const component = container.querySelector("#peer-connection");
+          if (component?.getAttribute?.("disabled") === "false") {
+            if (component) {
+              component.removeAttribute("disabled");
+            } else {
+              console.error("\u041D\u0435 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C");
+            }
+          } else {
+            if (component) {
+              component.setAttribute("disabled", "false");
+            } else {
+              const template = await app;
+              console.log("ddddddddddddddddddddddddddd", template);
+              template.components["peer-connection"].id["peer-connection"].setAttribute("disabled", "false");
+              container.appendChild(template.components["peer-connection"].id["peer-connection"]);
+            }
+          }
+        }, "sendMessageHandler");
+        messageSettings.addEventListener("click", sendMessageHandler);
+        eventListeners.push({ element: messageSettings, handler: sendMessageHandler });
+      }
+      console.log("----------------------- messageSettings ------------------------", messageSettings);
       if (sendMessageBtn && messageInput) {
         const sendMessageHandler = /* @__PURE__ */ __name(async () => {
           if (messageInput.value.trim() && context.state.currentGroup) {
@@ -57678,12 +57749,7 @@ async function createActions4(context) {
           connectionEncrypters: [noise()],
           streamMuxers: [yamux()],
           services: {
-            ping: ping({
-              protocolPrefix: "libp2p",
-              maxInboundStreams: 10,
-              maxOutboundStreams: 10,
-              timeout: 5e3
-            }),
+            ping: ping(),
             identify: identify(),
             pubsub: gossipsub({
               doPX: true,
@@ -58665,7 +58731,7 @@ var PeerConnection = class extends BaseComponent {
     }
   }
   async getRelayAddresses() {
-    return "/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i";
+    return "/dns4/localhost/tcp/6835/ws/p2p/12D3KooWSSixS7BBVNLqxK77JyUhYd7khX1PV7nBGKXEqbi6hwEB";
   }
   async manualUpdate() {
     log6("\u0420\u0443\u0447\u043D\u043E\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 PeerConnection");
@@ -58679,6 +58745,9 @@ var PeerConnection = class extends BaseComponent {
       await this._actions.forceUpdate();
     }
   }
+  async _componentAdopted() {
+    console.log("################## ADOPTED ##################");
+  }
   async _componentDisconnected() {
     if (this._uptimeInterval) {
       clearInterval(this._uptimeInterval);
@@ -58691,6 +58760,7 @@ var PeerConnection = class extends BaseComponent {
       await this._actions.cleanup();
     }
     this._templateMethods = null;
+    this.remove();
   }
 };
 if (!customElements.get("peer-connection")) {
@@ -72493,7 +72563,7 @@ var $947d894b4a2680e5$exports = {};
     inherits(Dot, base1);
     Dot.description = "dot matrix representation";
   });
-  var doc2 = createCommonjsModule(function(module, exports) {
+  var doc = createCommonjsModule(function(module, exports) {
     var constants = runner1.constants;
     var EVENT_TEST_PASS = constants.EVENT_TEST_PASS;
     var EVENT_TEST_FAIL = constants.EVENT_TEST_FAIL;
@@ -73598,7 +73668,7 @@ var $947d894b4a2680e5$exports = {};
   var reporters = createCommonjsModule(function(module, exports) {
     exports.Base = exports.base = base1;
     exports.Dot = exports.dot = dot;
-    exports.Doc = exports.doc = doc2;
+    exports.Doc = exports.doc = doc;
     exports.TAP = exports.tap = tap;
     exports.JSON = exports.json = json1;
     exports.HTML = exports.html = html1;
@@ -76786,10 +76856,10 @@ var $3817b02937c60b41$var$chai = $3817b02937c60b41$var$createCommonjsModule(func
                     return xmlSerializer.serializeToString(value2);
                   } else {
                     var ns = "http://www.w3.org/1999/xhtml";
-                    var container2 = document.createElementNS(ns, "_");
-                    container2.appendChild(value2.cloneNode(false));
-                    var html = container2.innerHTML.replace("><", ">" + value2.innerHTML + "<");
-                    container2.innerHTML = "";
+                    var container = document.createElementNS(ns, "_");
+                    container.appendChild(value2.cloneNode(false));
+                    var html = container.innerHTML.replace("><", ">" + value2.innerHTML + "<");
+                    container.innerHTML = "";
                     return html;
                   }
                 } catch (err) {
@@ -77795,33 +77865,133 @@ var test = /* @__PURE__ */ __name((state = {}) => {
 }, "test");
 
 // public/index.mjs
-window.onload = async function() {
-  test({
-    path: "/tests/index.mjs"
-  }).catch((e2) => {
-    console.log("error devtool", e2);
-  });
+var app = window.onload = (async () => {
+  const isTests = false;
+  const container = document.body.querySelector(".container");
+  container.attachShadow({ mode: "open" });
+  const chatInterface = document.createElement("chat-interface");
+  chatInterface.setAttribute("id", "main-chat");
+  chatInterface.setAttribute("slot", "chat-interface");
+  const peerConnection = document.createElement("peer-connection");
+  peerConnection.setAttribute("id", "peer-connection");
+  peerConnection.setAttribute("slot", "peer-connection");
+  const chatManager = document.createElement("chat-manager");
+  chatManager.setAttribute("id", "chat-manager");
+  chatManager.setAttribute("slot", "chat-manager");
+  const groupManager = document.createElement("group-manager");
+  groupManager.setAttribute("id", "group-manager");
+  groupManager.setAttribute("slot", "group-manager");
+  chatInterface.connectedCallback();
+  peerConnection.connectedCallback();
+  chatManager.connectedCallback();
+  groupManager.connectedCallback();
+  const doc = document.createElement("div");
+  const slotRemoteControl = document.createElement("slot");
+  const slotChatInterface = document.createElement("slot");
+  const slotPeerConnection = document.createElement("slot");
+  const slotChatManager = document.createElement("slot");
+  const slotGroupManager = document.createElement("slot");
+  slotChatInterface.name = "chat-interface";
+  slotRemoteControl.name = "remote-control";
+  slotPeerConnection.name = "peer-connection";
+  slotChatManager.name = "chat-manager";
+  slotGroupManager.name = "group-manager";
+  doc.classList.add("container");
+  doc.appendChild(slotChatInterface);
+  doc.appendChild(slotPeerConnection);
+  doc.appendChild(slotRemoteControl);
+  doc.appendChild(slotChatManager);
+  doc.appendChild(slotGroupManager);
+  document.body.querySelector(".container").appendChild(chatInterface);
+  setTimeout(() => {
+    container.shadowRoot.appendChild(doc);
+  }, 1e3);
+  if (isTests) {
+    test({
+      path: "/tests/index.mjs"
+    }).catch((e2) => {
+      console.log("error devtool", e2);
+    });
+  }
+  class ScrollManager {
+    static {
+      __name(this, "ScrollManager");
+    }
+    constructor() {
+      this.scrollTimeout = null;
+      this.isScrolling = false;
+      this.debounceDelay = 200;
+      this.init();
+    }
+    init() {
+      window.addEventListener("scroll", () => {
+        this.handleScrollStart();
+      }, { passive: true });
+      this.checkScrollNecessity();
+    }
+    handleScrollStart() {
+      if (!this.isScrolling) {
+        this.isScrolling = true;
+        document.documentElement.classList.add("scrolling");
+      }
+      this.clearTimeout();
+      this.scrollTimeout = setTimeout(() => {
+        this.handleScrollEnd();
+      }, this.debounceDelay);
+    }
+    handleScrollEnd() {
+      this.isScrolling = false;
+      document.documentElement.classList.remove("scrolling");
+    }
+    clearTimeout() {
+      if (this.scrollTimeout) {
+        clearTimeout(this.scrollTimeout);
+        this.scrollTimeout = null;
+      }
+    }
+    checkScrollNecessity() {
+      const hasScrollbar = document.documentElement.scrollHeight > window.innerHeight;
+      if (!hasScrollbar) {
+        document.documentElement.style.setProperty("--scrollbar-visibility", "hidden");
+        document.documentElement.style.setProperty("--scrollbar-opacity", "0");
+      }
+    }
+    // Метод для принудительного показа/скрытия
+    showScrollbar() {
+      document.documentElement.classList.add("scrolling");
+    }
+    hideScrollbar() {
+      document.documentElement.classList.remove("scrolling");
+    }
+    // Обновить настройки
+    updateSettings(delay = 1500) {
+      this.debounceDelay = delay;
+    }
+  }
+  window.scrollManager = new ScrollManager();
+  return {
+    components: {
+      "peer-connection": {
+        id: {
+          "peer-connection": peerConnection
+        }
+      },
+      "chat-manager": {
+        id: {
+          "chat-manager": chatManager
+        }
+      },
+      "group-manager": {
+        id: {
+          "group-manager": groupManager
+        }
+      }
+    }
+  };
+})();
+export {
+  app
 };
-var container = document.body.querySelector(".container");
-container.attachShadow({ mode: "open" });
-var doc = document.createElement("div");
-var slotRemoteControl = document.createElement("slot");
-var slotChatInterface = document.createElement("slot");
-var slotPeerConnection = document.createElement("slot");
-var slotChatManager = document.createElement("slot");
-var slotGroupManager = document.createElement("slot");
-slotChatInterface.name = "chat-interface";
-slotRemoteControl.name = "remote-control";
-slotPeerConnection.name = "peer-connection";
-slotChatManager.name = "chat-manager";
-slotGroupManager.name = "group-manager";
-doc.classList.add("container");
-doc.appendChild(slotPeerConnection);
-doc.appendChild(slotChatInterface);
-doc.appendChild(slotRemoteControl);
-doc.appendChild(slotChatManager);
-doc.appendChild(slotGroupManager);
-container.shadowRoot.appendChild(doc);
 /*!
 * The buffer module from node.js, for the browser.
 *

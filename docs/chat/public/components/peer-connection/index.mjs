@@ -505,7 +505,7 @@ export class PeerConnection extends BaseComponent {
     }
 
     async getRelayAddresses() {
-        return '/dns4/localhost/tcp/6835/ws/p2p/12D3KooWBHSGgQQNinaUn9mtx7iqfQSM3sb1Fr1aCnkqLnyeT88i';
+        return '/dns4/localhost/tcp/6835/ws/p2p/12D3KooWSSixS7BBVNLqxK77JyUhYd7khX1PV7nBGKXEqbi6hwEB';
     }
 
     async manualUpdate() {
@@ -522,6 +522,11 @@ export class PeerConnection extends BaseComponent {
         }
     }
 
+    async _componentAdopted() {
+        console.log('################## ADOPTED ##################')
+    }
+
+
     async _componentDisconnected() {
         // Останавливаем счетчик времени
         if (this._uptimeInterval) {
@@ -536,6 +541,7 @@ export class PeerConnection extends BaseComponent {
             await this._actions.cleanup();
         }
         this._templateMethods = null;
+        this.remove()
     }
 }
 

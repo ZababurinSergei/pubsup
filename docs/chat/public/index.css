@@ -1,4 +1,6 @@
 @import url('./modal.css');
+@import url('./scroll.css');
+@import url('./background.css');
 
 :root {
     --primary: #4e54c8;
@@ -71,6 +73,19 @@
     src:
             local("Rubik-Bold"),
             url("./fonts/Rubik-Bold.ttf");
+}
+
+body {
+    overflow-y: scroll;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+.container {
+    z-index: 2;
 }
 
 /* Стили для модального окна компонента */
@@ -190,4 +205,12 @@
             url("./fonts/Rubik-Bold.ttf");
 }
 
+
+chat-interface:not(:defined) > * {
+    display: none;
+}
+
+chat-interface:not(:defined) > template[shadowrootmode] ~ *  {
+    display: none;
+}
 

@@ -1,5 +1,6 @@
 import { logger } from '@libp2p/logger';
 import { insertRemoteControl } from '../../utils/index.mjs'
+import {app} from "../../../index.mjs";
 /**
  * Контроллер для компонента ChatInterface
  * @param {HTMLElement} context - Ссылка на экземпляр компонента
@@ -21,7 +22,36 @@ export const controller = async (context) => {
             // Обработчик отправки сообщения
             const sendMessageBtn = context.shadowRoot.querySelector('#send-message');
             let messageInput = context.shadowRoot.querySelector('#message-input');
+            let messageSettings = context.shadowRoot.querySelector('#settings');
 
+            if (messageSettings) {
+                const sendMessageHandler = async (event) => {
+                    const container = document.body.querySelector('.container');
+                    const component = container.querySelector('#peer-connection')
+
+                    if (component?.getAttribute?.('disabled') === 'false') {
+                        if(component) {
+                            component.removeAttribute('disabled')
+                        } else {
+                            console.error('Не может быть')
+                        }
+                    } else {
+                        if(component) {
+                            component.setAttribute('disabled', 'false')
+                        } else {
+                            const template = await app
+                            console.log('ddddddddddddddddddddddddddd', template)
+                            template.components["peer-connection"].id["peer-connection"].setAttribute('disabled', 'false')
+                            container.appendChild(template.components["peer-connection"].id["peer-connection"]);
+                        }
+                    }
+                };
+
+                messageSettings.addEventListener('click', sendMessageHandler);
+                eventListeners.push({ element: messageSettings, handler: sendMessageHandler });
+            }
+
+            console.log('----------------------- messageSettings ------------------------', messageSettings)
             if (sendMessageBtn && messageInput) {
                 const sendMessageHandler = async () => {
                     if (messageInput.value.trim() && context.state.currentGroup) {

@@ -230,6 +230,7 @@ export class BaseComponent extends HTMLElement {
      */
     async connectedCallback() {
         try {
+            console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', this.tagName)
             log(`${this.constructor.name} подключается к DOM.`);
             await this.#initComponent(this.state);
             this.#isReady = true;
@@ -785,6 +786,7 @@ export class BaseComponent extends HTMLElement {
             }
             const key = `${this.tagName.toLowerCase()}:${this.id}`;
             BaseComponent.pendingRequests.set(key, this);
+            console.log('-----------------------------', this.tagName, BaseComponent.pendingRequests)
             if(this.tagName.toLowerCase() === 'navigation-manager' || this.tagName.toLowerCase() === 'navigation-sections') {
                 log(`${this.constructor.name} с ID ${this.id} зарегистрирован.`);
             }

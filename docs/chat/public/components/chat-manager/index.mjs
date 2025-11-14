@@ -38,6 +38,7 @@ export class ChatManager extends BaseComponent {
         };
         this.node = null;
         this.activeStreams = new Map(); // Для хранения активных стримов
+        console.log('#####################################', this.tagName)
     }
 
     async _componentReady() {

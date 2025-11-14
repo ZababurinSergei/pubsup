@@ -70,9 +70,10 @@ body {
     background: linear-gradient(135deg, var(--cosmic-primary) 0%, var(--cosmic-secondary) 100%);
     color: var(--cosmic-text-primary);
     line-height: 1.5;
-    margin: 0;
-    padding: var(--spacing-md);
+    /*padding: var(--spacing-md);*/
     min-height: 100vh;
+    padding: 0;
+    margin: 0;
 }
 
 /* Контейнеры и layout */

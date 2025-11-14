@@ -473,6 +473,20 @@ export function renderChatHeader({state = {}} = {}) {
                 </div>
             </div>
         </div>
+        <div class="chat-actions">
+            <button class="action-btn" id="clear-chat" title="Очистить чат">
+                <span class="btn-icon">🗑️</span>
+            </button>
+            <button class="action-btn" id="search-messages" title="Поиск сообщений">
+                <span class="btn-icon">🔍</span>
+            </button>
+            <button class="action-btn" id="toggle-members" title="Участники">
+                <span class="btn-icon">👥</span>
+            </button>
+            <button class="action-btn" id="settings" title="Настройки">
+                <span class="btn-icon">⚙️</span>
+            </button>
+        </div>
         `;
     }
 
@@ -488,6 +502,20 @@ export function renderChatHeader({state = {}} = {}) {
                     <span class="status-text">Выберите чат</span>
                 </div>
             </div>
+        </div>
+        <div class="chat-actions">
+            <button class="action-btn" id="clear-chat" title="Очистить чат">
+                <span class="btn-icon">🗑️</span>
+            </button>
+            <button class="action-btn" id="search-messages" title="Поиск сообщений">
+                <span class="btn-icon">🔍</span>
+            </button>
+            <button class="action-btn" id="toggle-members" title="Участники">
+                <span class="btn-icon">👥</span>
+            </button>
+            <button class="action-btn" id="settings" title="Настройки">
+                <span class="btn-icon">⚙️</span>
+            </button>
         </div>
         `;
     }
@@ -506,6 +534,20 @@ export function renderChatHeader({state = {}} = {}) {
             </div>
         </div>
     </div>
+      <div class="chat-actions">
+            <button class="action-btn" id="clear-chat" title="Очистить чат">
+                <span class="btn-icon">🗑️</span>
+            </button>
+            <button class="action-btn" id="search-messages" title="Поиск сообщений">
+                <span class="btn-icon">🔍</span>
+            </button>
+            <button class="action-btn" id="toggle-members" title="Участники">
+                <span class="btn-icon">👥</span>
+            </button>
+            <button class="action-btn" id="settings" title="Настройки">
+                <span class="btn-icon">⚙️</span>
+            </button>
+        </div>
     `;
 }
 
